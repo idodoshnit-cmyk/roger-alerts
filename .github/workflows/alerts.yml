@@ -35,6 +35,7 @@ jobs:
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
         run: python live.py --test-email
       - name: Live session
@@ -42,6 +43,7 @@ jobs:
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
         run: python live.py
       - name: Tell me if something broke
@@ -49,6 +51,7 @@ jobs:
         env:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
         run: python live.py --alarm
       - name: Save the day's log

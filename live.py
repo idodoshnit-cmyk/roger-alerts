@@ -13,6 +13,9 @@ Secrets (environment variables):
   GMAIL_ADDRESS       the Gmail account that sends
   GMAIL_APP_PASSWORD  a Gmail app password (not the normal password)
   ALERT_TO            where to send (optional, defaults to GMAIL_ADDRESS)
+  or, with no Gmail password:
+  RESEND_API_KEY      a free Resend key (resend.com, sign in with Google)
+  ALERT_TO            the same email you signed up to Resend with
 
 Usage:
   python live.py                      run the live session
@@ -227,6 +230,8 @@ def send(subject, body, dry=False):
         body = body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))
         print(f"\n=== {subject}\n{body}")
         return datetime.now(ET)
+    if os.environ.get("RESEND_API_KEY") and not os.environ.get("GMAIL_APP_PASSWORD"):
+        return send_resend(subject, body)
     user, pw = os.environ.get("GMAIL_ADDRESS"), os.environ.get("GMAIL_APP_PASSWORD")
     if not user or not pw:
         print("No Gmail secrets set, email not sent.")
@@ -245,6 +250,31 @@ def send(subject, body, dry=False):
         except Exception as e:
             print("email failed:", e)
             _time.sleep(2)
+    return None
+
+
+def send_resend(subject, body):
+    """Same as send(), through Resend's free email API (no Gmail password needed)."""
+    to = (os.environ.get("ALERT_TO") or os.environ.get("GMAIL_ADDRESS") or "").strip()
+    if not to:
+        print("ALERT_TO secret missing, email not sent.")
+        return False
+    for attempt in range(3):
+        try:
+            r = requests.post("https://api.resend.com/emails", timeout=20,
+                              headers={"Authorization": "Bearer " + os.environ["RESEND_API_KEY"].strip()},
+                              json={"from": "Roger <onboarding@resend.dev>", "to": [to], "subject": subject,
+                                    "text": body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S")),
+                                    "headers": {"X-Priority": "1"}})
+            if r.status_code < 300:
+                print(f"\n=== sent: {subject}")
+                return datetime.now(ET)
+            print("email failed:", r.status_code, r.text[:200])
+            if r.status_code in (401, 403, 422):
+                return None          # wrong key or address: retrying will not help
+        except Exception as e:
+            print("email failed:", e)
+        _time.sleep(2)
     return None
 
 
