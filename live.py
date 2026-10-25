@@ -227,11 +227,44 @@ def check(bars, meta, now):
 # ---------- email ----------
 
 def send(subject, body, dry=False):
-    """Sends right away. Returns the time it left, or None if it failed."""
+    """Sends right away. Returns the time it left, or None if it failed.
+    Tries Gmail or Resend when set up; if that fails, GitHub emails the repo owner."""
     if dry:
         body = body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))
         print(f"\n=== {subject}\n{body}")
         return datetime.now(ET)
+    sent = None
+    if os.environ.get("GMAIL_APP_PASSWORD") or os.environ.get("RESEND_API_KEY"):
+        sent = send_mail(subject, body)
+    if not sent and os.environ.get("GITHUB_TOKEN"):
+        sent = send_github(subject, body)
+    return sent
+
+
+def send_github(subject, body):
+    """Opens an issue in this repo that mentions the owner. GitHub emails it to them within seconds."""
+    repo, owner = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_REPOSITORY_OWNER")
+    if not repo:
+        print("Not running on GitHub, email not sent.")
+        return None
+    text = body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))
+    for attempt in range(3):
+        try:
+            r = requests.post(f"https://api.github.com/repos/{repo}/issues", timeout=20,
+                              headers={"Authorization": "Bearer " + os.environ["GITHUB_TOKEN"],
+                                       "Accept": "application/vnd.github+json"},
+                              json={"title": subject, "body": f"@{owner}\n\n{text}"})
+            if r.status_code < 300:
+                print(f"\n=== sent through GitHub: {subject}")
+                return datetime.now(ET)
+            print("GitHub email failed:", r.status_code, r.text[:200])
+        except Exception as e:
+            print("GitHub email failed:", e)
+        _time.sleep(2)
+    return None
+
+
+def send_mail(subject, body):
     if os.environ.get("RESEND_API_KEY") and not os.environ.get("GMAIL_APP_PASSWORD"):
         return send_resend(subject, body)
     user, pw = os.environ.get("GMAIL_ADDRESS"), os.environ.get("GMAIL_APP_PASSWORD")
