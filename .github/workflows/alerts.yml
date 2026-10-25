@@ -1,0 +1,61 @@
+name: Roger buy alerts
+
+on:
+  schedule:
+    # Two starts in UTC so one always lands before the 9:30 New York open, summer or winter.
+    # The second is a backup if GitHub drops the first. The script waits for the open itself.
+    - cron: "47 12 * * 1-5"
+    - cron: "47 13 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      test_email:
+        description: "Send one test email only"
+        type: boolean
+        default: true
+
+concurrency:
+  group: roger-alerts
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas numpy requests
+      - name: Test email
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_email }}
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: python live.py --test-email
+      - name: Live session
+        if: ${{ github.event_name == 'schedule' || !inputs.test_email }}
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: python live.py
+      - name: Tell me if something broke
+        if: failure()
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+        run: python live.py --alarm
+      - name: Save the day's log
+        # A commit every trading day also keeps GitHub from pausing the schedule.
+        if: always()
+        run: |
+          git config user.name "roger-alerts"
+          git config user.email "actions@users.noreply.github.com"
+          git add log || true
+          git diff --cached --quiet || (git commit -m "log $(date -u +%F)" && git push)
