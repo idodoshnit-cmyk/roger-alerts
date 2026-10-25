@@ -26,6 +26,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import smtplib
 import sys
 import time as _time
@@ -270,6 +271,12 @@ def send_resend(subject, body):
                 print(f"\n=== sent: {subject}")
                 return datetime.now(ET)
             print("email failed:", r.status_code, r.text[:200])
+            # free Resend only delivers to the signup address; it names it, so send there instead
+            m = re.search(r"own email address \(([^)\s]+@[^)\s]+)\)", r.text)
+            if r.status_code == 403 and m and m.group(1).lower() != to.lower():
+                print("ALERT_TO differs from the Resend signup address, sending to the signup address")
+                to = m.group(1)
+                continue
             if r.status_code in (401, 403, 422):
                 return None          # wrong key or address: retrying will not help
         except Exception as e:
