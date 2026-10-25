@@ -45,6 +45,7 @@ sys.path.insert(0, HERE)
 import hans  # noqa: E402
 from hans import FEATURES, STOPS, DEFAULT_PLAN, MIN_GAP, MIN_PRICE, MAX_PRICE  # noqa: E402
 from roger import Roger  # noqa: E402
+import hunter  # noqa: E402
 from setups import DETECTORS, NAMES_HE  # noqa: E402
 
 ET = ZoneInfo("America/New_York")
@@ -479,9 +480,12 @@ def run_live():
         print("Already ran today.")
         return
     sleep_until(now.replace(hour=START_SCAN.hour, minute=START_SCAN.minute, second=0, microsecond=0))
-    tickers = premarket_candidates()
+    pre = hunter.hunt(pre=True) or [{"name": t} for t in premarket_candidates()]
+    sleep_until(datetime.now(ET).replace(hour=9, minute=31, second=30, microsecond=0))
+    found = hunter.hunt(min_gap_pct=MIN_GAP * 100)            # TradingView: today's gappers, ranked
+    tickers = list(dict.fromkeys([x["name"] for x in found] + [x["name"] for x in pre] + yahoo_gainers()))[:MAX_CANDIDATES]
+    hot = {x["name"]: x for x in found + pre}
     sleep_until(datetime.now(ET).replace(hour=9, minute=35, second=8, microsecond=0))
-    tickers = list(dict.fromkeys(tickers + yahoo_gainers()))[:MAX_CANDIDATES]
     spy = today_bars("SPY")
     if spy is None or not any(spy.index.strftime("%Y-%m-%d") == today):
         print("Market looks closed today (holiday?).")
@@ -491,12 +495,22 @@ def run_live():
     send(f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום",
          "רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד 18:40 שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
+         + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
+         + f"מה קורה עכשיו בצוות: {HQ_URL}\n\n"
          "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.")
     s = Session()
     end = datetime.now(ET).replace(hour=FOLLOW_UNTIL.hour, minute=FOLLOW_UNTIL.minute)
     last_entry = datetime.now(ET).replace(hour=LAST_CHECK.hour, minute=LAST_CHECK.minute)
+    next_hunt = datetime.now(ET) + timedelta(minutes=10)
     while True:
         now = datetime.now(ET)
+        if now >= next_hunt and now <= last_entry and len(metas) < MAX_CANDIDATES:
+            # Hans looks again: a stock that started running late joins the watch list
+            next_hunt = now + timedelta(minutes=10)
+            for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=15):
+                if x["name"] not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(x["name"], today)):
+                    metas[x["name"]] = m
+                    print("Hans added", x["name"])
         # all stocks at once, so Roger sees every chart within seconds of the candle closing
         with ThreadPoolExecutor(16) as ex:
             fetched = dict(zip(metas, ex.map(today_bars, metas)))
