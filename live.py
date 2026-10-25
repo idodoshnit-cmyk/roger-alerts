@@ -61,6 +61,7 @@ MAX_CANDIDATES = 40
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
 RISK_PCT = 0.01
+HQ_URL = "https://claude.ai/artifact/HQx32MY8NJckNzW8K9rDox"
 
 TACTICS_HE = {
     "be_after_1r": "אחרי רווח של 1R להזיז את הסטופ למחיר הכניסה",
@@ -256,7 +257,8 @@ def send(subject, body, dry=False):
 
 def send_resend(subject, body):
     """Same as send(), through Resend's free email API (no Gmail password needed)."""
-    to = (os.environ.get("ALERT_TO") or os.environ.get("GMAIL_ADDRESS") or "").strip()
+    raw = os.environ.get("ALERT_TO") or os.environ.get("GMAIL_ADDRESS") or ""
+    to = re.sub(r"[^\x21-\x7e]", "", raw)          # drop spaces and invisible marks a phone keyboard adds
     if not to:
         print("ALERT_TO secret missing, email not sent.")
         return False
@@ -265,12 +267,12 @@ def send_resend(subject, body):
             r = requests.post("https://api.resend.com/emails", timeout=20,
                               headers={"Authorization": "Bearer " + os.environ["RESEND_API_KEY"].strip()},
                               json={"from": "Roger <onboarding@resend.dev>", "to": [to], "subject": subject,
-                                    "text": body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S")),
-                                    "headers": {"X-Priority": "1"}})
+                                    "text": body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))})
             if r.status_code < 300:
                 print(f"\n=== sent: {subject}")
                 return datetime.now(ET)
-            print("email failed:", r.status_code, r.text[:200])
+            print("email failed:", r.status_code, r.text[:300])
+            print(f"  (address: {len(to)} chars, cleaned {len(raw) - len(to)} hidden chars)")
             # free Resend only delivers to the signup address; it names it, so send there instead
             m = re.search(r"own email address \(([^)\s]+@[^)\s]+)\)", r.text)
             if r.status_code == 403 and m and m.group(1).lower() != to.lower():
@@ -337,12 +339,29 @@ class Session:
             return                # the move already failed before we could tell you
         risk = trig["entry"] - stop
         shares = int(ACCOUNT * RISK_PCT / risk) if risk > 0 else 0
+        shares = min(shares, int(ACCOUNT / trig["entry"]))      # never more than the account can buy
         n = len(self.trades) + 1
         valid = now + FRESH
         far = trig["last"] > trig["entry"] + 0.5 * risk
-        subject = f"קנייה (תרגול): {ticker} ב-{money(trig['entry'])} | סטופ {money(stop)}" + \
-                  (f" | יעד {money(target)}" if target else "")
-        body = "\n".join([
+        subject = f"🟢 קנייה {ticker} ב-{money(trig['entry'])} | טייק פרופיט {money(target) if target else 'נגרר'} | סטופ {money(stop)}"
+        cost = shares * trig["entry"]
+        tp_pct = f" (+{(target / trig['entry'] - 1):.0%})" if target else ""
+        summary = [
+            f"🟢 הוראת קנייה (תרגול): {ticker}",
+            "━━━━━━━━━━━━━━━━",
+            f"קנייה:        {money(trig['entry'])}",
+            f"כמות:         {shares} מניות  ·  סכום {cost:.2f}$" if shares else
+            "כמות:         0 (הסיכון למניה גדול מ-1% מהחשבון, לא נכנסים)",
+            f"טייק פרופיט:  {money(target)}{tp_pct}" if target else f"טייק פרופיט:  בלי יעד קבוע ({how})",
+            f"סטופ לוס:     {money(stop)}",
+            f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
+            f"בתוקף עד {il(valid)} שעון ישראל",
+            "━━━━━━━━━━━━━━━━",
+            f"מה קורה עכשיו בצוות, בזמן אמת: {HQ_URL}",
+            "",
+            "פרטים:",
+        ]
+        body = "\n".join([l for l in summary if l != ""][:-1] + ["", "פרטים:"] + [
             f"רוג׳ר: להיכנס ל-{ticker} (ביטחון {ans['p']:.0%})",
             f"מערך: {NAMES_HE.get(trig['setup'], trig['setup'])}",
             f"כניסה: {money(trig['entry'])}   מחיר אחרון: {money(trig['last'])}",
@@ -357,6 +376,7 @@ class Session:
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
+        body = "\n".join(l for l in body.split("\n\n\n"))
         decided = datetime.now(ET)
         body += f"\n\nרוג׳ר החליט ב-{decided.astimezone(IL).strftime('%H:%M:%S')}, המייל יצא ב-{{sent}}."
         sent_at = send(subject, body, self.dry)
@@ -492,7 +512,9 @@ if __name__ == "__main__":
     if a.alarm:
         send("רוג׳ר לא רץ היום כמו שצריך", "משהו נתקע בהפעלה היומית, ולכן ייתכן שלא יגיעו הוראות היום. ג׳ורג׳ יבדוק.")
     elif a.test_email:
-        ok = send("בדיקה: רוג׳ר מחובר למייל", "אם קיבלת את המייל הזה, הוראות הקנייה של רוג׳ר יגיעו לכאן.\n\nתרגול בלבד. חומר לימודי, לא ייעוץ השקעות.")
+        ok = send("בדיקה: רוג׳ר מחובר למייל", "אם קיבלת את המייל הזה, הוראות הקנייה של רוג׳ר יגיעו לכאן.\n"
+                  "בכל הוראה תראה למעלה: מחיר קנייה, כמות וסכום, טייק פרופיט וסטופ.\n\n"
+                  f"מה קורה עכשיו בצוות, בזמן אמת: {HQ_URL}\n\nתרגול בלבד. חומר לימודי, לא ייעוץ השקעות.")
         sys.exit(0 if ok else 1)
     elif a.replay:
         replay(a.replay)
