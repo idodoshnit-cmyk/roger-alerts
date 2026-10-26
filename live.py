@@ -341,6 +341,29 @@ def send_resend(subject, body):
     return None
 
 
+MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
+
+
+def live_price(ticker):
+    """Real-time last price: TradingView's scanner (US prices from Cboe in real time), Yahoo as backup."""
+    try:
+        r = requests.post("https://scanner.tradingview.com/america/scan", timeout=8, headers={"User-Agent": "Mozilla/5.0"},
+                          json={"columns": ["close"], "range": [0, 1],
+                                "filter": [{"left": "name", "operation": "equal", "right": ticker}]})
+        d = r.json().get("data") or []
+        if d and d[0]["d"][0]:
+            return float(d[0]["d"][0])
+    except Exception as e:
+        print("TradingView price failed:", e)
+    try:
+        r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}", timeout=8,
+                         params={"range": "1d", "interval": "1m"}, headers={"User-Agent": "Mozilla/5.0"})
+        return float(r.json()["chart"]["result"][0]["meta"]["regularMarketPrice"])
+    except Exception as e:
+        print("Yahoo price failed:", e)
+    return None
+
+
 def il(t):
     return t.astimezone(IL).strftime("%H:%M")
 
@@ -401,6 +424,15 @@ class Session:
         if not self.watch and (self.stopped or len(self.trades) >= MAX_TRADES):
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
+        priced = None
+        if not self.dry:      # the buy price in the email is the market price seconds before it is sent
+            px = live_price(ticker)
+            if px:
+                priced = datetime.now(IL).strftime("%H:%M:%S")
+                if px > trig["entry"] * (1 + MAX_CHASE):
+                    print(f"{ticker}: price {px} already ran past the setup entry {trig['entry']}, no alert")
+                    return
+                trig = {**trig, "setup_entry": trig["entry"], "entry": px, "last": px}
         stop, target, how = plan_levels(plan, trig["entry"], trig["stop"])
         if trig["last"] <= stop:
             return                # the move already failed before we could tell you
@@ -418,7 +450,7 @@ class Session:
         summary = [
             f"🟢 הוראת קנייה (תרגול): {ticker}",
             "━━━━━━━━━━━━━━━━",
-            f"קנייה:        {money(trig['entry'])}",
+            f"קנייה:        {money(trig['entry'])}" + (f"  (מחיר השוק ב-{priced})" if priced else ""),
             f"כמות:         {shares} מניות  ·  סכום {cost:.2f}$" if shares else
             "כמות:         0 (הסיכון למניה גדול מ-1% מהחשבון, לא נכנסים)",
             f"טייק פרופיט:  {money(target)}{tp_pct}" if target else f"טייק פרופיט:  בלי יעד קבוע ({how})",
