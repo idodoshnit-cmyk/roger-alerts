@@ -1,0 +1,6 @@
+date,time_et,ticker,setup,entry,stop,decision,p,why,gap
+2026-10-26,10:01,AZTR,gap_and_go,1.44,1.25,SKIP,0.0,כלל המאמן: לא נכנסים ב-gap_and_go,0.4545
+2026-10-26,10:01,SAIQ,orb15,7.2299,6.54,SKIP,0.0,כלל המאמן: hod_dist בטווח האסור,0.1356
+2026-10-26,10:01,SAIQ,gap_go_vwap_pullback,7.21,6.7588,SKIP,0.0,כלל המאמן: hod_dist בטווח האסור,0.1356
+2026-10-26,10:01,BOLT,gap_go_vwap_pullback,6.5,6.3336,SKIP,0.3126,ביטחון 31% (סף 59%),0.0764
+2026-10-26,10:01,FRMM,gap_go_vwap_pullback,3.3799,3.3233,SKIP,0.427,ביטחון 43% (סף 59%),0.0689
