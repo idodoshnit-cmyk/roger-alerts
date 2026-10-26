@@ -432,7 +432,8 @@ class Session:
                 if px > trig["entry"] * (1 + MAX_CHASE):
                     print(f"{ticker}: price {px} already ran past the setup entry {trig['entry']}, no alert")
                     return
-                trig = {**trig, "setup_entry": trig["entry"], "entry": px, "last": px}
+                # follow from the newest closed candle: older candles happened before this price
+                trig = {**trig, "setup_entry": trig["entry"], "entry": px, "last": px, "i": max(trig["i"], len(trig["reg"]) - 1)}
         stop, target, how = plan_levels(plan, trig["entry"], trig["stop"])
         if trig["last"] <= stop:
             return                # the move already failed before we could tell you
