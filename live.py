@@ -531,52 +531,80 @@ class Session:
             lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
         send(subject, "\n".join(lines + ["", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]), self.dry)
 
-    def follow_blink(self, t, reg, now):
-        """James's Blink plan, step by step. Each step is one email telling you the one order to change."""
+    def confirm(self, tk, k, level, down):
+        """Second look before a stop or target email: a fresh download of the same candle, or the live price,
+        must agree. A Yahoo candle that gets revised a minute later can no longer fake a stop or target."""
+        if self.dry:
+            return True
+        px = live_price(tk)
+        if px is not None and (px <= level if down else px >= level):
+            return True
+        bars = today_bars(tk)
+        if bars is None or k is None:
+            return False
+        reg = regular(bars, datetime.now(ET))
+        if k >= len(reg):
+            return False
+        b = reg.iloc[k]
+        return bool(b["Low"] <= level) if down else bool(b["High"] >= level)
+
+    def blink_step(self, t, lo, hi, k):
+        """One price range (a closed candle, or the live price) against James's Blink plan. True when the trade closed."""
         e, tk = t["entry"], t["ticker"]
         risk = t.setdefault("risk", e - t["stop"])        # the first risk: the stop moves to entry later
         half = max(1, t.get("shares", 0) // 2) if t.get("shares") else 0
         rest = max(0, t.get("shares", 0) - half)
-        for k in range(t["k"], len(reg)):
-            b = reg.iloc[k]
-            first = k == t["i"]                    # the entry bar: only its close counts, we bought during it
-            lo, hi = (b["Close"], b["Close"]) if first else (b["Low"], b["High"])
-            if not t["half"]:
-                if lo <= t["stop"]:
+        if not t["half"]:
+            if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
+                self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: -1R (תרגול)",
+                                 [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של 1R.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
+                return True
+            if hi >= e * 1.05 and self.confirm(tk, k, e * 1.05, False):
+                t.update(half=True, bank=0.5 * 0.05 * e / risk, stop=e)
+                send(f"🟡 {tk} הגיעה ל-+5% ({money(e * 1.05)}): למכור חצי ולהזיז סטופ (תרגול)", "\n".join([
+                    f"🟡 {tk} הגיעה ל-{money(e * 1.05)} (+5%). עכשיו בבלינק, לפי הסדר:",
+                    "━━━━━━━━━━━━━━━━",
+                    "1. לבטל את פקודת הסטופ הפתוחה.",
+                    f"2. למכור חצי: {half} מניות, במחיר השוק." if half else "2. למכור חצי מהמניות, במחיר השוק.",
+                    f"3. לשים סטופ לוס חדש על השאר ({rest} מניות) ב-{money(e)}, מחיר הכניסה." if half else f"3. לשים סטופ לוס חדש על השאר ב-{money(e)}, מחיר הכניסה.",
+                    "━━━━━━━━━━━━━━━━",
+                    f"מעכשיו העסקה לא יכולה להפסיד. את השאר נמכור ב-{money(e * 1.15)} (+15%) או לפני הסגירה, ותקבל על זה מייל.",
+                    f"מה קורה עכשיו בצוות: {HQ_URL}", "", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]), self.dry)
+            return False
+        if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
+            self.close_trade(t, t["bank"], "breakeven", f"⚪ {tk} חזרה לכניסה: הסטופ נגע (תרגול)",
+                             [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה {t['bank']:+.2f}R מהחצי שנמכר ב-+5%."])
+            return True
+        if hi >= e * 1.15 and self.confirm(tk, k, e * 1.15, False):
+            self.close_trade(t, t["bank"] + 0.5 * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
+                f"🎯 {tk} הגיעה ל-{money(e * 1.15)} (+15%). עכשיו בבלינק:",
+                "1. לבטל את הסטופ במחיר הכניסה.",
+                f"2. למכור את השאר ({rest} מניות) במחיר השוק." if half else "2. למכור את כל מה שנשאר, במחיר השוק.",
+                f"העסקה הרוויחה בערך {t['bank'] + 0.5 * 0.15 * e / risk:+.2f}R."])
+            return True
+        return False
+
+    def follow_blink(self, t, reg, now, px=None):
+        """James's Blink plan, step by step. Each step is one email telling you the one order to change.
+        reg: closed 5-minute candles (None between candles); px: the live price, checked every minute."""
+        if reg is not None:
+            for k in range(t["k"], len(reg)):
+                b = reg.iloc[k]
+                first = k == t["i"]                    # the entry bar: only its close counts, we bought during it
+                lo, hi = (b["Close"], b["Close"]) if first else (b["Low"], b["High"])
+                if self.blink_step(t, lo, hi, k):
                     t["k"] = k + 1
-                    return self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: -1R (תרגול)",
-                                            [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של 1R.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
-                if hi >= e * 1.05:
-                    t.update(half=True, bank=0.5 * 0.05 * e / risk, stop=e)
-                    send(f"🟡 {tk} הגיעה ל-+5% ({money(e * 1.05)}): למכור חצי ולהזיז סטופ (תרגול)", "\n".join([
-                        f"🟡 {tk} הגיעה ל-{money(e * 1.05)} (+5%). עכשיו בבלינק, לפי הסדר:",
-                        "━━━━━━━━━━━━━━━━",
-                        "1. לבטל את פקודת הסטופ הפתוחה.",
-                        f"2. למכור חצי: {half} מניות, במחיר השוק." if half else "2. למכור חצי מהמניות, במחיר השוק.",
-                        f"3. לשים סטופ לוס חדש על השאר ({rest} מניות) ב-{money(e)}, מחיר הכניסה." if half else f"3. לשים סטופ לוס חדש על השאר ב-{money(e)}, מחיר הכניסה.",
-                        "━━━━━━━━━━━━━━━━",
-                        f"מעכשיו העסקה לא יכולה להפסיד. את השאר נמכור ב-{money(e * 1.15)} (+15%) או לפני הסגירה, ותקבל על זה מייל.",
-                        f"מה קורה עכשיו בצוות: {HQ_URL}", "", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]), self.dry)
-                    continue
-            else:
-                if lo <= t["stop"]:
-                    t["k"] = k + 1
-                    return self.close_trade(t, t["bank"], "breakeven", f"⚪ {tk} חזרה לכניסה: הסטופ נגע (תרגול)",
-                                            [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה {t['bank']:+.2f}R מהחצי שנמכר ב-+5%."])
-                if hi >= e * 1.15:
-                    t["k"] = k + 1
-                    return self.close_trade(t, t["bank"] + 0.5 * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
-                        f"🎯 {tk} הגיעה ל-{money(e * 1.15)} (+15%). עכשיו בבלינק:",
-                        "1. לבטל את הסטופ במחיר הכניסה.",
-                        f"2. למכור את השאר ({rest} מניות) במחיר השוק." if half else "2. למכור את כל מה שנשאר, במחיר השוק.",
-                        f"העסקה הרוויחה בערך {t['bank'] + 0.5 * 0.15 * e / risk:+.2f}R."])
-        t["k"] = len(reg)
+                    return
+            t["k"] = len(reg)
+        if px is not None and t["open"] and self.blink_step(t, px, px, None):
+            return
         if now.time() >= CLOSE_WARN and t["open"] and not t.get("warned"):
+            e, risk = t["entry"], t["risk"]
             t["warned"] = True
-            last = float(reg["Close"].iloc[-1]) if len(reg) else e
+            last = px if px is not None else (float(reg["Close"].iloc[-1]) if reg is not None and len(reg) else e)
             r = (t["bank"] + 0.5 * (last - e) / risk) if t["half"] else (last - e) / risk
-            self.close_trade(t, r, "close", f"⏰ {tk}: למכור את מה שנשאר לפני הסגירה (תרגול)", [
-                f"⏰ השוק נסגר בעוד כרבע שעה. {tk} עכשיו ב-{money(last)}. בבלינק:",
+            self.close_trade(t, r, "close", f"⏰ {t['ticker']}: למכור את מה שנשאר לפני הסגירה (תרגול)", [
+                f"⏰ השוק נסגר בעוד כרבע שעה. {t['ticker']} עכשיו ב-{money(last)}. בבלינק:",
                 "1. לבטל את פקודת הסטופ הפתוחה.",
                 "2. למכור את כל מה שנשאר במחיר השוק.",
                 f"לפי המחיר עכשיו העסקה בערך {r:+.2f}R."])
@@ -641,37 +669,45 @@ def run_live(late=False, carry=None):
     stop_at = WATCH_END if late else FOLLOW_UNTIL
     end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute)
     last_entry = datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute)
-    next_hunt = datetime.now(ET) + timedelta(minutes=10)
+    for tr in s.trades:          # open trades carried from the morning are followed even if Hans dropped the stock
+        if tr["open"] and tr["ticker"] not in metas and (m := daily_meta(tr["ticker"], today)):
+            metas[tr["ticker"]] = m
+    first = True
     while True:
         now = datetime.now(ET)
-        if now >= next_hunt and now <= last_entry and len(metas) < MAX_CANDIDATES:
-            # Hans looks again: a stock that started running late joins the watch list
-            next_hunt = now + timedelta(minutes=10)
-            for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=15):
-                if x["name"] not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(x["name"], today)):
-                    metas[x["name"]] = m
-                    print("Hans added", x["name"])
-        # all stocks at once, so Roger sees every chart within seconds of the candle closing
-        with ThreadPoolExecutor(16) as ex:
-            fetched = dict(zip(metas, ex.map(today_bars, metas)))
-        for t, meta in metas.items():      # today's gaps of every watched stock: Roger's "hot market" and gap rank
-            b = fetched[t]
-            r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
-            if r0 is not None and len(r0) and meta["prev_close"] > 0:
-                s.day_gaps[t] = float(r0["Open"].iloc[0]) / meta["prev_close"] - 1
-        for t, meta in metas.items():
-            bars = fetched[t]
-            if bars is None:
-                continue
-            trigs, reg = check(bars, meta, datetime.now(ET))
-            if now <= last_entry:
-                for trig in trigs:
-                    s.consider(t, trig, now)
-            s.follow(t, reg, now)
+        # every 5-minute candle close: Hans re-scans, Roger reads every chart (he decides on closed 5-minute candles)
+        if first or now.minute % 5 == 0:
+            first = False
+            if now <= last_entry and len(metas) < MAX_CANDIDATES:
+                for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=15):
+                    if x["name"] not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(x["name"], today)):
+                        metas[x["name"]] = m
+                        print("Hans added", x["name"])
+            with ThreadPoolExecutor(16) as ex:
+                fetched = dict(zip(metas, ex.map(today_bars, metas)))
+            for t, meta in metas.items():      # today's gaps of every watched stock: Roger's "hot market" and gap rank
+                b = fetched[t]
+                r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
+                if r0 is not None and len(r0) and meta["prev_close"] > 0:
+                    s.day_gaps[t] = float(r0["Open"].iloc[0]) / meta["prev_close"] - 1
+            for t, meta in metas.items():
+                bars = fetched[t]
+                if bars is None:
+                    continue
+                trigs, reg = check(bars, meta, datetime.now(ET))
+                if now <= last_entry:
+                    for trig in trigs:
+                        s.consider(t, trig, now)
+                s.follow(t, reg, now)
+        else:
+            # between candles: open trades are checked against the live price every minute
+            for tr in s.trades:
+                if tr["open"] and tr["plan"] == BLINK_PLAN and (px := live_price(tr["ticker"])) is not None:
+                    s.follow_blink(tr, None, now, px)
         if now >= end or (now > last_entry and not any(x["open"] for x in s.trades)):
             break
-        nxt = now + timedelta(minutes=5)
-        sleep_until(nxt.replace(minute=nxt.minute - nxt.minute % 5, second=8, microsecond=0))
+        nxt = now + timedelta(minutes=1)
+        sleep_until(nxt.replace(second=6, microsecond=0))
     s.summary(datetime.now(ET), len(metas))
     if late:
         os.makedirs(LOG, exist_ok=True)
@@ -764,12 +800,12 @@ def run_follow():
         now = datetime.now(ET)
         for t in s.trades:
             if t["open"] and (bars := today_bars(t["ticker"])) is not None:
-                s.follow_blink(t, regular(bars, now), now)
+                s.follow_blink(t, regular(bars, now), now, live_price(t["ticker"]))
         json.dump({**d, "day_r": s.day_r, "trades": s.trades}, open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
         if not any(t["open"] for t in s.trades) or now.time() >= CLOSE_WARN:
             break
-        nxt = now + timedelta(minutes=5)
-        sleep_until(nxt.replace(minute=nxt.minute - nxt.minute % 5, second=8, microsecond=0))
+        nxt = now + timedelta(minutes=1)
+        sleep_until(nxt.replace(second=6, microsecond=0))
     json.dump({**d, "day_r": s.day_r, "trades": s.trades, "done": True}, open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
 
 
