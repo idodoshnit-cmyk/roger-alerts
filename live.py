@@ -254,12 +254,36 @@ def send(subject, body, dry=False):
         body = body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))
         print(f"\n=== {subject}\n{body}")
         return datetime.now(ET)
+    global MAIL_BROKEN
+    pushed = send_ntfy(subject, body)          # phone push first: it arrives in 1-2 seconds
     sent = None
-    if os.environ.get("GMAIL_APP_PASSWORD") or os.environ.get("RESEND_API_KEY"):
+    if not MAIL_BROKEN and (os.environ.get("GMAIL_APP_PASSWORD") or os.environ.get("RESEND_API_KEY")):
         sent = send_mail(subject, body)
+        MAIL_BROKEN = sent is None              # it failed once today: don't lose seconds on it again
     if not sent and os.environ.get("GITHUB_TOKEN"):
         sent = send_github(subject, body)
-    return sent
+    return pushed or sent
+
+
+MAIL_BROKEN = False
+
+
+def send_ntfy(subject, body):
+    """Instant phone push through ntfy.sh (free, no account). The topic name is kept in the repo secret NTFY_TOPIC."""
+    topic = os.environ.get("NTFY_TOPIC", "").strip()
+    if not topic:
+        return None
+    try:
+        text = body.replace("{sent}", datetime.now(IL).strftime("%H:%M:%S"))
+        r = requests.post(f"https://ntfy.sh/{topic}", data=text[:3500].encode("utf-8"), timeout=5,
+                          params={"title": subject, "priority": "high" if subject.startswith("🟢") else "default", "click": HQ_URL})
+        if r.status_code < 300:
+            print(f"=== pushed: {subject}")
+            return datetime.now(ET)
+        print("ntfy failed:", r.status_code, r.text[:200])
+    except Exception as e:
+        print("ntfy failed:", e)
+    return None
 
 
 def send_github(subject, body):

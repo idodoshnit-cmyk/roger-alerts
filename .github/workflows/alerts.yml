@@ -47,6 +47,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: python live.py --test-email
       - name: Live session
         if: ${{ github.event_name == 'schedule' || !inputs.test_email }}
@@ -56,6 +57,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: python live.py ${{ (startsWith(github.event.schedule, '5 ') || inputs.follow) && '--follow' || '' }}
       - name: Tell me if something broke
         if: failure()
@@ -65,6 +67,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: python live.py --alarm
       - name: Save the day's log
         # A commit every trading day also keeps GitHub from pausing the schedule.
