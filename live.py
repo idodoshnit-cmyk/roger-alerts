@@ -566,7 +566,7 @@ def run_live():
     metas = {t: m for t in tickers if (m := daily_meta(t, today))}
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
     send(f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום",
-         "רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד 18:40 שעון ישראל, אם יהיו.\n"
+         f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=LAST_CHECK.hour, minute=LAST_CHECK.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
          + f"מה קורה עכשיו בצוות: {HQ_URL}\n\n"
