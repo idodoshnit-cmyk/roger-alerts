@@ -32,7 +32,7 @@ permissions:
 jobs:
   alerts:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
