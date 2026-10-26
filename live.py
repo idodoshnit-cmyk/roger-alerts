@@ -640,13 +640,45 @@ def regular(bars, now):
     return bars[(bars.index.time >= time(9, 30)) & (bars.index.time < time(16, 0))]
 
 
+def trades_from_emails(today):
+    """Backup when the morning log was not saved: rebuild today's orders from the buy emails (GitHub issues),
+    then replay each one quietly up to the morning run's end, so no step email is sent twice."""
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not repo:
+        return []
+    r = requests.get(f"https://api.github.com/repos/{repo}/issues", timeout=20,
+                     params={"state": "all", "since": f"{today}T00:00:00Z", "per_page": 50},
+                     headers={"Authorization": "Bearer " + os.environ["GITHUB_TOKEN"], "Accept": "application/vnd.github+json"})
+    trades, quiet = [], Session(dry=True)
+    end = datetime.now(ET).replace(hour=FOLLOW_UNTIL.hour, minute=FOLLOW_UNTIL.minute, second=0)
+    for it in reversed(r.json() if r.ok else []):
+        m = re.match(r"🟢 קנייה ([A-Z.]+) ב-([\d.]+)\$ \| טייק פרופיט [^|]+\| סטופ ([\d.]+)\$", it.get("title", ""))
+        if not m:
+            continue
+        sh = re.search(r"כמות:\s+(\d+)", it.get("body") or "")
+        tk, e, st = m.group(1), float(m.group(2)), float(m.group(3))
+        bars = today_bars(tk)
+        if bars is None or e <= st:
+            continue
+        sent = pd.Timestamp(it["created_at"]).tz_convert(ET)
+        reg = regular(bars, end)
+        before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
+        t = {"ticker": tk, "entry": e, "stop": st, "target": e * 1.05, "i": before[-1] if before else 0, "open": True,
+             "r": None, "plan": BLINK_PLAN, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
+        t["k"] = t["i"]
+        quiet.follow_blink(t, reg, end)
+        if t["open"]:
+            trades.append(t)
+    return trades
+
+
 def run_follow():
     today = datetime.now(ET).strftime("%Y-%m-%d")
-    if not os.path.exists(OPEN_FILE):
-        print("No open trades to follow.")
-        return
-    d = json.load(open(OPEN_FILE))
-    if d.get("date") != today or d.get("done"):
+    d = json.load(open(OPEN_FILE)) if os.path.exists(OPEN_FILE) else {}
+    if d.get("date") != today:
+        print("No saved open trades from today, rebuilding from today's buy emails.")
+        d = {"date": today, "day_r": 0.0, "stopped": False, "trades": trades_from_emails(today), "done": False}
+    if d.get("done") or not d["trades"]:
         print("Nothing open from today.")
         return
     s = Session()
