@@ -666,6 +666,9 @@ def run_live(late=False, carry=None):
     today = now.strftime("%Y-%m-%d")
     watch = watch_day(today)
     last_check = WATCH_LAST_ENTRY if watch else LAST_CHECK
+    if watch:   # watch-only test day: the setups keep looking for entries until WATCH_LAST_ENTRY, not only the morning
+        import setups
+        setups.LAST_ENTRY = time(WATCH_LAST_ENTRY.hour, WATCH_LAST_ENTRY.minute - 10)
     if now.weekday() >= 5 or now.time() > last_check:
         print("Outside the session, nothing to do.")
         return
@@ -687,7 +690,7 @@ def run_live(late=False, carry=None):
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
-         + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=LAST_CHECK.hour, minute=LAST_CHECK.minute))} שעון ישראל, אם יהיו.\n"
+         + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
          + f"מה קורה עכשיו בצוות: {HQ_URL}\n\n"
