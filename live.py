@@ -540,16 +540,18 @@ class Session:
             if not t["open"]:
                 self.day_r += t["r"]
                 word = "הסטופ נגע" if t["how"] == "stop" else "היעד נגע"
-                lines = [f"{word} ב-{ticker}: {t['r']:+.1f}R", f"סה״כ היום: {self.day_r:+.1f}R"]
+                t["pct"] = t["r"] * risk / t["entry"]
+                lines = [f"{word} ב-{ticker}: {t['pct']:+.1%} מהסכום", "את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
                 if self.day_r <= DAY_STOP_R and not self.stopped:
                     self.stopped = True
                     lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
-                send(f"{word}: {ticker} {t['r']:+.1f}R (תרגול)", "\n".join(lines), self.dry)
+                send(f"{word}: {ticker} {t['pct']:+.1%} (תרגול)", "\n".join(lines), self.dry)
 
     def close_trade(self, t, r, how, subject, lines):
         t.update(open=False, r=round(r, 2), how=how)
+        t["pct"] = r * t.get("risk", t["entry"] - t["stop"]) / t["entry"]   # result on the money in the trade
         self.day_r += t["r"]
-        lines.append(f"סה״כ היום: {self.day_r:+.1f}R")
+        lines.append("את הניקוד הרשמי (R) מפרסם צוות האימון באתר.")
         if self.day_r <= DAY_STOP_R and not self.stopped:
             self.stopped = True
             lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
@@ -580,8 +582,8 @@ class Session:
         rest = max(0, t.get("shares", 0) - half)
         if not t["half"]:
             if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
-                self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: -1R (תרגול)",
-                                 [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של 1R.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
+                self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: {(t['stop'] - e) / e:+.1%} (תרגול)",
+                                 [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של {(e - t['stop']) / e:.1%} מהסכום.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
                 return True
             if hi >= e * 1.05 and self.confirm(tk, k, e * 1.05, False):
                 t.update(half=True, bank=0.5 * 0.05 * e / risk, stop=e)
@@ -597,14 +599,14 @@ class Session:
             return False
         if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
             self.close_trade(t, t["bank"], "breakeven", f"⚪ {tk} חזרה לכניסה: הסטופ נגע (תרגול)",
-                             [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה {t['bank']:+.2f}R מהחצי שנמכר ב-+5%."])
+                             [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה בערך +2.5% מהסכום, מהחצי שנמכר ב-+5%."])
             return True
         if hi >= e * 1.15 and self.confirm(tk, k, e * 1.15, False):
             self.close_trade(t, t["bank"] + 0.5 * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
                 f"🎯 {tk} הגיעה ל-{money(e * 1.15)} (+15%). עכשיו בבלינק:",
                 "1. לבטל את הסטופ במחיר הכניסה.",
                 f"2. למכור את השאר ({rest} מניות) במחיר השוק." if half else "2. למכור את כל מה שנשאר, במחיר השוק.",
-                f"העסקה הרוויחה בערך {t['bank'] + 0.5 * 0.15 * e / risk:+.2f}R."])
+                f"העסקה הרוויחה בערך +10% מהסכום (חצי ב-+5%, חצי ב-+15%)."])
             return True
         return False
 
@@ -631,12 +633,12 @@ class Session:
                 f"⏰ השוק נסגר בעוד כרבע שעה. {t['ticker']} עכשיו ב-{money(last)}. בבלינק:",
                 "1. לבטל את פקודת הסטופ הפתוחה.",
                 "2. למכור את כל מה שנשאר במחיר השוק.",
-                f"לפי המחיר עכשיו העסקה בערך {r:+.2f}R."])
+                f"לפי המחיר עכשיו העסקה בערך {r * risk / e:+.1%} מהסכום."])
 
     def summary(self, now, n_watch):
-        lines = [f"סיכום היום ({now.strftime('%d/%m')}): {len(self.trades)} הוראות, {self.day_r:+.1f}R בעסקאות שנסגרו."]
+        lines = [f"סיכום היום ({now.strftime('%d/%m')}): {len(self.trades)} הוראות. את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
         for t in self.trades:
-            state = "עדיין פתוחה" if t["open"] else f"{t['r']:+.1f}R"
+            state = "עדיין פתוחה" if t["open"] else f"{t.get('pct', t['r'] * (t['entry'] - t['stop']) / t['entry']):+.1%} מהסכום"
             lines.append(f"- {t['ticker']} ({NAMES_HE.get(t['setup'], t['setup'])}): {state}")
         lines.append(f"רוג׳ר עקב אחרי {n_watch} מניות וויתר על {self.skips} הזדמנויות.")
         lines += ["", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]
