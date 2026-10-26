@@ -55,7 +55,12 @@ LOG = os.path.join(HERE, "log")
 START_SCAN = time(9, 20)      # look for gap-up stocks in the premarket
 FIRST_CHECK = time(9, 35)     # first 5-minute candle has closed
 LAST_CHECK = time(11, 40)     # last entry bar (11:30) has closed
-FOLLOW_UNTIL = time(12, 30)   # keep watching open trades for stop/target until here
+FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job must end within 330 minutes)
+CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
+# Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
+# stop at the setup stop; at +5% sell half and move the stop to entry; sell the rest at +15% or before the close.
+BLINK_PLAN = "half_p5_be_p15"
+TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
 DAY_STOP_R = -2.0
 MAX_CANDIDATES = 40
@@ -107,6 +112,8 @@ class JamesLive:
 
 def plan_levels(plan, entry, setup_stop):
     """Turn a plan name like 'tight_1.5' into stop and target prices."""
+    if plan == BLINK_PLAN:
+        return setup_stop, entry * 1.05, "ב-+5%: לבטל את הסטופ, למכור חצי, ולשים סטופ חדש במחיר הכניסה. את השאר למכור ב-+15% או לפני הסגירה"
     if plan == "half_p5_chandelier":
         return setup_stop, entry * 1.05, "למכור חצי ב-+5% ולהזיז סטופ לכניסה, את השאר לגרור 3 ATR מתחת לשיא"
     if plan in TACTICS_HE:
@@ -367,13 +374,15 @@ class Session:
         self.alerted.add(ticker)
         if self.stopped or len(self.trades) >= MAX_TRADES:
             return
-        plan = self.james.choose(feats)
+        plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         stop, target, how = plan_levels(plan, trig["entry"], trig["stop"])
         if trig["last"] <= stop:
             return                # the move already failed before we could tell you
         risk = trig["entry"] - stop
         shares = int(ACCOUNT * RISK_PCT / risk) if risk > 0 else 0
         shares = min(shares, int(ACCOUNT / trig["entry"]))      # never more than the account can buy
+        if plan == BLINK_PLAN:                                  # James's Blink plan: half the account per trade
+            shares = int(ACCOUNT * TRADE_SHARE / trig["entry"]) if risk > 0 else 0
         n = len(self.trades) + 1
         valid = now + FRESH
         far = trig["last"] > trig["entry"] + 0.5 * risk
@@ -388,6 +397,7 @@ class Session:
             "כמות:         0 (הסיכון למניה גדול מ-1% מהחשבון, לא נכנסים)",
             f"טייק פרופיט:  {money(target)}{tp_pct}" if target else f"טייק פרופיט:  בלי יעד קבוע ({how})",
             f"סטופ לוס:     {money(stop)}",
+            f"שלב 2:        ב-{money(trig['entry'] * 1.05)} למכור חצי ולהזיז את הסטופ ל-{money(trig['entry'])}. את השאר למכור ב-{money(trig['entry'] * 1.15)} (+15%)" if plan == BLINK_PLAN else "",
             f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
             f"בתוקף עד {il(valid)} שעון ישראל",
             "━━━━━━━━━━━━━━━━",
@@ -401,7 +411,7 @@ class Session:
             f"כניסה: {money(trig['entry'])}   מחיר אחרון: {money(trig['last'])}",
             f"סטופ (ג׳יימס): {money(stop)}",
             f"יעד: {money(target) if target else 'אין'} ({how})",
-            f"כמות לפי 1% סיכון מ-{ACCOUNT:.0f}$: {shares} מניות" if shares else
+            (f"כמות: חצי מהחשבון ({ACCOUNT * TRADE_SHARE:.0f}$): {shares} מניות" if plan == BLINK_PLAN else f"כמות לפי 1% סיכון מ-{ACCOUNT:.0f}$: {shares} מניות") if shares else
             f"הסיכון למניה ({money(risk)}) גדול מ-1% מהחשבון, אז לפי הכלל לא נכנסים בכסף אמיתי.",
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
@@ -416,7 +426,8 @@ class Session:
         sent_at = send(subject, body, self.dry)
         lag = (sent_at - decided).total_seconds() if sent_at else None
         t = {"ticker": ticker, "setup": trig["setup"], "entry": trig["entry"], "stop": stop,
-             "target": target, "i": trig["i"], "open": True, "r": None, "p": ans["p"], "plan": plan}
+             "target": target, "i": trig["i"], "open": True, "r": None, "p": ans["p"], "plan": plan,
+             "shares": shares, "k": trig["i"], "half": False, "bank": 0.0, "risk": risk}
         self.trades.append(t)
         if not self.dry:
             log_row("alerts.csv", {"date": now.strftime("%Y-%m-%d"), "time_il": il(now), "ticker": ticker,
@@ -430,6 +441,9 @@ class Session:
         """Email when an open trade hits its stop or target."""
         for t in self.trades:
             if t["ticker"] != ticker or not t["open"]:
+                continue
+            if t["plan"] == BLINK_PLAN:
+                self.follow_blink(t, reg, now)
                 continue
             risk = t["entry"] - t["stop"]
             for k in range(t["i"], len(reg)):
@@ -448,6 +462,65 @@ class Session:
                     self.stopped = True
                     lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
                 send(f"{word}: {ticker} {t['r']:+.1f}R (תרגול)", "\n".join(lines), self.dry)
+
+    def close_trade(self, t, r, how, subject, lines):
+        t.update(open=False, r=round(r, 2), how=how)
+        self.day_r += t["r"]
+        lines.append(f"סה״כ היום: {self.day_r:+.1f}R")
+        if self.day_r <= DAY_STOP_R and not self.stopped:
+            self.stopped = True
+            lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
+        send(subject, "\n".join(lines + ["", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]), self.dry)
+
+    def follow_blink(self, t, reg, now):
+        """James's Blink plan, step by step. Each step is one email telling you the one order to change."""
+        e, tk = t["entry"], t["ticker"]
+        risk = t.setdefault("risk", e - t["stop"])        # the first risk: the stop moves to entry later
+        half = max(1, t.get("shares", 0) // 2) if t.get("shares") else 0
+        rest = max(0, t.get("shares", 0) - half)
+        for k in range(t["k"], len(reg)):
+            b = reg.iloc[k]
+            first = k == t["i"]                    # the entry bar: only its close counts, we bought during it
+            lo, hi = (b["Close"], b["Close"]) if first else (b["Low"], b["High"])
+            if not t["half"]:
+                if lo <= t["stop"]:
+                    t["k"] = k + 1
+                    return self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: -1R (תרגול)",
+                                            [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של 1R.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
+                if hi >= e * 1.05:
+                    t.update(half=True, bank=0.5 * 0.05 * e / risk, stop=e)
+                    send(f"🟡 {tk} הגיעה ל-+5% ({money(e * 1.05)}): למכור חצי ולהזיז סטופ (תרגול)", "\n".join([
+                        f"🟡 {tk} הגיעה ל-{money(e * 1.05)} (+5%). עכשיו בבלינק, לפי הסדר:",
+                        "━━━━━━━━━━━━━━━━",
+                        "1. לבטל את פקודת הסטופ הפתוחה.",
+                        f"2. למכור חצי: {half} מניות, במחיר השוק." if half else "2. למכור חצי מהמניות, במחיר השוק.",
+                        f"3. לשים סטופ לוס חדש על השאר ({rest} מניות) ב-{money(e)}, מחיר הכניסה." if half else f"3. לשים סטופ לוס חדש על השאר ב-{money(e)}, מחיר הכניסה.",
+                        "━━━━━━━━━━━━━━━━",
+                        f"מעכשיו העסקה לא יכולה להפסיד. את השאר נמכור ב-{money(e * 1.15)} (+15%) או לפני הסגירה, ותקבל על זה מייל.",
+                        f"מה קורה עכשיו בצוות: {HQ_URL}", "", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]), self.dry)
+                    continue
+            else:
+                if lo <= t["stop"]:
+                    t["k"] = k + 1
+                    return self.close_trade(t, t["bank"], "breakeven", f"⚪ {tk} חזרה לכניסה: הסטופ נגע (תרגול)",
+                                            [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה {t['bank']:+.2f}R מהחצי שנמכר ב-+5%."])
+                if hi >= e * 1.15:
+                    t["k"] = k + 1
+                    return self.close_trade(t, t["bank"] + 0.5 * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
+                        f"🎯 {tk} הגיעה ל-{money(e * 1.15)} (+15%). עכשיו בבלינק:",
+                        "1. לבטל את הסטופ במחיר הכניסה.",
+                        f"2. למכור את השאר ({rest} מניות) במחיר השוק." if half else "2. למכור את כל מה שנשאר, במחיר השוק.",
+                        f"העסקה הרוויחה בערך {t['bank'] + 0.5 * 0.15 * e / risk:+.2f}R."])
+        t["k"] = len(reg)
+        if now.time() >= CLOSE_WARN and t["open"] and not t.get("warned"):
+            t["warned"] = True
+            last = float(reg["Close"].iloc[-1]) if len(reg) else e
+            r = (t["bank"] + 0.5 * (last - e) / risk) if t["half"] else (last - e) / risk
+            self.close_trade(t, r, "close", f"⏰ {tk}: למכור את מה שנשאר לפני הסגירה (תרגול)", [
+                f"⏰ השוק נסגר בעוד כרבע שעה. {tk} עכשיו ב-{money(last)}. בבלינק:",
+                "1. לבטל את פקודת הסטופ הפתוחה.",
+                "2. למכור את כל מה שנשאר במחיר השוק.",
+                f"לפי המחיר עכשיו העסקה בערך {r:+.2f}R."])
 
     def summary(self, now, n_watch):
         lines = [f"סיכום היום ({now.strftime('%d/%m')}): {len(self.trades)} הוראות, {self.day_r:+.1f}R בעסקאות שנסגרו."]
@@ -528,6 +601,51 @@ def run_live():
         nxt = now + timedelta(minutes=5)
         sleep_until(nxt.replace(minute=nxt.minute - nxt.minute % 5, second=8, microsecond=0))
     s.summary(datetime.now(ET), len(metas))
+    save_open(s, today)
+
+
+# ---------- the afternoon run: GitHub stops a job after 6 hours, so a second run follows the Blink plan to the close ----------
+
+OPEN_FILE = os.path.join(LOG, "open_trades.json")
+
+
+def save_open(s, today):
+    still = [t for t in s.trades if t["open"] and t["plan"] == BLINK_PLAN]
+    if not still or s.dry:
+        return
+    os.makedirs(LOG, exist_ok=True)
+    json.dump({"date": today, "day_r": s.day_r, "stopped": s.stopped, "trades": still, "done": False},
+              open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
+    print(f"{len(still)} trades still open, the afternoon run will follow them.")
+
+
+def regular(bars, now):
+    bars = bars[bars.index + timedelta(minutes=5) <= now]
+    return bars[(bars.index.time >= time(9, 30)) & (bars.index.time < time(16, 0))]
+
+
+def run_follow():
+    today = datetime.now(ET).strftime("%Y-%m-%d")
+    if not os.path.exists(OPEN_FILE):
+        print("No open trades to follow.")
+        return
+    d = json.load(open(OPEN_FILE))
+    if d.get("date") != today or d.get("done"):
+        print("Nothing open from today.")
+        return
+    s = Session()
+    s.trades, s.day_r, s.stopped = d["trades"], d["day_r"], d["stopped"]
+    while True:
+        now = datetime.now(ET)
+        for t in s.trades:
+            if t["open"] and (bars := today_bars(t["ticker"])) is not None:
+                s.follow_blink(t, regular(bars, now), now)
+        json.dump({**d, "day_r": s.day_r, "trades": s.trades}, open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
+        if not any(t["open"] for t in s.trades) or now.time() >= CLOSE_WARN:
+            break
+        nxt = now + timedelta(minutes=5)
+        sleep_until(nxt.replace(minute=nxt.minute - nxt.minute % 5, second=8, microsecond=0))
+    json.dump({**d, "day_r": s.day_r, "trades": s.trades, "done": True}, open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
 
 
 def replay(path):
@@ -540,7 +658,8 @@ def replay(path):
     s = Session(dry=True)
     s.roger.p["threshold"] = float(os.environ.get("REPLAY_THRESHOLD", s.roger.p["threshold"]))
     t = day.replace(hour=9, minute=35, second=20)
-    while t.time() <= FOLLOW_UNTIL:
+    until = CLOSE_WARN if BLINK_PLAN else FOLLOW_UNTIL
+    while t.time() <= until:
         trigs, reg = check(bars, meta, t)
         if t.time() <= LAST_CHECK:
             for trig in trigs:
@@ -554,6 +673,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--test-email", action="store_true")
     ap.add_argument("--replay")
+    ap.add_argument("--follow", action="store_true", help="afternoon run: follow open Blink trades to the close")
     ap.add_argument("--alarm", action="store_true", help="email that today's run failed")
     a = ap.parse_args()
     if a.alarm:
@@ -565,5 +685,7 @@ if __name__ == "__main__":
         sys.exit(0 if ok else 1)
     elif a.replay:
         replay(a.replay)
+    elif a.follow:
+        run_follow()
     else:
         run_live()

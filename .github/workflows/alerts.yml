@@ -6,6 +6,10 @@ on:
     # The second is a backup if GitHub drops the first. The script waits for the open itself.
     - cron: "47 12 * * 1-5"
     - cron: "47 13 * * 1-5"
+    # Afternoon run: GitHub stops a job after 6 hours, so this one follows open Blink trades
+    # (+15% and "sell before the close"). Two starts again for summer and winter time.
+    - cron: "5 17 * * 1-5"
+    - cron: "5 18 * * 1-5"
   workflow_dispatch:
     inputs:
       test_email:
@@ -48,7 +52,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           ALERT_TO: ${{ secrets.ALERT_TO }}
-        run: python live.py
+        run: python live.py ${{ startsWith(github.event.schedule, '5 ') && '--follow' || '' }}
       - name: Tell me if something broke
         if: failure()
         env:
