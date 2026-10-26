@@ -707,7 +707,7 @@ def run_live(late=False, carry=None):
         if now >= end or (now > last_entry and not any(x["open"] for x in s.trades)):
             break
         nxt = now + timedelta(minutes=1)
-        sleep_until(nxt.replace(second=6, microsecond=0))
+        sleep_until(nxt.replace(second=3, microsecond=0))
     s.summary(datetime.now(ET), len(metas))
     if late:
         os.makedirs(LOG, exist_ok=True)
@@ -805,7 +805,7 @@ def run_follow():
         if not any(t["open"] for t in s.trades) or now.time() >= CLOSE_WARN:
             break
         nxt = now + timedelta(minutes=1)
-        sleep_until(nxt.replace(second=6, microsecond=0))
+        sleep_until(nxt.replace(second=3, microsecond=0))
     json.dump({**d, "day_r": s.day_r, "trades": s.trades, "done": True}, open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
 
 
