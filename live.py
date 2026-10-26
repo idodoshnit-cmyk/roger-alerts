@@ -67,6 +67,15 @@ BLINK_PLAN = "half_p5_be_p15"
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
 DAY_STOP_R = -2.0
+# Watch-only days (the user's live test, no real buying): Roger looks for entries until 15:30 New York,
+# with no 3-a-day or -2R limit, so every stock he takes is emailed. One date per line.
+WATCH_DAY_FILE = os.path.join(HERE, "data", "watch_all_day.txt")
+WATCH_LAST_ENTRY = time(15, 30)
+WATCH_END = time(15, 55)
+
+
+def watch_day(today):
+    return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
 MAX_CANDIDATES = 40
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
@@ -365,6 +374,7 @@ class Session:
         self.trades = []          # open and closed trades today
         self.day_r = 0.0
         self.stopped = False
+        self.watch = watch_day(datetime.now(ET).strftime("%Y-%m-%d"))
         self.skips = 0
 
     def consider(self, ticker, trig, now):
@@ -379,11 +389,16 @@ class Session:
                                      trig.get("reg"), trig["i"])
         else:
             ans = self.roger.answer({"features": feats})
+        if not self.dry:      # every look Roger takes, so Hans can review his live calls
+            log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                      "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(trig["stop"], 4),
+                                      "decision": ans["decision"], "p": round(ans["p"], 4), "why": ans.get("why", ""),
+                                      "gap": round(feats.get("gap_pct", 0.0), 4)})
         if ans["decision"] != "TAKE":
             self.skips += 1
             return
         self.alerted.add(ticker)
-        if self.stopped or len(self.trades) >= MAX_TRADES:
+        if not self.watch and (self.stopped or len(self.trades) >= MAX_TRADES):
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         stop, target, how = plan_levels(plan, trig["entry"], trig["stop"])
@@ -427,7 +442,7 @@ class Session:
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
-            f"עסקה {n} מתוך {MAX_TRADES} היום.",
+            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else f"עסקה {n} מתוך {MAX_TRADES} היום.",
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
@@ -554,13 +569,16 @@ def sleep_until(t):
         _time.sleep(min(left, 60))
 
 
-def run_live():
+def run_live(late=False, carry=None):
+    """late=True: the afternoon part of a watch-only day (picks up where the morning job stopped)."""
     now = datetime.now(ET)
     today = now.strftime("%Y-%m-%d")
-    if now.weekday() >= 5 or now.time() > LAST_CHECK:
+    watch = watch_day(today)
+    last_check = WATCH_LAST_ENTRY if watch else LAST_CHECK
+    if now.weekday() >= 5 or now.time() > last_check:
         print("Outside the session, nothing to do.")
         return
-    if os.path.exists(os.path.join(LOG, "runs.csv")) and today in open(os.path.join(LOG, "runs.csv")).read():
+    if not late and os.path.exists(os.path.join(LOG, "runs.csv")) and today in open(os.path.join(LOG, "runs.csv")).read():
         print("Already ran today.")
         return
     sleep_until(now.replace(hour=START_SCAN.hour, minute=START_SCAN.minute, second=0, microsecond=0))
@@ -576,15 +594,20 @@ def run_live():
         return
     metas = {t: m for t in tickers if (m := daily_meta(t, today))}
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
-    send(f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום",
-         f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=LAST_CHECK.hour, minute=LAST_CHECK.minute))} שעון ישראל, אם יהיו.\n"
+    send((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
+         ("יום צפייה בלבד, לא קונים. " if watch else "")
+         + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
          + f"מה קורה עכשיו בצוות: {HQ_URL}\n\n"
          "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.")
     s = Session()
-    end = datetime.now(ET).replace(hour=FOLLOW_UNTIL.hour, minute=FOLLOW_UNTIL.minute)
-    last_entry = datetime.now(ET).replace(hour=LAST_CHECK.hour, minute=LAST_CHECK.minute)
+    if carry:            # the morning's orders that are still open, and the stocks already alerted
+        s.trades, s.day_r = carry["trades"], carry.get("day_r", 0.0)
+        s.alerted |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))
+    stop_at = WATCH_END if late else FOLLOW_UNTIL
+    end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute)
+    last_entry = datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute)
     next_hunt = datetime.now(ET) + timedelta(minutes=10)
     while True:
         now = datetime.now(ET)
@@ -617,7 +640,12 @@ def run_live():
         nxt = now + timedelta(minutes=5)
         sleep_until(nxt.replace(minute=nxt.minute - nxt.minute % 5, second=8, microsecond=0))
     s.summary(datetime.now(ET), len(metas))
-    save_open(s, today)
+    if late:
+        os.makedirs(LOG, exist_ok=True)
+        json.dump({"date": today, "day_r": s.day_r, "stopped": s.stopped, "trades": s.trades, "done": True},
+                  open(OPEN_FILE, "w"), default=float, ensure_ascii=False, indent=1)
+    else:
+        save_open(s, today)
 
 
 # ---------- the afternoon run: GitHub stops a job after 6 hours, so a second run follows the Blink plan to the close ----------
@@ -664,12 +692,26 @@ def trades_from_emails(today):
         reg = regular(bars, end)
         before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
         t = {"ticker": tk, "entry": e, "stop": st, "target": e * 1.05, "i": before[-1] if before else 0, "open": True,
-             "r": None, "plan": BLINK_PLAN, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
+             "r": None, "plan": BLINK_PLAN, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
         t["k"] = t["i"]
         quiet.follow_blink(t, reg, end)
         if t["open"]:
             trades.append(t)
     return trades
+
+
+def alerted_today(today):
+    """Tickers already emailed today (from the buy emails), so the afternoon never repeats one."""
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not repo:
+        return []
+    try:
+        r = requests.get(f"https://api.github.com/repos/{repo}/issues", timeout=20,
+                         params={"state": "all", "since": f"{today}T00:00:00Z", "per_page": 100},
+                         headers={"Authorization": "Bearer " + os.environ["GITHUB_TOKEN"], "Accept": "application/vnd.github+json"})
+        return [m.group(1) for it in r.json() if (m := re.match(r"🟢 קנייה ([A-Z.]+) ", it.get("title", "")))]
+    except Exception:
+        return []
 
 
 def run_follow():
@@ -678,6 +720,8 @@ def run_follow():
     if d.get("date") != today:
         print("No saved open trades from today, rebuilding from today's buy emails.")
         d = {"date": today, "day_r": 0.0, "stopped": False, "trades": trades_from_emails(today), "done": False}
+    if watch_day(today) and not d.get("done"):
+        return run_live(late=True, carry={**d, "alerted": alerted_today(today)})
     if d.get("done") or not d["trades"]:
         print("Nothing open from today.")
         return
