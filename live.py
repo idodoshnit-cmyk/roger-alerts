@@ -640,16 +640,20 @@ class Session:
                 f"לפי המחיר עכשיו העסקה בערך {r * risk / e:+.1%} מהסכום."])
 
     def summary(self, now, n_watch):
-        lines = [f"סיכום היום ({now.strftime('%d/%m')}): {len(self.trades)} הוראות. את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
+        n_all = len(self.alerted | {t["ticker"] for t in self.trades})   # include orders closed by an earlier run today
+        lines = [f"סיכום היום ({now.strftime('%d/%m')}): {n_all} הוראות. את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
+        earlier = sorted(self.alerted - {t["ticker"] for t in self.trades})
+        if earlier:
+            lines.append(f"נסגרו מוקדם יותר היום (פרטים במיילים): {', '.join(earlier)}")
         for t in self.trades:
             state = "עדיין פתוחה" if t["open"] else f"{t.get('pct', t['r'] * (t['entry'] - t['stop']) / t['entry']):+.1%} מהסכום"
             lines.append(f"- {t['ticker']} ({NAMES_HE.get(t['setup'], t['setup'])}): {state}")
         lines.append(f"רוג׳ר עקב אחרי {n_watch} מניות וויתר על {self.skips} הזדמנויות.")
         lines += ["", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]
-        send(f"סיכום יום של רוג׳ר: {len(self.trades)} הוראות (תרגול)", "\n".join(lines), self.dry)
+        send(f"סיכום יום של רוג׳ר: {n_all} הוראות (תרגול)", "\n".join(lines), self.dry)
         if not self.dry:
             log_row("runs.csv", {"date": now.strftime("%Y-%m-%d"), "watched": n_watch,
-                                 "alerts": len(self.trades), "skips": self.skips, "day_r": round(self.day_r, 2)})
+                                 "alerts": n_all, "skips": self.skips, "day_r": round(self.day_r, 2)})
 
 
 def sleep_until(t):
