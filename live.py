@@ -43,7 +43,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import hans  # noqa: E402
-from hans import FEATURES, STOPS, DEFAULT_PLAN, MIN_GAP, MIN_PRICE, MAX_PRICE  # noqa: E402
+from hans import FEATURES, STOPS, DEFAULT_PLAN, MIN_PRICE, MAX_PRICE  # noqa: E402
+from frozen_roger import FrozenRoger  # noqa: E402
+# Roger's frozen Monday brain learned on stocks gapping about 5-10% (library median 3%), so live
+# watches gaps of 5%+ too, not only 20%+ (training thread, 2026-10-26).
+MIN_GAP = 0.05
 from roger import Roger  # noqa: E402
 import hunter  # noqa: E402
 from setups import DETECTORS, NAMES_HE  # noqa: E402
@@ -228,7 +232,7 @@ def check(bars, meta, now):
             feats["setup_" + s] = 1.0 if s == name else 0.0
         out.append({"setup": name, "i": i, "entry": entry, "stop": stop, "features": feats,
                     "bar_close": bar_close, "fresh": now - bar_close <= FRESH,
-                    "last": float(reg["Close"].iloc[-1])})
+                    "last": float(reg["Close"].iloc[-1]), "reg": reg})
     return out, reg
 
 
@@ -352,6 +356,9 @@ def log_row(name, row):
 class Session:
     def __init__(self, dry=False):
         self.roger = Roger(path=os.path.join(HERE, "data", "roger_brain.json"))
+        trees = os.path.join(HERE, "data", "roger_trees.json")
+        self.frozen = FrozenRoger(trees) if os.path.exists(trees) else None
+        self.day_gaps = {}        # ticker -> today's open gap, for the "hot market" count and gap rank
         self.james = JamesLive()
         self.dry = dry
         self.alerted = set()      # tickers already alerted today
@@ -367,7 +374,11 @@ class Session:
         for f in FEATURES:   # a feature added in training later: use Roger's average so he never crashes
             if f not in feats or not np.isfinite(feats[f]):
                 feats[f] = float(self.roger.s.get("mean", {}).get(f, 0.0))
-        ans = self.roger.answer({"features": feats})
+        if self.frozen is not None:
+            ans = self.frozen.answer(dict(trig["features"]), trig["setup"], self.day_gaps or {ticker: feats.get("gap_pct", 0.0)},
+                                     trig.get("reg"), trig["i"])
+        else:
+            ans = self.roger.answer({"features": feats})
         if ans["decision"] != "TAKE":
             self.skips += 1
             return
@@ -587,6 +598,11 @@ def run_live():
         # all stocks at once, so Roger sees every chart within seconds of the candle closing
         with ThreadPoolExecutor(16) as ex:
             fetched = dict(zip(metas, ex.map(today_bars, metas)))
+        for t, meta in metas.items():      # today's gaps of every watched stock: Roger's "hot market" and gap rank
+            b = fetched[t]
+            r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
+            if r0 is not None and len(r0) and meta["prev_close"] > 0:
+                s.day_gaps[t] = float(r0["Open"].iloc[0]) / meta["prev_close"] - 1
         for t, meta in metas.items():
             bars = fetched[t]
             if bars is None:
@@ -657,6 +673,8 @@ def replay(path):
     day = bars.index[-1]
     s = Session(dry=True)
     s.roger.p["threshold"] = float(os.environ.get("REPLAY_THRESHOLD", s.roger.p["threshold"]))
+    if s.frozen is not None and "REPLAY_THRESHOLD" in os.environ:
+        s.frozen.m["threshold"] = float(os.environ["REPLAY_THRESHOLD"])
     t = day.replace(hour=9, minute=35, second=20)
     until = CLOSE_WARN if BLINK_PLAN else FOLLOW_UNTIL
     while t.time() <= until:
