@@ -369,22 +369,26 @@ MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the cha
 
 
 def live_price(ticker):
-    """Real-time last price: TradingView's scanner (US prices from Cboe in real time), Yahoo as backup."""
-    try:
-        r = requests.post("https://scanner.tradingview.com/america/scan", timeout=8, headers={"User-Agent": "Mozilla/5.0"},
-                          json={"columns": ["close"], "range": [0, 1],
-                                "filter": [{"left": "name", "operation": "equal", "right": ticker}]})
-        d = r.json().get("data") or []
-        if d and d[0]["d"][0]:
-            return float(d[0]["d"][0])
-    except Exception as e:
-        print("TradingView price failed:", e)
+    """Real-time last price. Yahoo's quote is live (seconds old); TradingView's free scanner is 15 minutes
+    late (update_mode delayed_streaming_900), so it is used only if it says it is real time."""
     try:
         r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}", timeout=8,
                          params={"range": "1d", "interval": "1m"}, headers={"User-Agent": "Mozilla/5.0"})
-        return float(r.json()["chart"]["result"][0]["meta"]["regularMarketPrice"])
+        m = r.json()["chart"]["result"][0]["meta"]
+        if _time.time() - float(m.get("regularMarketTime", 0)) < 120:
+            return float(m["regularMarketPrice"])
+        print(f"Yahoo price for {ticker} is stale")
     except Exception as e:
         print("Yahoo price failed:", e)
+    try:
+        r = requests.post("https://scanner.tradingview.com/america/scan", timeout=8, headers={"User-Agent": "Mozilla/5.0"},
+                          json={"columns": ["close", "update_mode"], "range": [0, 1],
+                                "filter": [{"left": "name", "operation": "equal", "right": ticker}]})
+        d = r.json().get("data") or []
+        if d and d[0]["d"][0] and "delayed" not in str(d[0]["d"][1]):
+            return float(d[0]["d"][0])
+    except Exception as e:
+        print("TradingView price failed:", e)
     return None
 
 
