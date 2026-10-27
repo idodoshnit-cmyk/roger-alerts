@@ -67,6 +67,7 @@ CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left befor
 BLINK_PLAN = "half_p5_be_p15"
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
+SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
 DAY_STOP_R = -2.0
 # Watch-only days (the user's live test, no real buying): Roger looks for entries until 15:30 New York,
 # with no 3-a-day or -2R limit, so every stock he takes is emailed. One date per line.
@@ -469,7 +470,7 @@ class Session:
             self.skips += 1
             return
         self.alerted.add(ticker)
-        if not self.watch and (self.stopped or (not self.sure and len(self.trades) >= MAX_TRADES)):   # user 2026-10-27: very sure Roger has no daily cap
+        if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and len(self.trades) >= MAX_TRADES)):
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         priced = None
@@ -523,7 +524,7 @@ class Session:
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
-            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure else f"עסקה {n} מתוך {MAX_TRADES} היום."),
+            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
