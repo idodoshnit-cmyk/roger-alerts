@@ -366,6 +366,7 @@ def send_resend(subject, body):
 
 
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
+MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
 
 
 def live_price(ticker):
@@ -446,6 +447,18 @@ class Session:
                                       "decision": ans["decision"], "p": round(ans["p"], 4), "why": ans.get("why", ""),
                                       "gap": round(feats.get("gap_pct", 0.0), 4)})
         if ans["decision"] != "TAKE":
+            self.skips += 1
+            return
+        # user's rule (2026-10-27): no email when the setup stop is more than 12% below the setup entry.
+        # The skip does not use one of the 3 daily slots, and a later, tighter setup on the same stock can still go out.
+        if trig["entry"] > 0 and 1 - trig["stop"] / trig["entry"] > MAX_STOP_PCT:
+            print(f"{ticker}: Roger said TAKE but the stop is {1 - trig['stop'] / trig['entry']:.1%} below entry (max {MAX_STOP_PCT:.0%}), no email")
+            if not self.dry:
+                log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                          "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(trig["stop"], 4),
+                                          "decision": "SKIP_WIDE_STOP", "p": round(ans["p"], 4),
+                                          "why": f"stop {1 - trig['stop'] / trig['entry']:.1%} > {MAX_STOP_PCT:.0%}",
+                                          "gap": round(feats.get("gap_pct", 0.0), 4)})
             self.skips += 1
             return
         self.alerted.add(ticker)
