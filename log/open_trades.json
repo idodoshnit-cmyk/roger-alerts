@@ -1,47 +1,7 @@
 {
- "date": "2026-10-26",
- "day_r": -0.06,
+ "date": "2026-10-27",
+ "day_r": 0.0,
  "stopped": false,
- "trades": [
-  {
-   "ticker": "RENT",
-   "entry": 2.98,
-   "stop": 2.63,
-   "target": 3.129,
-   "i": 5,
-   "open": false,
-   "r": -0.51,
-   "plan": "half_p5_be_p15",
-   "setup": "?",
-   "p": null,
-   "shares": 16,
-   "half": false,
-   "bank": 0.0,
-   "risk": 0.3500000000000001,
-   "k": 75,
-   "warned": true,
-   "how": "close",
-   "pct": -0.060436223177301795
-  },
-  {
-   "ticker": "FRMM",
-   "entry": 3.4,
-   "stop": 3.4,
-   "target": 3.57,
-   "i": 8,
-   "open": false,
-   "r": 0.45,
-   "plan": "half_p5_be_p15",
-   "setup": "?",
-   "p": null,
-   "shares": 14,
-   "half": true,
-   "bank": 0.44736842105263175,
-   "risk": 0.18999999999999995,
-   "k": 59,
-   "how": "breakeven",
-   "pct": 0.025
-  }
- ],
+ "trades": [],
  "done": true
 }
