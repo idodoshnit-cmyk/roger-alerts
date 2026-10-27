@@ -469,7 +469,7 @@ class Session:
             self.skips += 1
             return
         self.alerted.add(ticker)
-        if not self.watch and (self.stopped or len(self.trades) >= MAX_TRADES):
+        if not self.watch and (self.stopped or (not self.sure and len(self.trades) >= MAX_TRADES)):   # user 2026-10-27: very sure Roger has no daily cap
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         priced = None
@@ -523,7 +523,7 @@ class Session:
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
-            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else f"עסקה {n} מתוך {MAX_TRADES} היום.",
+            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure else f"עסקה {n} מתוך {MAX_TRADES} היום."),
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
@@ -737,10 +737,15 @@ def run_live(late=False, carry=None):
         if first or now.minute % 5 == 0:
             first = False
             if now <= last_entry and len(metas) < MAX_CANDIDATES:
-                for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80):
-                    if x["name"] not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(x["name"], today)):
-                        metas[x["name"]] = m
-                        print("Hans added", x["name"])
+                try:
+                    names = [x["name"] for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80)] + yahoo_gainers()
+                except Exception as e:
+                    print("re-hunt failed:", e)
+                    names = []
+                for name in dict.fromkeys(names):     # same sources as Hans's live notes: TradingView gappers + Yahoo gainers
+                    if name not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(name, today)):
+                        metas[name] = m
+                        print("Hans added", name)
             with ThreadPoolExecutor(16) as ex:
                 fetched = dict(zip(metas, ex.map(today_bars, metas)))
             for t, meta in metas.items():      # today's gaps of every watched stock: Roger's "hot market" and gap rank
