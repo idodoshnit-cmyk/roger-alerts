@@ -78,7 +78,7 @@ WATCH_END = time(15, 55)
 
 def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
-MAX_CANDIDATES = 80   # user 2026-10-27: watch many more charts at once
+MAX_CANDIDATES = 150  # user 2026-10-27: watch as many charts as the free sources give
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
 RISK_PCT = 0.01
@@ -163,16 +163,21 @@ def premarket_candidates():
 
 
 def yahoo_gainers():
-    """Backup list: Yahoo's 'day gainers' screener."""
-    try:
-        r = requests.get("https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved",
-                         params={"scrIds": "day_gainers", "count": 100},
-                         headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
-        quotes = r.json()["finance"]["result"][0]["quotes"]
-        return [q["symbol"] for q in quotes if q.get("regularMarketChangePercent", 0) >= 15]
-    except Exception as e:
-        print("Yahoo gainers failed:", e)
-        return []
+    """More free lists from Yahoo: day gainers, small-cap gainers and aggressive small caps.
+    Keeps stocks that opened 5%+ above yesterday's close (what Roger needs) or are up 15%+ now."""
+    out = []
+    for scr in ("day_gainers", "small_cap_gainers", "aggressive_small_caps"):
+        try:
+            r = requests.get("https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved",
+                             params={"scrIds": scr, "count": 100}, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+            for q in r.json()["finance"]["result"][0]["quotes"]:
+                sym, op, pc = q.get("symbol", ""), q.get("regularMarketOpen"), q.get("regularMarketPreviousClose")
+                gap = op / pc - 1 if op and pc else 0.0
+                if sym and "." not in sym and (gap >= MIN_GAP or q.get("regularMarketChangePercent", 0) >= 15):
+                    out.append(sym)
+        except Exception as e:
+            print(f"Yahoo {scr} failed:", e)
+    return list(dict.fromkeys(out))
 
 
 def daily_meta(ticker, today):
