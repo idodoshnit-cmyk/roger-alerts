@@ -44,7 +44,8 @@ sys.path.insert(0, HERE)
 
 import hans  # noqa: E402
 from hans import FEATURES, STOPS, DEFAULT_PLAN, MIN_PRICE, MAX_PRICE  # noqa: E402
-from frozen_roger import FrozenRoger  # noqa: E402
+from frozen_roger import FrozenRoger
+from sure_roger import SureRoger  # noqa: E402
 # Roger's frozen Monday brain learned on stocks gapping about 5-10% (library median 3%), so live
 # watches gaps of 5%+ too, not only 20%+ (training thread, 2026-10-26).
 MIN_GAP = 0.05
@@ -76,7 +77,7 @@ WATCH_END = time(15, 55)
 
 def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
-MAX_CANDIDATES = 40
+MAX_CANDIDATES = 80   # user 2026-10-27: watch many more charts at once
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
 RISK_PCT = 0.01
@@ -241,7 +242,7 @@ def check(bars, meta, now):
             feats["setup_" + s] = 1.0 if s == name else 0.0
         out.append({"setup": name, "i": i, "entry": entry, "stop": stop, "features": feats,
                     "bar_close": bar_close, "fresh": now - bar_close <= FRESH,
-                    "last": float(reg["Close"].iloc[-1]), "reg": reg})
+                    "last": float(reg["Close"].iloc[-1]), "reg": reg, "pm_volume": pm_vol})
     return out, reg
 
 
@@ -366,6 +367,7 @@ def send_resend(subject, body):
 
 
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
+SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
 
 
@@ -419,6 +421,10 @@ class Session:
         self.roger = Roger(path=os.path.join(HERE, "data", "roger_brain.json"))
         trees = os.path.join(HERE, "data", "roger_trees.json")
         self.frozen = FrozenRoger(trees) if os.path.exists(trees) else None
+        sure = os.path.join(HERE, "data", "sure_freeze", "sure_trees.json")
+        self.sure = datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM and os.path.exists(sure)
+        if self.sure:
+            self.frozen = SureRoger(sure)
         self.day_gaps = {}        # ticker -> today's open gap, for the "hot market" count and gap rank
         self.james = JamesLive()
         self.dry = dry
@@ -437,8 +443,9 @@ class Session:
             if f not in feats or not np.isfinite(feats[f]):
                 feats[f] = float(self.roger.s.get("mean", {}).get(f, 0.0))
         if self.frozen is not None:
-            ans = self.frozen.answer(dict(trig["features"]), trig["setup"], self.day_gaps or {ticker: feats.get("gap_pct", 0.0)},
-                                     trig.get("reg"), trig["i"])
+            args = (dict(trig["features"]), trig["setup"], self.day_gaps or {ticker: feats.get("gap_pct", 0.0)},
+                    trig.get("reg"), trig["i"])
+            ans = self.frozen.answer(*args, trig.get("pm_volume", 0.0)) if self.sure else self.frozen.answer(*args)
         else:
             ans = self.roger.answer({"features": feats})
         if not self.dry:      # every look Roger takes, so Hans can review his live calls
@@ -695,7 +702,7 @@ def run_live(late=False, carry=None):
     sleep_until(now.replace(hour=START_SCAN.hour, minute=START_SCAN.minute, second=0, microsecond=0))
     pre = hunter.hunt(pre=True) or [{"name": t} for t in premarket_candidates()]
     sleep_until(datetime.now(ET).replace(hour=9, minute=31, second=30, microsecond=0))
-    found = hunter.hunt(min_gap_pct=MIN_GAP * 100)            # TradingView: today's gappers, ranked
+    found = hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80)          # TradingView: today's gappers, ranked
     tickers = list(dict.fromkeys([x["name"] for x in found] + [x["name"] for x in pre] + yahoo_gainers()))[:MAX_CANDIDATES]
     hot = {x["name"]: x for x in found + pre}
     sleep_until(datetime.now(ET).replace(hour=9, minute=35, second=8, microsecond=0))
@@ -707,6 +714,7 @@ def run_live(late=False, carry=None):
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
+         + ("רוג׳ר בטוח מאוד: נכנס רק כשהוא בטוח מאוד. יש ימים עם הוראה אחת, ויש ימים בלי אף הוראה.\n" if s.sure else "")
          + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
@@ -729,7 +737,7 @@ def run_live(late=False, carry=None):
         if first or now.minute % 5 == 0:
             first = False
             if now <= last_entry and len(metas) < MAX_CANDIDATES:
-                for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=15):
+                for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80):
                     if x["name"] not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(x["name"], today)):
                         metas[x["name"]] = m
                         print("Hans added", x["name"])
