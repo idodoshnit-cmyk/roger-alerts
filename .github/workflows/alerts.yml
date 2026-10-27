@@ -5,6 +5,7 @@ on:
     # Two starts in UTC so one always lands before the 9:30 New York open, summer or winter.
     # The second is a backup if GitHub drops the first. The script waits for the open itself.
     - cron: "47 12 * * 1-5"
+    - cron: "15 13 * * 1-5"
     - cron: "47 13 * * 1-5"
     # Afternoon run: GitHub stops a job after 6 hours, so this one follows open Blink trades
     # (+15% and "sell before the close"). Two starts again for summer and winter time.
@@ -28,6 +29,7 @@ concurrency:
 permissions:
   contents: write
   issues: write
+  actions: write   # the morning run queues the afternoon run itself, so the handoff doesn't wait for a late cron
 
 jobs:
   alerts:
@@ -35,6 +37,8 @@ jobs:
     timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # a queued run must see the log the previous run just saved
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

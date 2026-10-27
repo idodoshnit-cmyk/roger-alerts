@@ -79,6 +79,8 @@ WATCH_END = time(15, 55)
 def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
 MAX_CANDIDATES = 150  # user 2026-10-27: watch as many charts as the free sources give
+HANDOFF_DISPATCH = time(12, 45)   # all-day days: the morning run starts its own successor (queued), not only the cron
+CATCHUP_CANDLES = 4               # the successor re-checks the candles that closed while the jobs switched
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
 RISK_PCT = 0.01
@@ -431,6 +433,34 @@ def log_row(name, row):
         w.writerow(row)
 
 
+def drop_day(name, day):
+    """Remove a day's row, so the afternoon run replaces the morning's row instead of adding a second one."""
+    path = os.path.join(LOG, name)
+    if not os.path.exists(path):
+        return
+    rows = open(path).read().splitlines(True)
+    keep = [r for i, r in enumerate(rows) if i == 0 or not r.startswith(day + ",")]
+    if len(keep) != len(rows):
+        open(path, "w").writelines(keep)
+
+
+def dispatch_successor():
+    """Queue the afternoon run now (it starts the moment this job ends), so the handoff never waits for a late cron."""
+    repo, tok = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_TOKEN")
+    if not repo or not tok:
+        print("No GitHub token, the afternoon cron will start the next run.")
+        return False
+    try:
+        r = requests.post(f"https://api.github.com/repos/{repo}/actions/workflows/alerts.yml/dispatches", timeout=20,
+                          headers={"Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"},
+                          json={"ref": "main", "inputs": {"test_email": "false", "follow": "true"}})
+        print("Successor run queued" if r.status_code == 204 else f"Successor dispatch failed: {r.status_code} {r.text[:200]}")
+        return r.status_code == 204
+    except Exception as e:
+        print("Successor dispatch failed:", e)
+        return False
+
+
 # ---------- the session ----------
 
 class Session:
@@ -681,7 +711,7 @@ class Session:
                 "2. למכור את כל מה שנשאר במחיר השוק.",
                 f"לפי המחיר עכשיו העסקה בערך {r * risk / e:+.1%} מהסכום."])
 
-    def summary(self, now, n_watch):
+    def summary(self, now, n_watch, email=True):
         n_all = len(self.alerted | {t["ticker"] for t in self.trades})   # include orders closed by an earlier run today
         lines = [f"סיכום היום ({now.strftime('%d/%m')}): {n_all} הוראות. את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
         earlier = sorted(self.alerted - {t["ticker"] for t in self.trades})
@@ -692,8 +722,12 @@ class Session:
             lines.append(f"- {t['ticker']} ({NAMES_HE.get(t['setup'], t['setup'])}): {state}")
         lines.append(f"רוג׳ר עקב אחרי {n_watch} מניות וויתר על {self.skips} הזדמנויות.")
         lines += ["", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."]
-        send(f"סיכום יום של רוג׳ר: {n_all} הוראות (תרגול)", "\n".join(lines), self.dry)
+        if email:
+            send(f"סיכום יום של רוג׳ר: {n_all} הוראות (תרגול)", "\n".join(lines), self.dry)
+        else:
+            print("\n".join(lines))
         if not self.dry:
+            drop_day("runs.csv", now.strftime("%Y-%m-%d"))
             log_row("runs.csv", {"date": now.strftime("%Y-%m-%d"), "watched": n_watch,
                                  "alerts": n_all, "skips": self.skips, "day_r": round(self.day_r, 2)})
 
@@ -748,14 +782,18 @@ def run_live(late=False, carry=None):
         s.trades, s.day_r = carry["trades"], carry.get("day_r", 0.0)
         s.alerted |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))
     stop_at = WATCH_END if late else FOLLOW_UNTIL
-    end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute)
+    end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute, second=0, microsecond=0)
     last_entry = datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute)
     for tr in s.trades:          # open trades carried from the morning are followed even if Hans dropped the stock
         if tr["open"] and tr["ticker"] not in metas and (m := daily_meta(tr["ticker"], today)):
             metas[tr["ticker"]] = m
-    first = True
+    first, queued = True, False
+    catchup = bool(late)       # a run that picks up mid-day first re-checks the candles that closed while no run was watching
     while True:
         now = datetime.now(ET)
+        if allday and not late and not queued and now.time() >= HANDOFF_DISPATCH:
+            queued = True
+            dispatch_successor()
         # every 5-minute candle close: Hans re-scans, Roger reads every chart (he decides on closed 5-minute candles)
         if first or now.minute % 5 == 0:
             first = False
@@ -780,11 +818,17 @@ def run_live(late=False, carry=None):
                 bars = fetched[t]
                 if bars is None:
                     continue
+                if catchup and now <= last_entry:
+                    c0 = now.replace(minute=now.minute - now.minute % 5, second=0, microsecond=0)
+                    for k in range(CATCHUP_CANDLES, 0, -1):     # oldest first; consider() checks the live price before any email
+                        for trig in check(bars, meta, c0 - timedelta(minutes=5 * k) + timedelta(seconds=30))[0]:
+                            s.consider(t, trig, now)
                 trigs, reg = check(bars, meta, datetime.now(ET))
                 if now <= last_entry:
                     for trig in trigs:
                         s.consider(t, trig, now)
                 s.follow(t, reg, now)
+            catchup = False
         else:
             # between candles: open trades are checked against the live price every minute
             for tr in s.trades:
@@ -794,7 +838,7 @@ def run_live(late=False, carry=None):
             break
         nxt = now + timedelta(minutes=1)
         sleep_until(nxt.replace(second=3, microsecond=0))
-    s.summary(datetime.now(ET), len(metas))
+    s.summary(datetime.now(ET), len(metas), email=late or not allday)
     if late:
         os.makedirs(LOG, exist_ok=True)
         json.dump({"date": today, "day_r": s.day_r, "stopped": s.stopped, "trades": s.trades, "done": True},
