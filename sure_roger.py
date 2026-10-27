@@ -14,6 +14,20 @@ from brain2 import new_feats  # noqa: E402
 
 
 class SureRoger(FrozenRoger):
+    def proba(self, features, setup, day_gaps, extra):
+        """One brain, or the average of a committee of brains ("members") when the json has them."""
+        members = self.m.get("members")
+        if not members or len(members) == 1:
+            return super().proba(features, setup, day_gaps, extra)
+        import numpy as np
+        x = self._row(features, setup, day_gaps, extra)
+        ps = []
+        for mm in members:
+            b = [int(np.searchsorted(np.array(mm["edges"][j]), x[j])) for j in range(len(x))]
+            f = mm["base"] + mm["lr"] * sum(self._apply(t, b) for t in mm["trees"])
+            ps.append(1 / (1 + np.exp(-f)))
+        return float(np.mean(ps))
+
     def answer(self, features, setup, day_gaps, reg, i, pm_volume=0.0):
         why = self.blocked(features, setup)
         if why:

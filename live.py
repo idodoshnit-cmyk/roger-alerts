@@ -384,6 +384,7 @@ def send_resend(subject, body):
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
 ALL_DAY_FROM = "2026-10-27"  # user 2026-10-27: Roger looks for entries until ~15:20 ET, not only the morning
 # Roger's 1-10 score: the p where each score starts (score 2..10), from the training thread. Emails go out from SCORE_MIN up.
+SURE_FILE = "sure_committee.json"   # Roger's live brain in data/sure_freeze (score cuts come from the same file)
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
 SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
@@ -468,10 +469,14 @@ class Session:
         self.roger = Roger(path=os.path.join(HERE, "data", "roger_brain.json"))
         trees = os.path.join(HERE, "data", "roger_trees.json")
         self.frozen = FrozenRoger(trees) if os.path.exists(trees) else None
-        sure = os.path.join(HERE, "data", "sure_freeze", "sure_trees.json")
+        sure = os.path.join(HERE, "data", "sure_freeze", SURE_FILE)
         self.sure = datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM and os.path.exists(sure)
         if self.sure:
             self.frozen = SureRoger(sure)
+            cuts = self.frozen.m.get("score_cuts")
+            if isinstance(cuts, dict) and all(str(k) in cuts for k in range(2, 11)):   # the brain's own 1-10 scale
+                global SCORE_CUTS
+                SCORE_CUTS = [float(cuts[str(k)]) for k in range(2, 11)]
             if SCORE_CUTS:      # send every chart that scores SCORE_MIN or more
                 self.frozen.m["threshold"] = SCORE_CUTS[SCORE_MIN - 2]
         self.day_gaps = {}        # ticker -> today's open gap, for the "hot market" count and gap rank
