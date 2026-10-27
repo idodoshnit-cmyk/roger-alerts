@@ -80,7 +80,7 @@ def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
 MAX_CANDIDATES = 150  # user 2026-10-27: watch as many charts as the free sources give
 HANDOFF_DISPATCH = time(12, 45)   # all-day days: the morning run starts its own successor (queued), not only the cron
-CATCHUP_CANDLES = 4               # the successor re-checks the candles that closed while the jobs switched
+CATCHUP_CANDLES = 2               # the successor re-checks the candles that closed while the jobs switched
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
 ACCOUNT = float(os.environ.get("ACCOUNT_USD", "100"))
 RISK_PCT = 0.01
@@ -822,7 +822,8 @@ def run_live(late=False, carry=None):
                     c0 = now.replace(minute=now.minute - now.minute % 5, second=0, microsecond=0)
                     for k in range(CATCHUP_CANDLES, 0, -1):     # oldest first; consider() checks the live price before any email
                         for trig in check(bars, meta, c0 - timedelta(minutes=5 * k) + timedelta(seconds=30))[0]:
-                            s.consider(t, trig, now)
+                            if now - trig["bar_close"] <= FRESH:   # same freshness a live run would apply right now
+                                s.consider(t, trig, now)
                 trigs, reg = check(bars, meta, datetime.now(ET))
                 if now <= last_entry:
                     for trig in trigs:
