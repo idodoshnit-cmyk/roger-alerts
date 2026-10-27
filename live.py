@@ -853,7 +853,8 @@ def run_follow():
     if d.get("date") != today:
         print("No saved open trades from today, rebuilding from today's buy emails.")
         d = {"date": today, "day_r": 0.0, "stopped": False, "trades": trades_from_emails(today), "done": False}
-    if watch_day(today) and not d.get("done"):
+    # a restart during the morning (or any time on a watch day) picks the live session back up, without a second start email
+    if (watch_day(today) or datetime.now(ET).time() < LAST_CHECK) and not d.get("done"):
         return run_live(late=True, carry={**d, "alerted": alerted_today(today)})
     if d.get("done") or not d["trades"]:
         print("Nothing open from today.")
