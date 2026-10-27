@@ -162,6 +162,13 @@ def premarket_candidates():
         return []
 
 
+def score10(p):
+    """Roger's confidence as a 1-10 score (10 = almost sure to win), from the training thread's cut points."""
+    if not SCORE_CUTS or p is None:
+        return None
+    return 1 + sum(p >= c for c in SCORE_CUTS)
+
+
 def yahoo_gainers():
     """More free lists from Yahoo: day gainers, small-cap gainers and aggressive small caps.
     Keeps stocks that opened 5%+ above yesterday's close (what Roger needs) or are up 15%+ now."""
@@ -373,6 +380,10 @@ def send_resend(subject, body):
 
 
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
+ALL_DAY_FROM = "2026-10-27"  # user 2026-10-27: Roger looks for entries until ~15:20 ET, not only the morning
+# Roger's 1-10 score: the p where each score starts (score 2..10), from the training thread. Emails go out from SCORE_MIN up.
+SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
+SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
 
@@ -431,6 +442,8 @@ class Session:
         self.sure = datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM and os.path.exists(sure)
         if self.sure:
             self.frozen = SureRoger(sure)
+            if SCORE_CUTS:      # send every chart that scores SCORE_MIN or more
+                self.frozen.m["threshold"] = SCORE_CUTS[SCORE_MIN - 2]
         self.day_gaps = {}        # ticker -> today's open gap, for the "hot market" count and gap rank
         self.james = JamesLive()
         self.dry = dry
@@ -500,10 +513,12 @@ class Session:
         valid = now + FRESH
         far = trig["last"] > trig["entry"] + 0.5 * risk
         subject = f"🟢 קנייה {ticker} ב-{money(trig['entry'])} | טייק פרופיט {money(target) if target else 'נגרר'} | סטופ {money(stop)}"
+        if score10(ans["p"]):
+            subject += f" | ציון {score10(ans['p'])}/10"
         cost = shares * trig["entry"]
         tp_pct = f" (+{(target / trig['entry'] - 1):.0%})" if target else ""
         summary = [
-            f"🟢 הוראת קנייה (תרגול): {ticker}",
+            f"🟢 הוראת קנייה (תרגול): {ticker}" + (f"   ·   ציון רוג׳ר: {score10(ans['p'])}/10" if score10(ans["p"]) else ""),
             "━━━━━━━━━━━━━━━━",
             f"קנייה:        {money(trig['entry'])}" + (f"  (מחיר השוק ב-{priced})" if priced else ""),
             f"כמות:         {shares} מניות  ·  סכום {cost:.2f}$" if shares else
@@ -519,7 +534,7 @@ class Session:
             "פרטים:",
         ]
         body = "\n".join([l for l in summary if l != ""][:-1] + ["", "פרטים:"] + [
-            f"רוג׳ר: להיכנס ל-{ticker} (ביטחון {ans['p']:.0%})",
+            f"רוג׳ר: להיכנס ל-{ticker} (ביטחון {ans['p']:.0%}" + (f", ציון {score10(ans['p'])}/10)" if score10(ans['p']) else ")"),
             f"מערך: {NAMES_HE.get(trig['setup'], trig['setup'])}",
             f"כניסה: {money(trig['entry'])}   מחיר אחרון: {money(trig['last'])}",
             f"סטופ (ג׳יימס): {money(stop)}",
@@ -527,6 +542,7 @@ class Session:
             (f"כמות: חצי מהחשבון ({ACCOUNT * TRADE_SHARE:.0f}$): {shares} מניות" if plan == BLINK_PLAN else f"כמות לפי 1% סיכון מ-{ACCOUNT:.0f}$: {shares} מניות") if shares else
             f"הסיכון למניה ({money(risk)}) גדול מ-1% מהחשבון, אז לפי הכלל לא נכנסים בכסף אמיתי.",
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
+            "אחר הצהריים, מחוץ לטווח האימון: הציון כאן פחות מדויק." if now.time() > time(11, 30) else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
             f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
@@ -695,8 +711,9 @@ def run_live(late=False, carry=None):
     now = datetime.now(ET)
     today = now.strftime("%Y-%m-%d")
     watch = watch_day(today)
-    last_check = WATCH_LAST_ENTRY if watch else LAST_CHECK
-    if watch:   # watch-only test day: the setups keep looking for entries until WATCH_LAST_ENTRY, not only the morning
+    allday = today >= ALL_DAY_FROM
+    last_check = WATCH_LAST_ENTRY if (watch or allday) else LAST_CHECK
+    if watch or allday:   # watch-only test day: the setups keep looking for entries until WATCH_LAST_ENTRY, not only the morning
         import setups
         setups.LAST_ENTRY = time(WATCH_LAST_ENTRY.hour, WATCH_LAST_ENTRY.minute - 10)
     if now.weekday() >= 5 or now.time() > last_check:
@@ -859,7 +876,7 @@ def run_follow():
         print("No saved open trades from today, rebuilding from today's buy emails.")
         d = {"date": today, "day_r": 0.0, "stopped": False, "trades": trades_from_emails(today), "done": False}
     # a restart during the morning (or any time on a watch day) picks the live session back up, without a second start email
-    if (watch_day(today) or datetime.now(ET).time() < LAST_CHECK) and not d.get("done"):
+    if (watch_day(today) or datetime.now(ET).time() < (WATCH_LAST_ENTRY if today >= ALL_DAY_FROM else LAST_CHECK)) and not d.get("done"):
         return run_live(late=True, carry={**d, "alerted": alerted_today(today)})
     if d.get("done") or not d["trades"]:
         print("Nothing open from today.")
