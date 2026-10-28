@@ -63,8 +63,11 @@ LAST_CHECK = time(11, 40)     # last entry bar (11:30) has closed
 FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job must end within 330 minutes)
 CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
 # Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
-# stop at the setup stop; at +5% sell half and move the stop to entry; sell the rest at +15% or before the close.
-BLINK_PLAN = "half_p5_be_p15"
+# stop at the setup stop; at the first step sell part and move the stop to entry; sell the rest at +15% or before the close.
+BLINK_PLAN = "third_p2_be_p15"   # new trades use this plan; trades already open keep the plan they were sent with
+# Blink plans: (first step, share sold there). Stop on the full size; at the first step sell that share, stop to entry; rest at +15% or close.
+BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p2_be_p15": (0.02, 1 / 3)}
+PART_HE = {1 / 2: "חצי", 1 / 3: "שליש"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
 SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
@@ -129,8 +132,9 @@ class JamesLive:
 
 def plan_levels(plan, entry, setup_stop):
     """Turn a plan name like 'tight_1.5' into stop and target prices."""
-    if plan == BLINK_PLAN:
-        return setup_stop, entry * 1.05, "ב-+5%: לבטל את הסטופ, למכור חצי, ולשים סטופ חדש במחיר הכניסה. את השאר למכור ב-+15% או לפני הסגירה"
+    if plan in BLINK_PLANS:
+        st, part = BLINK_PLANS[plan]
+        return setup_stop, entry * (1 + st), f"ב-+{st:.0%}: לבטל את הסטופ, למכור {PART_HE[part]}, ולשים סטופ חדש במחיר הכניסה. את השאר למכור ב-+15% או לפני הסגירה"
     if plan == "half_p5_chandelier":
         return setup_stop, entry * 1.05, "למכור חצי ב-+5% ולהזיז סטופ לכניסה, את השאר לגרור 3 ATR מתחת לשיא"
     if plan in TACTICS_HE:
@@ -542,7 +546,7 @@ class Session:
         risk = trig["entry"] - stop
         shares = int(ACCOUNT * RISK_PCT / risk) if risk > 0 else 0
         shares = min(shares, int(ACCOUNT / trig["entry"]))      # never more than the account can buy
-        if plan == BLINK_PLAN:                                  # James's Blink plan: half the account per trade
+        if plan in BLINK_PLANS:                                 # James's Blink plan: half the account per trade
             shares = int(ACCOUNT * TRADE_SHARE / trig["entry"]) if risk > 0 else 0
         n = len(self.trades) + 1
         valid = now + FRESH
@@ -560,7 +564,7 @@ class Session:
             "כמות:         0 (הסיכון למניה גדול מ-1% מהחשבון, לא נכנסים)",
             f"טייק פרופיט:  {money(target)}{tp_pct}" if target else f"טייק פרופיט:  בלי יעד קבוע ({how})",
             f"סטופ לוס:     {money(stop)}",
-            f"שלב 2:        ב-{money(trig['entry'] * 1.05)} למכור חצי ולהזיז את הסטופ ל-{money(trig['entry'])}. את השאר למכור ב-{money(trig['entry'] * 1.15)} (+15%)" if plan == BLINK_PLAN else "",
+            (lambda st, part: f"שלב 2:        ב-{money(trig['entry'] * (1 + st))} (+{st:.0%}) למכור {PART_HE[part]} ולהזיז את הסטופ ל-{money(trig['entry'])}. את השאר למכור ב-{money(trig['entry'] * 1.15)} (+15%)")(*BLINK_PLANS[plan]) if plan in BLINK_PLANS else "",
             f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
             f"בתוקף עד {il(valid)} שעון ישראל",
             "━━━━━━━━━━━━━━━━",
@@ -574,7 +578,7 @@ class Session:
             f"כניסה: {money(trig['entry'])}   מחיר אחרון: {money(trig['last'])}",
             f"סטופ (ג׳יימס): {money(stop)}",
             f"יעד: {money(target) if target else 'אין'} ({how})",
-            (f"כמות: חצי מהחשבון ({ACCOUNT * TRADE_SHARE:.0f}$): {shares} מניות" if plan == BLINK_PLAN else f"כמות לפי 1% סיכון מ-{ACCOUNT:.0f}$: {shares} מניות") if shares else
+            (f"כמות: חצי מהחשבון ({ACCOUNT * TRADE_SHARE:.0f}$): {shares} מניות" if plan in BLINK_PLANS else f"כמות לפי 1% סיכון מ-{ACCOUNT:.0f}$: {shares} מניות") if shares else
             f"הסיכון למניה ({money(risk)}) גדול מ-1% מהחשבון, אז לפי הכלל לא נכנסים בכסף אמיתי.",
             f"המחיר כבר ירד מתחת לכניסה. אפשר לשים פקודת קנייה בפריצה של {money(trig['entry'])}." if trig["last"] < trig["entry"] else "",
             "אחר הצהריים, מחוץ לטווח האימון: הציון כאן פחות מדויק." if now.time() > time(11, 30) else "",
@@ -606,7 +610,7 @@ class Session:
         for t in self.trades:
             if t["ticker"] != ticker or not t["open"]:
                 continue
-            if t["plan"] == BLINK_PLAN:
+            if t["plan"] in BLINK_PLANS:
                 self.follow_blink(t, reg, now)
                 continue
             risk = t["entry"] - t["stop"]
@@ -659,20 +663,22 @@ class Session:
         """One price range (a closed candle, or the live price) against James's Blink plan. True when the trade closed."""
         e, tk = t["entry"], t["ticker"]
         risk = t.setdefault("risk", e - t["stop"])        # the first risk: the stop moves to entry later
-        half = max(1, t.get("shares", 0) // 2) if t.get("shares") else 0
+        st, part = BLINK_PLANS.get(t["plan"], BLINK_PLANS["half_p5_be_p15"])
+        ph = PART_HE[part]
+        half = max(1, round(t.get("shares", 0) * part)) if t.get("shares") else 0     # the shares sold at the first step
         rest = max(0, t.get("shares", 0) - half)
         if not t["half"]:
             if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
                 self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: {(t['stop'] - e) / e:+.1%} (תרגול)",
                                  [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של {(e - t['stop']) / e:.1%} מהסכום.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
                 return True
-            if hi >= e * 1.05 and self.confirm(tk, k, e * 1.05, False):
-                t.update(half=True, bank=0.5 * 0.05 * e / risk, stop=e)
-                send(f"🟡 {tk} הגיעה ל-+5% ({money(e * 1.05)}): למכור חצי ולהזיז סטופ (תרגול)", "\n".join([
-                    f"🟡 {tk} הגיעה ל-{money(e * 1.05)} (+5%). עכשיו בבלינק, לפי הסדר:",
+            if hi >= e * (1 + st) and self.confirm(tk, k, e * (1 + st), False):
+                t.update(half=True, bank=part * st * e / risk, stop=e)
+                send(f"🟡 {tk} הגיעה ל-+{st:.0%} ({money(e * (1 + st))}): למכור {ph} ולהזיז סטופ (תרגול)", "\n".join([
+                    f"🟡 {tk} הגיעה ל-{money(e * (1 + st))} (+{st:.0%}). עכשיו בבלינק, לפי הסדר:",
                     "━━━━━━━━━━━━━━━━",
                     "1. לבטל את פקודת הסטופ הפתוחה.",
-                    f"2. למכור חצי: {half} מניות, במחיר השוק." if half else "2. למכור חצי מהמניות, במחיר השוק.",
+                    f"2. למכור {ph}: {half} מניות, במחיר השוק." if half else f"2. למכור {ph} מהמניות, במחיר השוק.",
                     f"3. לשים סטופ לוס חדש על השאר ({rest} מניות) ב-{money(e)}, מחיר הכניסה." if half else f"3. לשים סטופ לוס חדש על השאר ב-{money(e)}, מחיר הכניסה.",
                     "━━━━━━━━━━━━━━━━",
                     f"מעכשיו העסקה לא יכולה להפסיד. את השאר נמכור ב-{money(e * 1.15)} (+15%) או לפני הסגירה, ותקבל על זה מייל.",
@@ -680,14 +686,14 @@ class Session:
             return False
         if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
             self.close_trade(t, t["bank"], "breakeven", f"⚪ {tk} חזרה לכניסה: הסטופ נגע (תרגול)",
-                             [f"החצי השני נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה בערך +2.5% מהסכום, מהחצי שנמכר ב-+5%."])
+                             [f"השאר נמכר בסטופ ב-{money(e)}, מחיר הכניסה.", f"בסך הכול העסקה הרוויחה בערך +{part * st:.1%} מהסכום, מה{ph} שנמכר ב-+{st:.0%}."])
             return True
         if hi >= e * 1.15 and self.confirm(tk, k, e * 1.15, False):
-            self.close_trade(t, t["bank"] + 0.5 * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
+            self.close_trade(t, t["bank"] + (1 - part) * 0.15 * e / risk, "target", f"🎯 {tk} הגיעה ל-+15% ({money(e * 1.15)}): למכור את השאר (תרגול)", [
                 f"🎯 {tk} הגיעה ל-{money(e * 1.15)} (+15%). עכשיו בבלינק:",
                 "1. לבטל את הסטופ במחיר הכניסה.",
                 f"2. למכור את השאר ({rest} מניות) במחיר השוק." if half else "2. למכור את כל מה שנשאר, במחיר השוק.",
-                f"העסקה הרוויחה בערך +10% מהסכום (חצי ב-+5%, חצי ב-+15%)."])
+                f"העסקה הרוויחה בערך +{part * st + (1 - part) * 0.15:.1%} מהסכום ({ph} ב-+{st:.0%}, השאר ב-+15%)."])
             return True
         return False
 
@@ -709,7 +715,8 @@ class Session:
             e, risk = t["entry"], t["risk"]
             t["warned"] = True
             last = px if px is not None else (float(reg["Close"].iloc[-1]) if reg is not None and len(reg) else e)
-            r = (t["bank"] + 0.5 * (last - e) / risk) if t["half"] else (last - e) / risk
+            part = BLINK_PLANS.get(t["plan"], BLINK_PLANS["half_p5_be_p15"])[1]
+            r = (t["bank"] + (1 - part) * (last - e) / risk) if t["half"] else (last - e) / risk
             self.close_trade(t, r, "close", f"⏰ {t['ticker']}: למכור את מה שנשאר לפני הסגירה (תרגול)", [
                 f"⏰ השוק נסגר בעוד כרבע שעה. {t['ticker']} עכשיו ב-{money(last)}. בבלינק:",
                 "1. לבטל את פקודת הסטופ הפתוחה.",
@@ -839,7 +846,7 @@ def run_live(late=False, carry=None):
         else:
             # between candles: open trades are checked against the live price every minute
             for tr in s.trades:
-                if tr["open"] and tr["plan"] == BLINK_PLAN and (px := live_price(tr["ticker"])) is not None:
+                if tr["open"] and tr["plan"] in BLINK_PLANS and (px := live_price(tr["ticker"])) is not None:
                     s.follow_blink(tr, None, now, px)
         if now >= end or (now > last_entry and not any(x["open"] for x in s.trades)):
             break
@@ -860,7 +867,7 @@ OPEN_FILE = os.path.join(LOG, "open_trades.json")
 
 
 def save_open(s, today):
-    still = [t for t in s.trades if t["open"] and t["plan"] == BLINK_PLAN]
+    still = [t for t in s.trades if t["open"] and t["plan"] in BLINK_PLANS]
     if not still or s.dry:
         return
     os.makedirs(LOG, exist_ok=True)
@@ -897,8 +904,9 @@ def trades_from_emails(today):
         sent = pd.Timestamp(it["created_at"]).tz_convert(ET)
         reg = regular(bars, end)
         before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
-        t = {"ticker": tk, "entry": e, "stop": st, "target": e * 1.05, "i": before[-1] if before else 0, "open": True,
-             "r": None, "plan": BLINK_PLAN, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
+        pl = "third_p2_be_p15" if "שליש" in (it.get("body") or "") else "half_p5_be_p15"
+        t = {"ticker": tk, "entry": e, "stop": st, "target": e * (1 + BLINK_PLANS[pl][0]), "i": before[-1] if before else 0, "open": True,
+             "r": None, "plan": pl, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
         t["k"] = t["i"]
         quiet.follow_blink(t, reg, end)
         if t["open"]:
