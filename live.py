@@ -78,7 +78,7 @@ WATCH_END = time(15, 55)
 
 def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
-MAX_CANDIDATES = 150  # user 2026-10-27: watch as many charts as the free sources give
+MAX_CANDIDATES = 400  # user 2026-10-27: watch as many charts as the free sources give
 HANDOFF_DISPATCH = time(12, 45)   # all-day days: the morning run starts its own successor (queued), not only the cron
 CATCHUP_CANDLES = 2               # the successor re-checks the candles that closed while the jobs switched
 FRESH = timedelta(minutes=10)  # only alert on a setup that triggered in the last 10 minutes
@@ -162,6 +162,30 @@ def premarket_candidates():
     except Exception as e:
         print("TradingView scan failed:", e)
         return []
+
+
+def why_he(trig, p, stop, ans=None):
+    """Roger explains the entry in plain Hebrew, from the numbers he decided on."""
+    f, e = trig.get("features", {}), trig["entry"]
+    sc = score10(p)
+    lines = [f"למה רוג׳ר נכנס: תבנית {NAMES_HE.get(trig['setup'], trig['setup'])}."]
+    if f.get("gap_pct") is not None:
+        lines.append(f"• המניה פתחה {f['gap_pct']:+.0%} מעל הסגירה של אתמול.")
+    if f.get("vol_ratio"):
+        lines.append(f"• מתחילת היום נסחרו פי {f['vol_ratio']:.1f} מהמניות שנסחרות ביום רגיל שלה.")
+    if f.get("change_from_open") is not None:
+        lines.append(f"• הכניסה {f['change_from_open']:+.1%} ממחיר הפתיחה" + (f", {f['vwap_dist']:+.1%} מהממוצע של היום (VWAP)." if f.get("vwap_dist") is not None else "."))
+    lines.append(f"• הסטופ ב-{money(stop)}, {(e - stop) / e:.1%} מתחת לכניסה: שם התבנית נשברת.")
+    ex = (ans or {}).get("explain") or ""
+    if " למה: " in ex:                      # what Roger saw in the last candles (buyers' share of volume, VWAP, ema9)
+        facts = [x for x in ex.split(" למה: ", 1)[1].split(" סטופ ")[0].rstrip(".").split("; ") if not x.startswith("קפצה")]
+        if facts:
+            lines.append("• " + "; ".join(facts) + ".")
+    votes = (ans or {}).get("votes") or []
+    if sc:
+        lines.append(f"• ציון {sc}/10 (ביטחון {p:.0%})" + (": " + ", ".join(f"סוחר {n + 1}: {v}" for n, v in enumerate(votes)) if len(votes) > 1 else "")
+                     + ". רוג׳ר שמע את כולם והחליט להיכנס.")
+    return "\n".join(lines)
 
 
 def score10(p):
@@ -564,6 +588,8 @@ class Session:
             f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
             f"בתוקף עד {il(valid)} שעון ישראל",
             "━━━━━━━━━━━━━━━━",
+            why_he(trig, ans["p"], stop, ans),
+            "━━━━━━━━━━━━━━━━",
             f"מה קורה עכשיו בצוות, בזמן אמת: {HQ_URL}",
             "",
             "פרטים:",
@@ -764,7 +790,7 @@ def run_live(late=False, carry=None):
     sleep_until(now.replace(hour=START_SCAN.hour, minute=START_SCAN.minute, second=0, microsecond=0))
     pre = hunter.hunt(pre=True) or [{"name": t} for t in premarket_candidates()]
     sleep_until(datetime.now(ET).replace(hour=9, minute=31, second=30, microsecond=0))
-    found = hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80)          # TradingView: today's gappers, ranked
+    found = hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=300)          # TradingView: today's gappers, ranked
     tickers = list(dict.fromkeys([x["name"] for x in found] + [x["name"] for x in pre] + yahoo_gainers()))[:MAX_CANDIDATES]
     hot = {x["name"]: x for x in found + pre}
     sleep_until(datetime.now(ET).replace(hour=9, minute=35, second=8, microsecond=0))
@@ -772,7 +798,8 @@ def run_live(late=False, carry=None):
     if spy is None or not any(spy.index.strftime("%Y-%m-%d") == today):
         print("Market looks closed today (holiday?).")
         return
-    metas = {t: m for t in tickers if (m := daily_meta(t, today))}
+    with ThreadPoolExecutor(16) as ex:       # hundreds of stocks: fetch their daily history in parallel
+        metas = {t: m for t, m in zip(tickers, ex.map(lambda x: daily_meta(x, today), tickers)) if m}
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
@@ -805,16 +832,20 @@ def run_live(late=False, carry=None):
             first = False
             if now <= last_entry and len(metas) < MAX_CANDIDATES:
                 try:
-                    names = [x["name"] for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=80)] + yahoo_gainers()
+                    names = [x["name"] for x in hunter.hunt(min_gap_pct=MIN_GAP * 100, limit=300)] + yahoo_gainers()
                 except Exception as e:
                     print("re-hunt failed:", e)
                     names = []
-                for name in dict.fromkeys(names):     # same sources as Hans's live notes: TradingView gappers + Yahoo gainers
-                    if name not in metas and len(metas) < MAX_CANDIDATES and (m := daily_meta(name, today)):
-                        metas[name] = m
-                        print("Hans added", name)
-            with ThreadPoolExecutor(16) as ex:
+                new = [n for n in dict.fromkeys(names) if n not in metas][:max(0, MAX_CANDIDATES - len(metas))]
+                with ThreadPoolExecutor(16) as ex:    # same sources as Hans's live notes: TradingView gappers + Yahoo gainers
+                    for name, m in zip(new, ex.map(lambda x: daily_meta(x, today), new)):
+                        if m:
+                            metas[name] = m
+                            print("Hans added", name)
+            t_fetch = _time.time()
+            with ThreadPoolExecutor(32) as ex:
                 fetched = dict(zip(metas, ex.map(today_bars, metas)))
+            print(f"{now:%H:%M:%S} candle pass: {len(metas)} stocks fetched in {_time.time() - t_fetch:.1f}s")
             for t, meta in metas.items():      # today's gaps of every watched stock: Roger's "hot market" and gap rank
                 b = fetched[t]
                 r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
