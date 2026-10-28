@@ -384,7 +384,7 @@ def send_resend(subject, body):
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
 ALL_DAY_FROM = "2026-10-27"  # user 2026-10-27: Roger looks for entries until ~15:20 ET, not only the morning
 # Roger's 1-10 score: the p where each score starts (score 2..10), from the training thread. Emails go out from SCORE_MIN up.
-SURE_FILE = "sure_committee.json"   # Roger's live brain in data/sure_freeze (score cuts come from the same file)
+SURE_FILE = "sure_committee.json"   # one Roger with 5 traders (his clones) whose opinions he weighs; score cuts come from the same file
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
 SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
@@ -776,7 +776,8 @@ def run_live(late=False, carry=None):
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
-         + ("רוג׳ר בטוח מאוד: נכנס רק כשהוא בטוח מאוד. יש ימים עם הוראה אחת, ויש ימים בלי אף הוראה.\n" if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
+         + ("רוג׳ר בטוח מאוד: נכנס רק כשהוא בטוח מאוד. יש ימים עם הוראה אחת, ויש ימים בלי אף הוראה.\n"
+           + ("רוג׳ר שומע את דעתם של 5 הסוחרים שלו (סוחר 1 עד סוחר 5, שכפולים שלו), ומחליט לבד.\n" if SURE_FILE == "sure_committee.json" else "") if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
          + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")

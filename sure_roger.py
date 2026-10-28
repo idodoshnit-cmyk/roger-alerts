@@ -15,7 +15,7 @@ from brain2 import new_feats  # noqa: E402
 
 class SureRoger(FrozenRoger):
     def proba(self, features, setup, day_gaps, extra):
-        """One brain, or the average of a committee of brains ("members") when the json has them."""
+        """One brain, or Roger weighing his 5 traders (clones of him, "members" in the json): the average of their opinions."""
         members = self.m.get("members")
         if not members or len(members) == 1:
             return super().proba(features, setup, day_gaps, extra)
