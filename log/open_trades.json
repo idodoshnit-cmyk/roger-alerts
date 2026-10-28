@@ -1,7 +1,25 @@
 {
- "date": "2026-10-27",
- "day_r": 0.0,
+ "date": "2026-10-28",
+ "day_r": 0.10000000000000009,
  "stopped": false,
- "trades": [],
- "done": true
+ "trades": [
+  {
+   "ticker": "ELVA",
+   "setup": "orb15",
+   "entry": 5.61,
+   "stop": 5.61,
+   "target": 5.8905,
+   "i": 3,
+   "open": true,
+   "r": null,
+   "p": 0.6790223407692065,
+   "plan": "half_p5_be_p15",
+   "shares": 8,
+   "k": 42,
+   "half": true,
+   "bank": 0.6678574461516625,
+   "risk": 0.20999990463256868
+  }
+ ],
+ "done": false
 }

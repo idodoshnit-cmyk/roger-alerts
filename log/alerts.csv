@@ -1,0 +1,4 @@
+date,time_il,ticker,setup,p,plan,entry,stop,target,candle_to_send_sec,decide_to_send_sec
+2026-10-28,15:40,SSP,orb,0.6834616344037451,half_p5_be_p15,2.455,2.3,2.5777,5,0.6
+2026-10-28,15:50,ELVA,orb15,0.6790223407692065,half_p5_be_p15,5.61,5.4,5.8905,6,0.7
+2026-10-28,15:50,EVMN,orb15,0.6844427837406082,half_p5_be_p15,5.74,5.22,6.027,7,0.6
