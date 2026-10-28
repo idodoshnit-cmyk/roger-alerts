@@ -507,6 +507,7 @@ class Session:
         self.james = JamesLive()
         self.dry = dry
         self.alerted = set()      # tickers already alerted today
+        self.sent_today = 0       # buy emails sent today, also by an earlier run (the 3-a-day cap counts these)
         self.trades = []          # open and closed trades today
         self.day_r = 0.0
         self.stopped = False
@@ -547,7 +548,7 @@ class Session:
             self.skips += 1
             return
         self.alerted.add(ticker)
-        if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and len(self.trades) >= MAX_TRADES)):
+        if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and max(len(self.trades), self.sent_today) >= MAX_TRADES)):
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         priced = None
@@ -568,7 +569,7 @@ class Session:
         shares = min(shares, int(ACCOUNT / trig["entry"]))      # never more than the account can buy
         if plan == BLINK_PLAN:                                  # James's Blink plan: half the account per trade
             shares = int(ACCOUNT * TRADE_SHARE / trig["entry"]) if risk > 0 else 0
-        n = len(self.trades) + 1
+        n = max(len(self.trades), self.sent_today) + 1
         valid = now + FRESH
         far = trig["last"] > trig["entry"] + 0.5 * risk
         subject = f"🟢 קנייה {ticker} ב-{money(trig['entry'])} | טייק פרופיט {money(target) if target else 'נגרר'} | סטופ {money(stop)}"
@@ -619,6 +620,7 @@ class Session:
              "target": target, "i": trig["i"], "open": True, "r": None, "p": ans["p"], "plan": plan,
              "shares": shares, "k": trig["i"], "half": False, "bank": 0.0, "risk": risk}
         self.trades.append(t)
+        self.sent_today += 1
         if not self.dry:
             log_row("alerts.csv", {"date": now.strftime("%Y-%m-%d"), "time_il": il(now), "ticker": ticker,
                                    "setup": trig["setup"], "p": ans["p"], "plan": plan,
@@ -814,6 +816,7 @@ def run_live(late=False, carry=None):
     if carry:            # the morning's orders that are still open, and the stocks already alerted
         s.trades, s.day_r = carry["trades"], carry.get("day_r", 0.0)
         s.alerted |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))
+        s.sent_today = len(set(carry.get("alerted", [])) | {t["ticker"] for t in s.trades})   # closed morning orders count too
     stop_at = WATCH_END if late else FOLLOW_UNTIL
     end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute, second=0, microsecond=0)
     last_entry = datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute)
@@ -851,7 +854,8 @@ def run_live(late=False, carry=None):
                 r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
                 if r0 is not None and len(r0) and meta["prev_close"] > 0:
                     s.day_gaps[t] = float(r0["Open"].iloc[0]) / meta["prev_close"] - 1
-            for t, meta in metas.items():
+            # same-candle ties for the 3-a-day slots go to the biggest gap first, as the training thread scores it
+            for t, meta in sorted(metas.items(), key=lambda kv: -s.day_gaps.get(kv[0], 0.0)):
                 bars = fetched[t]
                 if bars is None:
                     continue
