@@ -64,9 +64,9 @@ FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job mu
 CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
 # Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
 # stop at the setup stop; at the first step sell part and move the stop to entry; sell the rest at +15% or before the close.
-BLINK_PLAN = "third_p2_be_p15"   # new trades use this plan; trades already open keep the plan they were sent with
+BLINK_PLAN = "third_p5_be_p15"   # new trades use this plan; trades already open keep the plan they were sent with
 # Blink plans: (first step, share sold there). Stop on the full size; at the first step sell that share, stop to entry; rest at +15% or close.
-BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p2_be_p15": (0.02, 1 / 3)}
+BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3)}
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
@@ -939,7 +939,7 @@ def trades_from_emails(today):
         sent = pd.Timestamp(it["created_at"]).tz_convert(ET)
         reg = regular(bars, end)
         before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
-        pl = "third_p2_be_p15" if "שליש" in (it.get("body") or "") else "half_p5_be_p15"
+        pl = "third_p5_be_p15" if "שליש" in (it.get("body") or "") else "half_p5_be_p15"
         t = {"ticker": tk, "entry": e, "stop": st, "target": e * (1 + BLINK_PLANS[pl][0]), "i": before[-1] if before else 0, "open": True,
              "r": None, "plan": pl, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
         t["k"] = t["i"]
