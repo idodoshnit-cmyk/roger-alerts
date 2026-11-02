@@ -16,7 +16,7 @@ on:
       test_email:
         description: "Send one test email only"
         type: boolean
-        default: true
+        default: false   # a plain manual start must run the live bot
       follow:
         description: "Afternoon run: follow open trades to the close"
         type: boolean
