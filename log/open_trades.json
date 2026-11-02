@@ -1,7 +1,7 @@
 {
  "date": "2026-11-02",
- "day_r": -1.0,
- "stopped": false,
+ "day_r": -1.98,
+ "stopped": true,
  "trades": [
   {
    "ticker": "XPOF",
@@ -10,16 +10,38 @@
    "stop": 4.579999923706055,
    "target": 5.52,
    "i": 1,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": 0.02,
    "p": 0.7108383063824902,
    "plan": "tp15",
    "shares": 10,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.22000007629394513
+   "risk": 0.22000007629394513,
+   "warned": true,
+   "how": "close",
+   "pct": 0.0010416309038798386
+  },
+  {
+   "ticker": "KPRX",
+   "setup": "vwap_reclaim",
+   "entry": 1.845,
+   "stop": 1.75,
+   "target": 2.12175,
+   "i": 28,
+   "open": false,
+   "r": -1.0,
+   "p": 0.6996347215110534,
+   "plan": "tp15",
+   "shares": 27,
+   "k": 44,
+   "half": false,
+   "bank": 0.0,
+   "risk": 0.09499999999999997,
+   "how": "stop",
+   "pct": -0.05149051490514904
   }
  ],
- "done": false
+ "done": true
 }
