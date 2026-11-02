@@ -1,7 +1,25 @@
 {
- "date": "2026-10-30",
- "day_r": 0.0,
+ "date": "2026-11-02",
+ "day_r": -1.0,
  "stopped": false,
- "trades": [],
- "done": true
+ "trades": [
+  {
+   "ticker": "XPOF",
+   "setup": "orb",
+   "entry": 4.8,
+   "stop": 4.579999923706055,
+   "target": 5.52,
+   "i": 1,
+   "open": true,
+   "r": null,
+   "p": 0.7108383063824902,
+   "plan": "tp15",
+   "shares": 10,
+   "k": 42,
+   "half": false,
+   "bank": 0.0,
+   "risk": 0.22000007629394513
+  }
+ ],
+ "done": false
 }
