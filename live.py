@@ -64,10 +64,10 @@ FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job mu
 CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
 # Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
 # stop at the setup stop; at the first step sell part and move the stop to entry; sell the rest at +15% or before the close.
-BLINK_PLAN = "third_p5_be_p15"   # new trades use this plan; trades already open keep the plan they were sent with
+BLINK_PLAN = "tp15"   # new trades use this plan; trades already open keep the plan they were sent with
 # Blink plans: (first step, share sold there). Stop on the full size; at the first step sell that share, stop to entry; rest at +15% or close.
-BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3)}
-PART_HE = {1 / 2: "חצי", 1 / 3: "שליש"}
+BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3), "tp15": (0.15, 1.0)}   # tp15: one take-profit for everything
+PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 3
 SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
@@ -134,6 +134,8 @@ def plan_levels(plan, entry, setup_stop):
     """Turn a plan name like 'tight_1.5' into stop and target prices."""
     if plan in BLINK_PLANS:
         st, part = BLINK_PLANS[plan]
+        if part >= 1:
+            return setup_stop, entry * (1 + st), f"טייק פרופיט אחד: למכור הכול ב-+{st:.0%}, או לפני הסגירה"
         return setup_stop, entry * (1 + st), f"ב-+{st:.0%}: לבטל את הסטופ, למכור {PART_HE[part]}, ולשים סטופ חדש במחיר הכניסה. את השאר למכור ב-+15% או לפני הסגירה"
     if plan == "half_p5_chandelier":
         return setup_stop, entry * 1.05, "למכור חצי ב-+5% ולהזיז סטופ לכניסה, את השאר לגרור 3 ATR מתחת לשיא"
@@ -589,7 +591,7 @@ class Session:
             "כמות:         0 (הסיכון למניה גדול מ-1% מהחשבון, לא נכנסים)",
             f"טייק פרופיט:  {money(target)}{tp_pct}" if target else f"טייק פרופיט:  בלי יעד קבוע ({how})",
             f"סטופ לוס:     {money(stop)}",
-            (lambda st, part: f"שלב 2:        ב-{money(trig['entry'] * (1 + st))} (+{st:.0%}) למכור {PART_HE[part]} ולהזיז את הסטופ ל-{money(trig['entry'])}. את השאר למכור ב-{money(trig['entry'] * 1.15)} (+15%)")(*BLINK_PLANS[plan]) if plan in BLINK_PLANS else "",
+            (lambda st, part: f"שלב 2:        טייק פרופיט אחד: כשהמחיר מגיע ל-{money(trig['entry'] * (1 + st))} (+{st:.0%}) תקבל מייל: לבטל את הסטופ ולמכור הכול. אחרת למכור לפני הסגירה" if part >= 1 else f"שלב 2:        ב-{money(trig['entry'] * (1 + st))} (+{st:.0%}) למכור {PART_HE[part]} ולהזיז את הסטופ ל-{money(trig['entry'])}. את השאר למכור ב-{money(trig['entry'] * 1.15)} (+15%)")(*BLINK_PLANS[plan]) if plan in BLINK_PLANS else "",
             f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
             f"בתוקף עד {il(valid)} שעון ישראל",
             "━━━━━━━━━━━━━━━━",
@@ -695,6 +697,18 @@ class Session:
         ph = PART_HE[part]
         half = max(1, round(t.get("shares", 0) * part)) if t.get("shares") else 0     # the shares sold at the first step
         rest = max(0, t.get("shares", 0) - half)
+        if part >= 1:                                     # one take-profit for everything, no partial sells
+            if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
+                self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: {(t['stop'] - e) / e:+.1%} (תרגול)",
+                                 [f"הסטופ ב-{money(t['stop'])} נגע. העסקה נסגרה בהפסד של {(e - t['stop']) / e:.1%} מהסכום.", "אין מה לעשות, הפקודה בבלינק כבר ביצעה את זה."])
+                return True
+            if hi >= e * (1 + st) and self.confirm(tk, k, e * (1 + st), False):
+                self.close_trade(t, st * e / risk, "target", f"🎯 {tk} הגיעה ל-+{st:.0%} ({money(e * (1 + st))}): הטייק פרופיט (תרגול)", [
+                    f"🎯 {tk} הגיעה ל-{money(e * (1 + st))} (+{st:.0%}), הטייק פרופיט.",
+                    "עכשיו בבלינק: 1. לבטל את פקודת הסטופ. 2. למכור את כל המניות במחיר השוק.",
+                    f"העסקה הרוויחה בערך +{st:.0%} מהסכום."])
+                return True
+            return False
         if not t["half"]:
             if lo <= t["stop"] and self.confirm(tk, k, t["stop"], True):
                 self.close_trade(t, -1.0, "stop", f"🔴 הסטופ נגע ב-{tk}: {(t['stop'] - e) / e:+.1%} (תרגול)",
@@ -939,7 +953,8 @@ def trades_from_emails(today):
         sent = pd.Timestamp(it["created_at"]).tz_convert(ET)
         reg = regular(bars, end)
         before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
-        pl = "third_p5_be_p15" if "שליש" in (it.get("body") or "") else "half_p5_be_p15"
+        body_ = it.get("body") or ""
+        pl = "tp15" if "טייק פרופיט אחד" in body_ else "third_p5_be_p15" if "שליש" in body_ else "half_p5_be_p15"
         t = {"ticker": tk, "entry": e, "stop": st, "target": e * (1 + BLINK_PLANS[pl][0]), "i": before[-1] if before else 0, "open": True,
              "r": None, "plan": pl, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
         t["k"] = t["i"]
