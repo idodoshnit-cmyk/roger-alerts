@@ -64,7 +64,7 @@ FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job mu
 CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
 # Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
 # stop at the setup stop; at the first step sell part and move the stop to entry; sell the rest at +15% or before the close.
-BLINK_PLAN = "half_p5_be_p15"   # new trades use this plan; trades already open keep the plan they were sent with
+BLINK_PLAN = "tp15"   # new trades use this plan; trades already open keep the plan they were sent with
 # Blink plans: (first step, share sold there). Stop on the full size; at the first step sell that share, stop to entry; rest at +15% or close.
 BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3), "tp15": (0.15, 1.0)}   # tp15: one take-profit for everything
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
