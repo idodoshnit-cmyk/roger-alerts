@@ -1,6 +1,6 @@
 {
  "date": "2026-11-04",
- "day_r": -1.0,
+ "day_r": -0.34999999999999987,
  "stopped": false,
  "trades": [
   {
@@ -10,15 +10,18 @@
    "stop": 10.899999618530273,
    "target": 13.535499999999999,
    "i": 1,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": 1.05,
    "p": 0.6792960325874775,
    "plan": "tp15",
    "shares": 4,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.8700003814697261
+   "risk": 0.8700003814697261,
+   "warned": true,
+   "how": "close",
+   "pct": 0.07731523408460338
   },
   {
    "ticker": "ANGI",
@@ -27,16 +30,19 @@
    "stop": 6.372000217437744,
    "target": 8.395,
    "i": 2,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.4,
    "p": 0.742138914487806,
    "plan": "tp15",
    "shares": 6,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.9279997825622557
+   "risk": 0.9279997825622557,
+   "warned": true,
+   "how": "close",
+   "pct": -0.05068495502210641
   }
  ],
- "done": false
+ "done": true
 }
