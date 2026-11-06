@@ -1,47 +1,7 @@
 {
- "date": "2026-11-05",
- "day_r": -1.81,
- "stopped": true,
- "trades": [
-  {
-   "ticker": "ARDT",
-   "setup": "orb",
-   "entry": 15.411,
-   "stop": 14.210100173950195,
-   "target": 17.722649999999998,
-   "i": 1,
-   "open": false,
-   "r": 0.19,
-   "p": 0.6952785288837575,
-   "plan": "tp15",
-   "shares": 3,
-   "k": 75,
-   "half": false,
-   "bank": 0.0,
-   "risk": 1.2008998260498043,
-   "warned": true,
-   "how": "close",
-   "pct": 0.014788125570152586
-  },
-  {
-   "ticker": "PLTK",
-   "setup": "orb15",
-   "entry": 2.502,
-   "stop": 2.299999952316284,
-   "target": 2.8772999999999995,
-   "i": 3,
-   "open": false,
-   "r": -1.0,
-   "p": 0.6854017345791467,
-   "plan": "tp15",
-   "shares": 19,
-   "k": 59,
-   "half": false,
-   "bank": 0.0,
-   "risk": 0.2020000476837156,
-   "how": "stop",
-   "pct": -0.08073543072890313
-  }
- ],
+ "date": "2026-11-06",
+ "day_r": 0.0,
+ "stopped": false,
+ "trades": [],
  "done": true
 }
