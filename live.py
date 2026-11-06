@@ -415,6 +415,17 @@ MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the cha
 ALL_DAY_FROM = "2026-10-27"  # user 2026-10-27: Roger looks for entries until ~15:20 ET, not only the morning
 # Roger's 1-10 score: the p where each score starts (score 2..10), from the training thread. Emails go out from SCORE_MIN up.
 SURE_FILE = "sure_committee.json"   # one Roger with 5 traders (his clones) whose opinions he weighs; score cuts come from the same file
+NIGHTLY_FILE = "nightly_roger.json"   # Roger retrained every night by the training thread (3 traders), committed to data/sure_freeze
+NIGHTLY_FROM = "2026-11-09"           # approved switch: practice alerts use the nightly Roger from this day
+
+
+def sure_file(day):
+    """The brain file for this day: the nightly Roger from NIGHTLY_FROM (if the file is there), else the 5-trader Roger."""
+    if day >= NIGHTLY_FROM and os.path.exists(os.path.join(HERE, "data", "sure_freeze", NIGHTLY_FILE)):
+        return NIGHTLY_FILE
+    return SURE_FILE
+
+
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
 SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
@@ -499,7 +510,8 @@ class Session:
         self.roger = Roger(path=os.path.join(HERE, "data", "roger_brain.json"))
         trees = os.path.join(HERE, "data", "roger_trees.json")
         self.frozen = FrozenRoger(trees) if os.path.exists(trees) else None
-        sure = os.path.join(HERE, "data", "sure_freeze", SURE_FILE)
+        self.sure_file = sure_file(datetime.now(ET).strftime("%Y-%m-%d"))
+        sure = os.path.join(HERE, "data", "sure_freeze", self.sure_file)
         self.sure = datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM and os.path.exists(sure)
         if self.sure:
             self.frozen = SureRoger(sure)
@@ -824,16 +836,16 @@ def run_live(late=False, carry=None):
     with ThreadPoolExecutor(16) as ex:       # hundreds of stocks: fetch their daily history in parallel
         metas = {t: m for t, m in zip(tickers, ex.map(lambda x: daily_meta(x, today), tickers)) if m}
     print(f"Watching {len(metas)} stocks: {', '.join(metas)}")
+    s = Session()        # before the start email: it says how many traders this Roger has
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
          + ("רוג׳ר בטוח מאוד: נכנס רק כשהוא בטוח מאוד. יש ימים עם הוראה אחת, ויש ימים בלי אף הוראה.\n"
-           + ("רוג׳ר שומע את דעתם של 5 הסוחרים שלו (סוחר 1 עד סוחר 5, שכפולים שלו), ומחליט לבד.\n" if SURE_FILE == "sure_committee.json" else "") if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
+           + ((lambda k: f"רוג׳ר שומע את דעתם של {k} הסוחרים שלו (סוחר 1 עד סוחר {k}, שכפולים שלו), ומחליט לבד.\n")(len(s.frozen.m.get("members") or []) or 5) if s.sure else "") if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
          + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")
          + f"מה קורה עכשיו בצוות: {HQ_URL}\n\n"
          "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.")
-    s = Session()
     if carry:            # the morning's orders that are still open, and the stocks already alerted
         s.trades, s.day_r = carry["trades"], carry.get("day_r", 0.0)
         s.alerted |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))
