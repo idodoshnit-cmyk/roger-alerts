@@ -1,6 +1,6 @@
 {
  "date": "2026-11-09",
- "day_r": -1.0,
+ "day_r": 1.18,
  "stopped": false,
  "trades": [
   {
@@ -10,15 +10,18 @@
    "stop": 12.649999618530273,
    "target": 15.070749999999999,
    "i": 2,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": 1.71,
    "p": 0.5302838006461522,
    "plan": "tp15",
    "shares": 3,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.455000381469727
+   "risk": 0.455000381469727,
+   "warned": true,
+   "how": "close",
+   "pct": 0.059519284920399505
   },
   {
    "ticker": "ULCC",
@@ -27,16 +30,19 @@
    "stop": 7.829999923706055,
    "target": 9.383999999999999,
    "i": 2,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": 0.47,
    "p": 0.5247549264327072,
    "plan": "tp15",
    "shares": 6,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.33000007629394545
+   "risk": 0.33000007629394545,
+   "warned": true,
+   "how": "close",
+   "pct": 0.01899504661560057
   }
  ],
- "done": false
+ "done": true
 }
