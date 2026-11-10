@@ -1,48 +1,7 @@
 {
- "date": "2026-11-09",
- "day_r": 1.18,
+ "date": "2026-11-10",
+ "day_r": 0.0,
  "stopped": false,
- "trades": [
-  {
-   "ticker": "QXO",
-   "setup": "orb_body",
-   "entry": 13.105,
-   "stop": 12.649999618530273,
-   "target": 15.070749999999999,
-   "i": 2,
-   "open": false,
-   "r": 1.71,
-   "p": 0.5302838006461522,
-   "plan": "tp15",
-   "shares": 3,
-   "k": 75,
-   "half": false,
-   "bank": 0.0,
-   "risk": 0.455000381469727,
-   "warned": true,
-   "how": "close",
-   "pct": 0.059519284920399505
-  },
-  {
-   "ticker": "ULCC",
-   "setup": "orb",
-   "entry": 8.16,
-   "stop": 7.829999923706055,
-   "target": 9.383999999999999,
-   "i": 2,
-   "open": false,
-   "r": 0.47,
-   "p": 0.5247549264327072,
-   "plan": "tp15",
-   "shares": 6,
-   "k": 75,
-   "half": false,
-   "bank": 0.0,
-   "risk": 0.33000007629394545,
-   "warned": true,
-   "how": "close",
-   "pct": 0.01899504661560057
-  }
- ],
+ "trades": [],
  "done": true
 }
