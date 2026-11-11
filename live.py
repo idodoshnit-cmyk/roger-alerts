@@ -840,7 +840,7 @@ def run_live(late=False, carry=None):
     (print if late else send)((f"רוג׳ר ממשיך לצפות עד הסגירה: {len(metas)} מניות" if late else f"רוג׳ר התחיל: עוקב אחרי {len(metas)} מניות היום"),
          ("יום צפייה בלבד, לא קונים. " if watch else "")
          + ("רוג׳ר בטוח מאוד: נכנס רק כשהוא בטוח מאוד. יש ימים עם הוראה אחת, ויש ימים בלי אף הוראה.\n"
-           + ((lambda k: f"רוג׳ר שומע את דעתם של {k} הסוחרים שלו (סוחר 1 עד סוחר {k}, שכפולים שלו), ומחליט לבד.\n")(len(s.frozen.m.get("members") or []) or 5) if s.sure else "") if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
+           + (("רוג׳ר מחליט לבד, לפי כל עובדות הגרף יחד.\n" if getattr(s.frozen, "linear", None) else (lambda k: f"רוג׳ר שומע את דעתם של {k} הסוחרים שלו (סוחר 1 עד סוחר {k}, שכפולים שלו), ומחליט לבד.\n")(len(s.frozen.m.get("members") or []) or 5)) if s.sure else "") if datetime.now(ET).strftime("%Y-%m-%d") >= SURE_FROM else "")
          + f"רוג׳ר, הנס וג׳יימס ערים ומחוברים לשוק. הוראות קנייה יגיעו עד {il(datetime.now(ET).replace(hour=last_check.hour, minute=last_check.minute))} שעון ישראל, אם יהיו.\n"
          f"המניות: {', '.join(metas) or 'אין היום מניות בגאפ של 20% ומעלה'}\n\n"
          + ("הכי חמות לפי הנס (TradingView):\n" + "\n".join(hunter.line(hot[t]) for t in list(metas)[:8] if t in hot) + "\n\n" if hot else "")

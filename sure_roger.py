@@ -14,8 +14,26 @@ from brain2 import new_feats  # noqa: E402
 
 
 class SureRoger(FrozenRoger):
+    def __init__(self, path):
+        super().__init__(path)
+        # "use": "linear" (training thread, from 2026-11-12): one straight-line Roger on the same chart facts,
+        # with his own send bar and 1-10 scale. Without "use", Roger stays the trees below.
+        self.linear = self.m.get("linear") if self.m.get("use") == "linear" else None
+        if self.linear:
+            self.m["threshold"] = float(self.linear["threshold"])
+            self.m["score_cuts"] = {str(k): float(v) for k, v in self.linear["score_cuts"].items()}
+            self.m["members"] = None
+
     def proba(self, features, setup, day_gaps, extra):
-        """One brain, or Roger weighing his 5 traders (clones of him, "members" in the json): the average of their opinions."""
+        """One brain, or Roger weighing his traders (clones of him, "members" in the json): the average of their opinions."""
+        if self.linear:
+            import numpy as np
+            L = self.linear
+            x = np.array(self._row(features, setup, day_gaps, extra), dtype=float)
+            z = (x - np.array(L["mu"], dtype=float)) / np.array(L["sd"], dtype=float)
+            p = float(1 / (1 + np.exp(-(z @ np.array(L["w"], dtype=float) + float(L["b"])))))
+            self.last_votes = [p]
+            return p
         members = self.m.get("members")
         if not members or len(members) == 1:
             return super().proba(features, setup, day_gaps, extra)
