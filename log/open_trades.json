@@ -1,7 +1,7 @@
 {
  "date": "2026-11-11",
- "day_r": 0.0,
- "stopped": false,
+ "day_r": -2.3,
+ "stopped": true,
  "trades": [
   {
    "ticker": "BW",
@@ -10,15 +10,18 @@
    "stop": 4.795499801635742,
    "target": 5.9685,
    "i": 5,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.79,
    "p": 0.5908815414986404,
    "plan": "tp15",
    "shares": 9,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.3945001983642582
+   "risk": 0.3945001983642582,
+   "warned": true,
+   "how": "close",
+   "pct": -0.05973022843142243
   },
   {
    "ticker": "FSLY",
@@ -27,15 +30,18 @@
    "stop": 17.0,
    "target": 20.251499999999997,
    "i": 5,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.51,
    "p": 0.6297534046537233,
    "plan": "tp15",
    "shares": 2,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.6099999999999994
+   "risk": 0.6099999999999994,
+   "warned": true,
+   "how": "close",
+   "pct": -0.017603677622910423
   },
   {
    "ticker": "SB",
@@ -44,16 +50,18 @@
    "stop": 7.840000152587891,
    "target": 9.222999999999999,
    "i": 5,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -1.0,
    "p": 0.5938500941514323,
    "plan": "tp15",
    "shares": 6,
-   "k": 42,
+   "k": 67,
    "half": false,
    "bank": 0.0,
-   "risk": 0.17999984741210895
+   "risk": 0.17999984741210895,
+   "how": "stop",
+   "pct": -0.022443871248392637
   }
  ],
- "done": false
+ "done": true
 }
