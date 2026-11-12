@@ -69,7 +69,8 @@ BLINK_PLAN = "tp15"   # new trades use this plan; trades already open keep the p
 BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3), "tp15": (0.15, 1.0)}   # tp15: one take-profit for everything
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
-MAX_TRADES = 3
+MAX_TRADES = 2       # approved 2026-11-12 (practice): at most 2 trades a day (was 3)
+SHADOW_TRADES = 3    # the would-be 3rd trade is logged as SHADOW_3RD, no email
 SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
 DAY_STOP_R = -2.0
 # Watch-only days (the user's live test, no real buying): Roger looks for entries until 15:30 New York,
@@ -534,6 +535,12 @@ class Session:
         self.watch = watch_day(datetime.now(ET).strftime("%Y-%m-%d"))
         self.skips = 0
 
+    def shadow_done(self, now):
+        """True when today's shadow trade is already logged (also by the morning run)."""
+        path = os.path.join(LOG, "decisions.csv")
+        day = now.strftime("%Y-%m-%d")
+        return os.path.exists(path) and any(r.get("date") == day and r.get("decision") == "SHADOW_3RD" for r in csv.DictReader(open(path)))
+
     def consider(self, ticker, trig, now):
         if ticker in self.alerted or not trig["fresh"]:
             return
@@ -580,6 +587,14 @@ class Session:
             return
         self.alerted.add(ticker)
         if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and max(len(self.trades), self.sent_today) >= MAX_TRADES)):
+            if not self.stopped and not self.dry and SHADOW_TRADES > MAX_TRADES and not self.shadow_done(now):
+                # approved 2026-11-12: the would-be 3rd trade gets no email, only a log row, so we keep measuring it
+                px = live_price(ticker) or trig["entry"]
+                print(f"{ticker}: would-be trade {MAX_TRADES + 1} of the day, shadow only (no email)")
+                log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                          "setup": trig["setup"], "entry": round(px, 4), "stop": round(trig["stop"], 4),
+                                          "decision": "SHADOW_3RD", "p": round(ans["p"], 4),
+                                          "why": f"cap {MAX_TRADES} a day: shadow, no email", "gap": round(feats.get("gap_pct", 0.0), 4)})
             return
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         priced = None
@@ -638,7 +653,7 @@ class Session:
             "אחר הצהריים, מחוץ לטווח האימון: הציון כאן פחות מדויק." if now.time() > time(11, 30) else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
-            f"עסקה {n} היום (יום צפייה: בלי הגבלה של 3)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
+            f"עסקה {n} היום (יום צפייה: בלי הגבלה)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
