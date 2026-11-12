@@ -1,6 +1,6 @@
 {
  "date": "2026-11-12",
- "day_r": 1.5,
+ "day_r": 1.4,
  "stopped": false,
  "trades": [
   {
@@ -10,16 +10,19 @@
    "stop": 2.7855000000000003,
    "target": 3.55925,
    "i": 3,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.1,
    "p": 0.5278660314300603,
    "plan": "tp15",
    "shares": 16,
-   "k": 42,
+   "k": 74,
    "half": false,
    "bank": 0.0,
-   "risk": 0.3094999999999999
+   "risk": 0.3094999999999999,
+   "warned": true,
+   "how": "close",
+   "pct": -0.009693034823761295
   }
  ],
- "done": false
+ "done": true
 }
