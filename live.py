@@ -171,7 +171,7 @@ def premarket_candidates():
         return []
 
 
-def why_he(trig, p, stop, ans=None):
+def why_he(trig, p, stop, ans=None, fixed=False):
     """Roger explains the entry in plain Hebrew, from the numbers he decided on."""
     f, e = trig.get("features", {}), trig["entry"]
     sc = score10(p)
@@ -182,7 +182,8 @@ def why_he(trig, p, stop, ans=None):
         lines.append(f"• מתחילת היום נסחרו פי {f['vol_ratio']:.1f} מהמניות שנסחרות ביום רגיל שלה.")
     if f.get("change_from_open") is not None:
         lines.append(f"• הכניסה {f['change_from_open']:+.1%} ממחיר הפתיחה" + (f", {f['vwap_dist']:+.1%} מהממוצע של היום (VWAP)." if f.get("vwap_dist") is not None else "."))
-    lines.append(f"• הסטופ ב-{money(stop)}, {(e - stop) / e:.1%} מתחת לכניסה: שם התבנית נשברת.")
+    lines.append(f"• הסטופ ב-{money(stop)}, {(e - stop) / e:.0%} מתחת לכניסה (סטופ קבוע של 10%, כמו בבדיקות של ג׳יימס)." if fixed
+                 else f"• הסטופ ב-{money(stop)}, {(e - stop) / e:.1%} מתחת לכניסה: שם התבנית נשברת.")
     ex = (ans or {}).get("explain") or ""
     if " למה: " in ex:                      # what Roger saw in the last candles (buyers' share of volume, VWAP, ema9)
         facts = [x for x in ex.split(" למה: ", 1)[1].split(" סטופ ")[0].rstrip(".").split("; ") if not x.startswith("קפצה")]
@@ -430,6 +431,8 @@ def sure_file(day):
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
 SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
+FIXED_STOP_PCT = 0.10    # approved 2026-11-12 (practice): stop order exactly 10% below the entry
+FIXED_STOP_FROM = "2026-11-12"
 EARLIEST_ENTRY = time(9, 45)   # approved 2026-11-12 (practice): no buy email before 09:45 New York
 EARLIEST_FROM = "2026-11-12"
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
@@ -608,6 +611,9 @@ class Session:
                 # follow from the newest closed candle: older candles happened before this price
                 trig = {**trig, "setup_entry": trig["entry"], "entry": px, "last": px, "i": max(trig["i"], len(trig["reg"]) - 1)}
         stop, target, how = plan_levels(plan, trig["entry"], trig["stop"])
+        fixed = now.strftime("%Y-%m-%d") >= FIXED_STOP_FROM
+        if fixed:          # approved 2026-11-12: the stop order sits exactly 10% under the entry (James's structure stop goes to the shadow log)
+            stop = trig["entry"] * (1 - FIXED_STOP_PCT)
         if trig["last"] <= stop:
             return                # the move already failed before we could tell you
         risk = trig["entry"] - stop
@@ -635,7 +641,7 @@ class Session:
             f"סיכון: {shares * risk:.2f}$  ·  רווח ביעד: {shares * (target - trig['entry']):.2f}$" if shares and target else "",
             f"בתוקף עד {il(valid)} שעון ישראל",
             "━━━━━━━━━━━━━━━━",
-            why_he(trig, ans["p"], stop, ans),
+            why_he(trig, ans["p"], stop, ans, fixed),
             "━━━━━━━━━━━━━━━━",
             f"מה קורה עכשיו בצוות, בזמן אמת: {HQ_URL}",
             "",
@@ -674,6 +680,11 @@ class Session:
                                    "target": round(target, 4) if target else "",
                                    "candle_to_send_sec": round((sent_at - trig["bar_close"]).total_seconds()) if sent_at else "",
                                    "decide_to_send_sec": round(lag, 1) if lag is not None else ""})
+            # approved 2026-11-12: the other two stops for each trade, for forward comparison (no orders, no emails)
+            log_row("shadow_stops.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                         "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop_live": round(stop, 4),
+                                         "stop_structure": round(trig["stop"], 4), "stop_12pct": round(trig["entry"] * 0.88, 4),
+                                         "target": round(target, 4) if target else ""})
 
     def follow(self, ticker, reg, now):
         """Email when an open trade hits its stop or target."""
