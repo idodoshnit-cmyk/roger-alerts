@@ -429,6 +429,8 @@ def sure_file(day):
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
 SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
+EARLIEST_ENTRY = time(9, 45)   # approved 2026-11-12 (practice): no buy email before 09:45 New York
+EARLIEST_FROM = "2026-11-12"
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
 
 
@@ -563,6 +565,17 @@ class Session:
                                           "decision": "SKIP_WIDE_STOP", "p": round(ans["p"], 4),
                                           "why": f"stop {1 - trig['stop'] / trig['entry']:.1%} > {MAX_STOP_PCT:.0%}",
                                           "gap": round(feats.get("gap_pct", 0.0), 4)})
+            self.skips += 1
+            return
+        # approved 2026-11-12: no entry before 09:45 New York (16:45 Israel). An early TAKE does not use a daily slot,
+        # and the same stock can still go out on a later candle.
+        if now.strftime("%Y-%m-%d") >= EARLIEST_FROM and now.time() < EARLIEST_ENTRY:
+            print(f"{ticker}: Roger said TAKE at {now:%H:%M} ET, before {EARLIEST_ENTRY:%H:%M}: no email")
+            if not self.dry:
+                log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                          "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(trig["stop"], 4),
+                                          "decision": "SKIP_EARLY", "p": round(ans["p"], 4),
+                                          "why": f"before {EARLIEST_ENTRY:%H:%M} ET", "gap": round(feats.get("gap_pct", 0.0), 4)})
             self.skips += 1
             return
         self.alerted.add(ticker)
