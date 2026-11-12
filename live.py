@@ -433,6 +433,8 @@ SCORE_MIN = 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
 FIXED_STOP_PCT = 0.10    # approved 2026-11-12 (practice): stop order exactly 10% below the entry
 FIXED_STOP_FROM = "2026-11-12"
+STATUS_AT = [time(10, 30), time(12, 0), time(13, 30), time(15, 0)]   # New York: status emails (17:30, 19:00, 20:30, 22:00 Israel in winter)
+STATUS_FROM = "2026-11-13"
 EARLIEST_ENTRY = time(9, 45)   # approved 2026-11-12 (practice): no buy email before 09:45 New York
 EARLIEST_FROM = "2026-11-12"
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
@@ -531,6 +533,7 @@ class Session:
         self.james = JamesLive()
         self.dry = dry
         self.alerted = set()      # tickers already alerted today
+        self.status_sent = set()  # status email times already sent by this run
         self.sent_today = 0       # buy emails sent today, also by an earlier run (the 3-a-day cap counts these)
         self.trades = []          # open and closed trades today
         self.day_r = 0.0
@@ -712,6 +715,27 @@ class Session:
                     self.stopped = True
                     lines.append("הגענו ל-2R- היום. עוצרים ליום, לא יהיו עוד הוראות.")
                 send(f"{word}: {ticker} {t['pct']:+.1%} (תרגול)", "\n".join(lines), self.dry)
+
+    def status(self, now, n_watch):
+        """Short status email during the day (user 2026-11-12: he can't always follow, so send more)."""
+        rows = []
+        for t in self.trades:
+            if t["open"]:
+                px = live_price(t["ticker"])
+                ch = f"{px / t['entry'] - 1:+.1%}" if px else "?"
+                rows.append(f"• {t['ticker']}: פתוחה. קנייה {money(t['entry'])}, עכשיו {money(px) if px else '?'} ({ch}). סטופ {money(t['stop'])}, יעד {money(t['target']) if t.get('target') else '-'}")
+            else:
+                rows.append(f"• {t['ticker']}: נסגרה ({ {'target': 'ביעד', 'stop': 'בסטופ', 'close': 'לפני הסגירה', 'breakeven': 'במחיר הכניסה'}.get(t.get('how'), t.get('how') or '') }), בערך {t.get('pct', 0):+.1%}")
+        earlier = sorted(self.alerted - {t["ticker"] for t in self.trades})
+        n = max(len(self.trades), self.sent_today)
+        head = (f"עד עכשיו היום {n} הוראות קנייה מתוך {MAX_TRADES}." if n else "עד עכשיו היום אין הוראות קנייה: רוג׳ר עוד לא מצא גרף מספיק טוב.")
+        open_n = sum(1 for t in self.trades if t["open"])
+        subj = f"📋 עדכון {il(now)}: {n} הוראות היום" + (f", {open_n} פתוחות" if open_n else "") + " (תרגול)"
+        body = "\n".join([f"📋 עדכון מצב, {il(now)} שעון ישראל", "━━━━━━━━━━━━━━━━", head] + rows +
+                          ([f"נסגרו בריצה הקודמת (פרטים במיילים): {', '.join(earlier)}"] if earlier else []) +
+                          ["━━━━━━━━━━━━━━━━", f"רוג׳ר עוקב אחרי {n_watch} מניות ומחפש כניסות עד {il(now.replace(hour=WATCH_LAST_ENTRY.hour, minute=WATCH_LAST_ENTRY.minute - 10))}.",
+                           f"מה קורה עכשיו בצוות: {HQ_URL}", "", "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות."])
+        send(subj, body, self.dry)
 
     def close_trade(self, t, r, how, subject, lines):
         t.update(open=False, r=round(r, 2), how=how)
@@ -948,6 +972,12 @@ def run_live(late=False, carry=None):
             for tr in s.trades:
                 if tr["open"] and tr["plan"] in BLINK_PLANS and (px := live_price(tr["ticker"])) is not None:
                     s.follow_blink(tr, None, now, px)
+        if today >= STATUS_FROM:      # a few status emails a day, so nothing is missed (user 2026-11-12)
+            for st_t in STATUS_AT:
+                at = now.replace(hour=st_t.hour, minute=st_t.minute, second=0, microsecond=0)
+                if st_t not in s.status_sent and at <= now < at + timedelta(minutes=5):
+                    s.status_sent.add(st_t)
+                    s.status(now, len(metas))
         if now >= end or (now > last_entry and not any(x["open"] for x in s.trades)):
             break
         nxt = now + timedelta(minutes=1)
