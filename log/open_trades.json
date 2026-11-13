@@ -1,28 +1,25 @@
 {
- "date": "2026-11-12",
- "day_r": 1.4,
+ "date": "2026-11-13",
+ "day_r": 1.5,
  "stopped": false,
  "trades": [
   {
-   "ticker": "GSM",
-   "setup": "orb15",
-   "entry": 3.095,
-   "stop": 2.7855000000000003,
-   "target": 3.55925,
-   "i": 3,
-   "open": false,
-   "r": -0.1,
-   "p": 0.5278660314300603,
+   "ticker": "STRO",
+   "setup": "hod_break",
+   "entry": 10.260000228881836,
+   "stop": 9.234000205993652,
+   "target": 11.79900026321411,
+   "i": 35,
+   "open": true,
+   "r": null,
+   "p": 0.5303605261380291,
    "plan": "tp15",
-   "shares": 16,
-   "k": 74,
+   "shares": 4,
+   "k": 42,
    "half": false,
    "bank": 0.0,
-   "risk": 0.3094999999999999,
-   "warned": true,
-   "how": "close",
-   "pct": -0.009693034823761295
+   "risk": 1.0260000228881836
   }
  ],
- "done": true
+ "done": false
 }
