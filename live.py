@@ -532,7 +532,8 @@ class Session:
         self.day_gaps = {}        # ticker -> today's open gap, for the "hot market" count and gap rank
         self.james = JamesLive()
         self.dry = dry
-        self.alerted = set()      # tickers already alerted today
+        self.alerted = set()      # tickers Roger already said TAKE to today (emailed, capped or shadow): never again today
+        self.emailed = set()      # tickers that really got a buy email today (summary and status count only these)
         self.status_sent = set()  # status email times already sent by this run
         self.sent_today = 0       # buy emails sent today, also by an earlier run (the 3-a-day cap counts these)
         self.trades = []          # open and closed trades today
@@ -675,6 +676,7 @@ class Session:
              "target": target, "i": trig["i"], "open": True, "r": None, "p": ans["p"], "plan": plan,
              "shares": shares, "k": trig["i"], "half": False, "bank": 0.0, "risk": risk}
         self.trades.append(t)
+        self.emailed.add(ticker)
         self.sent_today += 1
         if not self.dry:
             log_row("alerts.csv", {"date": now.strftime("%Y-%m-%d"), "time_il": il(now), "ticker": ticker,
@@ -726,7 +728,7 @@ class Session:
                 rows.append(f"• {t['ticker']}: פתוחה. קנייה {money(t['entry'])}, עכשיו {money(px) if px else '?'} ({ch}). סטופ {money(t['stop'])}, יעד {money(t['target']) if t.get('target') else '-'}")
             else:
                 rows.append(f"• {t['ticker']}: נסגרה ({ {'target': 'ביעד', 'stop': 'בסטופ', 'close': 'לפני הסגירה', 'breakeven': 'במחיר הכניסה'}.get(t.get('how'), t.get('how') or '') }), בערך {t.get('pct', 0):+.1%}")
-        earlier = sorted(self.alerted - {t["ticker"] for t in self.trades})
+        earlier = sorted(self.emailed - {t["ticker"] for t in self.trades})
         n = max(len(self.trades), self.sent_today)
         head = (f"עד עכשיו היום {n} הוראות קנייה מתוך {MAX_TRADES}." if n else "עד עכשיו היום אין הוראות קנייה: רוג׳ר עוד לא מצא גרף מספיק טוב.")
         open_n = sum(1 for t in self.trades if t["open"])
@@ -841,9 +843,9 @@ class Session:
                 f"לפי המחיר עכשיו העסקה בערך {r * risk / e:+.1%} מהסכום."])
 
     def summary(self, now, n_watch, email=True):
-        n_all = len(self.alerted | {t["ticker"] for t in self.trades})   # include orders closed by an earlier run today
+        n_all = len(self.emailed | {t["ticker"] for t in self.trades})   # include orders closed by an earlier run today
         lines = [f"סיכום היום ({now.strftime('%d/%m')}): {n_all} הוראות. את הניקוד הרשמי (R) מפרסם צוות האימון באתר."]
-        earlier = sorted(self.alerted - {t["ticker"] for t in self.trades})
+        earlier = sorted(self.emailed - {t["ticker"] for t in self.trades})
         if earlier:
             lines.append(f"נסגרו מוקדם יותר היום (פרטים במיילים): {', '.join(earlier)}")
         for t in self.trades:
@@ -912,6 +914,7 @@ def run_live(late=False, carry=None):
     if carry:            # the morning's orders that are still open, and the stocks already alerted
         s.trades, s.day_r = carry["trades"], carry.get("day_r", 0.0)
         s.alerted |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))
+        s.emailed |= {t["ticker"] for t in s.trades} | set(carry.get("alerted", []))   # carry["alerted"] comes from the buy emails
         s.sent_today = len(set(carry.get("alerted", [])) | {t["ticker"] for t in s.trades})   # closed morning orders count too
     stop_at = WATCH_END if late else FOLLOW_UNTIL
     end = datetime.now(ET).replace(hour=stop_at.hour, minute=stop_at.minute, second=0, microsecond=0)
