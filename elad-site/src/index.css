@@ -1,0 +1,97 @@
+@import './fonts.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 72px;
+  }
+  body {
+    @apply bg-paper font-body text-navy antialiased;
+    font-size: 18px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1, h2, h3 {
+    @apply font-head font-extrabold;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 3px solid #2F80ED;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-16 sm:py-20;
+  }
+  .h2 {
+    @apply text-[1.75rem] sm:text-4xl;
+  }
+  .card {
+    @apply rounded-2xl border border-navy-100 bg-white;
+  }
+
+  /* Buttons. Press feedback is a 1px move plus an instant color change; no scale, no blur. */
+  .btn {
+    @apply inline-flex min-h-[52px] select-none items-center justify-center gap-2.5 rounded-xl px-5 font-head text-[1.05rem] font-bold;
+    transition: transform 160ms ease-out, background-color 160ms ease-out, opacity 160ms ease-out;
+    touch-action: manipulation;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-wa { @apply bg-wa text-navy hover:bg-wa-600 active:bg-wa-600; }
+  .btn-call { @apply bg-navy text-white hover:bg-navy-700 active:bg-navy-700; }
+  .btn-ghost { @apply border border-navy-200 bg-white text-navy hover:border-navy-500 active:bg-navy-100; }
+
+  /* Selectable pill (device / fault). */
+  .pill {
+    @apply inline-flex min-h-[44px] items-center rounded-full border border-navy-200 bg-white px-4 font-body text-base font-semibold text-navy;
+    transition: transform 160ms ease-out, background-color 160ms ease-out, border-color 160ms ease-out;
+    touch-action: manipulation;
+  }
+  .pill:hover { @apply border-navy-500; }
+  .pill:active { transform: translateY(1px); }
+  .pill[aria-pressed='true'] { @apply border-navy bg-navy text-white; }
+
+  .field {
+    @apply block min-h-[52px] w-full rounded-xl border border-navy-200 bg-white px-4 text-[1.05rem] text-navy;
+  }
+  .field:focus { @apply border-blue outline-none ring-2 ring-blue/40; }
+  .field:disabled { @apply bg-navy-100 text-navy-500; }
+  .label {
+    @apply mb-1.5 block font-head text-base font-bold text-navy;
+  }
+
+  /* Blue line under the rotating device name. */
+  .underline-blue {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.12em;
+  }
+  .underline-blue::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 0.09em;
+    min-height: 3px;
+    border-radius: 999px;
+    background: #2F80ED;
+  }
+}
