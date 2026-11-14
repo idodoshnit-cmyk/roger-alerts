@@ -312,6 +312,16 @@ footer strong{color:var(--paper);font-family:var(--head)}
 .dock .btn{min-height:54px;font-size:18px}
 .dock .btn-line{width:54px;padding:0}
 
+/* ---------- basic cookie notice ---------- */
+.cookie{position:fixed;inset-inline:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:80;max-width:560px;margin-inline:auto;
+  display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:22px;background:var(--paper);color:var(--ink);
+  box-shadow:0 18px 44px -12px rgba(0,0,0,.7);font-size:16px;line-height:1.45;
+  transform:translateY(160%);transition:transform .55s var(--ease-back)}
+.cookie.show{transform:none}
+.cookie p{flex:1}
+.cookie button{flex:none;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:700 16px var(--head);cursor:pointer}
+.cookie[hidden]{display:none}
+
 /* paused */
 .paused .mesh i,.paused .band-track,.paused .eyebrow .dot,.paused .tile.years::after,.paused .side .plus{animation-play-state:paused!important}
 .paused .btn-wa.shine::before{animation:none!important;display:none}
@@ -506,13 +516,18 @@ footer strong{color:var(--paper);font-family:var(--head)}
     <strong data-t="brand">אלעד הטכנאי</strong>
     <span data-t="foot">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span>
     <a href="tel:+972585883323" class="phone-num" style="text-decoration:none">058-588-3323</a>
-    <nav class="foot-nav" aria-label="Legal"><a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a><a href="privacy.html" class="foot-link" data-t="priv">מדיניות פרטיות</a></nav>
+    <nav class="foot-nav" aria-label="Legal"><a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a></nav>
   </div>
 </footer>
 
 <div class="dock" id="dock">
   <a class="btn btn-wa wa-link" data-wa="generic" href="https://wa.me/972585883323"><svg><use href="#i-wa"/></svg><span data-t="waShort">הודעה בוואטסאפ</span></a>
   <a class="btn btn-line" href="tel:+972585883323" data-t-aria="callAria" aria-label="חיוג 058-588-3323"><svg><use href="#i-phone"/></svg></a>
+</div>
+
+<div class="cookie" id="cookie" role="region" aria-label="Cookies" hidden>
+  <p data-t="cookieP">האתר שומר במכשיר העדפות בסיסיות בלבד (Cookies).</p>
+  <button type="button" id="cookieOk" data-t="cookieOk">אישור</button>
 </div>
 
 <span class="measure" id="measure" aria-hidden="true"></span>
@@ -577,7 +592,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
       langBtn:"EN", langAria:"Switch to English",
       skip:"דילוג לתוכן", gT:"דירוג בגוגל", c1K:"משרד העבודה", yearsK:"מאז 2000",
       band:["ירושלים","מבשרת ציון","כל החברות","מאז 2000","תעודת אחריות","5.0 בגוגל","דובר אנגלית","English speaker"],
-      statement:"אלה כל השירותים. מכשיר שלא מופיע ברשימה לא נכלל בשירות.", pause:"עצירת אנימציות", play:"הפעלת אנימציות", a11y:"הצהרת נגישות", priv:"מדיניות פרטיות",
+      statement:"אלה כל השירותים. מכשיר שלא מופיע ברשימה לא נכלל בשירות.", pause:"עצירת אנימציות", play:"הפעלת אנימציות", a11y:"הצהרת נגישות", cookieP:"האתר שומר במכשיר העדפות בסיסיות בלבד (Cookies).", cookieOk:"אישור",
       title:"אלעד הטכנאי | תיקון מוצרי חשמל בירושלים"
     },
     en: {
@@ -603,7 +618,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
       langBtn:"עב", langAria:"החלפה לעברית",
       skip:"Skip to content", gT:"Google rating", c1K:"Ministry of Labor", yearsK:"Since 2000",
       band:["Jerusalem","Mevaseret Zion","All brands","Since 2000","Warranty certificate","5.0 on Google","English speaker","דובר עברית ואנגלית"],
-      statement:"This is the full list. Appliances not on it are not serviced.", pause:"Pause animations", play:"Play animations", a11y:"Accessibility statement (Hebrew)", priv:"Privacy policy (Hebrew)",
+      statement:"This is the full list. Appliances not on it are not serviced.", pause:"Pause animations", play:"Play animations", a11y:"Accessibility statement (Hebrew)", cookieP:"This site stores only basic preferences on your device (cookies).", cookieOk:"OK",
       title:"Elad the Technician | Appliance Repair in Jerusalem"
     }
   };
@@ -838,6 +853,22 @@ footer strong{color:var(--paper);font-family:var(--head)}
     new IntersectionObserver(function(es){ es.forEach(function(e){ heroVisible = e.isIntersecting; startRot(); }); }).observe($("#hero"));
   }
 
+  /* ---------- basic cookie notice ---------- */
+  var cookieOpen = false;
+  (function(){
+    var c = $("#cookie"), ok = false;
+    try{ ok = localStorage.getItem("cookieOk") === "1"; }catch(e){}
+    if(ok) return;
+    cookieOpen = true; c.hidden = false;
+    setTimeout(function(){ c.classList.add("show"); }, 900);
+    $("#cookieOk").addEventListener("click", function(){
+      try{ localStorage.setItem("cookieOk", "1"); }catch(e){}
+      cookieOpen = false; c.classList.remove("show");
+      setTimeout(function(){ c.hidden = true; }, 600);
+      tick();
+    });
+  })();
+
   /* ---------- scroll-linked effects ---------- */
   var top = $("#top"), dock = $("#dock"), heroCta = $("#heroCta"), contact = $("#contact"), progress = $("#progress");
   var ticking = false;
@@ -847,7 +878,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
     progress.style.transform = "scaleX(" + (max > 0 ? clamp(y / max) : 0) + ")";
     top.classList.toggle("scrolled", y > 30);
     var hb = heroCta.getBoundingClientRect().bottom, cr = contact.getBoundingClientRect();
-    dock.classList.toggle("show", hb < 0 && !(cr.top < vh * .6 && cr.bottom > 0));
+    dock.classList.toggle("show", !cookieOpen && hb < 0 && !(cr.top < vh * .6 && cr.bottom > 0));
 
     // device spotlight: the row nearest the middle of the screen lights up
     var rows = $$("#deviceList li"), best = -1, bd = 1e9, mid = vh * .5;
