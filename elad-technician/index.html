@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>אלעד הטכנאי | תיקון מוצרי חשמל בירושלים</title>
+<meta name="description" content="תיקון מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx בירושלים ובמבשרת ציון. כל החברות. בתחום מאז 2000. 058-588-3323">
+<meta name="theme-color" content="#0B1F3A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Rubik:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HomeAndConstructionBusiness",
+  "name": "אלעד הטכנאי",
+  "telephone": "+972585883323",
+  "foundingDate": "2000",
+  "address": {"@type": "PostalAddress", "addressLocality": "ירושלים", "addressCountry": "IL"},
+  "areaServed": ["ירושלים", "מבשרת ציון"],
+  "knowsLanguage": ["he", "en"]
+}
+</script>
+<style>
+/* ---------- 4-color system ---------- */
+:root{
+  --ink:#0B1F3A;     /* navy: trust, text, dark sections */
+  --blue:#2563EB;    /* primary accent: links, underline, focus */
+  --paper:#F3F6FB;   /* light background */
+  --go:#25D366;      /* action: WhatsApp / call */
+
+  --white:#fff;
+  --ink-70:rgba(11,31,58,.72);
+  --ink-12:rgba(11,31,58,.12);
+  --ink-06:rgba(11,31,58,.06);
+  --paper-70:rgba(243,246,251,.74);
+  --paper-14:rgba(243,246,251,.14);
+
+  --radius:18px;
+  --ease:cubic-bezier(.22,.8,.26,1);
+  --ease-back:cubic-bezier(.34,1.4,.5,1);
+  --gutter:20px;
+  --head-font:"Rubik",system-ui,sans-serif;
+  --body-font:"Heebo",system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body-font);font-size:18px;line-height:1.6;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+html[lang="en"] body{font-family:"Heebo",system-ui,sans-serif}
+h1,h2,h3{font-family:var(--head-font);line-height:1.15;margin:0;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:8px}
+.wrap{width:100%;max-width:1080px;margin-inline:auto;padding-inline:var(--gutter)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:58px;padding:0 24px;border-radius:999px;border:0;
+  font-family:var(--head-font);font-weight:600;font-size:18px;text-decoration:none;
+  cursor:pointer;transition:transform .2s var(--ease),box-shadow .25s var(--ease),background-color .2s;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap;
+}
+.btn svg{width:24px;height:24px;flex:none}
+.btn:active{transform:scale(.97)}
+.btn-wa{background:var(--go);color:var(--ink);box-shadow:0 8px 24px -8px rgba(37,211,102,.7)}
+.btn-wa:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(37,211,102,.8)}
+.btn-call{background:transparent;color:var(--paper);box-shadow:inset 0 0 0 2px var(--paper-70)}
+.btn-call:hover{background:var(--paper-14)}
+.btn-call.on-light{color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.btn-call.on-light:hover{background:var(--ink-06)}
+.phone-num{direction:ltr;unicode-bidi:isolate;letter-spacing:.02em}
+
+/* WhatsApp button gentle ring */
+.pulse{position:relative;isolation:isolate}
+.pulse::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;
+  box-shadow:0 0 0 0 rgba(37,211,102,.55);animation:ring 2.6s var(--ease) infinite;
+}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(37,211,102,.5)}70%,100%{box-shadow:0 0 0 14px rgba(37,211,102,0)}}
+
+/* ---------- header ---------- */
+.top{
+  position:fixed;inset-inline:0;top:0;z-index:50;
+  transition:background-color .35s var(--ease),box-shadow .35s var(--ease),padding .35s var(--ease);
+  padding-block:14px;
+}
+.top.scrolled{background:rgba(11,31,58,.94);box-shadow:0 6px 20px -10px rgba(0,0,0,.5);padding-block:8px}
+@supports (backdrop-filter:blur(8px)){.top.scrolled{background:rgba(11,31,58,.86);backdrop-filter:saturate(1.4) blur(10px)}}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{color:var(--paper);text-decoration:none;font-family:var(--head-font);font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center;
+  color:var(--white);font-size:17px;font-weight:800;
+}
+.top-actions{display:flex;align-items:center;gap:8px}
+.lang{
+  min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:0;cursor:pointer;
+  background:var(--paper-14);color:var(--paper);font:600 15px var(--head-font);
+  transition:background-color .2s;
+}
+.lang:hover{background:rgba(243,246,251,.24)}
+.top-call{
+  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  background:var(--go);color:var(--ink);
+}
+.top-call svg{width:22px;height:22px}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;overflow:hidden;background:var(--ink);color:var(--paper);
+  padding:120px 0 72px;min-height:min(100svh,860px);display:flex;align-items:center;
+}
+.hero-bg{position:absolute;inset:0;pointer-events:none;z-index:0}
+.hero-bg .grid{
+  position:absolute;inset:-40px;
+  background-image:
+    linear-gradient(var(--paper-14) 1px,transparent 1px),
+    linear-gradient(90deg,var(--paper-14) 1px,transparent 1px);
+  background-size:44px 44px;opacity:.35;
+  mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 70%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 70%);
+  animation:gridDrift 24s linear infinite;
+}
+@keyframes gridDrift{to{transform:translate3d(44px,44px,0)}}
+.hero-bg .glow{
+  position:absolute;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(circle,rgba(37,99,235,.55),transparent 65%);
+  top:-160px;inset-inline-start:-140px;animation:float 14s ease-in-out infinite alternate;
+}
+.hero-bg .glow.g2{
+  width:420px;height:420px;top:auto;bottom:-180px;inset-inline-start:auto;inset-inline-end:-120px;
+  background:radial-gradient(circle,rgba(37,211,102,.22),transparent 65%);animation-duration:18s;
+}
+@keyframes float{to{transform:translate3d(60px,40px,0) scale(1.1)}}
+.hero .wrap{position:relative;z-index:1}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;font:500 16px var(--head-font);
+  color:var(--paper-70);margin-bottom:22px;
+}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--go);box-shadow:0 0 0 4px rgba(37,211,102,.2)}
+
+.h1{font-weight:800;font-size:clamp(40px,11vw,84px);line-height:1.08}
+.h1 .line{display:block}
+/* rotating device name: one line, never wraps, never cut */
+.rot-line{display:block;white-space:nowrap;padding-bottom:.18em}
+.rot{
+  position:relative;display:inline-block;vertical-align:bottom;
+  height:1.2em;white-space:nowrap;
+  clip-path:inset(-.05em -1em -.1em -1em);
+  transition:width .55s var(--ease);
+  color:var(--white);
+}
+.rot .w{
+  position:absolute;top:0;inset-inline-start:0;white-space:nowrap;
+  transform:translateY(105%);opacity:0;
+  transition:transform .6s var(--ease),opacity .45s var(--ease);
+}
+.rot .w.on{transform:none;opacity:1}
+.rot .w.out{transform:translateY(-105%);opacity:0}
+.rot::after{ /* underline (not a highlight box) */
+  content:"";position:absolute;inset-inline:0;bottom:-.06em;height:.09em;border-radius:99px;
+  background:var(--blue);transform-origin:right;transform:scaleX(0);
+  animation:none;
+}
+html[dir="ltr"] .rot::after{transform-origin:left}
+.rot.draw::after{animation:underline .9s var(--ease) forwards}
+@keyframes underline{to{transform:scaleX(1)}}
+.measure{font-family:var(--head-font);font-weight:800;letter-spacing:-.01em;position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none;inset-inline-start:-9999px;top:0}
+
+.hero-sub{font-size:clamp(18px,4.6vw,21px);color:var(--paper-70);max-width:560px;margin-top:20px}
+.hero-sub b{color:var(--paper);font-weight:600}
+.hero-cta{display:flex;flex-direction:column;gap:12px;margin-top:32px;max-width:420px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  background:var(--paper-14);color:var(--paper);font:500 15px var(--head-font);
+}
+.chip .star{color:#FFC93C}
+.chip svg{width:16px;height:16px}
+
+/* hero intro choreography */
+.intro{opacity:0;transform:translateY(22px)}
+.ready .intro{animation:introUp .8s var(--ease) forwards;animation-delay:calc(var(--i,0) * 110ms + 100ms)}
+@keyframes introUp{to{opacity:1;transform:none}}
+
+/* scroll cue */
+.cue{position:absolute;bottom:22px;inset-inline:0;display:flex;justify-content:center;z-index:1}
+.cue span{width:26px;height:42px;border-radius:14px;box-shadow:inset 0 0 0 2px var(--paper-70);position:relative}
+.cue span::after{content:"";position:absolute;top:8px;left:50%;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--paper);animation:cue 1.8s var(--ease) infinite}
+@keyframes cue{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
+
+/* ---------- sections ---------- */
+section{position:relative;overflow-x:clip}
+main,footer{overflow-x:clip}
+.sec{padding:84px 0}
+.kicker{font:600 15px var(--head-font);color:var(--blue);letter-spacing:.04em;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.kicker::before{content:"";width:22px;height:2px;background:currentColor;border-radius:2px}
+.h2{font-size:clamp(32px,8vw,52px);font-weight:800}
+.lead{color:var(--ink-70);margin-top:14px;max-width:620px}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(28px);transition:opacity .75s var(--ease),transform .75s var(--ease);transition-delay:calc(var(--d,0) * 80ms)}
+.rv.in{opacity:1;transform:none}
+.rv-x{opacity:0;transform:translateX(-30px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--d,0) * 70ms)}
+html[dir="ltr"] .rv-x{transform:translateX(30px)}
+.rv-x.in{opacity:1;transform:none}
+
+/* ---------- device list ---------- */
+.devices{list-style:none;padding:0;margin:36px 0 0;counter-reset:dev;border-top:2px solid var(--ink)}
+.devices li{
+  counter-increment:dev;display:flex;align-items:baseline;gap:16px;
+  padding:18px 4px;border-bottom:1px solid var(--ink-12);
+  font:700 clamp(26px,7vw,40px) var(--head-font);
+  position:relative;
+}
+.devices li::before{
+  content:counter(dev,decimal-leading-zero);font:600 15px var(--head-font);color:var(--ink-70);min-width:26px;
+}
+.devices li .bar{ /* line that sweeps under each item as it enters */
+  position:absolute;inset-inline:0;bottom:-1px;height:2px;background:var(--blue);
+  transform:scaleX(0);transform-origin:right;transition:transform .9s var(--ease);transition-delay:calc(var(--d,0) * 80ms + 200ms)
+}
+html[dir="ltr"] .devices li .bar{transform-origin:left}
+.devices li.in .bar{transform:scaleX(1)}
+.devices li .bar{opacity:.0}
+.devices li.in .bar{opacity:1;animation:barFade 1.6s var(--ease) forwards;animation-delay:calc(var(--d,0) * 80ms + 900ms)}
+@keyframes barFade{to{opacity:0}}
+.devices small{display:block;font:500 16px var(--body-font);color:var(--ink-70)}
+.only{
+  margin-top:28px;padding:20px 22px;border-radius:var(--radius);
+  background:var(--ink);color:var(--paper);display:flex;gap:14px;align-items:flex-start;
+}
+.only svg{width:26px;height:26px;flex:none;color:var(--go);margin-top:2px}
+.only strong{display:block;font:700 20px var(--head-font);margin-bottom:2px}
+.only span{color:var(--paper-70)}
+
+/* ---------- faults ---------- */
+.faults{background:var(--white)}
+.tabs{
+  display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;margin:30px calc(var(--gutter) * -1) 0;
+  padding:4px var(--gutter) 12px;scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:none;scroll-snap-align:start;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
+  border:0;background:var(--paper);color:var(--ink);font:600 17px var(--head-font);white-space:nowrap;
+  box-shadow:inset 0 0 0 1px var(--ink-12);
+  transition:background-color .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease),transform .2s var(--ease);
+}
+.tab:active{transform:scale(.96)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper);box-shadow:none}
+.panel{
+  margin-top:16px;border-radius:var(--radius);background:var(--paper);padding:26px 22px 24px;
+  box-shadow:inset 0 0 0 1px var(--ink-06);
+}
+.panel h3{font-size:24px;font-weight:700;margin-bottom:6px}
+.fault-list{list-style:none;padding:0;margin:14px 0 22px;display:grid;gap:10px}
+.fault-list li{
+  display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--white);
+  box-shadow:0 1px 0 var(--ink-06);font-weight:500;
+  opacity:0;transform:translateY(12px);animation:faultIn .5s var(--ease) forwards;animation-delay:calc(var(--d,0) * 60ms)
+}
+.fault-list li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:10px}
+@keyframes faultIn{to{opacity:1;transform:none}}
+.panel-body{transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.panel-body.leaving{opacity:0;transform:translateY(-8px)}
+.panel .btn{width:100%}
+
+/* ---------- credentials ---------- */
+.creds{background:var(--ink);color:var(--paper);overflow:hidden}
+.creds .kicker{color:var(--go)}
+.creds .lead{color:var(--paper-70)}
+.years{display:flex;align-items:flex-end;gap:16px;margin-top:34px}
+.years .num{font:800 clamp(96px,30vw,180px)/.85 var(--head-font);color:var(--white);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.years .lbl{font:600 20px/1.3 var(--head-font);padding-bottom:10px}
+.years .lbl span{display:block;color:var(--paper-70);font-weight:500;font-size:17px}
+.cards{display:grid;gap:14px;margin-top:40px}
+.card{
+  border-radius:var(--radius);padding:24px 22px;background:var(--paper-14);
+  box-shadow:inset 0 0 0 1px var(--paper-14);
+  transition:transform .3s var(--ease),background-color .3s var(--ease);
+}
+.card:hover{transform:translateY(-3px);background:rgba(243,246,251,.18)}
+.card h3{font-size:21px;font-weight:700;margin-bottom:12px}
+.card p{color:var(--paper-70)}
+.ticks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ticks li{display:flex;align-items:center;gap:12px;font-weight:500}
+.ticks svg{width:22px;height:22px;flex:none;color:var(--go)}
+
+/* ---------- area ---------- */
+.area-map{margin-top:40px;display:grid;gap:22px}
+.route{position:relative;padding-inline-start:38px;display:grid;gap:26px}
+.route::before{ /* track */
+  content:"";position:absolute;inset-inline-start:11px;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--ink-12);
+}
+.route .fill{
+  position:absolute;inset-inline-start:11px;top:10px;bottom:10px;width:3px;border-radius:3px;background:var(--blue);
+  transform:scaleY(0);transform-origin:top;transition:transform 1.6s var(--ease);
+}
+.route.in .fill{transform:scaleY(1)}
+.stop{position:relative}
+.stop::before{
+  content:"";position:absolute;inset-inline-start:-35px;top:8px;width:19px;height:19px;border-radius:50%;
+  background:var(--white);box-shadow:inset 0 0 0 4px var(--blue);
+  transform:scale(0);transition:transform .5s var(--ease-back);transition-delay:calc(var(--d,0) * 260ms + 200ms);
+}
+.route.in .stop::before{transform:scale(1)}
+.stop .dir{font:600 14px var(--head-font);color:var(--blue);letter-spacing:.05em}
+.stop .place{font:700 clamp(24px,6.4vw,32px) var(--head-font)}
+.stop.mid .place{font-size:clamp(30px,8vw,40px)}
+.side{
+  border-radius:var(--radius);background:var(--white);padding:20px 22px;box-shadow:inset 0 0 0 1px var(--ink-06);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.side .dir{font:600 14px var(--head-font);color:var(--blue)}
+.side .place{font:700 26px var(--head-font)}
+.side .plus{font:800 32px var(--head-font);color:var(--blue)}
+
+/* ---------- reviews ---------- */
+.reviews{background:var(--white)}
+.rating{display:flex;align-items:center;gap:14px;margin-top:22px}
+.rating .score{font:800 64px/1 var(--head-font)}
+.stars{display:flex;gap:4px;color:#F5B300}
+.stars svg{width:24px;height:24px;transform:scale(0);transition:transform .45s var(--ease-back);transition-delay:calc(var(--d,0) * 90ms + 150ms)}
+.rating.in .stars svg{transform:none}
+.rating .src{font:500 16px var(--head-font);color:var(--ink-70)}
+.rev-track{
+  display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:30px calc(var(--gutter) * -1) 0;
+  padding:4px var(--gutter) 18px;scrollbar-width:none;
+}
+.rev-track::-webkit-scrollbar{display:none}
+.rev{
+  flex:0 0 86%;max-width:420px;scroll-snap-align:center;background:var(--paper);border-radius:var(--radius);
+  padding:26px 22px;position:relative;font-size:18px;
+}
+.rev::before{content:"”";position:absolute;top:2px;inset-inline-end:16px;font:800 72px/1 var(--head-font);color:var(--blue);opacity:.25}
+html[dir="ltr"] .rev::before{content:"“"}
+.rev .stars{margin-bottom:12px}
+.rev .stars svg{width:18px;height:18px;transform:none}
+.dots{display:flex;justify-content:center;gap:8px;margin-top:6px}
+.dots button{width:10px;height:10px;padding:0;border:0;border-radius:99px;background:var(--ink-12);cursor:pointer;transition:width .35s var(--ease),background-color .35s}
+.dots button.on{width:28px;background:var(--ink)}
+
+/* ---------- contact ---------- */
+.contact{text-align:center}
+.contact .h2{max-width:none}
+.contact .lead{margin-inline:auto}
+.contact-cta{display:flex;flex-direction:column;gap:12px;margin:32px auto 0;max-width:420px}
+.big-phone{
+  display:block;margin-top:30px;font:800 clamp(38px,11vw,64px) var(--head-font);color:var(--ink);text-decoration:none;
+  direction:ltr;letter-spacing:-.01em;
+}
+.big-phone:hover{color:var(--blue)}
+
+footer{background:var(--ink);color:var(--paper-70);padding:34px 0 120px;font-size:16px}
+footer .wrap{display:flex;flex-direction:column;gap:6px}
+footer strong{color:var(--paper);font-family:var(--head-font)}
+
+/* ---------- sticky mobile bar ---------- */
+.dock{
+  position:fixed;inset-inline:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;
+  display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-radius:999px;
+  background:rgba(11,31,58,.96);box-shadow:0 14px 34px -12px rgba(11,31,58,.6);
+  transform:translateY(140%);transition:transform .5s var(--ease);
+}
+.dock.show{transform:none}
+.dock .btn{min-height:54px}
+.dock .btn-call{width:54px;padding:0;color:var(--paper)}
+.dock .btn-call svg{width:24px;height:24px}
+
+/* ---------- larger screens ---------- */
+@media (min-width:720px){
+  :root{--gutter:32px}
+  .hero-cta,.contact-cta{flex-direction:row;max-width:none}
+  .contact-cta{justify-content:center}
+  .devices{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+  .cards{grid-template-columns:repeat(3,1fr)}
+  .fault-list{grid-template-columns:1fr 1fr}
+  .panel{padding:34px}
+  .panel .btn{width:auto}
+  .area-map{grid-template-columns:1.4fr 1fr;align-items:center}
+  .rev{flex-basis:44%}
+  .tabs{flex-wrap:wrap;overflow:visible}
+  .dock{display:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+  .intro,.rv,.rv-x,.fault-list li{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-wa" viewBox="0 0 32 32"><path fill="currentColor" d="M16.04 3C8.86 3 3.03 8.82 3.03 16c0 2.3.6 4.53 1.74 6.5L3 29l6.68-1.75A12.95 12.95 0 0 0 16.04 29C23.2 29 29 23.18 29 16S23.2 3 16.04 3Zm0 23.74c-1.97 0-3.9-.53-5.58-1.53l-.4-.24-3.96 1.04 1.06-3.86-.26-.4a10.7 10.7 0 0 1-1.65-5.75c0-5.93 4.83-10.75 10.79-10.75 5.94 0 10.76 4.82 10.76 10.75 0 5.92-4.82 10.74-10.76 10.74Zm5.9-8.05c-.32-.16-1.91-.94-2.2-1.05-.3-.1-.51-.16-.73.16-.21.32-.83 1.05-1.02 1.26-.19.22-.37.24-.7.08-.32-.16-1.36-.5-2.59-1.6a9.7 9.7 0 0 1-1.8-2.23c-.18-.32-.02-.5.14-.66.15-.14.32-.37.48-.56.16-.18.21-.32.32-.53.1-.21.05-.4-.03-.56-.08-.16-.72-1.74-.99-2.38-.26-.62-.53-.54-.72-.55h-.62c-.21 0-.56.08-.85.4-.3.32-1.12 1.09-1.12 2.66 0 1.57 1.15 3.09 1.31 3.3.16.21 2.26 3.45 5.47 4.84.77.33 1.36.53 1.83.68.77.24 1.47.2 2.02.12.62-.09 1.91-.78 2.18-1.53.27-.75.27-1.4.19-1.53-.08-.13-.29-.21-.61-.37Z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.94 6.1 6.56.85-4.8 4.58 1.2 6.52L12 17.4l-5.9 3.15 1.2-6.52L2.5 9.45l6.56-.85L12 2.5Z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></g></symbol>
+</svg>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="אלעד הטכנאי">
+      <span class="brand-mark" aria-hidden="true">א</span>
+      <span data-t="brand">אלעד הטכנאי</span>
+    </a>
+    <div class="top-actions">
+      <button class="lang" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+      <a class="top-call" href="tel:+972585883323" data-t-aria="callAria" aria-label="חיוג 058-588-3323"><svg><use href="#i-phone"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" aria-hidden="true"><div class="grid"></div><div class="glow"></div><div class="glow g2"></div></div>
+  <div class="wrap">
+    <div class="eyebrow intro" style="--i:0"><span class="dot"></span><span data-t="eyebrow">ירושלים ומבשרת ציון · מאז 2000</span></div>
+    <h1 class="h1">
+      <span class="line intro" style="--i:1" data-t="h1a">תיקון</span>
+      <span class="rot-line intro" style="--i:2" id="rotLine">
+        <span class="rot" id="rot" aria-hidden="true"></span>
+        <span class="sr" data-t="h1sr">מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx</span>
+      </span>
+    </h1>
+    <p class="hero-sub intro" style="--i:3" data-t="sub" data-html>כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות.</p>
+    <div class="hero-cta intro" style="--i:4" id="heroCta">
+      <a class="btn btn-wa pulse wa-link" data-wa="generic" href="https://wa.me/972585883323"><svg><use href="#i-wa"/></svg><span data-t="waBtn">שליחת הודעה בוואטסאפ</span></a>
+      <a class="btn btn-call" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span class="phone-num">058-588-3323</span></a>
+    </div>
+    <div class="chips intro" style="--i:5">
+      <span class="chip"><span class="star">★</span><span data-t="chipG">5.0 בגוגל</span></span>
+      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipW">תעודת אחריות</span></span>
+      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipE">Service in English</span></span>
+    </div>
+  </div>
+  <div class="cue" aria-hidden="true"><span></span></div>
+</section>
+
+<!-- DEVICES -->
+<section class="sec" id="devices">
+  <div class="wrap">
+    <div class="kicker rv" data-t="devKicker">מה מתקנים</div>
+    <h2 class="h2 rv" style="--d:1" data-t="devTitle">רק המכשירים האלה</h2>
+    <p class="lead rv" style="--d:2" data-t="devLead">מכל החברות.</p>
+    <ul class="devices" id="deviceList"></ul>
+    <div class="only rv">
+      <svg><use href="#i-info"/></svg>
+      <div><strong data-t="onlyT">אלה כל השירותים</strong><span data-t="onlyP">מכשיר שלא מופיע ברשימה לא נכלל בשירות.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAULTS -->
+<section class="sec faults" id="faults">
+  <div class="wrap">
+    <div class="kicker rv" data-t="fKicker">תקלות נפוצות</div>
+    <h2 class="h2 rv" style="--d:1" data-t="fTitle">מה קרה למכשיר?</h2>
+    <p class="lead rv" style="--d:2" data-t="fLead">בוחרים מכשיר ושולחים הודעה עם התקלה.</p>
+    <div class="tabs rv" style="--d:3" role="tablist" id="tabs"></div>
+    <div class="panel rv" style="--d:3" role="tabpanel" id="panel" aria-live="polite">
+      <div class="panel-body" id="panelBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CREDENTIALS -->
+<section class="sec creds" id="creds">
+  <div class="wrap">
+    <div class="kicker rv" data-t="cKicker">ניסיון והסמכות</div>
+    <div class="years rv" style="--d:1">
+      <div class="num" id="years" data-to="26">0</div>
+      <div class="lbl"><span data-t="yearsA">שנים בתחום</span><span data-t="yearsB">מאז שנת 2000</span></div>
+    </div>
+    <div class="cards">
+      <div class="card rv" style="--d:1">
+        <h3 data-t="c1T">הסמכות משרד העבודה</h3>
+        <ul class="ticks">
+          <li><svg><use href="#i-check"/></svg><span data-t="c1a">מערכות קירור</span></li>
+          <li><svg><use href="#i-check"/></svg><span data-t="c1b">מיזוג אוויר</span></li>
+          <li><svg><use href="#i-check"/></svg><span data-t="c1c">חשמלאי</span></li>
+        </ul>
+      </div>
+      <div class="card rv" style="--d:2">
+        <h3 data-t="c2T">תעודת אחריות</h3>
+        <p data-t="c2P">ניתנת תעודת אחריות על התיקון.</p>
+      </div>
+      <div class="card rv" style="--d:3">
+        <h3 data-t="c3T">שירות גם באנגלית</h3>
+        <p data-t="c3P">אפשר לדבר ולכתוב באנגלית.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AREA -->
+<section class="sec" id="area">
+  <div class="wrap">
+    <div class="kicker rv" data-t="aKicker">אזור שירות</div>
+    <h2 class="h2 rv" style="--d:1" data-t="aTitle">ירושלים, מצפון לדרום</h2>
+    <div class="area-map">
+      <div class="route" id="route">
+        <div class="fill" aria-hidden="true"></div>
+        <div class="stop" style="--d:0"><div class="dir" data-t="north">צפון</div><div class="place" data-t="pN">פסגת זאב · נווה יעקב</div></div>
+        <div class="stop mid" style="--d:1"><div class="dir" data-t="center">כל העיר</div><div class="place" data-t="pC">ירושלים</div></div>
+        <div class="stop" style="--d:2"><div class="dir" data-t="south">דרום</div><div class="place" data-t="pS">גילה · הר חומה</div></div>
+      </div>
+      <div class="side rv-x" style="--d:2">
+        <div><div class="dir" data-t="also">וגם</div><div class="place" data-t="pM">מבשרת ציון</div></div>
+        <div class="plus" aria-hidden="true">+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS (rendered only when REVIEWS has texts) -->
+<section class="sec reviews" id="reviews" hidden>
+  <div class="wrap">
+    <div class="kicker rv" data-t="rKicker">ביקורות</div>
+    <h2 class="h2 rv" style="--d:1" data-t="rTitle">מה כתבו בגוגל</h2>
+    <div class="rating rv" style="--d:2" id="rating">
+      <div class="score">5.0</div>
+      <div>
+        <div class="stars" aria-label="5 out of 5">
+          <svg style="--d:0"><use href="#i-star"/></svg><svg style="--d:1"><use href="#i-star"/></svg><svg style="--d:2"><use href="#i-star"/></svg><svg style="--d:3"><use href="#i-star"/></svg><svg style="--d:4"><use href="#i-star"/></svg>
+        </div>
+        <div class="src" data-t="rSrc">דירוג בגוגל</div>
+      </div>
+    </div>
+    <div class="rev-track" id="revTrack"></div>
+    <div class="dots" id="revDots"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="sec contact" id="contact">
+  <div class="wrap">
+    <div class="kicker rv" style="justify-content:center" data-t="ctKicker">יצירת קשר</div>
+    <h2 class="h2 rv" style="--d:1" data-t="ctTitle">שיחה או הודעה</h2>
+    <p class="lead rv" style="--d:2" data-t="ctLead">כדאי לציין בהודעה את סוג המכשיר, החברה ומה התקלה.</p>
+    <a class="big-phone rv" style="--d:3" href="tel:+972585883323">058-588-3323</a>
+    <div class="contact-cta rv" style="--d:4">
+      <a class="btn btn-wa pulse wa-link" data-wa="generic" href="https://wa.me/972585883323"><svg><use href="#i-wa"/></svg><span data-t="waBtn">שליחת הודעה בוואטסאפ</span></a>
+      <a class="btn btn-call on-light" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span data-t="callBtn">חיוג</span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong data-t="brand">אלעד הטכנאי</strong>
+    <span data-t="foot">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span>
+    <a href="tel:+972585883323" class="phone-num" style="text-decoration:none">058-588-3323</a>
+  </div>
+</footer>
+
+<div class="dock" id="dock">
+  <a class="btn btn-wa wa-link" data-wa="generic" href="https://wa.me/972585883323"><svg><use href="#i-wa"/></svg><span data-t="waShort">הודעה בוואטסאפ</span></a>
+  <a class="btn btn-call" href="tel:+972585883323" data-t-aria="callAria" aria-label="חיוג 058-588-3323"><svg><use href="#i-phone"/></svg></a>
+</div>
+
+<span class="measure h1" id="measure" aria-hidden="true"></span>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     Google review texts: paste the real texts here, one string each.
+     Only the text is shown (no reviewer names, no review count).
+     While the list is empty the reviews section stays hidden.
+     ============================================================ */
+  var REVIEWS = [
+    // "טקסט הביקורת כאן",
+  ];
+
+  var WA = "https://wa.me/972585883323";
+
+  /* devices: name, faults (each list fits only that device), WhatsApp phrase */
+  var DEVICES = {
+    he: [
+      {n:"מקררים", tab:"מקרר", wa:"במקרר", f:["לא מקרר או מקרר חלש","מים נוזלים בתוך המקרר או על הרצפה","קרח מצטבר על הדופן האחורית","רעש חריג מהמנוע","המנוע נדלק ונכבה כל כמה דקות","לוח הבקרה או התצוגה לא עובדים"]},
+      {n:"פריזרים", tab:"פריזר", wa:"בפריזר", f:["לא מקפיא או מקפיא חלש","קרח מצטבר בתא","מים נוזלים מתחת לפריזר","רעש חריג","המנוע עובד בלי הפסקה","הפריזר לא נדלק"]},
+      {n:"מכונות כביסה", tab:"מכונת כביסה", wa:"במכונת הכביסה", f:["לא מרוקנת מים","לא סוחטת","נוזלים מים מהמכונה","הדלת לא נפתחת בסוף התוכנית","רעש או רעידות חזקות בסחיטה","לא מחממת את המים","קוד שגיאה בתצוגה"]},
+      {n:"מייבשים", tab:"מייבש", wa:"במייבש", f:["לא מחמם","התוף לא מסתובב","הכביסה יוצאת לחה","נכבה באמצע התוכנית","רעש או חריקה בזמן העבודה","לא נדלק"]},
+      {n:"תנורים", tab:"תנור", wa:"בתנור", f:["לא מחמם","מחמם רק מלמעלה או רק מלמטה","הטמפרטורה לא מדויקת","המאוורר לא עובד","מקפיץ את החשמל","הטיימר או הכפתורים לא עובדים"]},
+      {n:"מזגנים", tab:"מזגן", wa:"במזגן", f:["לא מקרר","לא מחמם","מטפטף מים מהיחידה הפנימית","ריח לא נעים כשהמזגן פועל","רעש חריג מהיחידה הפנימית או החיצונית","לא מגיב לשלט","מקפיץ את החשמל","קוד שגיאה בתצוגה"]},
+      {n:"חימום מים Winx", tab:"חימום מים Winx", wa:"בחימום המים (Winx)", f:["המים לא מתחממים","המים יוצאים פושרים בלבד","המים החמים נגמרים מהר","מקפיץ את החשמל","לוח ההפעלה לא מגיב או מציג תקלה"]}
+    ],
+    en: [
+      {n:"Refrigerators", tab:"Refrigerator", wa:"my refrigerator", f:["Not cooling, or cooling weakly","Water leaking inside or onto the floor","Ice building up on the back wall","Unusual noise from the compressor","Compressor switches on and off every few minutes","Control panel or display not working"]},
+      {n:"Freezers", tab:"Freezer", wa:"my freezer", f:["Not freezing, or freezing weakly","Ice building up inside","Water leaking under the freezer","Unusual noise","Motor runs non-stop","Freezer won't turn on"]},
+      {n:"Washing machines", tab:"Washing machine", wa:"my washing machine", f:["Not draining","Not spinning","Water leaking from the machine","Door won't open after the cycle","Loud noise or shaking on spin","Not heating the water","Error code on the display"]},
+      {n:"Dryers", tab:"Dryer", wa:"my dryer", f:["Not heating","Drum not turning","Laundry comes out damp","Stops mid-cycle","Noise or squeaking while running","Won't turn on"]},
+      {n:"Ovens", tab:"Oven", wa:"my oven", f:["Not heating","Heats only from the top or only from the bottom","Temperature is off","Fan not working","Trips the electricity","Timer or knobs not working"]},
+      {n:"Air conditioners", tab:"Air conditioner", wa:"my air conditioner", f:["Not cooling","Not heating","Water dripping from the indoor unit","Bad smell when running","Unusual noise from the indoor or outdoor unit","Not responding to the remote","Trips the electricity","Error code on the display"]},
+      {n:"Winx water heating", tab:"Winx water heating", wa:"my Winx water heating", f:["Water doesn't heat up","Water only comes out lukewarm","Hot water runs out quickly","Trips the electricity","Control panel not responding or showing an error"]}
+    ]
+  };
+
+  var T = {
+    he: {
+      brand:"אלעד הטכנאי", eyebrow:"ירושלים ומבשרת ציון · מאז 2000", h1a:"תיקון",
+      h1sr:"מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx",
+      sub:"כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות.",
+      waBtn:"שליחת הודעה בוואטסאפ", waShort:"הודעה בוואטסאפ", callBtn:"חיוג", callAria:"חיוג 058-588-3323",
+      chipG:"5.0 בגוגל", chipW:"תעודת אחריות", chipE:"Service in English",
+      devKicker:"מה מתקנים", devTitle:"רק המכשירים האלה", devLead:"מכל החברות.",
+      onlyT:"אלה כל השירותים", onlyP:"מכשיר שלא מופיע ברשימה לא נכלל בשירות.",
+      fKicker:"תקלות נפוצות", fTitle:"מה קרה למכשיר?", fLead:"בוחרים מכשיר ושולחים הודעה עם התקלה.",
+      faultsIn:"תקלות נפוצות ב", waFault:"הודעה בוואטסאפ על התקלה",
+      cKicker:"ניסיון והסמכות", yearsA:"שנים בתחום", yearsB:"מאז שנת 2000",
+      c1T:"הסמכות משרד העבודה", c1a:"מערכות קירור", c1b:"מיזוג אוויר", c1c:"חשמלאי",
+      c2T:"תעודת אחריות", c2P:"ניתנת תעודת אחריות על התיקון.",
+      c3T:"שירות גם באנגלית", c3P:"אפשר לדבר ולכתוב באנגלית.",
+      aKicker:"אזור שירות", aTitle:"ירושלים, מצפון לדרום", north:"צפון", center:"כל העיר", south:"דרום",
+      pN:"פסגת זאב · נווה יעקב", pC:"ירושלים", pS:"גילה · הר חומה", also:"וגם", pM:"מבשרת ציון",
+      rKicker:"ביקורות", rTitle:"מה כתבו בגוגל", rSrc:"דירוג בגוגל",
+      ctKicker:"יצירת קשר", ctTitle:"שיחה או הודעה", ctLead:"כדאי לציין בהודעה את סוג המכשיר, החברה ומה התקלה.",
+      foot:"תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון",
+      waGeneric:"היי, יש לי תקלה ב", waPrefix:"היי, יש לי תקלה ",
+      langBtn:"EN", langAria:"Switch to English",
+      title:"אלעד הטכנאי | תיקון מוצרי חשמל בירושלים"
+    },
+    en: {
+      brand:"Elad the Technician", eyebrow:"Jerusalem & Mevaseret Zion · Since 2000", h1a:"Repair of",
+      h1sr:"refrigerators, freezers, washing machines, dryers, ovens, air conditioners and Winx water heating",
+      sub:"All brands. <b>Ministry of Labor certified</b> in refrigeration, air conditioning and electrical work. Warranty certificate.",
+      waBtn:"Message on WhatsApp", waShort:"WhatsApp", callBtn:"Call", callAria:"Call 058-588-3323",
+      chipG:"5.0 on Google", chipW:"Warranty certificate", chipE:"Hebrew & English",
+      devKicker:"What gets repaired", devTitle:"Only these appliances", devLead:"All brands.",
+      onlyT:"This is the full list", onlyP:"Appliances not on this list are not serviced.",
+      fKicker:"Common faults", fTitle:"What's wrong with it?", fLead:"Pick the appliance and send a message describing the fault.",
+      faultsIn:"Common faults: ", waFault:"Message about this fault on WhatsApp",
+      cKicker:"Experience & certification", yearsA:"years in the trade", yearsB:"since 2000",
+      c1T:"Ministry of Labor certifications", c1a:"Refrigeration systems", c1b:"Air conditioning", c1c:"Electrician",
+      c2T:"Warranty certificate", c2P:"A warranty certificate is given for the repair.",
+      c3T:"Service in English", c3P:"Calls and messages in English are welcome.",
+      aKicker:"Service area", aTitle:"Jerusalem, north to south", north:"North", center:"Citywide", south:"South",
+      pN:"Pisgat Ze'ev · Neve Yaakov", pC:"Jerusalem", pS:"Gilo · Har Homa", also:"Also", pM:"Mevaseret Zion",
+      rKicker:"Reviews", rTitle:"What people wrote on Google", rSrc:"Google rating",
+      ctKicker:"Contact", ctTitle:"Call or message", ctLead:"Please include the appliance type, the brand and what the fault is.",
+      foot:"Home appliance repair · Jerusalem & Mevaseret Zion",
+      waGeneric:"Hi, I have a problem with my ", waPrefix:"Hi, I have a problem with ",
+      langBtn:"עב", langAria:"החלפה לעברית",
+      title:"Elad the Technician | Appliance Repair in Jerusalem"
+    }
+  };
+
+  var lang = "he";
+  try{
+    var q = new URLSearchParams(location.search).get("lang");
+    lang = (q === "en" || q === "he") ? q : (localStorage.getItem("lang") || "he");
+  }catch(e){}
+  if(!T[lang]) lang = "he";
+
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function(s, r){ return (r||document).querySelector(s); };
+  var $$ = function(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+  function waHref(text){ return WA + "?text=" + encodeURIComponent(text); }
+
+  /* ---------- reveal on scroll ---------- */
+  var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  }, {threshold:.18, rootMargin:"0px 0px -6% 0px"}) : null;
+  function watch(el){ if(io) io.observe(el); else el.classList.add("in"); }
+
+  /* ---------- device list ---------- */
+  function renderDevices(){
+    var ul = $("#deviceList"); ul.innerHTML = "";
+    DEVICES[lang].forEach(function(d, i){
+      var li = document.createElement("li");
+      li.className = "rv-x"; li.style.setProperty("--d", i);
+      li.textContent = d.n;
+      var bar = document.createElement("span"); bar.className = "bar"; bar.setAttribute("aria-hidden","true");
+      li.appendChild(bar);
+      ul.appendChild(li); watch(li);
+    });
+  }
+
+  /* ---------- faults tabs ---------- */
+  var activeTab = 0;
+  function renderTabs(){
+    var wrap = $("#tabs"); wrap.innerHTML = "";
+    DEVICES[lang].forEach(function(d, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "tab"; b.setAttribute("role","tab");
+      b.id = "tab-" + i; b.setAttribute("aria-controls","panel");
+      b.setAttribute("aria-selected", i === activeTab ? "true" : "false");
+      b.tabIndex = i === activeTab ? 0 : -1;
+      b.textContent = d.tab;
+      b.addEventListener("click", function(){ selectTab(i, true); });
+      b.addEventListener("keydown", function(ev){
+        var n = DEVICES[lang].length, k = ev.key, next = null;
+        var fwd = lang === "he" ? "ArrowLeft" : "ArrowRight", back = lang === "he" ? "ArrowRight" : "ArrowLeft";
+        if(k === fwd) next = (i + 1) % n; else if(k === back) next = (i - 1 + n) % n;
+        if(next !== null){ ev.preventDefault(); selectTab(next, true); $("#tab-" + next).focus(); }
+      });
+      wrap.appendChild(b);
+    });
+    fillPanel(false);
+  }
+  function fillPanel(animate){
+    var d = DEVICES[lang][activeTab], body = $("#panelBody"), t = T[lang];
+    $("#panel").setAttribute("aria-labelledby", "tab-" + activeTab);
+    var build = function(){
+      var html = '<h3>' + esc(t.faultsIn + d.tab) + '</h3><ul class="fault-list">';
+      d.f.forEach(function(f, i){ html += '<li style="--d:' + i + '">' + esc(f) + '</li>'; });
+      html += '</ul><a class="btn btn-wa wa-link" href="' + waHref(t.waPrefix + d.wa) + '">' +
+        '<svg><use href="#i-wa"/></svg><span>' + esc(t.waFault) + '</span></a>';
+      body.innerHTML = html;
+      body.classList.remove("leaving");
+    };
+    if(animate && !reduce){ body.classList.add("leaving"); setTimeout(build, 220); } else build();
+  }
+  function selectTab(i, animate){
+    if(i === activeTab) return;
+    activeTab = i;
+    $$(".tab").forEach(function(b, j){
+      b.setAttribute("aria-selected", j === i ? "true" : "false"); b.tabIndex = j === i ? 0 : -1;
+    });
+    var tb = $("#tab-" + i);
+    if(tb && tb.scrollIntoView && window.innerWidth < 720){
+      var wrap = $("#tabs"), r = tb.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+      if(r.left < wr.left || r.right > wr.right) wrap.scrollBy({left: r.left - wr.left - (wr.width - r.width) / 2, behavior: reduce ? "auto" : "smooth"});
+    }
+    fillPanel(animate);
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  /* ---------- rotating device name (fits one line, never cut) ---------- */
+  var rotTimer = null, rotIndex = 0;
+  function buildRotator(){
+    var rot = $("#rot"); rot.innerHTML = "";
+    var words = DEVICES[lang].map(function(d){ return d.n; });
+    words.forEach(function(w, i){
+      var s = document.createElement("span"); s.className = "w" + (i === 0 ? " on" : ""); s.textContent = w;
+      rot.appendChild(s);
+    });
+    rotIndex = 0;
+    fitRotator();
+    setRotWidth();
+    rot.classList.remove("draw"); void rot.offsetWidth; rot.classList.add("draw");
+    clearInterval(rotTimer);
+    if(!reduce) rotTimer = setInterval(nextWord, 2600);
+  }
+  // shrink the heading's rotating line so the longest name fits on one line
+  function fitRotator(){
+    var line = $("#rotLine"), m = $("#measure"), h1 = $(".h1");
+    line.style.fontSize = "";
+    var base = parseFloat(getComputedStyle(h1).fontSize);
+    m.style.fontSize = base + "px";
+    var max = 0;
+    DEVICES[lang].forEach(function(d){ m.textContent = d.n; max = Math.max(max, m.getBoundingClientRect().width); });
+    var avail = line.parentElement.getBoundingClientRect().width - 4;
+    if(max > avail){ line.style.fontSize = Math.floor(base * avail / max * 0.98) + "px"; }
+  }
+  function setRotWidth(){
+    var rot = $("#rot"), cur = rot.children[rotIndex];
+    if(cur) rot.style.width = Math.ceil(cur.getBoundingClientRect().width) + "px";
+  }
+  function nextWord(){
+    var rot = $("#rot"), ws = rot.children; if(!ws.length) return;
+    var prev = ws[rotIndex];
+    rotIndex = (rotIndex + 1) % ws.length;
+    var next = ws[rotIndex];
+    prev.classList.remove("on"); prev.classList.add("out");
+    next.classList.remove("out");
+    // restart from below
+    next.style.transition = "none"; next.style.transform = "translateY(105%)"; void next.offsetWidth;
+    next.style.transition = ""; next.style.transform = "";
+    next.classList.add("on");
+    setRotWidth();
+    rot.classList.remove("draw"); void rot.offsetWidth; rot.classList.add("draw");
+    setTimeout(function(){ prev.classList.remove("out"); }, 650);
+  }
+
+  /* ---------- reviews ---------- */
+  function renderReviews(){
+    var sec = $("#reviews");
+    var list = REVIEWS.filter(function(r){ return r && String(r).trim(); });
+    if(!list.length){ sec.hidden = true; return; }
+    sec.hidden = false;
+    var track = $("#revTrack"), dots = $("#revDots"); track.innerHTML = ""; dots.innerHTML = "";
+    var star = '<svg><use href="#i-star"/></svg>';
+    list.forEach(function(text, i){
+      var c = document.createElement("article"); c.className = "rev rv"; c.style.setProperty("--d", Math.min(i, 3));
+      c.innerHTML = '<div class="stars" aria-hidden="true">' + star + star + star + star + star + '</div><p></p>';
+      c.querySelector("p").textContent = text;
+      track.appendChild(c); watch(c);
+      var b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", String(i + 1));
+      if(i === 0) b.className = "on";
+      b.addEventListener("click", function(){ c.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"nearest", inline:"center"}); });
+      dots.appendChild(b);
+    });
+    var update = function(){
+      var tr = track.getBoundingClientRect(), mid = tr.left + tr.width / 2, best = 0, bd = 1e9;
+      $$(".rev", track).forEach(function(c, i){ var r = c.getBoundingClientRect(), dd = Math.abs(r.left + r.width / 2 - mid); if(dd < bd){ bd = dd; best = i; } });
+      $$("button", dots).forEach(function(b, i){ b.classList.toggle("on", i === best); });
+    };
+    track.addEventListener("scroll", function(){ requestAnimationFrame(update); }, {passive:true});
+  }
+
+  /* ---------- years counter ---------- */
+  function setupYears(){
+    var el = $("#years");
+    var to = new Date().getFullYear() - 2000; el.setAttribute("data-to", to);
+    if(reduce || !io){ el.textContent = to; return; }
+    var o = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return; o.disconnect();
+        var start = performance.now(), dur = 1400;
+        (function step(now){
+          var p = Math.min(1, (now - start) / dur), eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(to * eased);
+          if(p < 1) requestAnimationFrame(step);
+        })(start);
+      });
+    }, {threshold:.5});
+    o.observe(el);
+  }
+
+  /* ---------- language ---------- */
+  function applyLang(){
+    var t = T[lang], html = document.documentElement;
+    html.lang = lang; html.dir = lang === "he" ? "rtl" : "ltr";
+    document.title = t.title;
+    $$("[data-t]").forEach(function(el){
+      var k = el.getAttribute("data-t"); if(!(k in t)) return;
+      if(el.hasAttribute("data-html")) el.innerHTML = t[k]; else el.textContent = t[k];
+    });
+    $$("[data-t-aria]").forEach(function(el){ el.setAttribute("aria-label", t[el.getAttribute("data-t-aria")]); });
+    $(".brand").setAttribute("aria-label", t.brand);
+    var lb = $("#langBtn"); lb.textContent = t.langBtn; lb.setAttribute("aria-label", t.langAria);
+    $$('.wa-link[data-wa="generic"]').forEach(function(a){ a.href = waHref(t.waGeneric); });
+    renderDevices(); renderTabs(); buildRotator(); renderReviews();
+    try{ localStorage.setItem("lang", lang); }catch(e){}
+  }
+  $("#langBtn").addEventListener("click", function(){ lang = lang === "he" ? "en" : "he"; applyLang(); });
+
+  /* ---------- header + dock ---------- */
+  var top = $("#top"), dock = $("#dock"), heroCta = $("#heroCta"), contact = $("#contact");
+  function onScroll(){
+    top.classList.toggle("scrolled", window.scrollY > 30);
+    var hb = heroCta.getBoundingClientRect().bottom, cr = contact.getBoundingClientRect();
+    var showDock = hb < 0 && !(cr.top < window.innerHeight * .7 && cr.bottom > 0);
+    dock.classList.toggle("show", showDock);
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+
+  var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ fitRotator(); setRotWidth(); }, 120); });
+
+  /* ---------- init ---------- */
+  applyLang();
+  setupYears();
+  $$(".rv, .rv-x, .route, .rating").forEach(watch);
+  onScroll();
+  var go = function(){ document.body.classList.add("ready"); fitRotator(); setRotWidth(); };
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(go); setTimeout(go, 1200); } else go();
+})();
+</script>
+</body>
+</html>
