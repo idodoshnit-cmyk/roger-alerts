@@ -6,9 +6,7 @@
 <title>אלעד הטכנאי | תיקון מוצרי חשמל בירושלים</title>
 <meta name="description" content="תיקון מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx בירושלים ובמבשרת ציון. כל החברות. בתחום מאז 2000. 058-588-3323">
 <meta name="theme-color" content="#060A17">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts/fonts.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -304,6 +302,7 @@ html[dir="ltr"] .devices li.rvx.in.act{transform:translateX(10px)}
 footer{background:var(--ink);color:var(--paper-70);padding:36px 0 124px;font-size:16px}
 footer .wrap{display:flex;flex-direction:column;gap:6px}
 footer strong{color:var(--paper);font-family:var(--head)}
+.foot-nav{display:flex;flex-wrap:wrap;gap:0 22px}
 .foot-link{color:var(--paper);text-underline-offset:4px;min-height:44px;display:inline-flex;align-items:center;align-self:flex-start}
 
 /* ---------- sticky mobile dock ---------- */
@@ -380,7 +379,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
         <span class="sr" data-t="h1sr">מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx</span>
       </span>
     </h1>
-    <p class="hero-sub intro" style="--i:2" data-t="sub" data-html>כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות.</p>
+    <p class="hero-sub intro" style="--i:2" data-t="sub" data-html>כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות. דובר אנגלית.</p>
     <div class="hero-cta intro" style="--i:3" id="heroCta">
       <a class="btn btn-wa shine wa-link" data-wa="generic" href="https://wa.me/972585883323"><svg><use href="#i-wa"/></svg><span data-t="waBtn">שליחת הודעה בוואטסאפ</span></a>
       <a class="btn btn-line" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span class="phone-num">058-588-3323</span></a>
@@ -388,7 +387,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
     <div class="chips intro" style="--i:4">
       <span class="chip"><svg><use href="#i-star"/></svg><span data-t="chipG">5.0 בגוגל</span></span>
       <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipW">תעודת אחריות</span></span>
-      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipE">Service in English</span></span>
+      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipE">דובר אנגלית · English</span></span>
     </div>
     <button class="pause intro" style="--i:5" type="button" id="pauseBtn" aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>עצירת אנימציות</span></button>
   </div>
@@ -444,8 +443,8 @@ footer strong{color:var(--paper);font-family:var(--head)}
         <p data-t="c2P">ניתנת תעודת אחריות על התיקון.</p>
       </div>
       <div class="tile pop" style="--d:3">
-        <h3 data-t="c3T">שירות גם באנגלית</h3>
-        <p data-t="c3P">אפשר לדבר ולכתוב באנגלית.</p>
+        <h3 data-t="c3T">דובר אנגלית</h3>
+        <p data-t="c3P">English speaker. אפשר לדבר ולכתוב באנגלית.</p>
       </div>
       <div class="tile w2 pop" style="--d:4">
         <div class="tk" data-t="gT">דירוג בגוגל</div>
@@ -507,7 +506,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
     <strong data-t="brand">אלעד הטכנאי</strong>
     <span data-t="foot">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span>
     <a href="tel:+972585883323" class="phone-num" style="text-decoration:none">058-588-3323</a>
-    <a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a>
+    <nav class="foot-nav" aria-label="Legal"><a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a><a href="privacy.html" class="foot-link" data-t="priv">מדיניות פרטיות</a></nav>
   </div>
 </footer>
 
@@ -558,9 +557,9 @@ footer strong{color:var(--paper);font-family:var(--head)}
     he: {
       brand:"אלעד הטכנאי", eyebrow:"ירושלים ומבשרת ציון · מאז 2000", h1a:"תיקון",
       h1sr:"מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx",
-      sub:"כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות.",
+      sub:"כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות. דובר אנגלית.",
       waBtn:"שליחת הודעה בוואטסאפ", waShort:"הודעה בוואטסאפ", callBtn:"חיוג", callAria:"חיוג 058-588-3323",
-      chipG:"5.0 בגוגל", chipW:"תעודת אחריות", chipE:"Service in English",
+      chipG:"5.0 בגוגל", chipW:"תעודת אחריות", chipE:"דובר אנגלית · English",
       devKicker:"מה מתקנים", devTitle:"רק המכשירים האלה", devLead:"מכל החברות.",
       onlyT:"אלה כל השירותים", onlyP:"מכשיר שלא מופיע ברשימה לא נכלל בשירות.",
       fKicker:"תקלות נפוצות", fTitle:"מה קרה למכשיר?", fLead:"בוחרים מכשיר ושולחים הודעה עם התקלה.",
@@ -568,7 +567,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
       cKicker:"ניסיון והסמכות", yearsA:"שנים בתחום", yearsB:"מאז שנת 2000",
       c1T:"הסמכות משרד העבודה", c1a:"מערכות קירור", c1b:"מיזוג אוויר", c1c:"חשמלאי",
       c2T:"תעודת אחריות", c2P:"ניתנת תעודת אחריות על התיקון.",
-      c3T:"שירות גם באנגלית", c3P:"אפשר לדבר ולכתוב באנגלית.",
+      c3T:"דובר אנגלית", c3P:"English speaker. אפשר לדבר ולכתוב באנגלית.",
       aKicker:"אזור שירות", aTitle:"ירושלים, מצפון לדרום", north:"צפון", center:"כל העיר", south:"דרום",
       pN:"פסגת זאב · נווה יעקב", pC:"ירושלים", pS:"גילה · הר חומה", also:"וגם", pM:"מבשרת ציון",
       rKicker:"ביקורות", rTitle:"מה כתבו בגוגל", rSrc:"דירוג בגוגל",
@@ -577,16 +576,16 @@ footer strong{color:var(--paper);font-family:var(--head)}
       waGeneric:"היי, יש לי תקלה ב", waPrefix:"היי, יש לי תקלה ",
       langBtn:"EN", langAria:"Switch to English",
       skip:"דילוג לתוכן", gT:"דירוג בגוגל", c1K:"משרד העבודה", yearsK:"מאז 2000",
-      band:["ירושלים","מבשרת ציון","כל החברות","מאז 2000","תעודת אחריות","5.0 בגוגל","Service in English"],
-      statement:"אלה כל השירותים. מכשיר שלא מופיע ברשימה לא נכלל בשירות.", pause:"עצירת אנימציות", play:"הפעלת אנימציות", a11y:"הצהרת נגישות",
+      band:["ירושלים","מבשרת ציון","כל החברות","מאז 2000","תעודת אחריות","5.0 בגוגל","דובר אנגלית","English speaker"],
+      statement:"אלה כל השירותים. מכשיר שלא מופיע ברשימה לא נכלל בשירות.", pause:"עצירת אנימציות", play:"הפעלת אנימציות", a11y:"הצהרת נגישות", priv:"מדיניות פרטיות",
       title:"אלעד הטכנאי | תיקון מוצרי חשמל בירושלים"
     },
     en: {
       brand:"Elad the Technician", eyebrow:"Jerusalem & Mevaseret Zion · Since 2000", h1a:"Repair of",
       h1sr:"refrigerators, freezers, washing machines, dryers, ovens, air conditioners and Winx water heating",
-      sub:"All brands. <b>Ministry of Labor certified</b> in refrigeration, air conditioning and electrical work. Warranty certificate.",
+      sub:"All brands. <b>Ministry of Labor certified</b> in refrigeration, air conditioning and electrical work. Warranty certificate. English speaker.",
       waBtn:"Message on WhatsApp", waShort:"WhatsApp", callBtn:"Call", callAria:"Call 058-588-3323",
-      chipG:"5.0 on Google", chipW:"Warranty certificate", chipE:"Hebrew & English",
+      chipG:"5.0 on Google", chipW:"Warranty certificate", chipE:"English speaker",
       devKicker:"What gets repaired", devTitle:"Only these appliances", devLead:"All brands.",
       onlyT:"This is the full list", onlyP:"Appliances not on this list are not serviced.",
       fKicker:"Common faults", fTitle:"What's wrong with it?", fLead:"Pick the appliance and send a message describing the fault.",
@@ -594,7 +593,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
       cKicker:"Experience & certification", yearsA:"years in the trade", yearsB:"since 2000",
       c1T:"Ministry of Labor certifications", c1a:"Refrigeration systems", c1b:"Air conditioning", c1c:"Electrician",
       c2T:"Warranty certificate", c2P:"A warranty certificate is given for the repair.",
-      c3T:"Service in English", c3P:"Calls and messages in English are welcome.",
+      c3T:"English speaker", c3P:"Calls and messages in English are welcome.",
       aKicker:"Service area", aTitle:"Jerusalem, north to south", north:"North", center:"Citywide", south:"South",
       pN:"Pisgat Ze'ev · Neve Yaakov", pC:"Jerusalem", pS:"Gilo · Har Homa", also:"Also", pM:"Mevaseret Zion",
       rKicker:"Reviews", rTitle:"What people wrote on Google", rSrc:"Google rating",
@@ -603,8 +602,8 @@ footer strong{color:var(--paper);font-family:var(--head)}
       waGeneric:"Hi, I have a problem with my ", waPrefix:"Hi, I have a problem with ",
       langBtn:"עב", langAria:"החלפה לעברית",
       skip:"Skip to content", gT:"Google rating", c1K:"Ministry of Labor", yearsK:"Since 2000",
-      band:["Jerusalem","Mevaseret Zion","All brands","Since 2000","Warranty certificate","5.0 on Google","שירות בעברית"],
-      statement:"This is the full list. Appliances not on it are not serviced.", pause:"Pause animations", play:"Play animations", a11y:"Accessibility statement",
+      band:["Jerusalem","Mevaseret Zion","All brands","Since 2000","Warranty certificate","5.0 on Google","English speaker","דובר עברית ואנגלית"],
+      statement:"This is the full list. Appliances not on it are not serviced.", pause:"Pause animations", play:"Play animations", a11y:"Accessibility statement (Hebrew)", priv:"Privacy policy (Hebrew)",
       title:"Elad the Technician | Appliance Repair in Jerusalem"
     }
   };
