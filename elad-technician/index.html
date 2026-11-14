@@ -17,7 +17,8 @@
   "telephone": "+972585883323",
   "foundingDate": "2000",
   "address": {"@type": "PostalAddress", "addressLocality": "ירושלים", "addressCountry": "IL"},
-  "areaServed": ["ירושלים", "מבשרת ציון"],
+  "areaServed": [{"@type": "City", "name": "ירושלים"}, {"@type": "City", "name": "מבשרת ציון"}],
+  "description": "תיקון מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx. כל החברות.",
   "knowsLanguage": ["he", "en"]
 }
 </script>
@@ -57,6 +58,20 @@ a{color:inherit}
 :focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:8px}
 .wrap{width:100%;max-width:1080px;margin-inline:auto;padding-inline:var(--gutter)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* skip link */
+.skip{position:fixed;top:10px;inset-inline-start:10px;z-index:100;background:var(--white);color:var(--ink);padding:12px 18px;border-radius:12px;font:600 17px var(--head-font);transform:translateY(-200%);transition:transform .2s}
+.skip:focus{transform:none}
+
+/* pause-animations toggle (WCAG 2.2.2) */
+.pause{
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-top:14px;padding:0 4px;border:0;background:none;cursor:pointer;
+  color:var(--paper-70);font:500 15px var(--head-font);text-decoration:underline;text-underline-offset:4px;
+}
+.pause:hover{color:var(--paper)}
+.pause svg{width:16px;height:16px}
+.paused .hero-bg .grid,.paused .hero-bg .glow,.paused .cue span::after{animation-play-state:paused!important}
+.paused .pulse::after{animation:none!important}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -251,7 +266,7 @@ html[dir="ltr"] .devices li .bar{transform-origin:left}
 .tab{
   flex:none;scroll-snap-align:start;min-height:48px;padding:0 18px;border-radius:999px;cursor:pointer;
   border:0;background:var(--paper);color:var(--ink);font:600 17px var(--head-font);white-space:nowrap;
-  box-shadow:inset 0 0 0 1px var(--ink-12);
+  box-shadow:inset 0 0 0 1.5px rgba(11,31,58,.55);
   transition:background-color .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease),transform .2s var(--ease);
 }
 .tab:active{transform:scale(.96)}
@@ -362,6 +377,7 @@ html[dir="ltr"] .rev::before{content:"“"}
 footer{background:var(--ink);color:var(--paper-70);padding:34px 0 120px;font-size:16px}
 footer .wrap{display:flex;flex-direction:column;gap:6px}
 footer strong{color:var(--paper);font-family:var(--head-font)}
+.foot-link{color:var(--paper);text-underline-offset:4px;min-height:44px;display:inline-flex;align-items:center;align-self:flex-start}
 
 /* ---------- sticky mobile bar ---------- */
 .dock{
@@ -398,12 +414,15 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
 </style>
 </head>
 <body>
+<a class="skip" href="#main" data-t="skip">דילוג לתוכן</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-wa" viewBox="0 0 32 32"><path fill="currentColor" d="M16.04 3C8.86 3 3.03 8.82 3.03 16c0 2.3.6 4.53 1.74 6.5L3 29l6.68-1.75A12.95 12.95 0 0 0 16.04 29C23.2 29 29 23.18 29 16S23.2 3 16.04 3Zm0 23.74c-1.97 0-3.9-.53-5.58-1.53l-.4-.24-3.96 1.04 1.06-3.86-.26-.4a10.7 10.7 0 0 1-1.65-5.75c0-5.93 4.83-10.75 10.79-10.75 5.94 0 10.76 4.82 10.76 10.75 0 5.92-4.82 10.74-10.76 10.74Zm5.9-8.05c-.32-.16-1.91-.94-2.2-1.05-.3-.1-.51-.16-.73.16-.21.32-.83 1.05-1.02 1.26-.19.22-.37.24-.7.08-.32-.16-1.36-.5-2.59-1.6a9.7 9.7 0 0 1-1.8-2.23c-.18-.32-.02-.5.14-.66.15-.14.32-.37.48-.56.16-.18.21-.32.32-.53.1-.21.05-.4-.03-.56-.08-.16-.72-1.74-.99-2.38-.26-.62-.53-.54-.72-.55h-.62c-.21 0-.56.08-.85.4-.3.32-1.12 1.09-1.12 2.66 0 1.57 1.15 3.09 1.31 3.3.16.21 2.26 3.45 5.47 4.84.77.33 1.36.53 1.83.68.77.24 1.47.2 2.02.12.62-.09 1.91-.78 2.18-1.53.27-.75.27-1.4.19-1.53-.08-.13-.29-.21-.61-.37Z"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.94 6.1 6.56.85-4.8 4.58 1.2 6.52L12 17.4l-5.9 3.15 1.2-6.52L2.5 9.45l6.56-.85L12 2.5Z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3v14H7zM14 5h3v14h-3z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></g></symbol>
 </svg>
 
@@ -420,7 +439,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 <!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-bg" aria-hidden="true"><div class="grid"></div><div class="glow"></div><div class="glow g2"></div></div>
@@ -443,6 +462,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
       <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipW">תעודת אחריות</span></span>
       <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipE">Service in English</span></span>
     </div>
+    <button class="pause intro" style="--i:6" type="button" id="pauseBtn" aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>עצירת אנימציות</span></button>
   </div>
   <div class="cue" aria-hidden="true"><span></span></div>
 </section>
@@ -562,6 +582,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
     <strong data-t="brand">אלעד הטכנאי</strong>
     <span data-t="foot">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span>
     <a href="tel:+972585883323" class="phone-num" style="text-decoration:none">058-588-3323</a>
+    <a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a>
   </div>
 </footer>
 
@@ -631,6 +652,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
       foot:"תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון",
       waGeneric:"היי, יש לי תקלה ב", waPrefix:"היי, יש לי תקלה ",
       langBtn:"EN", langAria:"Switch to English",
+      skip:"דילוג לתוכן", pause:"עצירת אנימציות", play:"הפעלת אנימציות", a11y:"הצהרת נגישות",
       title:"אלעד הטכנאי | תיקון מוצרי חשמל בירושלים"
     },
     en: {
@@ -654,6 +676,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
       foot:"Home appliance repair · Jerusalem & Mevaseret Zion",
       waGeneric:"Hi, I have a problem with my ", waPrefix:"Hi, I have a problem with ",
       langBtn:"עב", langAria:"החלפה לעברית",
+      skip:"Skip to content", pause:"Pause animations", play:"Play animations", a11y:"Accessibility statement",
       title:"Elad the Technician | Appliance Repair in Jerusalem"
     }
   };
@@ -665,6 +688,8 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
   }catch(e){}
   if(!T[lang]) lang = "he";
 
+  var paused = false, heroVisible = true;
+  try{ paused = localStorage.getItem("paused") === "1"; }catch(e){}
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var $ = function(s, r){ return (r||document).querySelector(s); };
   var $$ = function(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
@@ -755,8 +780,11 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
     fitRotator();
     setRotWidth();
     rot.classList.remove("draw"); void rot.offsetWidth; rot.classList.add("draw");
+    startRot();
+  }
+  function startRot(){
     clearInterval(rotTimer);
-    if(!reduce) rotTimer = setInterval(nextWord, 2600);
+    if(!reduce && !paused && heroVisible) rotTimer = setInterval(nextWord, 2600);
   }
   // shrink the heading's rotating line so the longest name fits on one line
   function fitRotator(){
@@ -848,6 +876,7 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
     var lb = $("#langBtn"); lb.textContent = t.langBtn; lb.setAttribute("aria-label", t.langAria);
     $$('.wa-link[data-wa="generic"]').forEach(function(a){ a.href = waHref(t.waGeneric); });
     renderDevices(); renderTabs(); buildRotator(); renderReviews();
+    if($("#pauseBtn")) $("#pauseBtn span").textContent = paused ? t.play : t.pause;
     try{ localStorage.setItem("lang", lang); }catch(e){}
   }
   $("#langBtn").addEventListener("click", function(){ lang = lang === "he" ? "en" : "he"; applyLang(); });
@@ -864,8 +893,27 @@ footer strong{color:var(--paper);font-family:var(--head-font)}
 
   var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ fitRotator(); setRotWidth(); }, 120); });
 
+  /* ---------- pause animations ---------- */
+  function applyPause(){
+    document.documentElement.classList.toggle("paused", paused);
+    var b = $("#pauseBtn"), t = T[lang];
+    b.setAttribute("aria-pressed", paused ? "true" : "false");
+    b.querySelector("use").setAttribute("href", paused ? "#i-play" : "#i-pause");
+    b.querySelector("span").textContent = paused ? t.play : t.pause;
+    startRot();
+    try{ localStorage.setItem("paused", paused ? "1" : "0"); }catch(e){}
+  }
+  $("#pauseBtn").addEventListener("click", function(){ paused = !paused; applyPause(); });
+  // the rotating word only runs while the hero is on screen
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ heroVisible = e.isIntersecting; startRot(); });
+    }).observe($("#hero"));
+  }
+
   /* ---------- init ---------- */
   applyLang();
+  applyPause();
   setupYears();
   $$(".rv, .rv-x, .route, .rating").forEach(watch);
   onScroll();
