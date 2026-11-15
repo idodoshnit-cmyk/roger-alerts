@@ -102,8 +102,9 @@ html[dir="ltr"] .progress{transform-origin:left}
 .brand{color:var(--paper);text-decoration:none;font:700 20px var(--head);display:flex;align-items:center;gap:10px}
 .brand-mark{width:36px;height:36px;border-radius:12px;background:var(--go);display:grid;place-items:center;color:var(--ink);font-size:18px;font-weight:900}
 .top-actions{display:flex;align-items:center;gap:8px}
-.lang{min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:0;cursor:pointer;background:var(--paper-14);color:var(--paper);font:600 15px var(--head);transition:background-color .2s}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 14px;border-radius:999px;border:0;cursor:pointer;background:var(--paper-14);color:var(--paper);font:600 15px var(--head);transition:background-color .2s}
 .lang:hover{background:rgba(242,244,248,.26)}
+.lang:has(:focus-visible){outline:3px solid var(--go);outline-offset:3px}
 .top-call{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--go);color:var(--ink)}
 .top-call svg{width:22px;height:22px}
 
@@ -155,10 +156,10 @@ html[dir="ltr"] .progress{transform-origin:left}
 
 /* hero entrance */
 .js .intro{opacity:0;transform:translateY(26px)}
-.ready .intro{animation:introUp .9s var(--ease) forwards;animation-delay:calc(var(--i,0) * 110ms + 250ms)}
+.ready .intro{animation:introUp .9s var(--ease) forwards;animation-delay:calc(var(--i,0) * 110ms + 600ms)}
 @keyframes introUp{to{opacity:1;transform:none}}
 .js .h1 .a>span{transform:translateY(110%)}
-.ready .h1 .a>span{animation:lineUp 1s var(--ease) .1s forwards}
+.ready .h1 .a>span{animation:lineUp 1s var(--ease) .45s forwards}
 @keyframes lineUp{to{transform:none}}
 
 /* ---------- moving band ---------- */
@@ -166,13 +167,13 @@ html[dir="ltr"] .progress{transform-origin:left}
   box-shadow:0 18px 50px -18px rgba(37,211,102,.7)}
 html[dir="ltr"] .band{transform:rotate(2deg)}
 .band-track{display:flex;width:max-content;animation:marquee 26s linear infinite}
-.band-track span{display:inline-flex;align-items:center;gap:22px;padding-inline:11px;font:800 clamp(20px,5.6vw,30px) var(--head);white-space:nowrap}
+.band-track span{transform:skewX(var(--sk,0deg));transition:transform .4s var(--ease);display:inline-flex;align-items:center;gap:22px;padding-inline:11px;font:800 clamp(20px,5.6vw,30px) var(--head);white-space:nowrap}
 .band-track span::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--ink)}
 @keyframes marquee{to{transform:translate3d(-50%,0,0)}}
 
 /* ---------- sections ---------- */
 .sec{position:relative;padding:96px 0}
-.sheet{border-radius:36px 36px 0 0;margin-top:-36px;z-index:2}
+.sheet{border-radius:36px 36px 0 0;margin-top:-36px;z-index:2;transform-origin:50% 0}
 .pad-next{padding-bottom:132px}
 .dark{background:var(--ink);color:var(--paper)}
 .light{background:var(--paper);color:var(--ink)}
@@ -214,6 +215,7 @@ html[dir="ltr"] .devices li.act{transform:translateX(10px)}
 .js .devices li.rvx{opacity:0;transform:translateX(-46px)}
 html[dir="ltr"].js .devices li.rvx{transform:translateX(46px)}
 .js .devices li.rvx.in{opacity:1;transform:none;transition:opacity .7s var(--ease) calc(var(--d) * 70ms),transform .8s var(--ease) calc(var(--d) * 70ms),color .45s var(--ease)}
+html[dir="ltr"].js .devices li.rvx.in{transform:none}
 .js .devices li.rvx.in.act{transform:translateX(-10px)}
 html[dir="ltr"].js .devices li.rvx.in.act{transform:translateX(10px)}
 
@@ -242,6 +244,7 @@ html[dir="ltr"].js .devices li.rvx.in.act{transform:translateX(10px)}
 .panel-body{transition:opacity .22s var(--ease),transform .22s var(--ease)}
 .panel-body.leaving{opacity:0;transform:translateY(-10px)}
 .panel .btn{width:100%}
+.panel .btn,.fd .btn{white-space:normal;text-align:center;line-height:1.25;padding-block:12px}
 
 /* ---------- bento ---------- */
 .bento{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:34px}
@@ -317,6 +320,47 @@ footer strong{color:var(--paper);font-family:var(--head)}
 .foot-nav{display:flex;flex-wrap:wrap;gap:0 22px}
 .foot-link{color:var(--paper);text-underline-offset:4px;min-height:44px;display:inline-flex;align-items:center;align-self:flex-start}
 
+/* ---------- two languages in one page ---------- */
+html:not([lang="en"]):not(:has(#enToggle:checked)) .en{display:none!important}
+html[lang="en"] .he,html:has(#enToggle:checked) .he{display:none!important}
+.js .nj{display:none!important}
+html:not(.js):has(#enToggle:checked) .he-nj{display:none!important}
+html:not(.js):has(#enToggle:checked) body{direction:ltr}
+html:not(.js):has(#enToggle:checked) .h1 .a{font-size:min(1em,calc((min(100vw,1080px) - var(--gutter) * 2 - 6px) / 4.716))}
+html:not(.js):has(#enToggle:checked) .band{transform:rotate(2deg)}
+html:not(.js):has(#enToggle:checked) .progress,html:not(.js):has(#enToggle:checked) .devices li .bar{transform-origin:left}
+
+/* ---------- extra motion ---------- */
+/* opening sweep: starts and ends off screen, so it can never get stuck over the page */
+.wipe{position:fixed;inset:0;z-index:200;background:var(--go);pointer-events:none;transform:translateY(101%);animation:wipe 1.05s cubic-bezier(.76,0,.24,1) .05s both}
+@keyframes wipe{0%{transform:translateY(101%)}100%{transform:translateY(-101%)}}
+.mesh .beam{inset:0;border-radius:0;background:linear-gradient(105deg,transparent 42%,rgba(242,244,248,.1) 50%,transparent 58%);background-size:300% 100%;animation:beam 7s linear infinite}
+@keyframes beam{from{background-position:130% 0}to{background-position:-130% 0}}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .45s;
+  background:radial-gradient(260px circle at var(--px,50%) var(--py,40%),rgba(61,90,254,.4),transparent 70%)}
+.hero.lit::after{opacity:1}
+.chip{animation:chipIn .65s var(--ease-back) both;animation-delay:calc(var(--k,0) * 120ms + 1.45s)}
+@keyframes chipIn{from{opacity:0;transform:scale(.6) translateY(12px)}to{opacity:1;transform:none}}
+.top-call{animation:live 2.6s ease-out infinite}
+.js .kicker::before{transform:scaleX(0);transform-origin:right;transition:transform .9s var(--ease) .2s}
+html[dir="ltr"].js .kicker::before{transform-origin:left}
+.js .kicker.in::before{transform:scaleX(1)}
+/* headings rise word by word */
+.mask .wd{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.14em;margin-bottom:-.14em}
+.mask .wd>i{display:inline-block;font-style:normal;transform:translateY(115%);transition:transform .95s var(--ease);transition-delay:calc(var(--w) * 85ms + 60ms)}
+.mask.in .wd>i{transform:none}
+.js .mask.split>span{transform:none}
+.js .stop.hit::after{content:"";position:absolute;inset-inline-start:-42px;top:.35em;width:24px;height:24px;border-radius:50%;animation:ping 1.1s ease-out 1 both}
+@keyframes ping{from{box-shadow:0 0 0 0 rgba(61,90,254,.6)}to{box-shadow:0 0 0 20px rgba(61,90,254,0)}}
+.dock .btn-wa svg{animation:wig 5s ease-in-out infinite}
+@keyframes wig{0%,84%,100%{transform:none}88%{transform:rotate(-16deg) scale(1.18)}92%{transform:rotate(13deg) scale(1.18)}96%{transform:rotate(-6deg)}}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rip .7s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+.tile{transition:transform .4s var(--ease)}
+.ghost{direction:ltr;overflow:hidden;margin:-46px 0 30px;pointer-events:none}
+.ghost-track{display:flex;width:max-content;animation:marquee 38s linear infinite reverse}
+.ghost-track span{font:900 clamp(84px,27vw,200px)/1 var(--head);letter-spacing:-.03em;padding-inline:20px;color:transparent;-webkit-text-stroke:2px rgba(6,10,23,.24);white-space:nowrap}
+
 /* ---------- sticky mobile dock ---------- */
 .dock{position:fixed;inset-inline:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-radius:999px;
   background:rgba(6,10,23,.94);box-shadow:0 16px 40px -12px rgba(0,0,0,.7),inset 0 0 0 1px var(--paper-14);transform:translateY(150%);transition:transform .55s var(--ease-back)}
@@ -339,7 +383,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
    Everything is in the page already; motion here is CSS only.
    ============================================================ */
 .js .rot-css,.js .nojs-faults{display:none}
-html:not(.js) .lang,html:not(.js) .pause,html:not(.js) #tabs,html:not(.js) #panel,html:not(.js) #rotWord,html:not(.js) .ul{display:none}
+html:not(.js) .pause,html:not(.js) #tabs,html:not(.js) #panel,html:not(.js) #rotWord,html:not(.js) .ul{display:none}
 html:not(.js) .top{position:absolute}
 html:not(.js) .dock{transform:none}
 html:not(.js) .devices li{color:var(--paper)}
@@ -352,7 +396,7 @@ html:not(.js) .statement .hl{color:var(--go)}
 .rot-css span{grid-area:1/1;justify-self:start;align-self:end;white-space:nowrap;line-height:1.2;padding-bottom:16px;position:relative;
   font-size:min(1em,calc(var(--room) / var(--em)));opacity:0;
   animation:cssWord 17.5s var(--ease) infinite backwards;animation-delay:calc(var(--i) * 2.5s)}
-.rot-css span:first-child{opacity:1}
+.rot-css span.f{opacity:1}
 .rot-css span::after{content:"";position:absolute;inset-inline:0;bottom:0;height:8px;border-radius:99px;background:linear-gradient(90deg,var(--go),var(--blue))}
 @keyframes cssWord{
   0%{opacity:0;transform:translateY(55%)}
@@ -363,13 +407,13 @@ html:not(.js) .statement .hl{color:var(--go)}
 }
 
 /* hero entrance */
-html:not(.js) .intro{animation:introIn .9s var(--ease) both;animation-delay:calc(var(--i,0) * 110ms + 250ms)}
-html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
+html:not(.js) .intro{animation:introIn .9s var(--ease) both;animation-delay:calc(var(--i,0) * 110ms + 600ms)}
+html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .45s both}
 @keyframes introIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 @keyframes lineIn{from{transform:translateY(110%)}to{transform:none}}
 
 /* faults as native open/close rows */
-.nojs-faults{margin-top:28px;display:grid;gap:10px}
+.nojs-faults{margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .fd{background:#fff;border-radius:22px;padding:0 18px;box-shadow:0 20px 40px -30px rgba(6,10,23,.35)}
 .fd summary{list-style:none;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:space-between;font:800 22px var(--head)}
 .fd summary::-webkit-details-marker{display:none}
@@ -400,6 +444,7 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 /* paused */
 .paused .mesh i,.paused .band-track,.paused .eyebrow .dot,.paused .tile.years::after,.paused .side .plus{animation-play-state:paused!important}
 .paused .btn-wa.shine::before{animation:none!important;display:none}
+.paused .ghost-track,.paused .dock .btn-wa svg,.paused .top-call{animation-play-state:paused!important}
 
 @media (min-width:760px){
   :root{--gutter:36px}
@@ -422,11 +467,15 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
   .stop{opacity:1!important}
   .band-track{animation:none!important}
   .rot-css span{animation:none!important}
+  .wipe{display:none!important}
+  .ghost-track{animation:none!important}
+  .kicker::before,.mask .wd>i{transform:none!important}
 }
 </style>
 </head>
 <body>
-<a class="skip" href="#main" data-t="skip">דילוג לתוכן</a>
+<div class="wipe" aria-hidden="true"></div>
+<a class="skip" href="#main" data-t="skip"><span class="he">דילוג לתוכן</span><span class="en">Skip to content</span></a>
 <div class="progress" id="progress" aria-hidden="true"></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -442,10 +491,10 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
   <div class="wrap">
     <a class="brand" href="#" aria-label="אלעד הטכנאי">
       <span class="brand-mark" aria-hidden="true">א</span>
-      <span data-t="brand">אלעד הטכנאי</span>
+      <span data-t="brand"><span class="he">אלעד הטכנאי</span><span class="en">Elad the Technician</span></span>
     </a>
     <div class="top-actions">
-      <button class="lang" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+      <label class="lang" id="langBtn"><input type="checkbox" id="enToggle" class="sr" aria-label="Switch to English"><span class="he" aria-hidden="true">EN</span><span class="en" aria-hidden="true">עב</span></label>
       <a class="top-call" href="tel:+972585883323" data-t-aria="callAria" aria-label="חיוג 058-588-3323"><svg><use href="#i-phone"/></svg></a>
     </div>
   </div>
@@ -454,58 +503,67 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 <main id="main" tabindex="-1">
 <!-- HERO -->
 <section class="hero dark" id="hero">
-  <div class="mesh" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="lines"></i></div>
+  <div class="mesh" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="lines"></i><i class="beam"></i></div>
   <div class="wrap">
-    <div class="eyebrow intro" style="--i:0"><span class="dot"></span><span data-t="eyebrow">ירושלים ומבשרת ציון · מאז 2000</span></div>
+    <div class="eyebrow intro" style="--i:0"><span class="dot"></span><span data-t="eyebrow"><span class="he">ירושלים ומבשרת ציון · מאז 2000</span><span class="en">Jerusalem &amp; Mevaseret Zion · Since 2000</span></span></div>
     <h1 class="h1" id="h1">
-      <span class="a" id="h1a"><span data-t="h1a">תיקון</span></span>
+      <span class="a" id="h1a"><span data-t="h1a"><span class="he">תיקון</span><span class="en">Repair of</span></span></span>
       <span class="rot-line" id="rotLine">
-        <span class="rot" id="rot" aria-hidden="true"><span class="w" id="rotWord">מקררים</span><span class="rot-css"><span style="--i:0;--em:3.488">מקררים</span><span style="--i:1;--em:3.392">פריזרים</span><span style="--i:2;--em:6.018">מכונות כביסה</span><span style="--i:3;--em:3.693">מייבשים</span><span style="--i:4;--em:3.045">תנורים</span><span style="--i:5;--em:3.017">מזגנים</span><span style="--i:6;--em:7.158">חימום מים Winx</span></span></span>
+        <span class="rot" id="rot" aria-hidden="true"><span class="w" id="rotWord">מקררים</span><span class="rot-css"><span class="he-nj f" style="--i:0;--em:3.488">מקררים</span><span class="he-nj" style="--i:1;--em:3.392">פריזרים</span><span class="he-nj" style="--i:2;--em:6.018">מכונות כביסה</span><span class="he-nj" style="--i:3;--em:3.693">מייבשים</span><span class="he-nj" style="--i:4;--em:3.045">תנורים</span><span class="he-nj" style="--i:5;--em:3.017">מזגנים</span><span class="he-nj" style="--i:6;--em:7.158">חימום מים Winx</span><span class="en nj f" style="--i:0;--em:7.324">Refrigerators</span><span class="en nj" style="--i:1;--em:4.702">Freezers</span><span class="en nj" style="--i:2;--em:9.640">Washing machines</span><span class="en nj" style="--i:3;--em:3.594">Dryers</span><span class="en nj" style="--i:4;--em:3.242">Ovens</span><span class="en nj" style="--i:5;--em:8.514">Air conditioners</span><span class="en nj" style="--i:6;--em:10.015">Winx water heating</span></span></span></span>
         <span class="ul" id="ul" aria-hidden="true"></span>
-        <span class="sr" data-t="h1sr">מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx</span>
+        <span class="sr" data-t="h1sr"><span class="he">מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx</span><span class="en">refrigerators, freezers, washing machines, dryers, ovens, air conditioners and Winx water heating</span></span>
       </span>
     </h1>
-    <p class="hero-sub intro" style="--i:2" data-t="sub" data-html>כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות. דובר אנגלית.</p>
+    <p class="hero-sub intro" style="--i:2" data-t="sub" data-html><span class="he">כל החברות. <b>הסמכות משרד העבודה</b> בקירור, מיזוג אוויר וחשמל. תעודת אחריות. דובר אנגלית.</span><span class="en">All brands. <b>Ministry of Labor certified</b> in refrigeration, air conditioning and electrical work. Warranty certificate. English speaker.</span></p>
     <div class="hero-cta intro" style="--i:3" id="heroCta">
-      <a class="btn btn-wa shine wa-link" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waBtn">שליחת הודעה בוואטסאפ</span></a>
+      <a class="btn btn-wa shine wa-link he-nj" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waBtn"><span class="he">שליחת הודעה בוואטסאפ</span><span class="en">Message on WhatsApp</span></span></a><a class="btn btn-wa shine en nj" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20"><svg><use href="#i-wa"/></svg><span data-t="waBtn"><span class="he">שליחת הודעה בוואטסאפ</span><span class="en">Message on WhatsApp</span></span></a>
       <a class="btn btn-line" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span class="phone-num">058-588-3323</span></a>
     </div>
     <div class="chips intro" style="--i:4">
-      <span class="chip"><svg><use href="#i-star"/></svg><span data-t="chipG">5.0 בגוגל</span></span>
-      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipW">תעודת אחריות</span></span>
-      <span class="chip"><svg><use href="#i-check"/></svg><span data-t="chipE">דובר אנגלית · English</span></span>
+      <span class="chip" style="--k:0"><svg><use href="#i-star"/></svg><span data-t="chipG"><span class="he">5.0 בגוגל</span><span class="en">5.0 on Google</span></span></span>
+      <span class="chip" style="--k:1"><svg><use href="#i-check"/></svg><span data-t="chipW"><span class="he">תעודת אחריות</span><span class="en">Warranty certificate</span></span></span>
+      <span class="chip" style="--k:2"><svg><use href="#i-check"/></svg><span data-t="chipE"><span class="he">דובר אנגלית · English</span><span class="en">English speaker</span></span></span>
     </div>
     <button class="pause intro" style="--i:5" type="button" id="pauseBtn" aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg><span>עצירת אנימציות</span></button>
   </div>
 </section>
 
-<div class="band" aria-hidden="true"><div class="band-track" id="band"><span>ירושלים</span><span>מבשרת ציון</span><span>כל החברות</span><span>מאז 2000</span><span>תעודת אחריות</span><span>5.0 בגוגל</span><span>דובר אנגלית</span><span>English speaker</span><span>ירושלים</span><span>מבשרת ציון</span><span>כל החברות</span><span>מאז 2000</span><span>תעודת אחריות</span><span>5.0 בגוגל</span><span>דובר אנגלית</span><span>English speaker</span></div></div>
+<div class="band" aria-hidden="true"><div class="band-track he-nj" id="band"><span>ירושלים</span><span>מבשרת ציון</span><span>כל החברות</span><span>מאז 2000</span><span>תעודת אחריות</span><span>5.0 בגוגל</span><span>דובר אנגלית</span><span>English speaker</span><span>ירושלים</span><span>מבשרת ציון</span><span>כל החברות</span><span>מאז 2000</span><span>תעודת אחריות</span><span>5.0 בגוגל</span><span>דובר אנגלית</span><span>English speaker</span></div><div class="band-track en nj"><span>Jerusalem</span><span>Mevaseret Zion</span><span>All brands</span><span>Since 2000</span><span>Warranty certificate</span><span>5.0 on Google</span><span>English speaker</span><span>דובר עברית ואנגלית</span><span>Jerusalem</span><span>Mevaseret Zion</span><span>All brands</span><span>Since 2000</span><span>Warranty certificate</span><span>5.0 on Google</span><span>English speaker</span><span>דובר עברית ואנגלית</span></div></div>
 
 <!-- DEVICES -->
 <section class="sec dark pad-next" id="devices">
   <div class="wrap">
-    <div class="kicker rv" data-t="devKicker">מה מתקנים</div>
-    <h2 class="h2 mask"><span data-t="devTitle">רק המכשירים האלה</span></h2>
-    <p class="lead rv" style="--d:2" data-t="devLead">מכל החברות.</p>
-    <ul class="devices" id="deviceList"><li>מקררים<span class="bar" aria-hidden="true"></span></li><li>פריזרים<span class="bar" aria-hidden="true"></span></li><li>מכונות כביסה<span class="bar" aria-hidden="true"></span></li><li>מייבשים<span class="bar" aria-hidden="true"></span></li><li>תנורים<span class="bar" aria-hidden="true"></span></li><li>מזגנים<span class="bar" aria-hidden="true"></span></li><li>חימום מים Winx<span class="bar" aria-hidden="true"></span></li></ul>
-    <p class="statement" id="statement"><span class="hl">אלה</span> <span class="hl">כל</span> <span class="hl">השירותים.</span> <span>מכשיר</span> <span>שלא</span> <span>מופיע</span> <span>ברשימה</span> <span>לא</span> <span>נכלל</span> <span>בשירות.</span></p>
+    <div class="kicker rv" data-t="devKicker"><span class="he">מה מתקנים</span><span class="en">What gets repaired</span></div>
+    <h2 class="h2 mask"><span data-t="devTitle"><span class="he">רק המכשירים האלה</span><span class="en">Only these appliances</span></span></h2>
+    <p class="lead rv" style="--d:2" data-t="devLead"><span class="he">מכל החברות.</span><span class="en">All brands.</span></p>
+    <ul class="devices he-nj" id="deviceList"><li>מקררים<span class="bar" aria-hidden="true"></span></li><li>פריזרים<span class="bar" aria-hidden="true"></span></li><li>מכונות כביסה<span class="bar" aria-hidden="true"></span></li><li>מייבשים<span class="bar" aria-hidden="true"></span></li><li>תנורים<span class="bar" aria-hidden="true"></span></li><li>מזגנים<span class="bar" aria-hidden="true"></span></li><li>חימום מים Winx<span class="bar" aria-hidden="true"></span></li></ul>
+    <ul class="devices en nj"><li>Refrigerators<span class="bar" aria-hidden="true"></span></li><li>Freezers<span class="bar" aria-hidden="true"></span></li><li>Washing machines<span class="bar" aria-hidden="true"></span></li><li>Dryers<span class="bar" aria-hidden="true"></span></li><li>Ovens<span class="bar" aria-hidden="true"></span></li><li>Air conditioners<span class="bar" aria-hidden="true"></span></li><li>Winx water heating<span class="bar" aria-hidden="true"></span></li></ul>
+    <p class="statement he-nj" id="statement"><span class="hl">אלה</span> <span class="hl">כל</span> <span class="hl">השירותים.</span> <span>מכשיר</span> <span>שלא</span> <span>מופיע</span> <span>ברשימה</span> <span>לא</span> <span>נכלל</span> <span>בשירות.</span></p>
+    <p class="statement en nj"><span class="hl">This</span> <span class="hl">is</span> <span class="hl">the</span> <span class="hl">full</span> <span class="hl">list.</span> <span>Appliances</span> <span>not</span> <span>on</span> <span>it</span> <span>are</span> <span>not</span> <span>serviced.</span></p>
   </div>
 </section>
 
 <!-- FAULTS -->
 <section class="sec light sheet pad-next" id="faults">
   <div class="wrap">
-    <div class="kicker rv" data-t="fKicker">תקלות נפוצות</div>
-    <h2 class="h2 mask"><span data-t="fTitle">מה קרה למכשיר?</span></h2>
-    <p class="lead rv" style="--d:2" data-t="fLead">בוחרים מכשיר ושולחים הודעה עם התקלה.</p>
+    <div class="kicker rv" data-t="fKicker"><span class="he">תקלות נפוצות</span><span class="en">Common faults</span></div>
+    <h2 class="h2 mask"><span data-t="fTitle"><span class="he">מה קרה למכשיר?</span><span class="en">What's wrong with it?</span></span></h2>
+    <p class="lead rv" style="--d:2" data-t="fLead"><span class="he">בוחרים מכשיר ושולחים הודעה עם התקלה.</span><span class="en">Pick the appliance and send a message describing the fault.</span></p>
     <div class="nojs-faults">
-<details class="fd" open><summary>מקרר</summary><ul class="fault-list"><li style="--d:0">לא מקרר או מקרר חלש</li><li style="--d:1">מים נוזלים בתוך המקרר או על הרצפה</li><li style="--d:2">קרח מצטבר על הדופן האחורית</li><li style="--d:3">רעש חריג מהמנוע</li><li style="--d:4">המנוע נדלק ונכבה כל כמה דקות</li><li style="--d:5">לוח הבקרה או התצוגה לא עובדים</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%A7%D7%A8%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>פריזר</summary><ul class="fault-list"><li style="--d:0">לא מקפיא או מקפיא חלש</li><li style="--d:1">קרח מצטבר בתא</li><li style="--d:2">מים נוזלים מתחת לפריזר</li><li style="--d:3">רעש חריג</li><li style="--d:4">המנוע עובד בלי הפסקה</li><li style="--d:5">הפריזר לא נדלק</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%A4%D7%A8%D7%99%D7%96%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>מכונת כביסה</summary><ul class="fault-list"><li style="--d:0">לא מרוקנת מים</li><li style="--d:1">לא סוחטת</li><li style="--d:2">נוזלים מים מהמכונה</li><li style="--d:3">הדלת לא נפתחת בסוף התוכנית</li><li style="--d:4">רעש או רעידות חזקות בסחיטה</li><li style="--d:5">לא מחממת את המים</li><li style="--d:6">קוד שגיאה בתצוגה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%9B%D7%95%D7%A0%D7%AA%20%D7%94%D7%9B%D7%91%D7%99%D7%A1%D7%94"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>מייבש</summary><ul class="fault-list"><li style="--d:0">לא מחמם</li><li style="--d:1">התוף לא מסתובב</li><li style="--d:2">הכביסה יוצאת לחה</li><li style="--d:3">נכבה באמצע התוכנית</li><li style="--d:4">רעש או חריקה בזמן העבודה</li><li style="--d:5">לא נדלק</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%99%D7%99%D7%91%D7%A9"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>תנור</summary><ul class="fault-list"><li style="--d:0">לא מחמם</li><li style="--d:1">מחמם רק מלמעלה או רק מלמטה</li><li style="--d:2">הטמפרטורה לא מדויקת</li><li style="--d:3">המאוורר לא עובד</li><li style="--d:4">מקפיץ את החשמל</li><li style="--d:5">הטיימר או הכפתורים לא עובדים</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%AA%D7%A0%D7%95%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>מזגן</summary><ul class="fault-list"><li style="--d:0">לא מקרר</li><li style="--d:1">לא מחמם</li><li style="--d:2">מטפטף מים מהיחידה הפנימית</li><li style="--d:3">ריח לא נעים כשהמזגן פועל</li><li style="--d:4">רעש חריג מהיחידה הפנימית או החיצונית</li><li style="--d:5">לא מגיב לשלט</li><li style="--d:6">מקפיץ את החשמל</li><li style="--d:7">קוד שגיאה בתצוגה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%96%D7%92%D7%9F"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
-<details class="fd"><summary>חימום מים Winx</summary><ul class="fault-list"><li style="--d:0">המים לא מתחממים</li><li style="--d:1">המים יוצאים פושרים בלבד</li><li style="--d:2">המים החמים נגמרים מהר</li><li style="--d:3">מקפיץ את החשמל</li><li style="--d:4">לוח ההפעלה לא מגיב או מציג תקלה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%97%D7%99%D7%9E%D7%95%D7%9D%20%D7%94%D7%9E%D7%99%D7%9D%20%28Winx%29"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj" open><summary>מקרר</summary><ul class="fault-list"><li style="--d:0">לא מקרר או מקרר חלש</li><li style="--d:1">מים נוזלים בתוך המקרר או על הרצפה</li><li style="--d:2">קרח מצטבר על הדופן האחורית</li><li style="--d:3">רעש חריג מהמנוע</li><li style="--d:4">המנוע נדלק ונכבה כל כמה דקות</li><li style="--d:5">לוח הבקרה או התצוגה לא עובדים</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%A7%D7%A8%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>פריזר</summary><ul class="fault-list"><li style="--d:0">לא מקפיא או מקפיא חלש</li><li style="--d:1">קרח מצטבר בתא</li><li style="--d:2">מים נוזלים מתחת לפריזר</li><li style="--d:3">רעש חריג</li><li style="--d:4">המנוע עובד בלי הפסקה</li><li style="--d:5">הפריזר לא נדלק</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%A4%D7%A8%D7%99%D7%96%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>מכונת כביסה</summary><ul class="fault-list"><li style="--d:0">לא מרוקנת מים</li><li style="--d:1">לא סוחטת</li><li style="--d:2">נוזלים מים מהמכונה</li><li style="--d:3">הדלת לא נפתחת בסוף התוכנית</li><li style="--d:4">רעש או רעידות חזקות בסחיטה</li><li style="--d:5">לא מחממת את המים</li><li style="--d:6">קוד שגיאה בתצוגה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%9B%D7%95%D7%A0%D7%AA%20%D7%94%D7%9B%D7%91%D7%99%D7%A1%D7%94"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>מייבש</summary><ul class="fault-list"><li style="--d:0">לא מחמם</li><li style="--d:1">התוף לא מסתובב</li><li style="--d:2">הכביסה יוצאת לחה</li><li style="--d:3">נכבה באמצע התוכנית</li><li style="--d:4">רעש או חריקה בזמן העבודה</li><li style="--d:5">לא נדלק</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%99%D7%99%D7%91%D7%A9"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>תנור</summary><ul class="fault-list"><li style="--d:0">לא מחמם</li><li style="--d:1">מחמם רק מלמעלה או רק מלמטה</li><li style="--d:2">הטמפרטורה לא מדויקת</li><li style="--d:3">המאוורר לא עובד</li><li style="--d:4">מקפיץ את החשמל</li><li style="--d:5">הטיימר או הכפתורים לא עובדים</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%AA%D7%A0%D7%95%D7%A8"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>מזגן</summary><ul class="fault-list"><li style="--d:0">לא מקרר</li><li style="--d:1">לא מחמם</li><li style="--d:2">מטפטף מים מהיחידה הפנימית</li><li style="--d:3">ריח לא נעים כשהמזגן פועל</li><li style="--d:4">רעש חריג מהיחידה הפנימית או החיצונית</li><li style="--d:5">לא מגיב לשלט</li><li style="--d:6">מקפיץ את החשמל</li><li style="--d:7">קוד שגיאה בתצוגה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%9E%D7%96%D7%92%D7%9F"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd he-nj"><summary>חימום מים Winx</summary><ul class="fault-list"><li style="--d:0">המים לא מתחממים</li><li style="--d:1">המים יוצאים פושרים בלבד</li><li style="--d:2">המים החמים נגמרים מהר</li><li style="--d:3">מקפיץ את החשמל</li><li style="--d:4">לוח ההפעלה לא מגיב או מציג תקלה</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91%D7%97%D7%99%D7%9E%D7%95%D7%9D%20%D7%94%D7%9E%D7%99%D7%9D%20%28Winx%29"><svg><use href="#i-wa"/></svg><span>הודעה בוואטסאפ על התקלה</span></a></details>
+<details class="fd en nj" open><summary>Refrigerator</summary><ul class="fault-list"><li style="--d:0">Not cooling, or cooling weakly</li><li style="--d:1">Water leaking inside or onto the floor</li><li style="--d:2">Ice building up on the back wall</li><li style="--d:3">Unusual noise from the compressor</li><li style="--d:4">Compressor switches on and off every few minutes</li><li style="--d:5">Control panel or display not working</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20refrigerator"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Freezer</summary><ul class="fault-list"><li style="--d:0">Not freezing, or freezing weakly</li><li style="--d:1">Ice building up inside</li><li style="--d:2">Water leaking under the freezer</li><li style="--d:3">Unusual noise</li><li style="--d:4">Motor runs non-stop</li><li style="--d:5">Freezer won&#x27;t turn on</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20freezer"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Washing machine</summary><ul class="fault-list"><li style="--d:0">Not draining</li><li style="--d:1">Not spinning</li><li style="--d:2">Water leaking from the machine</li><li style="--d:3">Door won&#x27;t open after the cycle</li><li style="--d:4">Loud noise or shaking on spin</li><li style="--d:5">Not heating the water</li><li style="--d:6">Error code on the display</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20washing%20machine"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Dryer</summary><ul class="fault-list"><li style="--d:0">Not heating</li><li style="--d:1">Drum not turning</li><li style="--d:2">Laundry comes out damp</li><li style="--d:3">Stops mid-cycle</li><li style="--d:4">Noise or squeaking while running</li><li style="--d:5">Won&#x27;t turn on</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20dryer"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Oven</summary><ul class="fault-list"><li style="--d:0">Not heating</li><li style="--d:1">Heats only from the top or only from the bottom</li><li style="--d:2">Temperature is off</li><li style="--d:3">Fan not working</li><li style="--d:4">Trips the electricity</li><li style="--d:5">Timer or knobs not working</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20oven"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Air conditioner</summary><ul class="fault-list"><li style="--d:0">Not cooling</li><li style="--d:1">Not heating</li><li style="--d:2">Water dripping from the indoor unit</li><li style="--d:3">Bad smell when running</li><li style="--d:4">Unusual noise from the indoor or outdoor unit</li><li style="--d:5">Not responding to the remote</li><li style="--d:6">Trips the electricity</li><li style="--d:7">Error code on the display</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20air%20conditioner"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
+<details class="fd en nj"><summary>Winx water heating</summary><ul class="fault-list"><li style="--d:0">Water doesn&#x27;t heat up</li><li style="--d:1">Water only comes out lukewarm</li><li style="--d:2">Hot water runs out quickly</li><li style="--d:3">Trips the electricity</li><li style="--d:4">Control panel not responding or showing an error</li></ul><a class="btn btn-wa" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20Winx%20water%20heating"><svg><use href="#i-wa"/></svg><span>WhatsApp about this fault</span></a></details>
     </div>
     <div class="tabs rv" style="--d:3" role="tablist" id="tabs"></div>
     <div class="panel pop" style="--d:3" role="tabpanel" id="panel" aria-live="polite">
@@ -517,32 +575,32 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 <!-- CREDENTIALS: bento -->
 <section class="sec dark sheet pad-next" id="creds">
   <div class="wrap">
-    <div class="kicker rv" data-t="cKicker">ניסיון והסמכות</div>
-    <h2 class="h2 mask"><span data-t="c1T">הסמכות משרד העבודה</span></h2>
+    <div class="kicker rv" data-t="cKicker"><span class="he">ניסיון והסמכות</span><span class="en">Experience &amp; certification</span></div>
+    <h2 class="h2 mask"><span data-t="c1T"><span class="he">הסמכות משרד העבודה</span><span class="en">Ministry of Labor certifications</span></span></h2>
     <div class="bento">
       <div class="tile w2 years pop">
-        <div class="tk" data-t="yearsK">מאז 2000</div>
+        <div class="tk" data-t="yearsK"><span class="he">מאז 2000</span><span class="en">Since 2000</span></div>
         <div class="num" id="years">26</div>
-        <div class="lbl" data-t="yearsA">שנים בתחום</div>
+        <div class="lbl" data-t="yearsA"><span class="he">שנים בתחום</span><span class="en">years in the trade</span></div>
       </div>
       <div class="tile w2 pop" style="--d:1">
-        <div class="tk" data-t="c1K">משרד העבודה</div>
+        <div class="tk" data-t="c1K"><span class="he">משרד העבודה</span><span class="en">Ministry of Labor</span></div>
         <ul class="ticks">
-          <li><svg viewBox="0 0 24 24" style="--d:0"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6"/></svg><span data-t="c1a">מערכות קירור</span></li>
-          <li><svg viewBox="0 0 24 24" style="--d:1"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6" style="--d:1"/></svg><span data-t="c1b">מיזוג אוויר</span></li>
-          <li><svg viewBox="0 0 24 24" style="--d:2"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6" style="--d:2"/></svg><span data-t="c1c">חשמלאי</span></li>
+          <li><svg viewBox="0 0 24 24" style="--d:0"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6"/></svg><span data-t="c1a"><span class="he">מערכות קירור</span><span class="en">Refrigeration systems</span></span></li>
+          <li><svg viewBox="0 0 24 24" style="--d:1"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6" style="--d:1"/></svg><span data-t="c1b"><span class="he">מיזוג אוויר</span><span class="en">Air conditioning</span></span></li>
+          <li><svg viewBox="0 0 24 24" style="--d:2"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6" style="--d:2"/></svg><span data-t="c1c"><span class="he">חשמלאי</span><span class="en">Electrician</span></span></li>
         </ul>
       </div>
       <div class="tile pop" style="--d:2">
-        <h3 data-t="c2T">תעודת אחריות</h3>
-        <p data-t="c2P">ניתנת תעודת אחריות על התיקון.</p>
+        <h3 data-t="c2T"><span class="he">תעודת אחריות</span><span class="en">Warranty certificate</span></h3>
+        <p data-t="c2P"><span class="he">ניתנת תעודת אחריות על התיקון.</span><span class="en">A warranty certificate is given for the repair.</span></p>
       </div>
       <div class="tile pop" style="--d:3">
-        <h3 data-t="c3T">דובר אנגלית</h3>
-        <p data-t="c3P">English speaker. אפשר לדבר ולכתוב באנגלית.</p>
+        <h3 data-t="c3T"><span class="he">דובר אנגלית</span><span class="en">English speaker</span></h3>
+        <p data-t="c3P"><span class="he">English speaker. אפשר לדבר ולכתוב באנגלית.</span><span class="en">Calls and messages in English are welcome.</span></p>
       </div>
       <div class="tile w2 pop" style="--d:4">
-        <div class="tk" data-t="gT">דירוג בגוגל</div>
+        <div class="tk" data-t="gT"><span class="he">דירוג בגוגל</span><span class="en">Google rating</span></div>
         <div class="g-row">
           <div class="score">5.0</div>
           <div class="stars" aria-hidden="true">
@@ -557,16 +615,16 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 <!-- AREA -->
 <section class="sec light sheet pad-next" id="area">
   <div class="wrap">
-    <div class="kicker rv" data-t="aKicker">אזור שירות</div>
-    <h2 class="h2 mask"><span data-t="aTitle">ירושלים, מצפון לדרום</span></h2>
+    <div class="kicker rv" data-t="aKicker"><span class="he">אזור שירות</span><span class="en">Service area</span></div>
+    <h2 class="h2 mask"><span data-t="aTitle"><span class="he">ירושלים, מצפון לדרום</span><span class="en">Jerusalem, north to south</span></span></h2>
     <div class="route" id="route">
       <div class="fill" id="routeFill" aria-hidden="true"></div>
-      <div class="stop"><div class="dir" data-t="north">צפון</div><div class="place" data-t="pN">פסגת זאב · נווה יעקב</div></div>
-      <div class="stop"><div class="dir" data-t="center">כל העיר</div><div class="place" data-t="pC">ירושלים</div></div>
-      <div class="stop"><div class="dir" data-t="south">דרום</div><div class="place" data-t="pS">גילה · הר חומה</div></div>
+      <div class="stop"><div class="dir" data-t="north"><span class="he">צפון</span><span class="en">North</span></div><div class="place" data-t="pN"><span class="he">פסגת זאב · נווה יעקב</span><span class="en">Pisgat Ze'ev · Neve Yaakov</span></div></div>
+      <div class="stop"><div class="dir" data-t="center"><span class="he">כל העיר</span><span class="en">Citywide</span></div><div class="place" data-t="pC"><span class="he">ירושלים</span><span class="en">Jerusalem</span></div></div>
+      <div class="stop"><div class="dir" data-t="south"><span class="he">דרום</span><span class="en">South</span></div><div class="place" data-t="pS"><span class="he">גילה · הר חומה</span><span class="en">Gilo · Har Homa</span></div></div>
     </div>
     <div class="side pop">
-      <div><div class="dir" data-t="also">וגם</div><div class="place" data-t="pM">מבשרת ציון</div></div>
+      <div><div class="dir" data-t="also"><span class="he">וגם</span><span class="en">Also</span></div><div class="place" data-t="pM"><span class="he">מבשרת ציון</span><span class="en">Mevaseret Zion</span></div></div>
       <div class="plus" aria-hidden="true">+</div>
     </div>
   </div>
@@ -575,22 +633,23 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 <!-- REVIEWS (rendered only when REVIEWS has texts) -->
 <section class="sec dark sheet pad-next" id="reviews" hidden>
   <div class="wrap">
-    <div class="kicker rv" data-t="rKicker">ביקורות</div>
-    <h2 class="h2 mask"><span data-t="rTitle">מה כתבו בגוגל</span></h2>
+    <div class="kicker rv" data-t="rKicker"><span class="he">ביקורות</span><span class="en">Reviews</span></div>
+    <h2 class="h2 mask"><span data-t="rTitle"><span class="he">מה כתבו בגוגל</span><span class="en">What people wrote on Google</span></span></h2>
     <div class="rev-stack" id="revStack"></div>
   </div>
 </section>
 
 <!-- CONTACT -->
 <section class="sec green sheet contact" id="contact">
+  <div class="ghost" aria-hidden="true"><div class="ghost-track"><span>WhatsApp</span><span>058-588-3323</span><span>WhatsApp</span><span>058-588-3323</span><span>WhatsApp</span><span>058-588-3323</span><span>WhatsApp</span><span>058-588-3323</span></div></div>
   <div class="wrap">
-    <div class="kicker rv" data-t="ctKicker">יצירת קשר</div>
-    <h2 class="h2 mask"><span data-t="ctTitle">שיחה או הודעה</span></h2>
-    <p class="lead rv" style="--d:2" data-t="ctLead">כדאי לציין בהודעה את סוג המכשיר, החברה ומה התקלה.</p>
+    <div class="kicker rv" data-t="ctKicker"><span class="he">יצירת קשר</span><span class="en">Contact</span></div>
+    <h2 class="h2 mask"><span data-t="ctTitle"><span class="he">שיחה או הודעה</span><span class="en">Call or message</span></span></h2>
+    <p class="lead rv" style="--d:2" data-t="ctLead"><span class="he">כדאי לציין בהודעה את סוג המכשיר, החברה ומה התקלה.</span><span class="en">Please include the appliance type, the brand and what the fault is.</span></p>
     <a class="big-phone" id="bigPhone" href="tel:+972585883323" aria-label="058-588-3323">058-588-3323</a>
     <div class="contact-cta rv" style="--d:2">
-      <a class="btn btn-ink wa-link" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waBtn">שליחת הודעה בוואטסאפ</span></a>
-      <a class="btn btn-ink-line" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span data-t="callBtn">חיוג</span></a>
+      <a class="btn btn-ink wa-link he-nj" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waBtn"><span class="he">שליחת הודעה בוואטסאפ</span><span class="en">Message on WhatsApp</span></span></a><a class="btn btn-ink en nj" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20"><svg><use href="#i-wa"/></svg><span data-t="waBtn"><span class="he">שליחת הודעה בוואטסאפ</span><span class="en">Message on WhatsApp</span></span></a>
+      <a class="btn btn-ink-line" href="tel:+972585883323"><svg><use href="#i-phone"/></svg><span data-t="callBtn"><span class="he">חיוג</span><span class="en">Call</span></span></a>
     </div>
   </div>
 </section>
@@ -598,21 +657,21 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 
 <footer>
   <div class="wrap">
-    <strong data-t="brand">אלעד הטכנאי</strong>
-    <span data-t="foot">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span>
+    <strong data-t="brand"><span class="he">אלעד הטכנאי</span><span class="en">Elad the Technician</span></strong>
+    <span data-t="foot"><span class="he">תיקון מוצרי חשמל ביתיים · ירושלים ומבשרת ציון</span><span class="en">Home appliance repair · Jerusalem &amp; Mevaseret Zion</span></span>
     <a href="tel:+972585883323" class="phone-num" style="text-decoration:none">058-588-3323</a>
-    <nav class="foot-nav" aria-label="Legal"><a href="accessibility.html" class="foot-link" data-t="a11y">הצהרת נגישות</a></nav>
+    <nav class="foot-nav" aria-label="Legal"><a href="accessibility.html" class="foot-link" data-t="a11y"><span class="he">הצהרת נגישות</span><span class="en">Accessibility statement (Hebrew)</span></a></nav>
   </div>
 </footer>
 
 <div class="dock" id="dock">
-  <a class="btn btn-wa wa-link" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waShort">הודעה בוואטסאפ</span></a>
+  <a class="btn btn-wa wa-link he-nj" data-wa="generic" href="https://wa.me/972585883323?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%AA%D7%A7%D7%9C%D7%94%20%D7%91"><svg><use href="#i-wa"/></svg><span data-t="waShort"><span class="he">הודעה בוואטסאפ</span><span class="en">WhatsApp</span></span></a><a class="btn btn-wa en nj" href="https://wa.me/972585883323?text=Hi%2C%20I%20have%20a%20problem%20with%20my%20"><svg><use href="#i-wa"/></svg><span data-t="waShort"><span class="he">הודעה בוואטסאפ</span><span class="en">WhatsApp</span></span></a>
   <a class="btn btn-line" href="tel:+972585883323" data-t-aria="callAria" aria-label="חיוג 058-588-3323"><svg><use href="#i-phone"/></svg></a>
 </div>
 
 <div class="cookie" id="cookie" role="region" aria-label="Cookies" hidden>
-  <p data-t="cookieP">האתר שומר במכשיר העדפות בסיסיות בלבד (Cookies).</p>
-  <button type="button" id="cookieOk" data-t="cookieOk">אישור</button>
+  <p data-t="cookieP"><span class="he">האתר שומר במכשיר העדפות בסיסיות בלבד (Cookies).</span><span class="en">This site stores only basic preferences on your device (cookies).</span></p>
+  <button type="button" id="cookieOk" data-t="cookieOk"><span class="he">אישור</span><span class="en">OK</span></button>
 </div>
 
 
@@ -688,7 +747,7 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
       devKicker:"What gets repaired", devTitle:"Only these appliances", devLead:"All brands.",
       onlyT:"This is the full list", onlyP:"Appliances not on this list are not serviced.",
       fKicker:"Common faults", fTitle:"What's wrong with it?", fLead:"Pick the appliance and send a message describing the fault.",
-      faultsIn:"Common faults: ", waFault:"Message about this fault on WhatsApp",
+      faultsIn:"Common faults: ", waFault:"WhatsApp about this fault",
       cKicker:"Experience & certification", yearsA:"years in the trade", yearsB:"since 2000",
       c1T:"Ministry of Labor certifications", c1a:"Refrigeration systems", c1b:"Air conditioning", c1c:"Electrician",
       c2T:"Warranty certificate", c2P:"A warranty certificate is given for the repair.",
@@ -922,14 +981,22 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
     });
     $$("[data-t-aria]").forEach(function(el){ el.setAttribute("aria-label", t[el.getAttribute("data-t-aria")]); });
     $(".brand").setAttribute("aria-label", t.brand);
-    var lb = $("#langBtn"); lb.textContent = t.langBtn; lb.setAttribute("aria-label", t.langAria);
+    var et = $("#enToggle"); et.checked = lang === "en"; et.setAttribute("aria-label", t.langAria);
+    splitHeads();
     $$('.wa-link[data-wa="generic"]').forEach(function(a){ a.href = waHref(t.waGeneric); });
     renderBand(); renderDevices(); renderTabs(); buildRotator(); renderReviews();
     $("#pauseBtn span").textContent = paused ? t.play : t.pause;
     try{ localStorage.setItem("lang", lang); }catch(e){}
     tick();
   }
-  $("#langBtn").addEventListener("click", function(){ lang = lang === "he" ? "en" : "he"; applyLang(); });
+  $("#enToggle").addEventListener("change", function(){ lang = this.checked ? "en" : "he"; applyLang(); });
+  // headings: one span per word, so they can rise word by word
+  function splitHeads(){
+    $$(".mask>span[data-t]").forEach(function(el){
+      el.innerHTML = el.textContent.split(" ").map(function(w, i){ return '<span class="wd"><i style="--w:' + i + '">' + esc(w) + '</i></span>'; }).join(" ");
+      el.parentNode.classList.add("split");
+    });
+  }
 
   /* ---------- pause animations ---------- */
   function applyPause(){
@@ -964,9 +1031,30 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
 
   /* ---------- scroll-linked effects ---------- */
   var top = $("#top"), dock = $("#dock"), heroCta = $("#heroCta"), contact = $("#contact"), progress = $("#progress");
-  var ticking = false;
+  var ticking = false, lastY = window.scrollY, skT = 0;
+  var heroWrap = $("#hero .wrap"), bandEl = $(".band"), sheets = $$(".sheet");
   function tick(){
     ticking = false;
+    var still = reduce || paused, vh0 = window.innerHeight, y0 = window.scrollY;
+    // hero drifts back and fades as the page moves on
+    if(!still && y0 < vh0 * 1.1){
+      var hp = Math.min(y0 / vh0, 1);
+      heroWrap.style.transform = "translate3d(0," + (y0 * .22).toFixed(1) + "px,0) scale(" + (1 - hp * .08).toFixed(3) + ")";
+      heroWrap.style.opacity = (1 - Math.min(y0 / (vh0 * .8), 1)).toFixed(3);
+    } else if(still){ heroWrap.style.transform = ""; heroWrap.style.opacity = ""; }
+    // the green band leans with the scroll speed
+    if(!still){
+      var dv = y0 - lastY;
+      bandEl.style.setProperty("--sk", Math.max(-12, Math.min(12, dv * .4)).toFixed(1) + "deg");
+      clearTimeout(skT); skT = setTimeout(function(){ bandEl.style.setProperty("--sk", "0deg"); }, 140);
+    }
+    lastY = y0;
+    // each section rises into place like a card
+    sheets.forEach(function(sh){
+      if(still){ sh.style.transform = ""; return; }
+      var sp0 = clamp((vh0 - sh.getBoundingClientRect().top) / (vh0 * .55));
+      sh.style.transform = sp0 >= 1 ? "" : "scale(" + (.9 + .1 * sp0).toFixed(4) + ")";
+    });
     var vh = window.innerHeight, y = window.scrollY, max = document.documentElement.scrollHeight - vh;
     progress.style.transform = "scaleX(" + (max > 0 ? clamp(y / max) : 0) + ")";
     top.classList.toggle("scrolled", y > 30);
@@ -1003,6 +1091,35 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .1s both}
   if("ResizeObserver" in window){ var ro = new ResizeObserver(refit); ro.observe($("#h1")); ro.observe($("#rotWord")); }
   if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit);
 
+  // light that follows the finger / pointer across the opening screen
+  (function(){
+    var hero = $("#hero");
+    hero.addEventListener("pointermove", function(e){
+      if(reduce || paused) return;
+      var r = hero.getBoundingClientRect();
+      hero.style.setProperty("--px", (e.clientX - r.left) + "px"); hero.style.setProperty("--py", (e.clientY - r.top) + "px");
+      hero.classList.add("lit");
+    });
+    hero.addEventListener("pointerleave", function(){ hero.classList.remove("lit"); });
+  })();
+  // press ripple on every button
+  document.addEventListener("pointerdown", function(e){
+    var b = e.target.closest ? e.target.closest(".btn") : null;
+    if(!b || reduce) return;
+    var r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2, i = document.createElement("span");
+    i.className = "rip"; i.style.width = i.style.height = d + "px";
+    i.style.left = (e.clientX - r.left - d / 2) + "px"; i.style.top = (e.clientY - r.top - d / 2) + "px";
+    b.appendChild(i); setTimeout(function(){ if(i.parentNode) i.parentNode.removeChild(i); }, 750);
+  });
+  // tiles tilt toward the mouse (desktop)
+  $$(".tile").forEach(function(t){
+    t.addEventListener("pointermove", function(e){
+      if(e.pointerType !== "mouse" || reduce || paused) return;
+      var r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, yy = (e.clientY - r.top) / r.height - .5;
+      t.style.transform = "perspective(700px) rotateX(" + (-yy * 7).toFixed(2) + "deg) rotateY(" + (x * 7).toFixed(2) + "deg)";
+    });
+    t.addEventListener("pointerleave", function(){ t.style.transform = ""; });
+  });
   // glow that follows the pointer on the bento tiles (desktop)
   $$(".tile").forEach(function(t){
     t.addEventListener("pointermove", function(e){
