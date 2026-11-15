@@ -413,6 +413,7 @@ def send_resend(subject, body):
     return None
 
 
+MAX_QUOTE_DROP = 0.05   # a live quote more than 5% under the last candle close is treated as a bad print
 MAX_CHASE = 0.03      # if the price is already 3%+ above Roger's entry, the chance is gone: no alert
 ALL_DAY_FROM = "2026-10-27"  # user 2026-10-27: Roger looks for entries until ~15:20 ET, not only the morning
 # Roger's 1-10 score: the p where each score starts (score 2..10), from the training thread. Emails go out from SCORE_MIN up.
@@ -462,6 +463,15 @@ def live_price(ticker):
     except Exception as e:
         print("TradingView price failed:", e)
     return None
+
+
+def sane_price(ticker, px, bar_close):
+    """A live quote far under the candle that just closed is a bad print (11-12: MSC quote 1.02 while the
+    5-minute candle closed at 1.12 and no trade near 1.02). Then the candle close is the buy price."""
+    if px and bar_close and px < bar_close * (1 - MAX_QUOTE_DROP):
+        print(f"{ticker}: live quote {px} is {1 - px / bar_close:.0%} under the candle close {bar_close}: using the candle close")
+        return float(bar_close)
+    return px
 
 
 def il(t):
@@ -596,7 +606,7 @@ class Session:
         if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and max(len(self.trades), self.sent_today) >= MAX_TRADES)):
             if not self.stopped and not self.dry and SHADOW_TRADES > MAX_TRADES and not self.shadow_done(now):
                 # approved 2026-11-12: the would-be 3rd trade gets no email, only a log row, so we keep measuring it
-                px = live_price(ticker) or trig["entry"]
+                px = sane_price(ticker, live_price(ticker), trig["last"]) or trig["entry"]
                 print(f"{ticker}: would-be trade {MAX_TRADES + 1} of the day, shadow only (no email)")
                 log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
                                           "setup": trig["setup"], "entry": round(px, 4), "stop": round(trig["stop"], 4),
@@ -606,7 +616,7 @@ class Session:
         plan = BLINK_PLAN if BLINK_PLAN else self.james.choose(feats)
         priced = None
         if not self.dry:      # the buy price in the email is the market price seconds before it is sent
-            px = live_price(ticker)
+            px = sane_price(ticker, live_price(ticker), trig["last"])
             if px:
                 priced = datetime.now(IL).strftime("%H:%M:%S")
                 if px > trig["entry"] * (1 + MAX_CHASE):
