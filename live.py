@@ -438,6 +438,10 @@ STATUS_AT = [time(10, 30), time(12, 0), time(13, 30), time(15, 0)]   # New York:
 STATUS_FROM = "2026-11-13"
 EARLIEST_ENTRY = time(9, 45)   # approved 2026-11-12 (practice): no buy email before 09:45 New York
 EARLIEST_FROM = "2026-11-12"
+MAX_BAR_AGE = timedelta(minutes=10)   # approved 2026-11-15 (practice): the last closed 5-min candle must be at most 10 min old
+MIN_DOLLARS_30M = 20000.0             # ...and at least $20,000 must have traded (volume x close) in the 30 min before the email
+DOLLARS_WINDOW = timedelta(minutes=30)
+THIN_FROM = "2026-11-16"
 MAX_STOP_PCT = 0.12      # user's rule 2026-10-27: skip a TAKE whose setup stop is more than 12% below entry
 
 
@@ -558,6 +562,23 @@ class Session:
         day = now.strftime("%Y-%m-%d")
         return os.path.exists(path) and any(r.get("date") == day and r.get("decision") == "SHADOW_3RD" for r in csv.DictReader(open(path)))
 
+    @staticmethod
+    def thin_why(trig, now):
+        """Why the last closed candle is too old or too thin for a buy email, or '' when it is fine."""
+        if now.strftime("%Y-%m-%d") < THIN_FROM:
+            return ""
+        reg = trig.get("reg")
+        if reg is None or len(reg) == 0:
+            return "no closed candle"
+        age = now - (reg.index[-1] + timedelta(minutes=5))
+        if age > MAX_BAR_AGE:
+            return f"last candle {age.total_seconds() / 60:.0f} min old (max {MAX_BAR_AGE.total_seconds() / 60:.0f})"
+        win = reg[reg.index + timedelta(minutes=5) > now - DOLLARS_WINDOW]
+        dollars = float((win["Volume"] * win["Close"]).sum())
+        if not np.isfinite(dollars) or dollars < MIN_DOLLARS_30M:
+            return f"only ${dollars:,.0f} traded in the last 30 min (min ${MIN_DOLLARS_30M:,.0f})"
+        return ""
+
     def consider(self, ticker, trig, now):
         if ticker in self.alerted or not trig["fresh"]:
             return
@@ -600,6 +621,18 @@ class Session:
                                           "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(trig["stop"], 4),
                                           "decision": "SKIP_EARLY", "p": round(ans["p"], 4),
                                           "why": f"before {EARLIEST_ENTRY:%H:%M} ET", "gap": round(feats.get("gap_pct", 0.0), 4)})
+            self.skips += 1
+            return
+        # approved 2026-11-15 (practice): no email on a stale or thin last candle. The skip does not use a daily slot,
+        # and the same stock can still go out on a later candle.
+        thin = self.thin_why(trig, now)
+        if thin:
+            print(f"{ticker}: Roger said TAKE but {thin}: no email")
+            if not self.dry:
+                log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                          "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(trig["stop"], 4),
+                                          "decision": "SKIP_THIN", "p": round(ans["p"], 4),
+                                          "why": thin, "gap": round(feats.get("gap_pct", 0.0), 4)})
             self.skips += 1
             return
         self.alerted.add(ticker)
