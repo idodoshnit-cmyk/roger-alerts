@@ -20,6 +20,7 @@
   "knowsLanguage": ["he", "en"]
 }
 </script>
+<script>document.documentElement.className += " js";</script>
 <style>
 /* ---------- 4-color system ---------- */
 :root{
@@ -123,17 +124,17 @@ html[dir="ltr"] .progress{transform-origin:left}
 /* giant kinetic headline */
 .h1{font-weight:900;font-size:clamp(60px,21vw,168px);line-height:1;letter-spacing:-.03em}
 .h1 .a{display:block;white-space:nowrap;line-height:1.08;overflow:hidden}
-.h1 .a>span{display:inline-block}
+.h1 .a>span{display:inline-block;white-space:nowrap;transition:none!important}
 .rot-line{display:block;position:relative;padding-bottom:16px}
-.rot{position:relative;display:block;overflow:hidden;white-space:nowrap}
-.rot .w{position:absolute;bottom:0;inset-inline-start:0;white-space:nowrap;line-height:1.2}
-.rot .c{display:inline-block;transform:translateY(118%);transition:transform .65s var(--ease);transition-delay:calc(var(--c) * 30ms);white-space:pre}
-.rot .w.on .c{transform:none}
-.rot .w.out .c{transform:translateY(-118%);transition-duration:.42s;transition-delay:calc(var(--c) * 14ms)}
-.rot .w.nt .c{transition:none}
+.rot{display:flex;align-items:flex-end;overflow:hidden;white-space:nowrap;min-height:1.2em}
+.rot .w{display:block;white-space:nowrap;line-height:1.2;transition:none!important}
+.rot .c{display:inline-block;white-space:pre}
+.rot.in .c{animation:cIn .62s var(--ease) both;animation-delay:calc(var(--c) * 30ms)}
+.rot.leaving .c{animation:cOut .3s cubic-bezier(.5,0,.9,.4) both;animation-delay:calc(var(--c) * 12ms)}
+@keyframes cIn{from{transform:translateY(118%)}to{transform:none}}
+@keyframes cOut{from{transform:none}to{transform:translateY(-118%)}}
 .ul{position:absolute;bottom:0;inset-inline-start:0;height:8px;border-radius:99px;width:0;
   background:linear-gradient(90deg,var(--go),var(--blue));transition:width .7s var(--ease)}
-.measure{font-family:var(--head);font-weight:900;letter-spacing:-.03em;position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none;inset-inline-start:-9999px;top:0}
 
 .hero-sub{font-size:clamp(18px,4.7vw,22px);color:var(--paper-70);max-width:560px;margin-top:18px}
 .hero-sub b{color:var(--paper);font-weight:600}
@@ -147,10 +148,10 @@ html[dir="ltr"] .progress{transform-origin:left}
 .pause svg{width:16px;height:16px}
 
 /* hero entrance */
-.intro{opacity:0;transform:translateY(26px)}
+.js .intro{opacity:0;transform:translateY(26px)}
 .ready .intro{animation:introUp .9s var(--ease) forwards;animation-delay:calc(var(--i,0) * 110ms + 250ms)}
 @keyframes introUp{to{opacity:1;transform:none}}
-.h1 .a>span{transform:translateY(110%)}
+.js .h1 .a>span{transform:translateY(110%)}
 .ready .h1 .a>span{animation:lineUp 1s var(--ease) .1s forwards}
 @keyframes lineUp{to{transform:none}}
 
@@ -180,13 +181,14 @@ html[dir="ltr"] .band{transform:rotate(2deg)}
 .green .lead{color:var(--ink)}
 
 /* reveals */
-.rv{opacity:0;transform:translateY(34px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
-.rv.in{opacity:1;transform:none}
-.pop{opacity:0;transform:scale(.9) translateY(24px);transition:opacity .7s var(--ease),transform .8s var(--ease-back);transition-delay:calc(var(--d,0) * 90ms)}
-.pop.in{opacity:1;transform:none}
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
+.js .rv.in{opacity:1;transform:none}
+.js .pop{opacity:0;transform:scale(.9) translateY(24px);transition:opacity .7s var(--ease),transform .8s var(--ease-back);transition-delay:calc(var(--d,0) * 90ms)}
+.js .pop.in{opacity:1;transform:none}
 .mask{display:block;overflow:hidden;padding-bottom:.14em}
-.mask>span{display:block;transform:translateY(112%);transition:transform 1s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
-.mask.in>span{transform:none}
+.mask>span{display:block}
+.js .mask>span{transform:translateY(112%);transition:transform 1s var(--ease);transition-delay:calc(var(--d,0) * 90ms)}
+.js .mask.in>span{transform:none}
 
 /* ---------- devices: scroll spotlight ---------- */
 .devices{list-style:none;padding:0;margin:40px 0 0;counter-reset:dev}
@@ -203,17 +205,18 @@ html[dir="ltr"] .devices li .bar{transform-origin:left}
 html[dir="ltr"] .devices li.act{transform:translateX(10px)}
 .devices li.act::before{color:var(--go)}
 .devices li.act .bar{transform:scaleX(1)}
-.devices li.rvx{opacity:0;transform:translateX(-46px)}
-html[dir="ltr"] .devices li.rvx{transform:translateX(46px)}
-.devices li.rvx.in{opacity:1;transform:none;transition:opacity .7s var(--ease) calc(var(--d) * 70ms),transform .8s var(--ease) calc(var(--d) * 70ms),color .45s var(--ease)}
-.devices li.rvx.in.act{transform:translateX(-10px)}
-html[dir="ltr"] .devices li.rvx.in.act{transform:translateX(10px)}
+.js .devices li.rvx{opacity:0;transform:translateX(-46px)}
+html[dir="ltr"].js .devices li.rvx{transform:translateX(46px)}
+.js .devices li.rvx.in{opacity:1;transform:none;transition:opacity .7s var(--ease) calc(var(--d) * 70ms),transform .8s var(--ease) calc(var(--d) * 70ms),color .45s var(--ease)}
+.js .devices li.rvx.in.act{transform:translateX(-10px)}
+html[dir="ltr"].js .devices li.rvx.in.act{transform:translateX(10px)}
 
 /* word-by-word statement */
 .statement{margin-top:56px;font:800 clamp(28px,8vw,56px)/1.18 var(--head);letter-spacing:-.02em}
-.statement span{color:rgba(242,244,248,.26);transition:color .35s var(--ease)}
-.statement span.lit{color:var(--paper)}
-.statement span.lit.hl{color:var(--go)}
+.statement span{color:var(--paper);transition:color .35s var(--ease)}
+.js .statement span{color:rgba(242,244,248,.26)}
+.js .statement span.lit{color:var(--paper)}
+.js .statement span.lit.hl{color:var(--go)}
 
 /* ---------- faults ---------- */
 .tabs{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;margin:30px calc(var(--gutter) * -1) 0;padding:4px var(--gutter) 12px;scrollbar-width:none}
@@ -270,9 +273,10 @@ html[dir="ltr"] .devices li.rvx.in.act{transform:translateX(10px)}
 .route{position:relative;margin-top:44px;padding-inline-start:44px;display:grid;gap:34px}
 .route::before{content:"";position:absolute;inset-inline-start:12px;top:12px;bottom:12px;width:4px;border-radius:4px;background:var(--ink-12)}
 .route .fill{position:absolute;inset-inline-start:12px;top:12px;bottom:12px;width:4px;border-radius:4px;background:linear-gradient(var(--blue),var(--go));transform:scaleY(0);transform-origin:top}
-.stop{position:relative;opacity:.45;transition:opacity .5s var(--ease),transform .6s var(--ease)}
+.stop{position:relative;transition:opacity .5s var(--ease),transform .6s var(--ease)}
 .stop::before{content:"";position:absolute;inset-inline-start:-42px;top:.35em;width:24px;height:24px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 5px var(--ink-12);transition:box-shadow .4s,transform .5s var(--ease-back)}
-.stop.hit{opacity:1}
+.js .stop{opacity:.45}
+.js .stop.hit{opacity:1}
 .stop.hit::before{box-shadow:inset 0 0 0 7px var(--blue);transform:scale(1.15)}
 .stop .dir{font:600 14px var(--head);color:var(--blue);letter-spacing:.06em}
 .stop .place{font:900 clamp(30px,8.6vw,58px)/1.1 var(--head);letter-spacing:-.02em}
@@ -294,8 +298,9 @@ html[dir="ltr"] .devices li.rvx.in.act{transform:translateX(10px)}
 .contact .kicker{justify-content:center}
 .contact .lead{margin-inline:auto}
 .big-phone{display:block;margin-top:26px;font:900 clamp(32px,10.8vw,120px)/1 var(--head);letter-spacing:-.03em;color:var(--ink);text-decoration:none;direction:ltr;white-space:nowrap}
-.big-phone span{display:inline-block;transform:translateY(110%);transition:transform .8s var(--ease);transition-delay:calc(var(--c) * 35ms)}
-.big-phone.in span{transform:none}
+.big-phone span{display:inline-block}
+.js .big-phone span{transform:translateY(110%);transition:transform .8s var(--ease);transition-delay:calc(var(--c) * 35ms)}
+.js .big-phone.in span{transform:none}
 .big-phone{overflow:hidden;padding-bottom:.08em}
 .contact-cta{display:flex;flex-direction:column;gap:12px;margin:30px auto 0;max-width:440px}
 
@@ -340,9 +345,9 @@ footer strong{color:var(--paper);font-family:var(--head)}
   .dock{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important;scroll-behavior:auto!important}
   .intro,.rv,.pop,.fault-list li,.devices li.rvx{opacity:1!important;transform:none!important}
-  .mask>span,.h1 .a>span,.big-phone span,.rot .w.on .c{transform:none!important}
+  .mask>span,.h1 .a>span,.big-phone span,.rot .c{transform:none!important}
   .statement span{color:var(--paper)!important}
   .stop{opacity:1!important}
   .band-track{animation:none!important}
@@ -384,7 +389,7 @@ footer strong{color:var(--paper);font-family:var(--head)}
     <h1 class="h1" id="h1">
       <span class="a" id="h1a"><span data-t="h1a">תיקון</span></span>
       <span class="rot-line" id="rotLine">
-        <span class="rot" id="rot" aria-hidden="true"></span>
+        <span class="rot" id="rot" aria-hidden="true"><span class="w" id="rotWord">מקררים</span></span>
         <span class="ul" id="ul" aria-hidden="true"></span>
         <span class="sr" data-t="h1sr">מקררים, פריזרים, מכונות כביסה, מייבשים, תנורים, מזגנים וחימום מים Winx</span>
       </span>
@@ -530,7 +535,6 @@ footer strong{color:var(--paper);font-family:var(--head)}
   <button type="button" id="cookieOk" data-t="cookieOk">אישור</button>
 </div>
 
-<span class="measure" id="measure" aria-hidden="true"></span>
 
 <script>
 (function(){
@@ -717,64 +721,73 @@ footer strong{color:var(--paper);font-family:var(--head)}
   /* ---------- kinetic headline ----------
      Every device name is sized to fill the line as far as it can,
      so it always stays on one line and is never cut. */
-  var rotTimer = null, rotIndex = 0;
+  var rotTimer = null, swapTimer = null, rotIndex = 0, rotWords = [];
   function splitChars(el, text){
     // Hebrew letters animate one by one; Latin runs (e.g. "Winx") stay whole so they are not reversed in RTL
+    el.textContent = "";
     var parts = lang === "he" ? text.match(/[A-Za-z0-9.]+|\s+|[^A-Za-z0-9.\s]/g) : text.split("");
     (parts || []).forEach(function(p, i){
       var c = document.createElement("span"); c.className = "c"; c.style.setProperty("--c", i);
-      if(/^[A-Za-z0-9.]+$/.test(p) && lang === "he") c.dir = "ltr";
+      if(lang === "he" && /^[A-Za-z0-9.]+$/.test(p)) c.dir = "ltr";
       c.textContent = /^\s+$/.test(p) ? " " : p;
       el.appendChild(c);
     });
   }
   function buildRotator(){
-    var rot = $("#rot"); rot.innerHTML = "";
-    DEVICES[lang].forEach(function(d, i){
-      var s = document.createElement("span"); s.className = "w"; s.setAttribute("data-text", d.n);
-      splitChars(s, d.n); rot.appendChild(s);
-    });
+    clearTimeout(swapTimer); clearInterval(rotTimer);
+    rotWords = DEVICES[lang].map(function(d){ return d.n; });
     rotIndex = 0;
-    fitHero();
-    requestAnimationFrame(function(){ var f = rot.children[0]; if(f){ f.classList.add("on"); setUl(); } });
+    showWord(false);
     startRot();
   }
-  function emWidth(text){
-    var m = $("#measure"); m.style.fontSize = "100px"; m.textContent = text;
-    return m.getBoundingClientRect().width / 100;
+  // Size an element to the largest font that fits the line, measured on the element itself
+  // (no estimates): start at the cap, shrink by the real overflow, then verify.
+  function fitEl(el, cap, avail){
+    var size = cap, w, guard = 0;
+    el.style.fontSize = size + "px";
+    w = el.getBoundingClientRect().width;
+    if(w > avail){
+      size = Math.floor(size * avail / w * .985);
+      el.style.fontSize = size + "px";
+      w = el.getBoundingClientRect().width;
+      while(w > avail && size > 12 && guard++ < 60){
+        size -= 1; el.style.fontSize = size + "px"; w = el.getBoundingClientRect().width;
+      }
+    }
+    return w;
+  }
+  function heroBox(){
+    var h1 = $("#h1");
+    return {cap: parseFloat(getComputedStyle(h1).fontSize), avail: h1.getBoundingClientRect().width - 4};
   }
   function fitHero(){
-    var h1 = $("#h1"), a = $("#h1a"), rot = $("#rot");
-    var cap = parseFloat(getComputedStyle(h1).fontSize), avail = h1.getBoundingClientRect().width - 2;
-    if(!avail) return;
-    var ea = emWidth(a.textContent);
-    a.style.fontSize = Math.min(cap, Math.floor(avail / ea * .97)) + "px";
-    $$(".w", rot).forEach(function(w){
-      var em = emWidth(w.getAttribute("data-text")), size = Math.min(cap, Math.floor(avail / em * .97));
-      w.style.fontSize = size + "px"; w.setAttribute("data-w", Math.ceil(size * em));
-    });
-    rot.style.height = Math.ceil(cap * 1.2) + "px";
-    setUl();
+    var b = heroBox();
+    if(!(b.avail > 0) || !(b.cap > 0)) return;
+    fitEl($("#h1a").firstElementChild, b.cap, b.avail);
+    $("#rot").style.height = Math.ceil(b.cap * 1.2) + "px";
+    var w = fitEl($("#rotWord"), b.cap, b.avail);
+    $("#ul").style.width = Math.ceil(w) + "px";
   }
-  function setUl(){
-    var cur = $("#rot").children[rotIndex];
-    if(cur) $("#ul").style.width = cur.getAttribute("data-w") + "px";
+  function showWord(animate){
+    var rot = $("#rot"), w = $("#rotWord");
+    rot.classList.remove("leaving"); rot.classList.remove("in");
+    splitChars(w, rotWords[rotIndex]);
+    fitHero();
+    if(animate && !reduce){ void rot.offsetWidth; rot.classList.add("in"); }
   }
   function startRot(){
     clearInterval(rotTimer);
-    if(!reduce && !paused && heroVisible) rotTimer = setInterval(nextWord, 2400);
+    if(!reduce && !paused && heroVisible && rotWords.length > 1) rotTimer = setInterval(nextWord, 2600);
   }
+  // there is only ever ONE word in the page: the old one leaves, then its text is replaced
   function nextWord(){
-    var ws = $("#rot").children; if(ws.length < 2) return;
-    var prev = ws[rotIndex];
-    rotIndex = (rotIndex + 1) % ws.length;
-    var next = ws[rotIndex];
-    prev.classList.remove("on"); prev.classList.add("out");
-    next.classList.add("on");
-    setUl();
-    setTimeout(function(){
-      prev.classList.add("nt"); prev.classList.remove("out"); void prev.offsetWidth; prev.classList.remove("nt");
-    }, 750);
+    var rot = $("#rot");
+    clearTimeout(swapTimer);
+    rot.classList.remove("in"); rot.classList.add("leaving");
+    swapTimer = setTimeout(function(){
+      rotIndex = (rotIndex + 1) % rotWords.length;
+      showWord(true);
+    }, 480);
   }
 
   /* ---------- reviews: stacking cards ---------- */
@@ -904,7 +917,11 @@ footer strong{color:var(--paper);font-family:var(--head)}
   }
   function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(tick); } }
   window.addEventListener("scroll", onScroll, {passive:true});
-  var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ fitHero(); tick(); }, 120); });
+  var rz = 0; function refit(){ if(rz) return; rz = requestAnimationFrame(function(){ rz = 0; fitHero(); tick(); }); }
+  window.addEventListener("resize", refit); window.addEventListener("orientationchange", refit); window.addEventListener("load", refit);
+  window.addEventListener("pageshow", refit);
+  if("ResizeObserver" in window){ var ro = new ResizeObserver(refit); ro.observe($("#h1")); ro.observe($("#rotWord")); }
+  if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit);
 
   // glow that follows the pointer on the bento tiles (desktop)
   $$(".tile").forEach(function(t){
