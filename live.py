@@ -70,6 +70,8 @@ BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3)
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 2       # approved 2026-11-12 (practice): at most 2 trades a day (was 3)
+CAP_OFF_FROM = "2026-11-17"   # user 2026-11-16: a buy email for EVERY Roger signal, no daily cap. Emails past the 2nd
+                              # are marked "הוראה נוספת" and logged as OVER_CAP, so the 2-a-day tally stays countable.
 SHADOW_TRADES = 3    # the would-be 3rd trade is logged as SHADOW_3RD, no email
 SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
 DAY_STOP_R = -2.0
@@ -636,7 +638,8 @@ class Session:
             self.skips += 1
             return
         self.alerted.add(ticker)
-        if not self.watch and (self.stopped or (not (self.sure and SURE_NO_CAP) and max(len(self.trades), self.sent_today) >= MAX_TRADES)):
+        cap_off = now.strftime("%Y-%m-%d") >= CAP_OFF_FROM
+        if not self.watch and (self.stopped or (not cap_off and not (self.sure and SURE_NO_CAP) and max(len(self.trades), self.sent_today) >= MAX_TRADES)):
             if not self.stopped and not self.dry and SHADOW_TRADES > MAX_TRADES and not self.shadow_done(now):
                 # approved 2026-11-12: the would-be 3rd trade gets no email, only a log row, so we keep measuring it
                 px = sane_price(ticker, live_price(ticker), trig["last"]) or trig["entry"]
@@ -669,11 +672,14 @@ class Session:
         if plan in BLINK_PLANS:                                 # James's Blink plan: half the account per trade
             shares = int(ACCOUNT * TRADE_SHARE / trig["entry"]) if risk > 0 else 0
         n = max(len(self.trades), self.sent_today) + 1
+        extra = cap_off and not self.watch and n > MAX_TRADES     # would have been cut by the old 2-a-day cap
         valid = now + FRESH
         far = trig["last"] > trig["entry"] + 0.5 * risk
         subject = f"🟢 קנייה {ticker} ב-{money(trig['entry'])} | טייק פרופיט {money(target) if target else 'נגרר'} | סטופ {money(stop)}"
         if score10(ans["p"]):
             subject += f" | ציון {score10(ans['p'])}/10"
+        if extra:
+            subject += " | הוראה נוספת"
         cost = shares * trig["entry"]
         tp_pct = f" (+{(target / trig['entry'] - 1):.0%})" if target else ""
         summary = [
@@ -706,7 +712,7 @@ class Session:
             "אחר הצהריים, מחוץ לטווח האימון: הציון כאן פחות מדויק." if now.time() > time(11, 30) else "",
             f"בתוקף עד {il(valid)} שעון ישראל. אם ראית את המייל אחרי זה, לוותר.",
             "המחיר כבר רחוק מהכניסה. עדיף לוותר." if far else "",
-            f"עסקה {n} היום (יום צפייה: בלי הגבלה)." if self.watch else (f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
+            f"עסקה {n} היום (יום צפייה: בלי הגבלה)." if self.watch else (f"עסקה {n} היום. הוראה נוספת: מעבר ל-{MAX_TRADES} של התרגול, נשלחת כדי שלא תפספס." if extra else f"עסקה {n} היום." if cap_off else f"עסקה {n} היום (רוג׳ר בטוח מאוד: בלי הגבלה של 3)." if self.sure and SURE_NO_CAP else f"עסקה {n} מתוך {MAX_TRADES} היום."),
             "",
             "תרגול בלבד. חומר לימודי, לא ייעוץ השקעות.",
         ])
@@ -721,6 +727,11 @@ class Session:
         self.trades.append(t)
         self.emailed.add(ticker)
         self.sent_today += 1
+        if extra and not self.dry:      # the old cap would have cut this one: keep it countable
+            log_row("decisions.csv", {"date": now.strftime("%Y-%m-%d"), "time_et": now.strftime("%H:%M"), "ticker": ticker,
+                                      "setup": trig["setup"], "entry": round(trig["entry"], 4), "stop": round(stop, 4),
+                                      "decision": "OVER_CAP", "p": round(ans["p"], 4),
+                                      "why": f"buy email {n} of the day (old cap {MAX_TRADES})", "gap": round(feats.get("gap_pct", 0.0), 4)})
         if not self.dry:
             log_row("alerts.csv", {"date": now.strftime("%Y-%m-%d"), "time_il": il(now), "ticker": ticker,
                                    "setup": trig["setup"], "p": ans["p"], "plan": plan,
@@ -773,7 +784,7 @@ class Session:
                 rows.append(f"• {t['ticker']}: נסגרה ({ {'target': 'ביעד', 'stop': 'בסטופ', 'close': 'לפני הסגירה', 'breakeven': 'במחיר הכניסה'}.get(t.get('how'), t.get('how') or '') }), בערך {t.get('pct', 0):+.1%}")
         earlier = sorted(self.emailed - {t["ticker"] for t in self.trades})
         n = max(len(self.trades), self.sent_today)
-        head = (f"עד עכשיו היום {n} הוראות קנייה מתוך {MAX_TRADES}." if n else "עד עכשיו היום אין הוראות קנייה: רוג׳ר עוד לא מצא גרף מספיק טוב.")
+        head = ((f"עד עכשיו היום {n} הוראות קנייה." if now.strftime("%Y-%m-%d") >= CAP_OFF_FROM else f"עד עכשיו היום {n} הוראות קנייה מתוך {MAX_TRADES}.") if n else "עד עכשיו היום אין הוראות קנייה: רוג׳ר עוד לא מצא גרף מספיק טוב.")
         open_n = sum(1 for t in self.trades if t["open"])
         subj = f"📋 עדכון {il(now)}: {n} הוראות היום" + (f", {open_n} פתוחות" if open_n else "") + " (תרגול)"
         body = "\n".join([f"📋 עדכון מצב, {il(now)} שעון ישראל", "━━━━━━━━━━━━━━━━", head] + rows +
