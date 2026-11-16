@@ -361,6 +361,26 @@ html[dir="ltr"].js .kicker::before{transform-origin:left}
 .ghost-track{display:flex;width:max-content;animation:marquee 38s linear infinite reverse}
 .ghost-track span{font:900 clamp(84px,27vw,200px)/1 var(--head);letter-spacing:-.03em;padding-inline:20px;color:transparent;-webkit-text-stroke:2px rgba(6,10,23,.24);white-space:nowrap}
 
+/* ---------- weekly photo gallery ---------- */
+.gallery:not(:has(figure)){display:none}
+.gallery{padding-bottom:132px}
+.gal-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:30px;
+  padding:6px max(var(--gutter),calc((100vw - 1080px) / 2 + var(--gutter))) 18px;scroll-padding-inline:max(var(--gutter),calc((100vw - 1080px) / 2 + var(--gutter)))}
+.gal-track::-webkit-scrollbar{display:none}
+.gal-track figure{flex:0 0 min(80vw,420px);margin:0;scroll-snap-align:start;position:relative;overflow:hidden;border-radius:var(--r);aspect-ratio:4/5;
+  background:var(--paper-06);box-shadow:inset 0 0 0 1px var(--paper-14);transform:scale(.94);opacity:.55;transition:transform .6s var(--ease),opacity .6s var(--ease)}
+.gal-track figure.on,html:not(.js) .gal-track figure{transform:none;opacity:1}
+.gal-track img{width:100%;height:100%;object-fit:cover;display:block;animation:kb 16s ease-in-out infinite alternate}
+.gal-track figure:nth-child(2n) img{animation-direction:alternate-reverse}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.1) translate3d(-2%,-2%,0)}}
+.gal-track figcaption{position:absolute;inset-inline:0;bottom:0;padding:40px 18px 16px;font:700 18px var(--head);color:#fff;
+  background:linear-gradient(transparent,rgba(6,10,23,.85))}
+.gal-track figure[hidden]{display:none}
+.gal-dots{display:flex;justify-content:center;gap:8px}
+.gal-dots i{width:10px;height:10px;border-radius:99px;background:var(--paper-14);transition:width .35s var(--ease),background-color .35s}
+.gal-dots i.on{width:28px;background:var(--go)}
+.paused .gal-track img{animation-play-state:paused}
+
 /* ---------- sticky mobile dock ---------- */
 .dock{position:fixed;inset-inline:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px;border-radius:999px;
   background:rgba(6,10,23,.94);box-shadow:0 16px 40px -12px rgba(0,0,0,.7),inset 0 0 0 1px var(--paper-14);transform:translateY(150%);transition:transform .55s var(--ease-back)}
@@ -467,6 +487,7 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .45s both}
   .stop{opacity:1!important}
   .band-track{animation:none!important}
   .rot-css span{animation:none!important}
+  .gal-track img{animation:none!important}
   .wipe{display:none!important}
   .ghost-track{animation:none!important}
   .kicker::before,.mask .wd>i{transform:none!important}
@@ -541,6 +562,20 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .45s both}
     <p class="statement he-nj" id="statement"><span class="hl">אלה</span> <span class="hl">כל</span> <span class="hl">השירותים.</span> <span>מכשיר</span> <span>שלא</span> <span>מופיע</span> <span>ברשימה</span> <span>לא</span> <span>נכלל</span> <span>בשירות.</span></p>
     <p class="statement en nj"><span class="hl">This</span> <span class="hl">is</span> <span class="hl">the</span> <span class="hl">full</span> <span class="hl">list.</span> <span>Appliances</span> <span>not</span> <span>on</span> <span>it</span> <span>are</span> <span>not</span> <span>serviced.</span></p>
   </div>
+</section>
+
+<!-- GALLERY: photos from real jobs. Hidden automatically while it has no photos.
+     To add a photo: put the file in the "gallery" folder and copy one line below, e.g.
+     <figure><img src="gallery/fridge-1.jpg" alt="תיקון מקרר" loading="lazy" decoding="async"></figure>
+     Add as many as you like: every week the page shows a different set of up to 6. -->
+<section class="sec dark gallery" id="gallery" aria-labelledby="galT">
+  <div class="wrap">
+    <div class="kicker rv"><span class="he">עבודות אחרונות</span><span class="en">Recent work</span></div>
+    <h2 class="h2 rv" id="galT" style="--d:1"><span class="he">מהשטח</span><span class="en">From the field</span></h2>
+  </div>
+  <div class="gal-track" id="galTrack">
+  </div>
+  <div class="gal-dots" id="galDots" aria-hidden="true"></div>
 </section>
 
 <!-- FAULTS -->
@@ -1090,6 +1125,53 @@ html:not(.js) .h1 .a>span{animation:lineIn 1s var(--ease) .45s both}
   window.addEventListener("pageshow", refit);
   if("ResizeObserver" in window){ var ro = new ResizeObserver(refit); ro.observe($("#h1")); ro.observe($("#rotWord")); }
   if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit);
+
+  // weekly gallery: a different set of photos every week, then a slow auto-slide
+  (function(){
+    var track = $("#galTrack"), dots = $("#galDots");
+    var all = $$("figure", track), PER = 6;
+    if(!all.length) return;
+    if(all.length > PER){
+      var week = Math.floor((Date.now() / 864e5 + 3) / 7), start = (week * PER) % all.length;
+      var pick = [];
+      for(var k = 0; k < PER; k++) pick.push(all[(start + k) % all.length]);
+      all.forEach(function(f){ f.hidden = pick.indexOf(f) < 0; });
+      pick.forEach(function(f){ track.appendChild(f); });
+      all = pick;
+    }
+    // after reordering, start from this week's first photo (snapping would otherwise keep the old one)
+    function toStart(){ track.style.scrollSnapType = "none"; track.scrollLeft = 0; void track.offsetWidth; track.style.scrollSnapType = ""; mark(); }
+    dots.innerHTML = all.map(function(){ return "<i></i>"; }).join("");
+    var cur = 0, timer = 0, galVisible = false, touched = 0;
+    function mark(){
+      var tr = track.getBoundingClientRect(), best = 0, bd = 1e9;
+      all.forEach(function(f, i){
+        var r = f.getBoundingClientRect(), d = Math.abs((lang === "he" ? tr.right - r.right : r.left - tr.left));
+        if(d < bd){ bd = d; best = i; }
+      });
+      cur = best;
+      all.forEach(function(f, i){ f.classList.toggle("on", i === cur); });
+      $$("i", dots).forEach(function(d, i){ d.classList.toggle("on", i === cur); });
+    }
+    function go(i){
+      var f = all[i]; if(!f) return;
+      var tr = track.getBoundingClientRect(), r = f.getBoundingClientRect(), pad = parseFloat(getComputedStyle(track).scrollPaddingInlineStart) || 0;
+      var dx = lang === "he" ? (r.right - (tr.right - pad)) : (r.left - (tr.left + pad));
+      track.scrollBy({left: dx, behavior: reduce ? "auto" : "smooth"});
+    }
+    function loop(){
+      clearInterval(timer);
+      if(reduce || paused || !galVisible || all.length < 2) return;
+      timer = setInterval(function(){ if(Date.now() - touched > 6000) go((cur + 1) % all.length); }, 3800);
+    }
+    track.addEventListener("scroll", function(){ requestAnimationFrame(mark); }, {passive:true});
+    track.addEventListener("pointerdown", function(){ touched = Date.now(); });
+    if("IntersectionObserver" in window){
+      new IntersectionObserver(function(es){ es.forEach(function(e){ galVisible = e.isIntersecting; loop(); }); }, {threshold:.35}).observe(track);
+    }
+    $("#pauseBtn").addEventListener("click", loop);
+    toStart(); requestAnimationFrame(toStart); window.addEventListener("load", toStart);
+  })();
 
   // light that follows the finger / pointer across the opening screen
   (function(){
