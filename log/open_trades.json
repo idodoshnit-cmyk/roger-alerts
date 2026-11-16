@@ -1,28 +1,7 @@
 {
- "date": "2026-11-13",
- "day_r": 0.9,
+ "date": "2026-11-16",
+ "day_r": 0.0,
  "stopped": false,
- "trades": [
-  {
-   "ticker": "STRO",
-   "setup": "hod_break",
-   "entry": 10.260000228881836,
-   "stop": 9.234000205993652,
-   "target": 11.79900026321411,
-   "i": 35,
-   "open": false,
-   "r": -0.6,
-   "p": 0.5303605261380291,
-   "plan": "tp15",
-   "shares": 4,
-   "k": 71,
-   "half": false,
-   "bank": 0.0,
-   "risk": 1.0260000228881836,
-   "warned": true,
-   "how": "close",
-   "pct": -0.06042883740039169
-  }
- ],
+ "trades": [],
  "done": true
 }
