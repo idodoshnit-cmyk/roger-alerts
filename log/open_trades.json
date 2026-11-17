@@ -1,6 +1,6 @@
 {
  "date": "2026-11-17",
- "day_r": -3.0,
+ "day_r": -4.57,
  "stopped": true,
  "trades": [
   {
@@ -10,15 +10,18 @@
    "stop": 6.8895,
    "target": 8.80325,
    "i": 3,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.22,
    "p": 0.5922363880603988,
    "plan": "tp15",
    "shares": 6,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.7655000000000003
+   "risk": 0.7655000000000003,
+   "warned": true,
+   "how": "close",
+   "pct": -0.021554569416307796
   },
   {
    "ticker": "IPW",
@@ -27,15 +30,18 @@
    "stop": 1.161,
    "target": 1.4834999999999998,
    "i": 3,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.7,
    "p": 0.5165637210465408,
    "plan": "tp15",
    "shares": 38,
-   "k": 27,
+   "k": 40,
    "half": false,
    "bank": 0.0,
-   "risk": 0.129
+   "risk": 0.129,
+   "warned": true,
+   "how": "close",
+   "pct": -0.07007753386978034
   },
   {
    "ticker": "SCZM",
@@ -44,16 +50,39 @@
    "stop": 6.768,
    "target": 8.648,
    "i": 4,
-   "open": true,
-   "r": null,
+   "open": false,
+   "r": -0.19,
    "p": 0.5173689407378862,
    "plan": "tp15",
    "shares": 6,
-   "k": 42,
+   "k": 75,
    "half": false,
    "bank": 0.0,
-   "risk": 0.7519999999999998
+   "risk": 0.7519999999999998,
+   "warned": true,
+   "how": "close",
+   "pct": -0.01861700605838851
+  },
+  {
+   "ticker": "TCX",
+   "setup": "hod_break",
+   "entry": 15.345,
+   "stop": 13.810500000000001,
+   "target": 17.64675,
+   "i": 46,
+   "open": false,
+   "r": -0.46,
+   "p": 0.53158713736645,
+   "plan": "tp15",
+   "shares": 3,
+   "k": 71,
+   "half": false,
+   "bank": 0.0,
+   "risk": 1.5344999999999995,
+   "warned": true,
+   "how": "close",
+   "pct": -0.0462691281276093
   }
  ],
- "done": false
+ "done": true
 }
