@@ -1,7 +1,59 @@
 {
- "date": "2026-11-16",
- "day_r": 0.0,
- "stopped": false,
- "trades": [],
- "done": true
+ "date": "2026-11-17",
+ "day_r": -3.0,
+ "stopped": true,
+ "trades": [
+  {
+   "ticker": "KURA",
+   "setup": "orb15",
+   "entry": 7.655,
+   "stop": 6.8895,
+   "target": 8.80325,
+   "i": 3,
+   "open": true,
+   "r": null,
+   "p": 0.5922363880603988,
+   "plan": "tp15",
+   "shares": 6,
+   "k": 42,
+   "half": false,
+   "bank": 0.0,
+   "risk": 0.7655000000000003
+  },
+  {
+   "ticker": "IPW",
+   "setup": "orb15",
+   "entry": 1.29,
+   "stop": 1.161,
+   "target": 1.4834999999999998,
+   "i": 3,
+   "open": true,
+   "r": null,
+   "p": 0.5165637210465408,
+   "plan": "tp15",
+   "shares": 38,
+   "k": 27,
+   "half": false,
+   "bank": 0.0,
+   "risk": 0.129
+  },
+  {
+   "ticker": "SCZM",
+   "setup": "orb15",
+   "entry": 7.52,
+   "stop": 6.768,
+   "target": 8.648,
+   "i": 4,
+   "open": true,
+   "r": null,
+   "p": 0.5173689407378862,
+   "plan": "tp15",
+   "shares": 6,
+   "k": 42,
+   "half": false,
+   "bank": 0.0,
+   "risk": 0.7519999999999998
+  }
+ ],
+ "done": false
 }
