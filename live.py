@@ -433,7 +433,7 @@ def sure_file(day):
 
 
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
-SCORE_MIN = 9   # user 2026-11-18: only very sure signals (score 9-10); was 7
+SCORE_MIN = 8   # user 2026-11-18 19:16 Israel: emails from score 8/10 up (9 at the open gave 0 emails); was 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
 FIXED_STOP_PCT = 0.10    # approved 2026-11-12 (practice): stop order exactly 10% below the entry
 FIXED_STOP_FROM = "2026-11-12"
