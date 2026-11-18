@@ -70,7 +70,8 @@ BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3)
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 2       # approved 2026-11-12 (practice): at most 2 trades a day (was 3)
-CAP_OFF_FROM = "2026-11-17"   # user 2026-11-16: a buy email for EVERY Roger signal, no daily cap. Emails past the 2nd
+CAP_OFF_FROM = "2099-01-01"  # user 2026-11-18: back to max 2 buy emails a day (uncapped ran 11-17 only). Was "2026-11-17".
+#   # user 2026-11-16: a buy email for EVERY Roger signal, no daily cap. Emails past the 2nd
                               # are marked "הוראה נוספת" and logged as OVER_CAP, so the 2-a-day tally stays countable.
 SHADOW_TRADES = 3    # the would-be 3rd trade is logged as SHADOW_3RD, no email
 SURE_NO_CAP = False    # set True if the user lifts the 3-a-day cap for very sure Roger (decision pending 2026-10-27)
@@ -432,7 +433,7 @@ def sure_file(day):
 
 
 SCORE_CUTS = [0.2054, 0.2994, 0.4215, 0.5827, 0.6786, 0.7108, 0.7467, 0.7767, 0.8113]
-SCORE_MIN = 7
+SCORE_MIN = 9   # user 2026-11-18: only very sure signals (score 9-10); was 7
 SURE_FROM = "2026-10-27"   # user approved 'very sure Roger' from this day (top 2% confidence, data/sure_freeze)
 FIXED_STOP_PCT = 0.10    # approved 2026-11-12 (practice): stop order exactly 10% below the entry
 FIXED_STOP_FROM = "2026-11-12"
