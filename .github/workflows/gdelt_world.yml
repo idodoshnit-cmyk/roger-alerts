@@ -1,0 +1,40 @@
+name: GDELT world headlines (research only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "how many days back to fetch"
+        default: "60"
+
+concurrency:
+  group: gdelt-world
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  gdelt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python news/gdelt_world.py
+        env:
+          GDELT_DAYS: ${{ inputs.days || '60' }}
+      - name: Save
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f news/gdelt_world.csv ] || exit 0
+          git add news/gdelt_world.csv
+          git commit -m "GDELT world headlines $(date -u +%F)" || exit 0
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
