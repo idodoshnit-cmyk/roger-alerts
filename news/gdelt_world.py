@@ -67,6 +67,10 @@ t = t.replace(minute=t.minute - t.minute % 15, second=0, microsecond=0)
 while t <= end:
     slots.append(t); t += timedelta(minutes=15)
 first = {}
+if os.path.exists(OUT):        # keep what earlier runs saved: a short run (GDELT_DAYS=3) just extends the file
+    for r in csv.DictReader(gzip.open(OUT, "rt", encoding="utf-8")):
+        first[r["url"]] = r
+old = len(first)
 missing = fails = 0
 with ThreadPoolExecutor(8) as ex:
     for n, (ts, out) in enumerate(ex.map(batch, slots)):
@@ -88,7 +92,7 @@ rows = sorted(first.values(), key=lambda r: r["added_utc"])
 with gzip.open(OUT, "wt", newline="", encoding="utf-8") as fh:
     w = csv.DictWriter(fh, COLS); w.writeheader(); w.writerows(rows)
 from collections import Counter
-print(f"{len(slots)} batches, {missing} not published, {fails} failed, {len(rows)} URLs:", dict(Counter(r['tag'] for r in rows)))
+print(f"{len(slots)} batches, {missing} not published, {fails} failed, {len(rows) - old} new, {len(rows)} URLs:", dict(Counter(r['tag'] for r in rows)))
 print(f"file {os.path.getsize(OUT) / 1e6:.1f} MB")
 if fails > len(slots) * 0.2:
     sys.exit("more than 20% of GDELT batches failed")
