@@ -12,3 +12,4 @@ date,time_et,ticker,setup,entry,stop_live,stop_structure,stop_12pct,target
 2026-11-17,09:50,IPW,orb15,1.29,1.161,1.24,1.1352,1.4835
 2026-11-17,09:55,SCZM,orb15,7.52,6.768,6.81,6.6176,8.648
 2026-11-17,13:40,TCX,hod_break,15.345,13.8105,14.79,13.5036,17.6468
+2026-11-19,09:50,MAGN,gap_go_vwap_pullback,12.645,11.3805,12.149,11.1276,14.5417

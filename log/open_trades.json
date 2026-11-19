@@ -1,7 +1,25 @@
 {
- "date": "2026-11-18",
+ "date": "2026-11-19",
  "day_r": 0.0,
  "stopped": false,
- "trades": [],
- "done": true
+ "trades": [
+  {
+   "ticker": "MAGN",
+   "setup": "gap_go_vwap_pullback",
+   "entry": 12.645,
+   "stop": 11.3805,
+   "target": 14.541749999999999,
+   "i": 3,
+   "open": true,
+   "r": null,
+   "p": 0.5435589741179935,
+   "plan": "tp15",
+   "shares": 3,
+   "k": 40,
+   "half": false,
+   "bank": 0.0,
+   "risk": 1.2645
+  }
+ ],
+ "done": false
 }
