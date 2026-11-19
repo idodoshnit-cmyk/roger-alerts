@@ -32,8 +32,9 @@ for i, t in enumerate(tick):
     f = r.json()["filings"]["recent"]
     for j in range(len(f["form"])):
         if f["filingDate"][j] < SINCE: continue
-        acc = f["acceptanceDateTime"][j]          # e.g. 2026-11-18T16:05:12.000Z (UTC)
-        ts = datetime.strptime(acc[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+        acc = f["acceptanceDateTime"][j]          # e.g. 2026-11-18T16:05:12.000Z
+        # EDGAR writes a "Z" but the clock is New York time (an after-close 8-K reads 16:05, not 21:05)
+        ts = datetime.strptime(acc[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=ET).astimezone(timezone.utc)
         rows.append({"ticker": t, "cik": c, "form": f["form"][j], "accepted_utc": ts.strftime("%Y-%m-%d %H:%M:%S"),
                      "accepted_et": ts.astimezone(ET).strftime("%Y-%m-%d %H:%M:%S"), "filing_date": f["filingDate"][j],
                      "items": f.get("items", [""] * len(f["form"]))[j], "description": f["primaryDocDescription"][j],
@@ -44,3 +45,5 @@ with open(os.path.join(HERE, "sec_filings.csv"), "w", newline="") as fh:
     w = csv.DictWriter(fh, list(rows[0])); w.writeheader(); w.writerows(rows)
 print(f"{len(tick)} tickers, {len(rows)} filings since {SINCE}, no CIK: {len(missing)}, failed: {len(fail)}")
 print("no CIK:", " ".join(missing[:80]))
+from collections import Counter   # sanity check: New York acceptance hours should sit between 06 and 22
+print("acceptance hour (New York) -> filings:", dict(sorted(Counter(int(r["accepted_et"][11:13]) for r in rows).items())))

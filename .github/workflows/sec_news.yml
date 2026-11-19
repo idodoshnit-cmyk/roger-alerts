@@ -2,8 +2,7 @@ name: SEC filings history (research only)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 23 * * 1-5"   # nightly after the close; the live bot never reads this
+  # nightly schedule paused 2026-11-19: SEC needs a contact address in the User-Agent (waiting on the user)
 
 concurrency:
   group: sec-news
