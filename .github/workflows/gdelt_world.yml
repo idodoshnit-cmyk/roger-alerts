@@ -17,7 +17,7 @@ permissions:
 jobs:
   gdelt:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          [ -f news/gdelt_world.csv ] || exit 0
-          git add news/gdelt_world.csv
+          [ -f news/gdelt_world.csv.gz ] || exit 0
+          git add news/gdelt_world.csv.gz
           git commit -m "GDELT world headlines $(date -u +%F)" || exit 0
           for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
