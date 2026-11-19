@@ -8,11 +8,19 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import requests
 HERE = os.path.dirname(os.path.abspath(__file__))
-UA = {"User-Agent": "roger-alerts practice research github.com/idodoshnit-cmyk/roger-alerts", "Accept-Encoding": "gzip"}
+# SEC asks automated clients to name a contact e-mail in the User-Agent. It comes from the repo secret SEC_CONTACT
+# (the user approved 2026-11-19) and is never printed or written to the repo.
+CONTACT = os.environ.get("SEC_CONTACT", "").strip()
+if not CONTACT:
+    sys.exit("SEC_CONTACT secret is not set: add it in the repo settings (Secrets and variables > Actions)")
+UA = {"User-Agent": f"roger-alerts research {CONTACT}", "Accept-Encoding": "gzip"}
 SINCE = os.environ.get("SEC_SINCE", "2026-06-01")
 ET = ZoneInfo("America/New_York")
 tick = [t.strip() for t in open(os.path.join(HERE, "tickers.txt")) if t.strip()]
-m = requests.get("https://www.sec.gov/files/company_tickers.json", headers=UA, timeout=30).json()
+r0 = requests.get("https://www.sec.gov/files/company_tickers.json", headers=UA, timeout=30)
+if r0.status_code != 200 or not r0.text.lstrip().startswith("{"):
+    sys.exit(f"SEC refused the ticker list: HTTP {r0.status_code}")
+m = r0.json()
 cik = {v["ticker"].upper(): int(v["cik_str"]) for v in m.values()}
 rows, missing, fail = [], [], []
 for i, t in enumerate(tick):

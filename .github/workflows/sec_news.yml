@@ -24,6 +24,8 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
       - run: python news/sec_history.py
+        env:
+          SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
       - name: Save
         run: |
           git config user.name "github-actions[bot]"
