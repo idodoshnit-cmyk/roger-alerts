@@ -41,8 +41,11 @@ while t < end:
                              headers={"User-Agent": "roger-alerts research"})
             if r.status_code == 200 and r.text.lstrip().startswith("{"):
                 js = r.json(); break
-        except Exception:
-            pass
+            if fails < 5:
+                print("GDELT answer", r.status_code, repr(r.text[:300]), flush=True)
+        except Exception as e:
+            if fails < 5:
+                print("GDELT error", repr(e)[:300], flush=True)
         time.sleep(6 * (k + 1))
     calls += 1
     if js is None:
@@ -58,7 +61,7 @@ while t < end:
         rows.append({"seen_utc": sd.strftime("%Y-%m-%d %H:%M:%S"), "seen_et": sd.astimezone(ET).strftime("%Y-%m-%d %H:%M:%S"),
                      "tags": " ".join(k for k, rx in TAGS.items() if re.search(rx, low)), "title": title,
                      "domain": a.get("domain", ""), "sourcecountry": a.get("sourcecountry", ""), "url": u})
-    if calls % 50 == 0:
+    if calls % 50 == 0 or calls <= 3:
         print(t2.isoformat(), "rows", len(rows), "fails", fails, flush=True)
     time.sleep(5)            # GDELT asks for about one request every 5 seconds
     t = t2
