@@ -1,0 +1,73 @@
+{
+"neo_villa": {
+  "label": "Kifisia neoclassical / eclectic villa or town house, 1880-1930 (summer-resort era after the 1885 railway)",
+  "levels": [1, 2], "gfH": 4.6, "floorH": 4.3, "raisedGroundM": [0.6, 1.6], "plinth": "rusticated stone or grey-rendered plinth 0.6-1.6 m with 3-10 marble entrance steps",
+  "windows": {"w": 1.15, "h": 2.4, "sill": 0.9, "rhythmM": 2.6, "frame": "white moulded surround 0.15 m, small cornice or triangular/segmental pediment above upper windows", "shutters": "timber louvred, dark green #3d5e46 or grey-blue #6c7f8a, or painted blue frames"},
+  "symmetry": "3 or 5 bays, symmetric, central entrance; central balcony over the entrance",
+  "balcony": {"depth": 0.8, "slab": "white marble 0.12 m on carved consoles", "rail": "cast/wrought iron, black"},
+  "cornice": "projecting moulded cornice 0.5-0.8 m deep under the eaves; corner pilasters or quoins",
+  "roof": "hip 25-30 deg, Byzantine/Marseille clay tiles #a9553a-#b8664a, eaves 0.6-0.9 m with dark timber soffit and brackets; sometimes a small central cross-gable or pediment (salmon or white tympanum); chimneys",
+  "colours": ["#e3c48e", "#e9d2a6", "#e6b9a0", "#efe3c8", "#d9b27c", "#e9d9a4", "#e9dfbf"],
+  "examples": ["Kifisias 297 (ref/r08.jpg)", "HSBC corner Platanos (ref/r11.jpg)", "Goulandris museum villa (ref/r14.jpg)"]},
+"chalet_villa": {
+  "label": "Romantic 'Swiss chalet' villa, 1890-1925 (rough honey limestone, steep gables with carved white bargeboards)",
+  "levels": [2, 3], "gfH": 4.3, "floorH": 3.9, "raisedGroundM": [1.0, 1.6],
+  "walls": "rough-faced honey limestone ashlar #c4a68a with darker joints #8a7461; rusticated quoins/window surrounds in larger paler blocks #cbb093; white string course at first floor",
+  "windows": {"w": 1.1, "h": 2.2, "rhythmM": 2.4, "frame": "white timber casements, 6-8 small panes, segmental arches"},
+  "roof": "steep gable 45-55 deg, red-orange tiles #a8553a, deep white timber bargeboards with carved brackets, king-post truss and turned finial at the apex, dormers with their own small gables",
+  "balcony": {"type": "white timber balcony on carved brackets at the gable window; white stone balustrade over a canted bay"},
+  "colours": ["#c4a68a", "#cdb79c"],
+  "examples": ["Kotsikas house / Ralph Lauren, Kassaveti 19 (ref/r20.jpg)"]},
+"eclectic_pavilion": {
+  "label": "White eclectic pavilion with round corner towers (Agora / Kolokotroni 7 group)",
+  "levels": [1, 2], "gfH": 6.0, "walls": "white render #f6f3ec, stone plinth #d9c3a8", "towers": "round, 5-6 m diameter, conical grey roofs with gold finials, scalloped terracotta-tile cornice",
+  "windows": "tall arched display windows, white mouldings, fleur-de-lis frieze", "examples": ["Kolokotroni 7 (ref/r12.jpg)", "Agora Kifisias (ref/r06.jpg)"]},
+"interwar": {
+  "label": "Interwar / early post-war masonry building 1925-1960: 2-3 storeys, rendered or stone, flat roof or low hip, simple cornices, often converted to shops",
+  "levels": [2, 3], "gfH": 4.2, "floorH": 3.5,
+  "windows": {"w": 1.2, "h": 1.9, "rhythmM": 2.8, "frame": "plain render band or stone surround"},
+  "balcony": {"depth": 1.0, "rail": "simple iron bars or solid parapet; corner balconies with rounded slab"},
+  "roof": "flat with parapet and thin cornice, or low hip with tiles",
+  "colours": ["#ece5d6", "#e8dcc2", "#efe9de", "#dcd2bf", "#c27a55"]},
+"poly_6080": {
+  "label": "Athenian polykatoikia 1960-1985 (antiparochi era): the commonest block in the centre",
+  "levels": [3, 5], "gfH_commercial": 4.2, "gfH_residential": 3.1, "floorH": 3.0, "parapetM": 0.9,
+  "groundFloor": "shops with full glazing between square columns, marble/granite cladding on the columns, roll-shutter boxes; or pilotis (open parking) on residential streets",
+  "balcony": {"type": "continuous cantilevered slab along the street front", "depth": [1.2, 1.6], "slabEdge": "white marble fascia 0.15-0.2 m", "rail": "anodised aluminium bars #b9bcbf (commonest), black iron, or solid masonry parapet 0.9 m with marble cap", "corner": "slab wraps the corner"},
+  "awnings": "one fabric drop awning per balcony bay: beige #d8c9a3, green #4f6b4a, terracotta #b55b3c, blue-white or green-white stripes; arms at ~2.2 m above slab",
+  "windows": "balcony doors 2.2 m high full-height aluminium sliders + external roll shutters (box 0.25 m) in white/beige/brown; bedroom windows 1.2 x 1.4 m",
+  "roof": "flat concrete roof with 0.9 m parapet, stair bulkhead, solar water heaters (flat panels + horizontal tank), TV antennas, AC units; frequently a set-back top floor (retiré) with its own terrace",
+  "colours": ["#f1eee7", "#ebe6db", "#e9e2d0", "#f2ede1", "#e3dccd", "#ece4cf"],
+  "examples": ["white block along Kassaveti in ref/r11.jpg", "blocks along Kifisias Ave in ref/r09.jpg"]},
+"poly_8000": {
+  "label": "Polykatoikia 1985-2005 typical of Kifisia's garden-suburb code: 2-4 storeys, pitched tiled roof or tiled pergola on the retiré, stone-clad base, individual/recessed balconies",
+  "levels": [2, 4], "gfH_commercial": 4.2, "gfH_residential": 3.1, "floorH": 3.05,
+  "balcony": {"type": "individual or recessed loggias, some bay windows", "depth": [1.4, 2.0], "rail": "solid masonry parapet with iron top rail, or iron balusters"},
+  "walls": "render in ochre/cream/apricot, stone cladding (grey-beige limestone) on the ground floor and on vertical strips",
+  "roof": "low hip with red tiles over the top floor, or flat with tiled-roof pergola; parapet",
+  "colours": ["#ead9b8", "#e7cfae", "#f0e4cc", "#e2c9a3", "#efe8da", "#dcc3a0"]},
+"poly_modern": {
+  "label": "Contemporary block 2005-2025: white/grey render or large-format stone/HPL cladding, frameless glass balustrades, deep recessed balconies, flat roof with hidden plant",
+  "levels": [2, 4], "gfH_commercial": 4.5, "gfH_residential": 3.2, "floorH": 3.1,
+  "balcony": {"type": "glass or recessed", "depth": [1.6, 2.4], "rail": "frameless glass 1.0 m with steel cap"},
+  "colours": ["#f3f1ec", "#e9e6e0", "#d9d4cc", "#efebe3"]},
+"retail_modern": {
+  "label": "Modern retail / office building: curtain-wall glazing or stone panels, flush signage, 2-3 storeys, flat roof",
+  "levels": [2, 3], "gfH": 5.0, "floorH": 3.6, "colours": ["#dfdbd4", "#c9c4bc", "#2f3236", "#e8e4dc"]},
+"arcade_retail": {
+  "label": "Low commercial arcade block around Platanos: 1-2 storeys behind a deep colonnade of square cream pillars, low hipped terracotta roof with wide eaves, café terraces under the arcade",
+  "levels": [1, 2], "gfH": 4.4, "floorH": 3.4, "arcadeDepthM": 3.0, "pillar": "0.5 x 0.5 m cream render, spacing 4-5 m", "roof": "hip 20 deg, terracotta #c0623e-#c8653c, eaves 0.8 m",
+  "examples": ["Kifisias 236 and the KFC block (ref/r09.jpg drone view)"]},
+"villa_modern": {
+  "label": "Detached house / maisonette 1975-2015 in a garden: 2-3 storeys, tiled hip roof, stone-clad base, arched openings or pergolas, behind a garden wall and railings",
+  "levels": [2, 3], "gfH": 3.2, "floorH": 3.1, "roof": "hip 25-30 deg, red tiles, eaves 0.5 m", "colours": ["#efe3c9", "#e9d3b0", "#f2ebdd", "#e6c9a5", "#ede6d8"]},
+"house_suburban": {
+  "label": "Small older house (1 storey or 2), tiled hip roof, shutters", "levels": [1, 2], "gfH": 3.1, "floorH": 3.0, "colours": ["#efe6d4", "#e8d6b6", "#f2ece0"]},
+"hotel": {"label": "Hotel: 3-5 storeys, individual iron balconies, entrance canopy", "levels": [3, 5], "gfH": 4.5, "floorH": 3.2},
+"church": {"label": "Orthodox church: cross-in-square, central dome on drum, bell tower(s), cream render, red tiles", "examples": ["ref/r13.jpg"]},
+"station": {"label": "Kifisia Line 1 station: long single storey, ochre-yellow #e8c766 with white pilasters, central pediment with clock", "examples": ["ref/r21.jpg"]},
+"market_hall": {"label": "Agora Kifisias complex (see eclectic_pavilion)"},
+"school": {"label": "School building (ISA campus etc.): 2-3 storeys, flat roof, ribbon windows, rendered; see docs/research/PLACES.md for ISA"},
+"kiosk": {"label": "Periptero / small pavilion"},
+"ancillary": {"label": "Garage, shed, plant room: 1 storey, plain render, flat roof"}
+}

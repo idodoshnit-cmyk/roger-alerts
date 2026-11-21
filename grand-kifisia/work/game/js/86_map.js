@@ -6,7 +6,7 @@
 const MAPV={ready:false,areas:{},roads:[],labels:[],cells:new Map(),tile:null,tctx:null,tcx:1e9,tcz:1e9,bbox:[0,0,1,1]};
 const POIS=[];// every named shop / amenity from the map: {x,z,nx,nz,name,kind,cat,b,special}
 const PLACES=[];// landmarks shown on the map: {x,z,name,icon,col}
-const MAPCOL={bg:'#10151b',side:'#222932',bld:'#2d3643',bldS:'#4a5564',park:'#1f4d2f',grass:'#255239',wood:'#173f27',scrub:'#2c3f2a',water:'#2a78b8',pool:'#3aa7d8',plaza:'#3b414a',parking:'#262c35',
+const MAPCOL={bg:'#10151b',side:'#222932',bld:'#3a4453',bldS:'#4a5564',park:'#1f4d2f',grass:'#255239',wood:'#173f27',scrub:'#2c3f2a',water:'#2a78b8',pool:'#3aa7d8',plaza:'#3b414a',parking:'#262c35',
   school:'#2a3040',sport:'#2a3040',rail:'#1a1f26',platform:'#4a4f58',pitch:'#2b5d7a',garden:'#225032'};
 const ROADSTYLE=[/*0 primary*/['#f0c95c','#5d4a18',1],['#dfe5ec','#454d57',1],['#d3dae2','#454d57',1],['#a3adb9','#3a424c',1],['#a3adb9','#3a424c',1],['#737d8a','#30373f',0.8],
   /*6 pedestrian*/['#c2b28a','#4e452c',1],['#8a94a1',null,0.5],['#8a94a1',null,0.5],['#8a94a1',null,0.5]];
@@ -148,7 +148,7 @@ let streetCache={t:'',r:null};
 function streetName(){const p=player.car||player;const n=navNearestNamed(p.x,p.z);return n?latin(n):'Kifisia'}
 function navNearestNamed(x,z,maxD){let best='',bd=maxD||30;for(const r of ROADS){if(!r.name||r.ty>6)continue;const ps=r.ps;for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];if((a[0]<x-bd&&b[0]<x-bd)||(a[0]>x+bd&&b[0]>x+bd)||(a[1]<z-bd&&b[1]<z-bd)||(a[1]>z+bd&&b[1]>z+bd))continue;const dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz||1,u=clamp(((x-a[0])*dx+(z-a[1])*dz)/L2,0,1),d=Math.hypot(x-a[0]-dx*u,z-a[1]-dz*u);if(d<bd){bd=d;best=r.name}}}return best}
 const DISTRICTS=[['Kifisia Centre','platanos',260],['Station','station',170],['Alsos','alsos',120],['Kefalari','kefalari',230],['Kolokotroni','agora',170]];
-function districtName(){const p=player.car||player;if(player.interior){const P=POIS.find(q=>q.special===player.interior);return P?P.name:'Indoors'}
+function districtName(){const p=player.car||player;if(player.interior){const I=typeof INTERIORS!=='undefined'&&INTERIORS&&INTERIORS[player.interior];if(I&&I.name)return I.name;const P=POIS.find(q=>q.special===player.interior);return P?P.name:'Indoors'}
   if(MAP.isa&&Math.hypot(p.x-MAP.isa.gate[0],p.z-MAP.isa.gate[1])<150)return'ISA · Kefalari';let best='Kifisia',bd=1e9;for(const [n,k,r] of DISTRICTS){const q=MAP.key[k];if(!q)continue;const d=Math.hypot(p.x-q[0],p.z-q[1])/r;if(d<1&&d<bd){bd=d;best=n}}return best}
 
 /* ============================== BIG MAP (pause menu) ============================== */
@@ -175,7 +175,7 @@ function bigMapTap(sx,sy){const wx=BM.cx+(sx-BM.w/2)/BM.s,wz=BM.cz+(sy-BM.h/2)/B
   let label=null,tx=wx,tz=wz;/* tapping a place or a shop names the waypoint after it */
   let bd=R*1.4;for(const P of PLACES){const d=Math.hypot(P.x-wx,P.z-wz);if(d<bd){bd=d;label=P.name;tx=P.x;tz=P.z}}
   for(const P of POIS){if(!P.special&&BM.s<1.6)continue;const d=Math.hypot(P.x-wx,P.z-wz);if(d<bd){bd=d;label=P.name;tx=P.x;tz=P.z}}
-  if(typeof MISSIONS!=='undefined')for(const m of MISSIONS){const a=m.at();const d=Math.hypot(a.x-wx,a.z-wz);if(d<bd){bd=d;label=m.title;tx=a.x;tz=a.z}}
+  if(typeof MISSIONS!=='undefined')for(const m of MISSIONS){const a=mAt(m);const d=Math.hypot(a.x-wx,a.z-wz);if(d<bd){bd=d;label=m.title;tx=a.x;tz=a.z}}
   if(!inPlay(tx,tz)){toast('That is outside Grand Kifisia','pin');return}
   if(!label){const n=navNearestNamed(tx,tz,40);label=n?latin(n):'Waypoint'}
   setWaypoint(tx,tz,label);bigMapAfterWp()}
@@ -197,7 +197,7 @@ function bigMapDraw(){const g=BM.g;if(!g||!MAPV.ready)return;const W=BM.w,H=BM.h
   for(const P of PLACES){if(!vis(P.x,P.z,10))continue;if(P.minor&&s<1.2)continue;const st=CATSTYLE[P.cat]||CATSTYLE.other,X=SX(P.x),Y=SY(P.z);mapBadge(g,X,Y,9,st[0],st[1]);if(s>=0.7&&!P.minor)mapText(g,P.name,X+13,Y,11.5,'#fff','left',700)}
   for(const P of POIS){if(!P.special||!vis(P.x,P.z,10))continue;const st=CATSTYLE[P.cat]||CATSTYLE.other,X=SX(P.x),Y=SY(P.z);mapBadge(g,X,Y,9,st[0],st[1]);if(s>=1)mapText(g,P.name,X+13,Y,11.5,'#fff','left',700)}
   /* missions */
-  if(typeof MISSIONS!=='undefined')for(const m of MISSIONS){const a=m.at();if(!vis(a.x,a.z,10))continue;const X=SX(a.x),Y=SY(a.z),act=mission&&mission.id===m.id;mapBadge(g,X,Y,11,SAVE.done[m.id]&&!act?'#8fa08f':'#ffc832',null,m.icon);if(s>=0.6)mapText(g,m.title,X+15,Y,12,act?'#ffc832':'#fff','left',800)}
+  if(typeof MISSIONS!=='undefined')for(const m of MISSIONS){const a=mAt(m);if(!vis(a.x,a.z,10))continue;const X=SX(a.x),Y=SY(a.z),act=mission&&mission.id===m.id;mapBadge(g,X,Y,11,SAVE.done[m.id]&&!act?'#8fa08f':'#ffc832',null,m.icon);if(s>=0.6)mapText(g,m.title,X+15,Y,12,act?'#ffc832':'#fff','left',800)}
   /* destination + waypoint */
   const dd=GPS.dest;if(dd&&dd.kind==='obj'){const X=SX(dd.x),Y=SY(dd.z);g.save();g.translate(X,Y);g.rotate(Math.PI/4);g.fillStyle='#10151b';g.fillRect(-8.5,-8.5,17,17);g.fillStyle='#ffc832';g.fillRect(-6.5,-6.5,13,13);g.restore()}
   if(GPS.wp){const X=SX(GPS.wp.x),Y=SY(GPS.wp.z);g.fillStyle='#10151b';g.beginPath();g.moveTo(X,Y+2);g.lineTo(X-9,Y-13);g.arc(X,Y-16,9.5,Math.PI*0.9,Math.PI*2.1);g.closePath();g.fill();g.fillStyle='#39b6ff';g.beginPath();g.moveTo(X,Y);g.lineTo(X-6.5,Y-12);g.arc(X,Y-16,7.5,Math.PI*0.9,Math.PI*2.1);g.closePath();g.fill();g.fillStyle='#10151b';g.beginPath();g.arc(X,Y-16,2.8,0,TAU);g.fill();mapText(g,GPS.wp.label,X+13,Y-16,11.5,'#9fdcff','left',700)}

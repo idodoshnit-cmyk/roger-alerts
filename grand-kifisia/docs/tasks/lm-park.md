@@ -1,0 +1,3 @@
+# lm-park — the park 1:1 — Alsos Kifisias (Kifisia Grove) next to the station
+Read docs/tasks/lm-common.md first (it is your full method). Your file: gk3/js/89f_lm_park.js.
+Model the grove exactly: path network, entrances, fountain/pond, kiosks/café, playground, benches, lamps, statues, fences and the real tree layout and species from OSM (natural=tree, landuse, leisure=park in kif.osm). Coordinate with the streets bot (owns 45_trees.js / 50_props.js): your file builds everything inside the park polygon; tell streets in docs/ORDERS_DONE.md to skip it. If time remains, apply the same to Platanos square.

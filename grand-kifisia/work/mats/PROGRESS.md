@@ -51,3 +51,33 @@
 - 20:12 docs/MATERIALS.md v1 written (API for the others) + docs/CREDITS.md lines appended. tools/tex/tiletable.js regenerates the table (cat doc_head + table + doc_tail in work/mats/tmp).
 - NEXT: tuning pass — (a) asphalt sparkle at grazing angles (fade normal strength with distance), (b) golden hour / dusk too dark & flat: hemi + exposure keys, sunset glow,
   (c) roof tiles too pale (re-grade terracotta), ballast should be angular grey stone, (d) presets low/high + runtime switch + late defTile test, (e) perf table.
+
+## Resume log (5th process, 00:50 next day)
+- Found unintegrated tuning in my copy (r5_* shots, no errors): asph<-clean_asphalt, normal fade with distance, haze uniform, cut flag in LUT (only cut:true tiles discard), sky keys, sunset glow, MOBILE tex 384.
+- 00:55 **INTEGRATED v3** (tex/, 10_atlas.js, 82_sky.js via integrate.sh; 00_core.js via tools/tex/sync_core.py). Copy synced from main first (60_people, 75_npc).
+- Running main3_* verification (tmp/viewsF.json, log tmp/main3.log). No docs/ORDERS.md exists yet.
+- NEXT: look at main3 shots; then tuning list: roof tiles colour, ballast, facade/plaster look, foliage quality, dusk/night readability; run tools/tex/mtest.js (late defTile, presets, no-WebGL2) — not yet run; perf table; MATERIALS.md update.
+
+## Resume log (6th process, 08:25)
+- Found unintegrated r6 work (vc hue param for foliage/grass, wind sway GK_VWIND for leaf/cut materials, glowC horizon light, tiles/ballast scale). r6 had no errors.
+- 08:27 **INTEGRATED v4** (10_atlas.js, 82_sky.js, tex/ via integrate.sh; 00_core.js via sync_core.py). No ORDERS.md exists.
+- NEXT: verify main4; "gold" shot looks not golden -> check time-of-day keys; facade/plaster look; dusk/night readability; mtest.js; perf; MATERIALS.md update (vc, wind).
+- 09:20 tuning pass r7/r8 (shots work/mats/shots/r7_*, r8_*; no errors): night darker (hemi .10/.13, moon .13, expo .88), lamp pools steeper + brighter (lampC 1.55,1.02,.52; light reaches 7.5 m),
+  golden hour warmer (sunC 10° = 1,.62,.36; sunI 1.6), blue hour 20:30 ok. Measured night facade upper floors ≈ sRGB 50, lamp-lit ≈ 110 warm.
+- 09:22 **INTEGRATED v5** (10_atlas.js, 82_sky.js). MATERIALS.md: vc option, wind, horizon glow documented.
+- NEXT: run tools/tex/mtest.js on MAIN (late defTile, presets, no-WebGL2), fix; then perf table; close-up material review.
+- 09:45 **INTEGRATED v6**: new photo layers karystos (PH stone_tiles) + timber (PH wooden_planks) with normals (tex/ rebuilt: 82 colour / 41 normal layers, 116.2 MB medium, 8.2 MB download), P() in 10_atlas.js.
+  mtest.js on main: ALL CHECKS PASSED (mt1.log). MATERIALS.md: table regenerated, memory numbers, verification line, building-material mapping. CREDITS + ORDERS_DONE appended.
+- ORDERS.md now exists: nothing for mats; project priority = buildings/landmarks (lm-* bots, gk3/js/89*_lm_*.js).
+- NEXT: verify MAIN boots with everyone's latest work (main5 run: spawn, mythos, platanos, station, kefalari + gold/night); perf table; look at lm-* files for material misuse.
+
+## Resume log (7th process, 12:47)
+- ORDERS.md 12:50 directive for mats: GRAPHICS OVERHAUL (ACES+sRGB, PMREM env lighting, cascaded stable soft shadows, SSAO/baked contact AO, subtle bloom,
+  haze, PBR facades normal+roughness, wet/dirty variation, AA, better trees/grass, presets: High default desktop + auto phone preset 30+ fps, before/after shots in MATERIALS.md).
+- Main unchanged since 09:14 (my v6 is live). Plan: (B) in-shader colour grading + presets/High default + phone auto preset; (C) heightfield AO (top-down height RT
+  around camera, contact AO + street-canyon sky occlusion on indirect light); (D) LDR bloom via copyFramebufferToTexture + additive composite; (E) analytic sky reflection
+  on glass/water/wet + macro dirt variation; (F) docs before(base_*)/after.
+- 13:15 WRITTEN in copy (not yet integrated, testing run a1 = tmp/a1.log, shots a1_*): QP +ao/bloom/prMin/fpsLo, autoQ() (desktop high, phones medium), ACES colour grade patch (00_core);
+  height-field AO (82_sky.js HF*, world shader GK_AO/GK_AO2 in 10_atlas.js, U.hf/hfR/hfK), bloom+vignette postFX() (82_sky.js), autoQuality() step-down (skips navigator.webdriver),
+  fxQuality() hook from applyQuality. Shared edits in COPY only so far: 90_main.js (postFX call after renderer.render; Q.fpsLo/Q.prMin in auto-res loop), 88_menu.js setQuality auto->autoQ().
+  Must apply those 2 shared edits to MAIN by hand at integration.

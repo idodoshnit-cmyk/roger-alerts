@@ -137,6 +137,50 @@ def('air_up', 0.1, { hips: [[0, 0, 0.02, 0]], spine: [[0, 0.1, 0, 0]], head: [[0
 def('air_down', 0.1, { hips: [[0, 0, 0.02, 0]], spine: [[0, 0.16, 0, 0]], head: [[0, 0.05, 0, 0]], handR: [[0, -0.58, 1.12, 0.1]], handL: [[0, 0.58, 1.1, 0.08]], poleR: [[0, -0.6, -0.8, -0.4]], poleL: [[0, 0.6, -0.8, -0.4]],
   footL: [[0, 0.02, 0.07, 0.1]], footR: [[0, -0.02, 0.05, -0.04]], footLr: [[0, 0.3, 0, 0]], footRr: [[0, 0.35, 0, 0]] }, { fps: 10 });
 
+/* ---------- paintball markers (non-lethal game weapons): hold / aim poses as slow-breathing loops, upper body only while walking ---------- */
+{ const br = (t, a) => t; // keep the helper signature short
+  /* two-handed pistol aim (isosceles stance): arms extended, hands together at eye line, head slightly down to the sights, weight forward */
+  const aimP = (t, s) => K(t, { hips: [0, -0.015, 0.02], spine: [0.07 + s, 0, 0], neck: [0.02, 0, 0], head: [0.1 - s * 0.5, 0, 0],
+    handR: [-0.035, 1.44 + s * 0.15, 0.52], handL: [0.015, 1.425 + s * 0.15, 0.5], poleR: [-0.9, -0.7, -0.1], poleL: [0.9, -0.7, -0.1],
+    handRr: [0.403, -0.435, 0.384], handLr: [0.488, 0.135, -0.368], curlR: [0.85], curlL: [0.75], footL: [0.03, 0, 0.1], footR: [-0.03, 0, -0.07] });
+  def('aim_pistol', 3, seq([aimP(0, 0), aimP(1.5, 0.012), aimP(3, 0)]), { loop: true, fps: 10 });
+  /* low ready: the same grip lowered to the belly, muzzle to the ground in front */
+  const lowP = (t, s) => K(t, { spine: [0.04 + s, 0, 0], head: [0.06, 0, 0], handR: [-0.06, 1.06 + s * 0.2, 0.36], handL: [0.0, 1.05 + s * 0.2, 0.34], poleR: [-0.9, -0.8, -0.3], poleL: [0.9, -0.8, -0.3],
+    handRr: [2.986, 2.503, 3.136], handLr: [2.976, -2.809, 3.015], curlR: [0.85], curlL: [0.7] });
+  def('hold_pistol', 3, seq([lowP(0, 0), lowP(1.5, 0.01), lowP(3, 0)]), { loop: true, fps: 10 });
+  /* rifle-style marker at the shoulder: right hand at the grip by the right cheek, left hand far forward under the barrel, cheek down on the stock */
+  const aimR = (t, s) => K(t, { hips: [0, -0.02, 0.02], hipsR: [0, 0.18, 0], spine: [0.08 + s, -0.22, 0], neck: [0.04, 0.05, 0], head: [0.12 - s * 0.5, 0.05, -0.12],
+    handR: [-0.15, 1.45 + s * 0.15, 0.25], handL: [0.0, 1.405 + s * 0.15, 0.57], poleR: [-1.0, -0.15, -0.2], poleL: [0.7, -0.9, 0.1],
+    handRr: [1.971, -2.023, -0.634], handLr: [-0.393, 0.241, 1.276], curlR: [0.8], curlL: [0.55], footL: [0.05, 0, 0.13], footR: [-0.06, 0, -0.09] });
+  def('aim_rifle', 3, seq([aimR(0, 0), aimR(1.5, 0.012), aimR(3, 0)]), { loop: true, fps: 10 });
+  /* rifle carried across the body (port arms, muzzle up-left) */
+  const lowR = (t, s) => K(t, { spine: [0.03 + s, -0.08, 0], head: [0.03, 0.04, 0], handR: [-0.13, 1.0 + s * 0.2, 0.22], handL: [0.1, 1.2 + s * 0.2, 0.3], poleR: [-0.9, -0.6, -0.4], poleL: [0.9, -0.7, -0.2],
+    handRr: [3.17, -2.052, -0.823], handLr: [-0.92, -1.093, 2.245], curlR: [0.8], curlL: [0.6] });
+  def('hold_rifle', 3, seq([lowR(0, 0), lowR(1.5, 0.01), lowR(3, 0)]), { loop: true, fps: 10 });
+  void br;
+}
+
+/* ---------- reactions: startled by a paint hit (flinch, a step back, a hand to the spot), cowering, hands up ---------- */
+def('flinch', 0.95, {
+  hips:  [[0, 0, 0, 0], [0.08, 0, -0.02, -0.05], [0.2, 0, -0.04, -0.12], [0.45, 0, -0.02, -0.09], [0.95, 0, 0, -0.04]],
+  hipsR: [[0, 0, 0, 0], [0.12, 0.05, 0.25, 0], [0.45, 0.02, 0.15, 0], [0.95, 0, 0.03, 0]],
+  spine: [[0, 0, 0, 0], [0.08, -0.22, 0.1, 0], [0.2, -0.12, 0.25, 0], [0.45, 0.18, 0.15, 0], [0.95, 0.04, 0.02, 0]],
+  head:  [[0, 0, 0, 0], [0.08, -0.25, -0.15, 0], [0.22, 0.15, -0.3, 0], [0.5, 0.3, -0.1, 0], [0.95, 0.06, 0, 0]],
+  handR: [[0, -0.27, 0.86, 0.06], [0.1, -0.33, 1.2, 0.22], [0.22, -0.06, 1.17, 0.17], [0.55, -0.05, 1.16, 0.16], [0.95, -0.25, 0.9, 0.08]], poleR: [[0, -0.5, -0.6, -0.6], [0.2, -1, -0.5, -0.2], [0.95, -0.5, -0.6, -0.6]],
+  handRr: [[0, 0, 0, 0], [0.22, 0, 0, 1.2], [0.55, 0, 0, 1.2], [0.95, 0, 0, 0.2]],
+  handL: [[0, 0.27, 0.86, 0.06], [0.1, 0.38, 1.25, 0.25], [0.3, 0.33, 1.0, 0.12], [0.95, 0.27, 0.88, 0.06]], poleL: [[0, 0.5, -0.6, -0.6], [0.2, 1, -0.4, -0.2], [0.95, 0.5, -0.6, -0.6]],
+  curlR: [[0, 0.2], [0.1, 0.0], [0.3, 0.5], [0.95, 0.3]], curlL: [[0, 0.2], [0.1, 0.0], [0.95, 0.3]],
+  footL: [[0, 0, 0, 0], [0.12, 0, 0, 0], [0.22, 0.02, 0.05, -0.12], [0.32, 0, 0, -0.17], [0.95, 0, 0, -0.17]],
+  footR: [[0, 0, 0, 0], [0.4, 0, 0, 0], [0.5, 0, 0.04, -0.05], [0.6, 0, 0, -0.04], [0.95, 0, 0, -0.04]] }, { modes: {} });
+{ const CY = -0.38; /* crouched pelvis drop */
+  const cw = (t, s) => K(t, { hips: [0, CY + s * 0.3, -0.05], spine: [0.72 + s, 0, 0], neck: [0.2, 0, 0], head: [0.25, 0, 0],
+    handR: [-0.12, 1.0 + s, 0.42], handL: [0.12, 1.02 + s, 0.4], poleR: [-1, 0.6, -0.2], poleL: [1, 0.6, -0.2], handRr: [-1.2, 0, 0.6], handLr: [-1.2, 0, -0.6], curlR: [0.4], curlL: [0.4],
+    footL: [0.04, 0, 0.12], footR: [-0.04, 0, -0.1], kneeL: [0.3, 0.6, 1], kneeR: [-0.3, 0.6, 1] });
+  def('cower', 1.6, seq([cw(0, 0), cw(0.8, 0.02), cw(1.6, 0)]), { loop: true, fps: 10 }); }
+{ const hu = (t, s) => K(t, { spine: [-0.03 + s, 0, 0], head: [-0.05, 0, 0], handR: [-0.3, 1.72 + s, 0.08], handL: [0.3, 1.73 + s, 0.08], poleR: [-1, -0.5, -0.3], poleL: [1, -0.5, -0.3],
+    handRr: [0, 0, 0], handLr: [0, 0, 0], curlR: [0.05], curlL: [0.05] });
+  def('hands_up', 2, seq([hu(0, 0), hu(1, 0.012), hu(2, 0)]), { loop: true, fps: 10 }); }
+
 /* ============================== build ============================== */
 function build(pack, log) { const { packClip } = require('./build_anims'); const out = {};
   for (const name in CLIPS) { const c = CLIPS[name]; const fr = RIG.bake(c.ch, c.dur, c.fps || FPS, { modes: c.modes, mode: c.mode, base: c.base });

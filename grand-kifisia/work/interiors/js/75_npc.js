@@ -14,83 +14,132 @@ const pedOK = r => (r.ty <= 4 && r.side > 0) || (r.ty >= 6 && r.ty <= 8 && r.sid
 function nearRoads(x, z, r0, r1, ok) { const o = []; ROADS.forEach((r, i) => { if (!ok(r)) return; const m = r.ps[Math.floor(r.ps.length / 2)]; const d = Math.hypot(m[0] - x, m[1] - z); if (d > r0 && d < r1) o.push(i); }); return o; }
 function placeNpc(n, cx, cz, r0, r1) { const l = nearRoads(cx, cz, r0, r1, pedOK); if (!l.length) return false; n.ri = l[Math.floor(Math.random() * l.length)]; const r = ROADS[n.ri]; n.s = Math.random() * r.L; n.dir = Math.random() < 0.5 ? 1 : -1; n.side = Math.random() < 0.5 ? 1 : -1; const p = roadPos(r, n.s, walkOff(r, n.side) + (n.lat || 0)); n.x = p.x; n.z = p.z; n.cross = null; return true; }
 function maskBuilding(x, z) { return !!collide({ x, z }, 0.5, ['t', 'p']); }
-const clearSpot = (x, z, r) => lvl(x, z) > 0.05 && inPlay(x, z) && !collide({ x, z }, r || 0.45, null);
 
 /* ---------- where things are ---------- */
-/* every shop front from the map: { name, kind, x, z (on the facade), nx, nz (outward), tx, tz (along the facade) } */
+/* every shop front from the map: { name, kind, x, z (on the facade), nx, nz (outward), tx, tz (along the facade), u0, u1 (frontage along the facade, m) } */
 function shopSpots() { if (shopSpots.c) return shopSpots.c; const out = [];
-  for (const b of MAP.buildings) { const shops = b[8]; if (!shops || !shops.length) continue; let ps = unp(b[10]); if (ps.length < 3) continue; const flip = polyArea(ps) < 0; if (flip) ps = ps.reverse(); const n = ps.length;
-    for (const s of shops) { let ei = s[0]; if (flip) ei = (n - 2 - ei + n) % n; const a = ps[ei], c = ps[(ei + 1) % n]; if (!a || !c) continue; const dx = c[0] - a[0], dz = c[1] - a[1], L = Math.hypot(dx, dz); if (L < 0.05) continue;
-      out.push({ name: s[2], kind: s[5], x: a[0] + dx * s[1], z: a[1] + dz * s[1], nx: dz / L, nz: -dx / L, tx: dx / L, tz: dz / L, L }); } }
+  for (const b of MAP.buildings) { const shops = b[8]; if (!shops || !shops.length) continue; let ps = unp(b[10]); if (ps.length < 3) continue; const flip = polyArea(ps) < 0; if (flip) ps = ps.reverse(); const n = ps.length, mine = [];
+    for (const s of shops) { let ei = s[0], t = s[1]; if (flip) { ei = (n - 2 - ei + n) % n; t = 1 - t; } const a = ps[ei], c = ps[(ei + 1) % n]; if (!a || !c) continue; const dx = c[0] - a[0], dz = c[1] - a[1], L = Math.hypot(dx, dz); if (L < 0.05) continue;
+      mine.push({ name: s[2], kind: s[5], x: a[0] + dx * t, z: a[1] + dz * t, nx: dz / L, nz: -dx / L, tx: dx / L, tz: dz / L, L, ei, t, u0: -L * t, u1: L * (1 - t) }); }
+    /* shops that share one facade edge split it half-way between their doors */
+    for (const q of mine) for (const o of mine) { if (o === q || o.ei !== q.ei) continue; const d = (o.t - q.t) * q.L; if (d > 0) q.u1 = Math.min(q.u1, d / 2); else if (d < 0) q.u0 = Math.max(q.u0, d / 2); }
+    for (const q of mine) out.push(q); }
   return shopSpots.c = out; }
-/* a named place -> shop spot.  q: 'Sephora' (name contains), MAP.key name, or [x,z] */
+/* a business that is not an OSM shop of the map (e.g. SEPHORA, from data/census.json, or a shop sign another module registered with placed()) -> a shop spot on
+   the nearest building facade that faces a pavement.  Census positions of non-OSM entries are ±10-30 m along the street, so this is an estimate. */
+function facadePoi(q) { const ql = q.toLowerCase(); let pt = null;
+  if (typeof PLACED !== 'undefined') for (const e of PLACED) if (e[0] !== 'cast' && e[3] && String(e[3]).toLowerCase().indexOf(ql) >= 0) { pt = { x: e[1], z: e[2], name: e[3] }; break; }
+  if (!pt && PPL.census) { const c = PPL.census.find(p => (p.name + ' ' + p.latin).toLowerCase().indexOf(ql) >= 0); if (c) pt = { x: c.x, z: c.z, name: c.latin || c.name }; }
+  if (!pt) return null; let best = null, bd = 30;
+  for (const b of MAP.buildings) { const ps = unp(b[10]); if (ps.length < 3) continue; const n = ps.length, fr = b[7];
+    for (let i = 0; i < n; i++) { if (fr && !fr[i]) continue; /* only walls that face a street (map frontage flag) */
+      const a = ps[i], c = ps[(i + 1) % n]; const dx = c[0] - a[0], dz = c[1] - a[1], L = Math.hypot(dx, dz); if (L < 3) continue;
+      const t = clamp(((pt.x - a[0]) * dx + (pt.z - a[1]) * dz) / (L * L), 0.15, 0.85), x = a[0] + dx * t, z = a[1] + dz * t, d = Math.hypot(pt.x - x, pt.z - z); if (d >= bd) continue;
+      let nx = dz / L, nz = -dx / L; if (pip(ps, x + nx * 0.4, z + nz * 0.4)) { nx = -nx; nz = -nz; }
+      let open = true; for (const o of [0.6, 1.2, 1.8, 2.5]) if (collide({ x: x + nx * o, z: z + nz * o }, 0.25, ['p', 't'])) { open = false; break; } if (!open) continue; /* no garden wall or fence between the wall and the street */
+      bd = d; best = { name: pt.name, kind: 'census', x, z, nx, nz, tx: dx / L, tz: dz / L, L, u0: -L * t, u1: L * (1 - t), src: 'census' }; } }
+  return best; }
+/* a named place -> shop spot.  q: 'Sephora' (name contains: OSM shops of the map, then census/placed shops), MAP.key name, or [x,z] */
 function findPoi(q, fallback, xz) { const S = shopSpots(), has = n => S.find(s => s.name && s.name.toLowerCase().indexOf(String(n).toLowerCase()) >= 0);
-  if (typeof q === 'string' && MAP.key && MAP.key[q.toLowerCase()]) { const k = MAP.key[q.toLowerCase()]; let best = null, bd = 30; for (const s of S) { const d = Math.hypot(s.x - k[0], s.z - k[1]); if (d < bd) { bd = d; best = s; } } if (best) return best; }
-  let s = (typeof q === 'string' && has(q)) || (fallback && has(fallback)); if (s) return s;
+  let s = (typeof q === 'string' && has(q)); if (s) return s; /* a map shop with that name */
+  /* the map's own key for the place (data agent), snapped to the nearest shop front */ if (typeof q === 'string' && MAP.key && MAP.key[q.toLowerCase()]) { const k = MAP.key[q.toLowerCase()]; let best = null, bd = 30; for (const s of S) { const d = Math.hypot(s.x - k[0], s.z - k[1]); if (d < bd) { bd = d; best = s; } } if (best) return best; }
+  if (typeof q === 'string' && (s = facadePoi(q))) return s;
+  s = fallback && has(fallback); if (s) return s;
   if (xz) { let best = null, bd = 40; for (const c of S) { const d = Math.hypot(c.x - xz[0], c.z - xz[1]); if (d < bd) { bd = d; best = c; } } return best; }
   return null; }
-const EAT_KINDS = { cafe: 1, restaurant: 1, fast_food: 1, bakery: 1, bar: 1, coffee: 1, confectionery: 1, ice_cream: 1, pub: 1, mythos: 1, paul: 1, starbucks: 1, kfc: 1 };
+const EAT_KINDS = { cafe: 3, restaurant: 3, fast_food: 2, bakery: 1, bar: 2, coffee: 2, confectionery: 1, ice_cream: 1, pub: 2, mythos: 2, paul: 3, starbucks: 3, kfc: 2, tea: 1 }; // value = default number of terrace tables
 const SHOP_KINDS = { clothes: 1, jewelry: 1, shoes: 1, bag: 1, gift: 1, books: 1, interior_decoration: 1, watches: 1, perfumery: 1, cosmetics: 1, chocolate: 1, fashion_accessories: 1, gallery: 1, optician: 1, houseware: 1 };
+/* pavement = public sidewalk / square (level grid) or a private shop forecourt; everything else in a street is carriageway */
+const onPave = (x, z) => lvl(x, z) > 0.05 || (typeof inShopZone === 'function' && inShopZone(x, z, 0.01));
+const paveFree = (x, z, r) => inPlay(x, z) && onPave(x, z) && !collide({ x, z }, r || 0.45, null);
+
+/* HOOK for world modules: whoever builds real seats (terrace chairs, benches, low walls people sit on) pushes them here at boot, before spawnPeople():
+     if (typeof SEATS !== 'undefined') SEATS.push({ x, z, yaw, seatH, kind: 'chair' | 'bench', name, table: [x, z] })
+   x,z = point on the ground under the sitter's hips, yaw = the way the sitter faces, seatH = seat height above the ground there, table = centre of the table the
+   chair belongs to (chairs with the same table chat with each other).  People then use these seats, and no extra furniture is generated within 9 m of them. */
+const SEATS = [];
 
 /* ---------- THE seat finder: every place a person can sit or stand around, from map data ----------
-   returns spots { role, x, z, yaw, seatH?, group?, slot?, name? }.  Roles: terrace (chair at a café table), bench, bus, platform, taxi,
-   chat (standing pair), window (looking at a shop window).  If the map ever publishes MAP.seats = [[x, z, yaw, seatHeight, kind, name], ...]
-   (decimetres like the rest of the map) those are used as well.  Café tables + chairs are also built here (returned in .furniture).   */
-function findSeats() { const spots = [], chairs = [], tables = [], S = shopSpots();
+   returns spots { role, x, z, yaw, seatH?, group?, slot?, name? }.  Roles: terrace (chair at a café table), bench, bus, platform, taxi, chat (standing pair),
+   window (looking at a shop window).  Sources, in this order: SEATS (above), MAP.seats = [[xDm, zDm, yaw, seatH, 'chair'|'bench', name], ...] if the map has it,
+   then estimates: bistro tables in front of the OSM cafés/restaurants (returned in findSeats.furniture and built here) and two seats on every MAP.props.bench. */
+function findSeats() { const spots = [], chairs = [], tables = [], S = shopSpots(), groups = new Map();
   const group = (role, name) => ({ role, name: name || '', members: [], t: 2 + Math.random() * 6, speaker: 0 });
-  /* café / restaurant terraces: bistro tables in front of the real shop fronts, where the sidewalk is wide enough */
-  for (const s of S) { if (!EAT_KINDS[s.kind] || !inFocus(s.x, s.z)) continue; let made = 0;
-    for (const u of [2.5, -2.5, 4.9, -4.9]) { if (made >= 2) break; const d = 1.55, x = s.x + s.tx * u + s.nx * d, z = s.z + s.tz * u + s.nz * d;
-      if (!clearSpot(x, z, 0.95) || lvl(x + s.nx * 1.3, z + s.nz * 1.3) < 0.05) continue; if (tables.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.2)) continue;
-      const y = groundY(x, z), yaw = Math.atan2(s.tx, s.tz), g = group('terrace', s.name); tables.push([x, y, z, yaw]); made++;
-      for (const k of [1, -1]) { const cx = x + s.tx * 0.68 * k, cz = z + s.tz * 0.68 * k, cyaw = Math.atan2(-s.tx * k, -s.tz * k); chairs.push([cx, groundY(cx, cz), cz, cyaw]); spots.push({ role: 'terrace', x: cx, z: cz, yaw: cyaw, seatH: 0.45, group: g, name: s.name, tx: x, tz: z }); } } }
-  /* benches (same orientation rule as 50_props.js: yaw = hf(x)*TAU, seat 0.475 m, sitter faces local +z) */
-  for (const b of MAP.props.bench || []) { const x = b[0] / 10, z = b[1] / 10, yaw = hf(b[0]) * TAU, g = group('bench'); for (const k of [-0.45, 0.45]) spots.push({ role: 'bench', x: x + Math.cos(yaw) * k + Math.sin(yaw) * 0.03, z: z - Math.sin(yaw) * k + Math.cos(yaw) * 0.03, yaw, seatH: 0.475, group: g }); }
-  if (MAP.seats) for (const e of MAP.seats) spots.push({ role: e[4] === 'chair' ? 'terrace' : 'bench', x: e[0] / 10, z: e[1] / 10, yaw: e[2], seatH: e[3] || 0.46, group: group('bench', e[5]), name: e[5] });
+  const ext = SEATS.slice(); if (MAP.seats) for (const e of MAP.seats) ext.push({ x: e[0] / 10, z: e[1] / 10, yaw: e[2], seatH: e[3] || 0.46, kind: e[4] || 'bench', name: e[5] });
+  for (const e of ext) { const role = e.kind === 'bench' ? 'bench' : 'terrace', key = e.group != null ? 'g' + e.group : e.table ? 't' + Math.round(e.table[0] * 4) + ',' + Math.round(e.table[1] * 4) : role === 'bench' ? 'b' + Math.round(e.x / 2) + ',' + Math.round(e.z / 2) : null;
+    let g = key && groups.get(key); if (!g) { g = group(role, e.name); if (key) groups.set(key, g); }
+    spots.push({ role, x: e.x, z: e.z, yaw: e.yaw || 0, seatH: e.seatH == null ? 0.46 : e.seatH, group: g, name: e.name, ext: true, tx: e.table ? e.table[0] : e.x + Math.sin(e.yaw || 0) * 0.6, tz: e.table ? e.table[1] : e.z + Math.cos(e.yaw || 0) * 0.6 }); }
+  const hasExt = (x, z, r, role) => spots.some(q => q.ext && q.role === role && Math.hypot(q.x - x, q.z - z) < r);
+  /* café / restaurant terraces: small bistro tables along the real shop front (and a second row where the forecourt is deep), never blocking the pavement */
+  for (const s of S) { const want = EAT_KINDS[s.kind]; if (!want || !inFocus(s.x, s.z) || hasExt(s.x, s.z, 9, 'terrace')) continue; let made = 0;
+    for (const row of [0.85, 2.75]) for (const u of row < 1 ? [1.9, -1.9, 4.1, -4.1, 6.3, -6.3] : [2.6, -2.6, 4.9, -4.9]) { if (made >= want) break; if (u < s.u0 + 0.9 || u > s.u1 - 0.9) continue;
+      const x = s.x + s.tx * u + s.nx * row, z = s.z + s.tz * u + s.nz * row;
+      if (!paveFree(x, z, 0.5) || !paveFree(x + s.tx * 0.64, z + s.tz * 0.64, 0.28) || !paveFree(x - s.tx * 0.64, z - s.tz * 0.64, 0.28) || !onPave(x + s.nx * 1.45, z + s.nz * 1.45)) continue;
+      if (tables.some(t => Math.hypot(t[0] - x, t[2] - z) < 1.85)) continue;
+      const yaw = Math.atan2(s.tx, s.tz), g = group('terrace', s.name); tables.push([x, groundY(x, z), z, yaw + hf(Math.round(x * 31 + z * 17)) * TAU]); made++;
+      for (const k of [1, -1]) { const cx = x + s.tx * 0.64 * k, cz = z + s.tz * 0.64 * k, cyaw = Math.atan2(-s.tx * k, -s.tz * k) + (hf(Math.round(cx * 13 + cz * 7)) - 0.5) * 0.3; chairs.push([cx, groundY(cx, cz), cz, cyaw]); spots.push({ role: 'terrace', x: cx, z: cz, yaw: cyaw, seatH: 0.455, group: g, name: s.name, tx: x, tz: z }); } } }
+  /* benches (same orientation rule as 50_props.js: yaw = hf(x)*TAU, seat 0.475 m, sitter faces local +z, hips 7 cm behind the seat centre) */
+  for (const b of MAP.props.bench || []) { const x = b[0] / 10, z = b[1] / 10; if (hasExt(x, z, 1.6, 'bench')) continue; const yaw = hf(b[0]) * TAU, g = group('bench'); for (const k of [-0.45, 0.45]) spots.push({ role: 'bench', x: x + Math.cos(yaw) * k - Math.sin(yaw) * 0.07, z: z - Math.sin(yaw) * k - Math.cos(yaw) * 0.07, yaw, seatH: 0.475, group: g }); }
   /* bus stops: under the shelter, facing the road */
   if (typeof nearestRoad === 'function') for (const b of MAP.props.bus || []) { const x = b[0] / 10, z = b[1] / 10, r = nearestRoad(x, z); if (!r) continue; const yaw = Math.atan2(r.nx, r.nz);
     for (const k of [-0.8, 0.5, 1.9]) { const px = x + r.nx * 0.15 - r.nz * k, pz = z + r.nz * 0.15 + r.nx * k; if (lvl(px, pz) > 0.05) spots.push({ role: 'bus', x: px, z: pz, yaw: yaw + (hf(b[0] + k * 10) - 0.5) * 0.7, name: b[2] }); } }
   /* station platform: spread along the platform, facing the track */
   if (STATION.platform && TRAINPATH) for (let i = 0; i < 6; i++) { const p = atLen(TRAINPATH.ps, TRAINPATH.cum, 14 + i * 13 + hf(i * 7) * 5); const fx = Math.sin(p[2]), fz = Math.cos(p[2]);
     for (const sg of [1, -1]) { const off = (3 + hf(i * 13) * 3) * sg, x = p[0] + fz * off, z = p[1] - fx * off; if (pip(STATION.platform, x, z)) { spots.push({ role: 'platform', x, z, yaw: Math.atan2(p[0] - x, p[1] - z) + (hf(i) - 0.5) * 0.5 }); break; } } }
-  /* taxi rank at Platanos square + standing pairs on squares and pedestrian streets */
-  const P = MAP.key.platanos; let tx = 0; for (let a = 0; a < 24 && tx < 3; a++) { const ang = a / 24 * TAU + 0.3, rr = 5 + (a % 3) * 2.5, x = P[0] + Math.cos(ang) * rr, z = P[1] + Math.sin(ang) * rr; if (clearSpot(x, z, 0.6) && !spots.some(s => Math.hypot(s.x - x, s.z - z) < 2.5)) { spots.push({ role: 'taxi', x, z, yaw: Math.atan2(P[0] - x, P[1] - z) + Math.PI + (hf(a) - 0.5) }); tx++; } }
-  const chatAt = (x, z, name) => { if (!clearSpot(x, z, 0.9) || spots.some(s => Math.hypot(s.x - x, s.z - z) < 3)) return; const a = hf(Math.round(x * 7 + z * 13)) * TAU, g = group('chat', name); for (const k of [1, -1]) spots.push({ role: 'chat', x: x + Math.sin(a) * 0.48 * k, z: z + Math.cos(a) * 0.48 * k, yaw: a + (k > 0 ? Math.PI : 0), group: g }); };
-  ROADS.forEach((r, i) => { if (!r.focus || r.L < 14) return; if (r.ty === 6) { for (let s = 7; s < r.L - 5; s += 26) { const q = roadPos(r, s + hf(i * 31 + s) * 8, (hf(i + s) < 0.5 ? 1 : -1) * 1.3); chatAt(q.x, q.z, r.name); } } else if (r.ty <= 4 && r.side > 0 && hf(i * 17) < 0.3) { const q = roadPos(r, r.L * (0.3 + hf(i) * 0.4), walkOff(r, hf(i * 3) < 0.5 ? 1 : -1) + 0.9); chatAt(q.x, q.z, r.name); } });
+  /* taxi rank at Platanos square + standing pairs on squares, pedestrian streets and street corners */
+  const P = MAP.key.platanos; let tx = 0; for (let a = 0; a < 24 && tx < 3; a++) { const ang = a / 24 * TAU + 0.3, rr = 5 + (a % 3) * 2.5, x = P[0] + Math.cos(ang) * rr, z = P[1] + Math.sin(ang) * rr; if (paveFree(x, z, 0.6) && lvl(x, z) > 0.05 && !spots.some(q => Math.hypot(q.x - x, q.z - z) < 2.5)) { spots.push({ role: 'taxi', x, z, yaw: Math.atan2(P[0] - x, P[1] - z) + Math.PI + (hf(a) - 0.5) }); tx++; } }
+  const chatAt = (x, z, name) => { if (!paveFree(x, z, 0.9) || lvl(x, z) < 0.05 || spots.some(q => Math.hypot(q.x - x, q.z - z) < 3)) return; const a = hf(Math.round(x * 7 + z * 13)) * TAU, g = group('chat', name); for (const k of [1, -1]) spots.push({ role: 'chat', x: x + Math.sin(a) * 0.5 * k, z: z + Math.cos(a) * 0.5 * k, yaw: a + (k > 0 ? Math.PI : 0), group: g }); };
+  ROADS.forEach((r, i) => { if (!r.focus || r.L < 14) return; if (r.ty === 6) { for (let q0 = 7; q0 < r.L - 5; q0 += 26) { const q = roadPos(r, q0 + hf(i * 31 + q0) * 8, (hf(i + q0) < 0.5 ? 1 : -1) * 1.3); chatAt(q.x, q.z, r.name); } } else if (r.ty <= 4 && r.side > 0 && hf(i * 17) < 0.45) { const q = roadPos(r, r.L * (0.3 + hf(i) * 0.4), walkOff(r, hf(i * 3) < 0.5 ? 1 : -1) + 0.9); chatAt(q.x, q.z, r.name); } });
   for (const k of [[4, 6], [-6, -5], [9, -3]]) chatAt(P[0] + k[0], P[1] + k[1], 'Platanos');
   /* window shopping: in front of the real shop windows, facing the glass */
-  for (const s of S) { if (!SHOP_KINDS[s.kind] || !inFocus(s.x, s.z)) continue; const u = (hf(Math.round(s.x * 11 + s.z * 3)) - 0.5) * 2.4, x = s.x + s.tx * u + s.nx * 1.15, z = s.z + s.tz * u + s.nz * 1.15; if (clearSpot(x, z, 0.5) && !spots.some(q => Math.hypot(q.x - x, q.z - z) < 1.6)) spots.push({ role: 'window', x, z, yaw: Math.atan2(-s.nx, -s.nz), name: s.name, lx: s.x + s.tx * u * 1.5, lz: s.z + s.tz * u * 1.5 }); }
-  for (const s of spots) if (s.group) { s.slot = s.group.members.length; s.group.members.push(null); s.group.spots = (s.group.spots || []).concat([s]); }
+  for (const s of S) { if (!SHOP_KINDS[s.kind] || !inFocus(s.x, s.z)) continue; const u = clamp((hf(Math.round(s.x * 11 + s.z * 3)) - 0.5) * 2.4, s.u0 + 0.5, s.u1 - 0.5), x = s.x + s.tx * u + s.nx * 1.15, z = s.z + s.tz * u + s.nz * 1.15; if (paveFree(x, z, 0.5) && !spots.some(q => Math.hypot(q.x - x, q.z - z) < 1.6)) spots.push({ role: 'window', x, z, yaw: Math.atan2(-s.nx, -s.nz), name: s.name, lx: s.x + s.tx * u * 1.5, lz: s.z + s.tz * u * 1.5 }); }
+  for (const q of spots) if (q.group) { q.slot = q.group.members.length; q.group.members.push(null); q.group.spots = (q.group.spots || []).concat([q]); }
   findSeats.furniture = { chairs, tables }; return spots; }
-function buildTerraceFurniture(f) { if (typeof GB !== 'function' || typeof instanced !== 'function' || !MAT.atlas) return; const dark = hexc('#2a2c2e'), cane = hexc('#b08a56'), top = hexc('#e9e6df');
-  const c = new GB(); c.box(0, 0.44, 0, 0.42, 0.035, 0.42, 0, cane, RECT[T.wood]); c.box(0, 0.7, -0.205, 0.42, 0.36, 0.03, 0, cane, RECT[T.wood]); for (const sx of [-0.19, 0.19]) for (const sz of [-0.19, 0.19]) c.box(sx, sz < 0 ? 0.44 : 0.21, sz, 0.03, sz < 0 ? 0.88 : 0.42, 0.03, 0, dark, RECT[T.metal]);
-  const t = new GB(); t.cyl(0, 0.71, 0, 0.36, 0.36, 0.03, 12, top, RECT[T.marble], true); t.cyl(0, 0.03, 0, 0.035, 0.035, 0.68, 6, dark, RECT[T.metal], false); t.cyl(0, 0, 0, 0.24, 0.2, 0.03, 10, dark, RECT[T.metal], true);
-  STREET.furniture = [instanced(c.build(), MAT.atlas, f.chairs, true), instanced(t.build(), MAT.atlas, f.tables, true)];
-  if (typeof addBoxC === 'function') for (const q of f.tables) addBoxC(q[0], q[2], 0.34, 'p');
+
+/* ---------- terrace furniture (only for the estimated terraces above): bistro chair + 60 cm marble table with two coffees, instanced per 192 m chunk ---------- */
+function furnGeo(parts) { const P = [], N = [], C = [], I = []; let base = 0; const m = new THREE.Matrix4(), e = new THREE.Euler(), q = new THREE.Quaternion(), col = new THREE.Color(), v = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+  for (const [g, c, x, y, z, rx, ry] of parts) { e.set(rx || 0, ry || 0, 0); q.setFromEuler(e); m.compose(v.set(x, y, z), q, one); g.applyMatrix4(m); col.set(c).convertSRGBToLinear(); const p = g.attributes.position, n = g.attributes.normal, ix = g.index;
+    for (let i = 0; i < p.count; i++) { P.push(p.getX(i), p.getY(i), p.getZ(i)); N.push(n.getX(i), n.getY(i), n.getZ(i)); C.push(col.r, col.g, col.b); } for (let i = 0; i < ix.count; i++) I.push(base + ix.getX(i)); base += p.count; g.dispose(); }
+  const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); out.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); out.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); out.setIndex(I); return out; }
+function buildTerraceFurniture(f) { if (!f || !f.tables.length || typeof instanced !== 'function') return; const B = (w, h, d) => new THREE.BoxGeometry(w, h, d), Cy = (r0, r1, h, n) => new THREE.CylinderGeometry(r0, r1, h, n);
+  const frame = '#2b2d2f', cane = '#c9a468', caneD = '#a8834c', marble = '#ebe8e1', china = '#f6f4ee', coffee = '#4a2f1c';
+  /* chair: seat top at 0.455, back to -z (the sitter faces +z) */
+  const ch = []; for (const sx of [-0.19, 0.19]) { ch.push([B(0.026, 0.44, 0.026), frame, sx, 0.22, 0.18]); ch.push([B(0.026, 0.9, 0.026), frame, sx, 0.45, -0.2, -0.1]); ch.push([B(0.022, 0.022, 0.36), frame, sx, 0.2, -0.01]); }
+  ch.push([B(0.43, 0.03, 0.42), cane, 0, 0.44, 0]); ch.push([B(0.4, 0.3, 0.02), cane, 0, 0.7, -0.225, -0.1]); ch.push([B(0.43, 0.035, 0.03), caneD, 0, 0.885, -0.243, -0.1]); ch.push([B(0.36, 0.022, 0.022), frame, 0, 0.2, 0.18]);
+  const tb = [[Cy(0.3, 0.3, 0.028, 16), marble, 0, 0.726, 0], [Cy(0.31, 0.31, 0.012, 16), frame, 0, 0.706, 0], [Cy(0.028, 0.034, 0.69, 8), frame, 0, 0.355, 0], [Cy(0.2, 0.23, 0.03, 12), frame, 0, 0.015, 0]];
+  for (const k of [1, -1]) { tb.push([Cy(0.062, 0.05, 0.008, 10), china, 0.02 * k, 0.744, 0.17 * k]); tb.push([Cy(0.036, 0.027, 0.05, 8), china, 0.02 * k, 0.773, 0.17 * k]); tb.push([Cy(0.03, 0.03, 0.004, 8), coffee, 0.02 * k, 0.797, 0.17 * k]); }
+  tb.push([Cy(0.03, 0.026, 0.11, 8), '#cfe3ea', -0.16, 0.795, 0.02]); tb.push([B(0.11, 0.012, 0.09), china, 0.15, 0.746, -0.03, 0, 0.5]);
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true }), cg = furnGeo(ch), tg = furnGeo(tb), by = {};
+  const chunkOf = (x, z) => typeof treeChunk === 'function' ? treeChunk(x, z) : { k: 'all', props: [] };
+  for (const [list, key] of [[f.chairs, 'c'], [f.tables, 't']]) for (const it of list) { const c = chunkOf(it[0], it[2]), e = by[c.k] || (by[c.k] = { c, c_: [], t_: [] }); e[key + '_'].push(it); }
+  STREET.furniture = []; for (const k in by) { const e = by[k]; for (const [geo, list] of [[cg, e.c_], [tg, e.t_]]) { const im = instanced(geo, mat, list, false); if (!im) continue; im.userData.cast = true; im.receiveShadow = true; e.c.props.push(im); STREET.furniture.push(im); } }
+  if (typeof addBoxC === 'function') { for (const q of f.tables) addBoxC(q[0], q[2], 0.26, 'p'); for (const q of f.chairs) addBoxC(q[0], q[2], 0.2, 'p'); }
   if (typeof placed === 'function') for (const q of f.tables) placed('table', q[0], q[2], 'café table', 'estimated terrace in front of an OSM café/restaurant'); }
 
 /* ---------- spawning ---------- */
 const STYLE_CARRY = ['phone', 'text', 'bag', 'bag', 'drink'];
+const N_WALK = 28, N_POOL = 21; /* the 49 random people of the street: every one a different avatar (48 street avatars + 2 joggers) */
 function newNpc(spec, o) { const h = new Ped(spec); const n = Object.assign({ h, x: 0, z: 0, yaw: 0, state: 'walk', static: null, timer: 0, panic: 0, ri: 0, s: 0, dir: 1, side: 1, cross: null, acc: 0, lat: 0, dodge: 0, glance: 0, glanceT: 2 + Math.random() * 6, pauseT: 20 + Math.random() * 50, vx: 0, vz: 0, lastTalks: 0, sp: 0 }, o || {});
-  n.spd = n.spd || h.walkSpeed * R(0.94, 1.06) || 1.3; NPCS.push(n); return n; }
+  n.spd = n.spd || h.walkSpeed * R(0.94, 1.06) || 1.3; n.protected = !!(n.cast || h.protected); if (n.protected) h.protected = true; NPCS.push(n); return n; }
 function initNpc(p) { p.acc = 0; p.lat = p.lat || 0; p.dodge = 0; p.glance = 0; p.glanceT = 3; p.pauseT = 30 + Math.random() * 40; p.vx = 0; p.vz = 0; p.lastTalks = p.talks || 0; p.sp = 0; if (p.panic === undefined) p.panic = 0; }
 function spawnPeople(cx, cz) { if (!PPL.ready) return;
-  STREET.spots = findSeats(); buildTerraceFurniture(findSeats.furniture);
+  STREET.spots = findSeats(); try { buildTerraceFurniture(findSeats.furniture); } catch (e) { console.warn('terrace furniture', e); }
   /* walkers: every one a different avatar first; styles = natural clip speed, some on the phone / texting / with a bag, two joggers */
-  for (let k = 0; k < 30; k++) { const jog = k === 7 || k === 19; const spec = jog ? { av: k === 7 ? 'jog_m' : 'jog_f', scale: R(0.97, 1.03) } : randomLook(); const n = newNpc(spec, { lat: R(-0.45, 0.45) });
+  for (let k = 0; k < N_WALK; k++) { const jog = k === 7 || k === 19; const spec = jog ? { av: k === 7 ? 'jog_m' : 'jog_f', scale: R(0.97, 1.03) } : randomLook(); const n = newNpc(spec, { lat: R(-0.45, 0.45) });
     if (jog) { n.spd = R(2.5, 2.9); n.jog = true; } else if (hf(k * 37 + 5) < 0.42) n.h.setCarry(STYLE_CARRY[Math.floor(hf(k * 91) * STYLE_CARRY.length)]);
-    placeNpc(n, cx, cz, 3, k < 21 ? 140 : 260); n.h.root.rotation.y = n.yaw; }
+    placeNpc(n, cx, cz, 3, k < 20 ? 140 : 260); n.h.root.rotation.y = n.yaw; }
   /* the pool that fills seats / stops / chat spots around the player */
-  for (let k = 0; k < 24; k++) { const n = newNpc(randomLook(), { state: 'still', static: 'idle', spot: null }); STREET.pool.push(n); n.h.root.visible = false; }
+  for (let k = 0; k < N_POOL; k++) { const n = newNpc(randomLook(), { state: 'still', static: 'idle', spot: null }); STREET.pool.push(n); n.h.root.visible = false; }
   /* staff with a fixed place: the chef on a break next to Mythos Plus, a waiter at the nearest terrace, a delivery rider outside a fast-food place */
-  const fixed = (spec, x, z, yaw, role, setup) => { if (!clearSpot(x, z, 0.4)) { for (let a = 0; a < 8; a++) { const nx = x + Math.cos(a * 0.8) * 1.2, nz = z + Math.sin(a * 0.8) * 1.2; if (clearSpot(nx, nz, 0.4)) { x = nx; z = nz; break; } } } const n = newNpc(spec, { state: 'still', static: role, x, z, yaw, fixed: true }); n.h.root.rotation.y = yaw; if (setup) setup(n); return n; };
-  const my = SPECIAL.mythos; if (my) fixed({ av: 'chef' }, my.door[0] - my.nz * 2.4 + my.nx * 0.8, my.door[1] + my.nx * 2.4 + my.nz * 0.8, Math.atan2(my.nx, my.nz) + 0.5, 'staff', n => { n.h.setCarry('phone'); n.name = 'Voula'; });
+  const fixed = (spec, x, z, yaw, role, setup) => { if (!paveFree(x, z, 0.4)) { for (let a = 0; a < 8; a++) { const nx = x + Math.cos(a * 0.8) * 1.2, nz = z + Math.sin(a * 0.8) * 1.2; if (paveFree(nx, nz, 0.4)) { x = nx; z = nz; break; } } } const n = newNpc(spec, { state: 'still', static: role, x, z, yaw, fixed: true }); n.h.root.rotation.y = yaw; if (setup) setup(n); return n; };
+  const my = SPECIAL.mythos; if (my) { let cx0 = my.door[0], cz0 = my.door[1]; for (const u of [4.6, -4.6, 6, -6, 3.4, -3.4]) { const x = my.door[0] - my.nz * u + my.nx * 0.75, z = my.door[1] + my.nx * u + my.nz * 0.75; if (paveFree(x, z, 0.4)) { cx0 = x; cz0 = z; break; } }
+    fixed({ av: 'chef' }, cx0, cz0, Math.atan2(my.nx, my.nz) + 0.5, 'staff', n => { n.h.setCarry('phone'); n.name = 'Voula'; }); }
   const ter = STREET.spots.filter(s => s.role === 'terrace').sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz))[0];
   if (ter) { const g = ter.group.spots, mx = (g[0].x + g[1].x) / 2, mz = (g[0].z + g[1].z) / 2, s = shopSpots().find(q => q.name === ter.name) || { nx: 0, nz: 1 }; fixed({ av: 'waiter' }, mx + s.nx * 1.25, mz + s.nz * 1.25, Math.atan2(-s.nx, -s.nz), 'staff', n => { n.name = 'Stelios'; }); }
   const ff = shopSpots().filter(s => (s.kind === 'fast_food' || s.kind === 'kfc') && inFocus(s.x, s.z)).sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz))[0];
   if (ff) fixed({ av: 'rider' }, ff.x - ff.tx * 2.2 + ff.nx * 1.1, ff.z - ff.tz * 2.2 + ff.nz * 1.1, Math.atan2(ff.nx, ff.nz) - 0.6, 'staff', n => { n.h.setCarry('text'); n.name = 'Babis'; });
   /* school kids at the ISA gate, daytime only */
-  if (MAP.isa && MAP.isa.gate) { const g = MAP.isa.gate; let k = 0; for (let a = 0; a < 16 && k < 2; a++) { const x = g[0] + Math.cos(a * 0.7) * (2.5 + a * 0.25), z = g[1] + Math.sin(a * 0.7) * (2.5 + a * 0.25); if (!clearSpot(x, z, 0.5) || pip(ISA.poly, x, z)) continue;
+  if (MAP.isa && MAP.isa.gate) { const g = MAP.isa.gate; let k = 0; for (let a = 0; a < 16 && k < 2; a++) { const x = g[0] + Math.cos(a * 0.7) * (2.5 + a * 0.25), z = g[1] + Math.sin(a * 0.7) * (2.5 + a * 0.25); if (!paveFree(x, z, 0.5) || pip(ISA.poly, x, z)) continue;
       const grp = STREET.kids || (STREET.kids = { role: 'chat', members: [], t: 3, speaker: 0, spots: [] }); const n = fixed({ av: k ? 'girl' : 'boy' }, x + k * 0.9, z, k ? -1.6 : 1.6, 'kids', q => { q.hours = [7.5, 16.5]; q.group = grp; q.slot = grp.members.length; grp.members.push(q); q.h.play(k ? 'listen' : 'talk'); }); k++; if (k === 1) { a--; } }
     if (STREET.kids && STREET.kids.members.length === 2) { const m = STREET.kids.members; m[1].x = m[0].x + 0.95; m[1].z = m[0].z; m[0].yaw = Math.PI / 2; m[1].yaw = -Math.PI / 2; STREET.groups.push(STREET.kids); } }
   spawnCast(); assignSpots(cx, cz, true);
@@ -130,7 +179,9 @@ function applySpot(n, s) { freeSpot(n); n.spot = s; s.who = n; n.x = s.x; n.z = 
   const r = hf(h.seq * 53 + Math.round(s.x * 3));
   if (s.role === 'terrace') h.play('sit_table', { seatH: s.seatH, fade: 0.01 }); else if (s.role === 'bench') { h.play('sit', { seatH: s.seatH, fade: 0.01 }); if (r < 0.55) h.setCarry('text'); }
   else if (s.role === 'chat') h.play(s.slot ? 'listen' : 'talk', { fade: 0.01 }); else if (s.role === 'window') { if (r < 0.25) h.setCarry('bag'); h.lookAt(s.lx, groundY(s.x, s.z) + 1.3, s.lz); }
-  else { if (r < 0.3) h.setCarry('text'); else if (r < 0.5) h.setCarry('phone'); else h.play('wait', { fade: 0.01 }); } }
+  else { if (r < 0.3) h.setCarry('text'); else if (r < 0.5) h.setCarry('phone'); else h.play('wait', { fade: 0.01 }); }
+  /* take the new pose right now: people behind the camera are not animated, and nobody may ever be seen in a stale pose */
+  h.root.position.set(n.x, groundY(n.x, n.z), n.z); h.update(0.05, 0, false); h.update(0.05, 0, false); n.acc = 0; }
 function assignSpots(px, pz, boot) { const cnt = {}; for (const n of STREET.pool) { if (n.spot && Math.hypot(n.spot.x - px, n.spot.z - pz) > 215 && n.state !== 'talk') { freeSpot(n); n.h.root.visible = false; } if (n.spot) cnt[n.spot.role] = (cnt[n.spot.role] || 0) + 1; }
   const free = STREET.pool.filter(n => !n.spot); if (!free.length) return; const near = STREET.spots.filter(s => !s.who && Math.hypot(s.x - px, s.z - pz) < 175 && (boot || Math.hypot(s.x - px, s.z - pz) > 38));
   near.sort((a, b) => Math.hypot(a.x - px, a.z - pz) - Math.hypot(b.x - px, b.z - pz));

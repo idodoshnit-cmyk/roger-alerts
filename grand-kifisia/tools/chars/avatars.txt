@@ -47,3 +47,16 @@ Male_Adult_18
 Female_Adult_04
 Female_Party_01
 Male_Child_02
+Business_Female_01
+Business_Female_04
+Business_Male_03
+Business_Male_05
+Business_Male_01
+Sports_Male_03
+Sports_Male_02
+Female_Adult_06
+Male_Adult_15
+Female_Child_02
+Gardener_Male_01
+Medical_Female_02
+Medical_Male_03

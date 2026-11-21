@@ -104,9 +104,9 @@ PHOTO = {
     'gravel':   ('gravel_floor',         2.25, (.72, .64, .50),   0.9,  1.00, 0.6, 1.0),
     'parkG':    ('sandy_gravel',         2.1,  (.77, .70, .57),   0.9,  1.15, 0.5, 1.0),
     'soil':     ('forest_leaves_04',     1.5,  (.47, .37, .25),   0.9,  1.00, 0.6, 1.0),
-    'grass':    ('forrest_ground_01',    2.0,  (.36, .46, .21),   1.25, 1.00, 0.7, 0.8),
+    'grass':    ('forrest_ground_01',    2.0,  (.37, .45, .22),   1.0,  1.15, 0.55, 0.8),
     'dryG':     ('withered_grass',       2.0,  (.56, .52, .34),   1.1,  1.00, 0.7, 0.8),
-    'ballast':  ('ganges_river_pebbles', 2.16, (.47, .455, .44),  0.30, 1.10, 0.6, 1.2),
+    'ballast':  ('river_small_rocks',    1.5,  (.47, .44, .40),   0.55, 1.25, 0.6, 1.3),
     # walls
     'plaster':  ('white_stucco',         2.0,  (.875, .865, .835),1.0,  2.6,  0.3, 1.6),
     'plasterW': ('painted_plaster_wall', 2.0,  (.87, .86, .82),   0.8,  1.25, 0.3, 1.0),
@@ -116,11 +116,13 @@ PHOTO = {
     'rubble':   ('stone_wall',           2.0,  (.70, .66, .58),   0.9,  1.00, 0.5, 1.0),
     'brickw':   ('red_brick',            1.4,  (.62, .35, .27),   1.0,  1.00, 0.5, 1.0),
     'marbleW':  ('stone_tile_wall',      2.0,  (.86, .85, .83),   0.6,  1.10, 0.4, 1.0),
+    'karystos': ('stone_tiles',          3.17, (.52, .54, .49),   0.75, 1.10, 0.5, 1.2),   # irregular grey-green Karystos/Pelion stone slabs: wall bases, garden walls, steps
     # roofs
-    'tiles':    ('ceramic_roof_01',      3.5,  (.80, .64, .52),   0.55, 1.05, 0.5, 1.0),
+    'tiles':    ('clay_roof_tiles_02',   2.5,  (.71, .41, .28),   0.85, 1.00, 0.5, 1.0),
     'flatroof': ('granular_concrete',    2.4,  (.63, .62, .59),   0.6,  1.30, 0.4, 0.8),
     # wood / metal (tint carriers: light and nearly neutral, callers multiply their own colour)
     'wood':     ('wood_planks',          1.5,  (.84, .79, .73),   0.45, 1.00, 0.4, 1.0),
+    'timber':   ('wooden_planks',        2.0,  (.56, .42, .30),   0.85, 1.05, 0.4, 1.0),   # stained horizontal timber boards (cladding, pergolas, doors) - real colour, not a tint carrier
     'metal':    ('green_metal_rust',     1.0,  (.80, .80, .80),   0.0,  0.60, 0.5, 0.5),
     'metalL':   ('blue_metal_plate',     2.5,  (.80, .805, .81),  0.05, 0.60, 0.5, 0.6),
     'canopy':   ('factory_wall',         3.0,  (.26, .47, .36),   0.9,  1.00, 0.4, 1.0),
@@ -345,16 +347,16 @@ def build_foliage():
     def put(name, rgb, alpha, metres, src):
         COL[name] = rgb; ALP[name] = alpha; META[name] = {'m': metres, 'src': src, 'cut': 1}
     if want('leaves'):
-        rgb, al = leaf_card(broad, 330, 62, 1, tgt=(.34, .48, .20), hue=(0.95, 1.0, 0.8), twigs=8)
+        rgb, al = leaf_card(broad, 330, 62, 1, tgt=(.31, .43, .19), hue=(0.95, 1.0, 0.8), twigs=8)
         put('leaves', rgb, al, 2.0, 'composited from polyhaven model:shrub_01 leaves')
     if want('leafPine'):
-        rgb, al = leaf_card(pine, 150, 150, 2, tgt=(.26, .40, .20), radius=0.47, twigs=9, jitter=0.25, depth=(0.5, 1.1), align=0)
+        rgb, al = leaf_card(pine, 150, 150, 2, tgt=(.22, .33, .17), radius=0.47, twigs=9, jitter=0.25, depth=(0.5, 1.1), align=0)
         put('leafPine', rgb, al, 2.0, 'composited from polyhaven model:pine_tree_01 needle twigs')
     if want('leafCypress'):
-        rgb, al = leaf_card(fir, 260, 120, 3, tgt=(.17, .29, .16), radius=0.49, twigs=10, jitter=0.35, depth=(0.4, 1.05), align=0)
+        rgb, al = leaf_card(fir, 260, 120, 3, tgt=(.15, .25, .14), radius=0.49, twigs=10, jitter=0.35, depth=(0.4, 1.05), align=0)
         put('leafCypress', rgb, al, 1.5, 'composited from polyhaven model:fir_tree_01 twigs')
     if want('leafOlive'):
-        rgb, al = leaf_card(narrow, 420, 60, 4, tgt=(.46, .52, .38), hue=(1, 1, 1.05), twigs=9, jitter=0.4, depth=(0.5, 1.1))
+        rgb, al = leaf_card(narrow, 420, 60, 4, tgt=(.42, .48, .36), hue=(1, 1, 1.05), twigs=9, jitter=0.4, depth=(0.5, 1.1))
         put('leafOlive', rgb, al, 1.5, 'composited from polyhaven model:shrub_02 leaves')
     if want('leafOrange'):
         def fruit(cv, rnd, i):
@@ -381,10 +383,10 @@ def build_foliage():
         cv.alpha_composite(tint_sprite(f2, 0.9), (int(S * 0.19), 0))
         dr = ImageDraw.Draw(cv); dr.line([(S / 2, S), (S / 2, S * 0.05)], fill=(120, 130, 60, 255), width=5)
         a = np.asarray(cv, dtype=np.float32) / 255; al = a[..., 3]; rgb = a[..., :3]
-        m = al > 0.5; lin = s2l(rgb); lin = lin * (s2l(np.array((.30, .43, .18), dtype=np.float32)) / np.maximum(lin[m].mean(0), 1e-4))
+        m = al > 0.5; lin = s2l(rgb); lin = lin * (s2l(np.array((.28, .40, .17), dtype=np.float32)) / np.maximum(lin[m].mean(0), 1e-4))
         put('leafPalm', fill_under_alpha(l2s(lin).astype(np.float32), al), al, 3.0, 'built from polyhaven model:fern_02 frond')
     if want('hedge'):
-        rgb, h = leaf_wall(small + citrus[:3], 2600, 44, 7, hue=(0.8, 1.0, 0.7), tgt=(.42, .56, .27))
+        rgb, h = leaf_wall(small + citrus[:3], 2600, 44, 7, hue=(0.8, 1.0, 0.7), tgt=(.28, .39, .17))
         COL['hedge'] = rgb; NOR['hedge'] = height_to_normal(h * 22, 1.0); META['hedge'] = {'m': 1.5, 'src': 'composited from polyhaven model leaves (searsia_lucida, island_tree_01)'}
     if want('orangeF'):
         def fruit2(cv, rnd, i):
@@ -396,7 +398,7 @@ def build_foliage():
                 d.ellipse([r - k + 1 - q, r - k + 1 - q, r + k + 1 - q, r + k + 1 - q], fill=(int(205 + 45 * (1 - t)), int(105 + 70 * (1 - t)), int(20 + 40 * (1 - t)), 255))
             paste_wrap(cv, o, x, y, True)
         rgb, h = leaf_wall(citrus, 1500, 62, 8, hue=(0.7, 0.95, 0.55), tgt=None, extra=fruit2)
-        lin = s2l(rgb); lin *= s2l(np.array((.38, .52, .23), dtype=np.float32)) / lin.reshape(-1, 3).mean(0); COL['orangeF'] = l2s(lin)
+        lin = s2l(rgb); lin *= s2l(np.array((.25, .37, .15), dtype=np.float32)) / lin.reshape(-1, 3).mean(0); COL['orangeF'] = l2s(lin)
         NOR['orangeF'] = height_to_normal(h * 22, 1.0); META['orangeF'] = {'m': 1.5, 'src': 'composited from polyhaven model:island_tree_01 leaves + drawn fruit'}
 
 def build_noise():

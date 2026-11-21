@@ -130,6 +130,14 @@ class AddrModel:
             return next(iter(self.lasttok[toks[-1]]))
         cand = difflib.get_close_matches(toks[-1], list(self.lasttok), n=1, cutoff=0.88) if toks and len(toks[-1]) > 5 else None
         if cand and len(self.lasttok[cand[0]]) == 1: return next(iter(self.lasttok[cand[0]]))
+        # directory style "Surname Firstname" (vrisko.gr: "Δηληγιάννη Θεοδώρου", "Τρικούπη Χαριλάου", "Κυριαζή Γεωργίου")
+        if len(toks) >= 2:
+            rev = ' '.join(toks[::-1])
+            if rev in self.keys: return self.keys[rev]
+            for t in (toks[0], toks[-1]):
+                if len(t) > 4:
+                    if t in self.keys: return self.keys[t]
+                    if len(self.lasttok.get(t, ())) == 1: return next(iter(self.lasttok[t]))
         return None
 
     def project(self, name, x, z):
@@ -165,38 +173,18 @@ class AddrModel:
                 # agreement bonus
                 close = [l for l in L if abs(l[1] - med) < 25]
                 pts.append((n, statistics.mean(l[1] for l in close), 0.5 + 0.5 * min(len(close), 4), 'noisy'))
-            if len(pts) < 2:
+            fitc = self._fit_pts(pts)
+            if fitc is None:
                 self.models[name] = {'pts': pts, 'ok': False}; continue
-            # Theil-Sen slope/intercept
-            sl = []
-            for i in range(len(pts)):
-                for j in range(i + 1, len(pts)):
-                    if pts[i][0] != pts[j][0]:
-                        wgt = int(round(pts[i][2] * pts[j][2]))
-                        sl += [(pts[j][1] - pts[i][1]) / (pts[j][0] - pts[i][0])] * max(1, wgt)
-            if not sl:
-                self.models[name] = {'pts': pts, 'ok': False}; continue
-            b = statistics.median(sl)
-            a0 = statistics.median([p[1] - b * p[0] for p in pts for _ in range(max(1, int(round(p[2]))))])
-            res = [abs(p[1] - (a0 + b * p[0])) for p in pts]
-            mad = statistics.median(res) if res else 0
-            thr = max(35.0, 3.5 * mad)
-            keep = [p for p, r in zip(pts, res) if p[3] == 'osm' or r <= thr]
-            keep.sort()
-            # isotonic (PAVA) in direction of slope
-            sign = 1 if b >= 0 else -1
-            blocks = [[p[0], sign * p[1], p[2], 1] for p in keep]  # num(sum*w), val, w, count
-            vals = [[sign * p[1] * p[2], p[2], [p]] for p in keep]
-            st = []
-            for v in vals:
-                st.append(v)
-                while len(st) > 1 and st[-2][0] / st[-2][1] > st[-1][0] / st[-1][1]:
-                    b2 = st.pop(); b1 = st.pop()
-                    st.append([b1[0] + b2[0], b1[1] + b2[1], b1[2] + b2[2]])
-            iso = []
-            for blk in st:
-                v = sign * blk[0] / blk[1]
-                for p in blk[2]: iso.append((p[0], v, p[3], p[1]))
+            iso, b, a0, mad, ndrop, nkeep = fitc
+            # per-parity models: long avenues number odd and even sides independently (Kifisias: odd ~ even + 40 at the same spot)
+            par = {}
+            for pq in (0, 1):
+                pp = [p for p in pts if p[0] % 2 == pq]
+                n_osm_p = len({p[0] for p in pp if p[3] == 'osm'})
+                if n_osm_p >= 3 or (n_osm_p >= 2 and len(pp) >= 4):
+                    fp = self._fit_pts(pp)
+                    if fp: par[pq] = fp
             # side per parity
             sv = {0: 0.0, 1: 0.0}
             for a in A:
@@ -207,13 +195,50 @@ class AddrModel:
                 if abs(sv[0]) >= abs(sv[1]): sv[1] = -sv[0]
                 else: sv[0] = -sv[1]
             self.models[name] = {'ok': True, 'iso': iso, 'slope': b, 'icpt': a0, 'side': {0: 1 if sv[0] > 0 else -1, 1: 1 if sv[1] > 0 else -1},
-                                 'n_osm': len(ex), 'n_noisy': len(keep) - len(ex), 'mad': mad, 'dropped': len(pts) - len(keep)}
+                                 'n_osm': len(ex), 'n_noisy': nkeep - len(ex), 'mad': mad, 'dropped': ndrop,
+                                 'par': {pq: {'iso': f[0], 'slope': f[1]} for pq, f in par.items()}}
+
+    def _fit_pts(self, pts):
+        """Theil-Sen + outlier drop + isotonic regression of arc length on house number. pts = [(num, s, w, 'osm'|'noisy')]."""
+        if len(pts) < 2: return None
+        # Theil-Sen slope/intercept
+        sl = []
+        for i in range(len(pts)):
+            for j in range(i + 1, len(pts)):
+                if pts[i][0] != pts[j][0]:
+                    wgt = int(round(pts[i][2] * pts[j][2]))
+                    sl += [(pts[j][1] - pts[i][1]) / (pts[j][0] - pts[i][0])] * max(1, wgt)
+        if not sl: return None
+        b = statistics.median(sl)
+        a0 = statistics.median([p[1] - b * p[0] for p in pts for _ in range(max(1, int(round(p[2]))))])
+        res = [abs(p[1] - (a0 + b * p[0])) for p in pts]
+        mad = statistics.median(res) if res else 0
+        thr = max(35.0, 3.5 * mad)
+        keep = [p for p, r in zip(pts, res) if p[3] == 'osm' or r <= thr]
+        keep.sort()
+        # isotonic (PAVA) in direction of slope
+        sign = 1 if b >= 0 else -1
+        blocks = [[p[0], sign * p[1], p[2], 1] for p in keep]  # num(sum*w), val, w, count
+        vals = [[sign * p[1] * p[2], p[2], [p]] for p in keep]
+        st = []
+        for v in vals:
+            st.append(v)
+            while len(st) > 1 and st[-2][0] / st[-2][1] > st[-1][0] / st[-1][1]:
+                b2 = st.pop(); b1 = st.pop()
+                st.append([b1[0] + b2[0], b1[1] + b2[1], b1[2] + b2[2]])
+        iso = []
+        for blk in st:
+            v = sign * blk[0] / blk[1]
+            for p in blk[2]: iso.append((p[0], v, p[3], p[1]))
+        return iso, b, a0, mad, len(pts) - len(keep), len(keep)
 
     def _s_of(self, name, num, skip=None):
         """arc length for a number + error estimate. skip: an (num, s) OSM anchor to leave out (cross-validation)."""
         M = self.models.get(name)
         if not M or not M.get('ok'): return None
-        iso = [p for p in M['iso'] if not (skip and p[0] == skip[0] and abs(p[3] - skip[1]) < 0.01)]
+        PM = M.get('par', {}).get(num % 2)
+        src_iso = PM['iso'] if PM else M['iso']
+        iso = [p for p in src_iso if not (skip and p[0] == skip[0] and abs(p[3] - skip[1]) < 0.01)]
         if not iso: return None
         exact = [p for p in iso if p[0] == num]
         if exact:
@@ -226,7 +251,8 @@ class AddrModel:
         lo, hi = bracket(same)
         lo2, hi2 = bracket(iso)
         # prefer same-parity bracket if both ends are near in number; else any-parity bracket
-        if not (lo and hi and hi[0] - lo[0] <= 12):
+        if PM: lo2, hi2 = lo, hi
+        if not PM and not (lo and hi and hi[0] - lo[0] <= 12):
             if lo2 and hi2 and (not (lo and hi) or (hi2[0] - lo2[0]) < (hi[0] - lo[0])): lo, hi = lo2, hi2
         if lo and hi:
             t = (num - lo[0]) / (hi[0] - lo[0])
@@ -237,7 +263,8 @@ class AddrModel:
         near = lo or hi or lo2 or hi2
         if near is None: return None
         dn = abs(num - near[0])
-        slope = M['slope'] if abs(M['slope']) > 0.5 else (4.0 if M['slope'] >= 0 else -4.0)
+        slope = PM['slope'] if PM else M['slope']
+        slope = slope if abs(slope) > 0.5 else (4.0 if M['slope'] >= 0 else -4.0)
         slope = max(-12, min(12, slope))
         s = near[1] + slope * (num - near[0])
         return s, min(12 + 3.0 * dn + (0 if near[2] == 'osm' else 8), 90), 'extrap'
@@ -312,6 +339,23 @@ def build_model(verbose=False):
     AM.fit()
     if verbose: print('anchors', dict(n))
     return AM
+
+def loo(AM):
+    """Leave-one-out test of the geocoder on the OSM house-number points: each OSM number is geocoded with itself removed."""
+    errs = []; per = collections.defaultdict(list)
+    for name, A in AM.anchors.items():
+        for a in A:
+            if a[4] != 'osm': continue
+            g = AM.geocode(name, a[0], skip=(a[0], a[1]))
+            if not g: continue
+            e = math.hypot(g['x'] - a[5], g['z'] - a[6])
+            errs.append((e, abs(g['s'] - a[1]), g['errM'], name, a[0], g['how'])); per[name].append(e)
+    errs.sort()
+    E = [e[0] for e in errs]
+    q = lambda L, f: round(sorted(L)[min(len(L) - 1, int(len(L) * f))], 1)
+    out = {'n': len(E), 'median': q(E, .5), 'p75': q(E, .75), 'p90': q(E, .9), 'max': round(E[-1], 1) if E else None,
+           'perStreet': {k: {'n': len(v), 'median': q(v, .5), 'max': round(max(v), 1)} for k, v in per.items() if len(v) >= 3}}
+    return out, errs, per
 
 if __name__ == '__main__':
     AM = build_model(True)

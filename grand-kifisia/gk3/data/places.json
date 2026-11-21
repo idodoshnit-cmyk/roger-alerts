@@ -1,0 +1,1508 @@
+{
+ "version": "2026-11-21.0908",
+ "author": "research-streets",
+ "notes": "Keys are Greek OSM names (match ROADS by name). Coordinates: game metres, x=(lon-23.8125)*87716, z=-(lat-38.0727)*110998. researched=false entries are derived from OSM tags/map geometry only. styles{} is the catalogue of real local street-furniture designs referenced by lamps.style, bollards.style, sidewalk.materialDetail, etc. Confidence: photo | official | description | inferred.",
+ "places": [
+  {
+   "key": "spawn_junction",
+   "name": "Junction Kassaveti / Levidou / Kyriazi / Agiou Dimitriou (player spawn)",
+   "x": 94,
+   "z": 61,
+   "description": "Five-arm junction 160 m east of Kifisias Avenue where the shop block of Kassaveti ends. Kassaveti arrives from the west (one-way eastbound, two lanes, plus the two-way cycle track on its south side) and continues east as a one-lane street; Levidou leaves to the north-east (one-way, first block a shared-surface lane of grey blocks with dense black/yellow bollards); Kyriazi arrives from the south (one-way northbound, one lane); Agiou Dimitriou leaves to the south-west. No traffic lights: give-way/stop signs and zebra crossings on the arms. Corners: Mythos Plus and Goody's/Everest on the north-west corner (Everest exactly on the Levidou corner), AB Vasilopoulos filling the south-west corner (corner of Kyriazi), the Kifisia Tower (Pyrgos Kifisias, La Pasteria) on the south-east corner, and PAUL in a villa set back behind its garden on the east side of the first block of Levidou.",
+   "elements": [
+    {
+     "what": "Mythos Plus (gyro shop)",
+     "x": 75.4,
+     "z": 45.7,
+     "where": "north side of Kassaveti, 19 m west of the junction centre",
+     "confidence": "inferred",
+     "lat": 38.072288,
+     "lon": 23.81336
+    },
+    {
+     "what": "AB Vasilopoulos supermarket",
+     "x": 56.7,
+     "z": 83.8,
+     "where": "south-west corner block (Kassaveti / Kyriazi), OSM way 668312663",
+     "confidence": "inferred",
+     "lat": 38.071945,
+     "lon": 23.813146
+    },
+    {
+     "what": "PAUL bakery-cafe",
+     "x": 125.5,
+     "z": 33.1,
+     "where": "east side of Levidou first block, villa behind garden",
+     "confidence": "inferred",
+     "lat": 38.072402,
+     "lon": 23.813931
+    },
+    {
+     "what": "Kifisia Tower (Pyrgos Kifisias)",
+     "x": 107.9,
+     "z": 81.6,
+     "where": "south-east corner, OSM way 1076626153, 32 m long",
+     "confidence": "inferred",
+     "lat": 38.071965,
+     "lon": 23.81373
+    },
+    {
+     "what": "Starbucks",
+     "x": 158,
+     "z": 53.5,
+     "where": "Kassaveti 19 by address, 65 m east of the junction (north side)",
+     "confidence": "inferred",
+     "lat": 38.072218,
+     "lon": 23.814301
+    },
+    {
+     "what": "zebra crossings",
+     "where": "across every arm 5-8 m from the junction centre (OSM highway=crossing nodes)",
+     "size": "3 m wide, white bars 0.5 m",
+     "colour": "#f2f2ee",
+     "confidence": "inferred"
+    },
+    {
+     "what": "two-way cycle track",
+     "where": "south edge of Kassaveti from Kifisias Avenue to the junction, continuing into the first block of Levidou",
+     "size": "2.2-2.4 m",
+     "colour": "#6f6d6b",
+     "material": "fine asphalt, white concrete edge band",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9B%CE%B5%CE%B2%CE%AF%CE%B4%CE%BF%CF%85_7899.jpg"
+   ],
+   "lat": 38.07215,
+   "lon": 23.813572
+  },
+  {
+   "key": "platanos_square",
+   "name": "Πλατεία Πλατάνου (Platanos Square)",
+   "x": -66,
+   "z": 5,
+   "description": "Kifisia's central square on the east side of Kifisias Avenue at the bottom of Kassaveti, named after its old plane tree. The 'square' is a planted, elongated traffic island (OSM landuse=grass, 57 x 14 m, long axis NW-SE) with the plane tree near its north end, a decorative municipal fountain at its south end, a row of trees along its east edge, and the one-way slip road 'Plateia Platanou' running round it. Bus stops PLATEIA PLATANOU (with shelter and bench, line 71 etc.) and PLATEIA KIFISIAS are at its edges; the Alsos (grove) begins across the slip road to the west and the Platanos underground car park (621 spaces, Adrianou 6) lies to the south-west. Signalised zebra crossings link it to the bottom of Kassaveti. The north side of Kassaveti's first block is the long neoclassical building Kassaveti 1 (HSBC on the ground floor) in front of which the yellow taxis queue along the kerb (photo r11).",
+   "elements": [
+    {
+     "what": "the old plane tree (Platanus orientalis)",
+     "x": -68.1,
+     "z": 14.2,
+     "size": "very large, crown ~20 m, trunk ~1.2-1.5 m diameter (estimate; not measured)",
+     "confidence": "inferred",
+     "lat": 38.072572,
+     "lon": 23.811724
+    },
+    {
+     "what": "planted island (lawn, low shrubs, kerbed)",
+     "x": -66.4,
+     "z": 5.1,
+     "size": "56.7 x 14.3 m, long axis bearing ~123 deg",
+     "material": "grass, kerb painted yellow at the bus stops",
+     "confidence": "inferred",
+     "lat": 38.072654,
+     "lon": 23.811743
+    },
+    {
+     "what": "decorative fountain (Dimos Kifisias, not drinking water)",
+     "x": -61.0,
+     "z": -3.2,
+     "confidence": "inferred",
+     "lat": 38.072729,
+     "lon": 23.811805
+    },
+    {
+     "what": "tree row along the east edge of the island",
+     "x": -58.2,
+     "z": 22.1,
+     "size": "28.6 m long",
+     "confidence": "inferred",
+     "lat": 38.072501,
+     "lon": 23.811836
+    },
+    {
+     "what": "bus stop PLATEIA PLATANOU with shelter and bench (line 71)",
+     "x": -94.4,
+     "z": 30.4,
+     "confidence": "inferred",
+     "lat": 38.072426,
+     "lon": 23.811424
+    },
+    {
+     "what": "bus stop PL. KIFISIAS (platform)",
+     "x": -63.9,
+     "z": 2.8,
+     "confidence": "inferred",
+     "lat": 38.072675,
+     "lon": 23.811772
+    },
+    {
+     "what": "bus stop PLATEIA KIFISIAS on Kifisias Avenue",
+     "x": -20.2,
+     "z": -12.1,
+     "confidence": "inferred",
+     "lat": 38.072809,
+     "lon": 23.81227
+    },
+    {
+     "what": "public toilets (municipal kiosk-type, not wheelchair accessible)",
+     "x": -97.3,
+     "z": 36.4,
+     "confidence": "inferred",
+     "lat": 38.072372,
+     "lon": 23.811391
+    },
+    {
+     "what": "signalised zebra crossings",
+     "where": "x=-74.2,z=38.0 and x=-66.0,z=43.0 (no push button), x=-85.5,z=34.3, x=-83.4,z=71.1, x=-91.9,z=65.7",
+     "confidence": "inferred"
+    },
+    {
+     "what": "taxi rank: 5-6 yellow taxis nose-to-tail along the north kerb of Kassaveti in front of Kassaveti 1",
+     "x": -30,
+     "z": 44,
+     "size": "~30 m of kerb",
+     "colour": "#f0c810",
+     "where": "left (north) lane of the first Kassaveti block",
+     "confidence": "photo",
+     "lat": 38.072304,
+     "lon": 23.812158
+    },
+    {
+     "what": "Kassaveti 1 (HSBC building)",
+     "x": -24,
+     "z": 36,
+     "size": "footprint 48.7 x 18.6 m (OSM way 1075949217)",
+     "colour": "#e8dfc4",
+     "material": "plaster, marble pilasters",
+     "where": "two-storey neoclassical: cream plaster, white marble pilasters and cornices, salmon-red pediment tympanum (#d6705f) on the west gable facing the square, tiled hip roof, ground floor shops between pilasters (HSBC, Vivify, Pansik, Travel Plan in 2014), a 3-storey later wing with balconies at its east end",
+     "confidence": "photo",
+     "lat": 38.072376,
+     "lon": 23.812226
+    },
+    {
+     "what": "marble pedestal monument (square shaft with cornice, ~2.2 m)",
+     "x": -46,
+     "z": 41,
+     "where": "on the corner of the sidewalk at the west gable of Kassaveti 1",
+     "material": "white-grey marble",
+     "confidence": "photo",
+     "lat": 38.072331,
+     "lon": 23.811976
+    },
+    {
+     "what": "sidewalk",
+     "where": "round the square and along Kassaveti 1",
+     "material": "red_tile 0.3 m squares, yellow tactile strip, kerb painted yellow",
+     "colour": "#b0614a",
+     "confidence": "photo"
+    },
+    {
+     "what": "Roman funerary monument (small protective building)",
+     "x": -50.5,
+     "z": 61.8,
+     "size": "8.3 x 6.1 m",
+     "where": "south corner of Kifisias / Kassaveti",
+     "confidence": "inferred",
+     "lat": 38.072143,
+     "lon": 23.811924
+    },
+    {
+     "what": "National Bank of Greece building",
+     "x": -46,
+     "z": -63.3,
+     "confidence": "inferred",
+     "lat": 38.07327,
+     "lon": 23.811976
+    }
+   ],
+   "confidence": "photo (r11, taxis/building/materials) + inferred (OSM layout)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_%CE%A0%CE%BB%CE%AC%CF%84%CE%B1%CE%BD%CE%BF%CF%82_7863.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4102.jpg"
+   ],
+   "lat": 38.072655,
+   "lon": 23.811748
+  },
+  {
+   "key": "station",
+   "name": "Σταθμός Κηφισιάς (Kifisia station, Line 1 terminus)",
+   "x": -375,
+   "z": -100.8,
+   "description": "Northern terminus of Athens Metro Line 1 (the former ISAP electric railway), at grade, 25.655 km from Piraeus; on the site of the 1885 station of the Lavrion Square-Strofyli railway; opened for the electric line in 1957, renovated for the 2004 Olympics. Two through platforms with two tracks ending in buffer stops at the south end (x=-378, z=-120), and the Line 1 depot sidings to the west. The station building is a single-storey neoclassical pavilion (OSM 16.1 x 7.7 m) painted ochre-yellow with white pilasters and trim, a low white pediment with a round clock in the centre, and a white fascia sign 'ΚΗΦΙΣΙΑ / KIFISSIA' with the ISAP/STASY logo over the central door; green-painted doors. In front: a forecourt with taxi rank, bus terminus (AFETIRIA ST. KIFISIAS), bicycle stands and two lit decorative fountains, edged by dark-green steel railings with diagonal-cross panels.",
+   "elements": [
+    {
+     "what": "station building",
+     "x": -368,
+     "z": -111,
+     "size": "16.1 x 7.7 m, one storey ~5 m to cornice, pediment ~1.5 m",
+     "colour": "#e2c25a",
+     "material": "plaster, white trim #f1efe6, green doors #2e5a45",
+     "confidence": "photo",
+     "lat": 38.0737,
+     "lon": 23.808305
+    },
+    {
+     "what": "wall clock (analog) in the pediment",
+     "x": -363.5,
+     "z": -111.2,
+     "confidence": "photo",
+     "lat": 38.073702,
+     "lon": 23.808356
+    },
+    {
+     "what": "station entrance",
+     "x": -370.9,
+     "z": -113.0,
+     "confidence": "inferred",
+     "lat": 38.073718,
+     "lon": 23.808272
+    },
+    {
+     "what": "platform 1 (east)",
+     "where": "OSM way 83067169, 114.8 m long, x=-378 centre z=-73",
+     "size": "114.8 x ~7.9 m",
+     "confidence": "inferred"
+    },
+    {
+     "what": "platform 2 (west)",
+     "where": "OSM way 83067168, 88.5 m long, centre x=-373 z=-91",
+     "confidence": "inferred"
+    },
+    {
+     "what": "platform canopies",
+     "where": "full length of both platforms",
+     "size": "height ~4 m; canopy panels ~2.5 m deep each side of the columns",
+     "colour": "#3f7a5e",
+     "material": "green-painted steel columns and lattice trusses carrying alternating glass and timber-slat roof panels; grey concrete platform with a yellow tactile line 0.6 m from the edge; departure boards hung under the canopy (\"Προς Πειραιά / To Piraeus\")",
+     "confidence": "photo"
+    },
+    {
+     "what": "buffer stops",
+     "x": -378.4,
+     "z": -119.7,
+     "confidence": "inferred",
+     "lat": 38.073778,
+     "lon": 23.808186
+    },
+    {
+     "what": "taxi rank",
+     "x": -356.4,
+     "z": -85.3,
+     "confidence": "inferred",
+     "lat": 38.073468,
+     "lon": 23.808437
+    },
+    {
+     "what": "bus terminus (bus_station)",
+     "x": -358.5,
+     "z": -66.5,
+     "confidence": "inferred",
+     "lat": 38.073299,
+     "lon": 23.808413
+    },
+    {
+     "what": "bus stop AFETIRIA (ST. KIFISIAS)",
+     "x": -360.9,
+     "z": -47.6,
+     "confidence": "inferred",
+     "lat": 38.073129,
+     "lon": 23.808386
+    },
+    {
+     "what": "bicycle stands (9)",
+     "x": -350,
+     "z": -71.2,
+     "confidence": "inferred",
+     "lat": 38.073341,
+     "lon": 23.80851
+    },
+    {
+     "what": "decorative fountain (lit)",
+     "x": -335,
+     "z": -81.5,
+     "confidence": "inferred",
+     "lat": 38.073434,
+     "lon": 23.808681
+    },
+    {
+     "what": "decorative fountain (lit)",
+     "x": -339.7,
+     "z": -27.0,
+     "confidence": "inferred",
+     "lat": 38.072943,
+     "lon": 23.808627
+    },
+    {
+     "what": "forecourt railings",
+     "where": "along the kerb of the forecourt",
+     "size": "1.0 m high, 2.0 m panels",
+     "colour": "#2e5a45",
+     "material": "steel, diagonal-cross infill (style green_x_guard)",
+     "confidence": "photo"
+    },
+    {
+     "what": "zebra crossings",
+     "where": "x=-349.3,z=-115.8; x=-352.7,z=-91.3; x=-341.5,z=-105.4",
+     "confidence": "inferred"
+    }
+   ],
+   "confidence": "photo (r00 building, r21 platforms) + official (Wikipedia) + inferred (OSM layout)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:Attica_06-13_Kifissia_metro_station.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%A3%CF%84%CE%B1%CE%B8%CE%BC%CF%8C%CF%82_%CE%97%CE%A3%CE%91%CE%A0_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_7951.JPG",
+    "https://en.wikipedia.org/wiki/Kifissia_metro_station",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4110.jpg"
+   ],
+   "lat": 38.073608,
+   "lon": 23.808225
+  },
+  {
+   "key": "alsos",
+   "name": "Άλσος Κηφισιάς «Δημήτρης Ζωμόπουλος» (Kifisia Grove)",
+   "x": -205.3,
+   "z": -14.3,
+   "description": "Municipal park between Platanos square (east) and the station (west), created around 1901 when the railway company landscaped the ground linking the station with the square. OSM area 22,855 m2: a wedge from x=-358 (station side) to x=-84 (square side), z=-104 to 48, outline (-358,-11) (-111,48) (-95,21) (-84,-17) (-85,-27) (-345,-104). Formal layout (aerial r05): straight gravel/earth walks bordered by clipped box hedges and oval/rectangular beds, a round fountain at a crossing of walks, tall trees (Atlas/Himalayan cedars, stone and Aleppo pines, palms, planes, a registered carob tree), agaves and rough grass. Venue of the annual Flower Show (Anthokomiki Ekthesi, ~20 stremmata, late April to May) with rows of growers' stalls. Old riveted green iron water tank on a cast-iron column frame with a Greek inscription band (r07) at its east end near Platanos. 4-6 gates (sources disagree).",
+   "elements": [
+    {
+     "what": "park outline",
+     "where": "OSM way 32324869",
+     "size": "274 x 93 m, 22,855 m2",
+     "confidence": "inferred"
+    },
+    {
+     "what": "round fountain basin at a crossing of walks",
+     "x": -182.1,
+     "z": -12.7,
+     "size": "basin ~6 m diameter (aerial r05 estimate)",
+     "confidence": "photo",
+     "lat": 38.072814,
+     "lon": 23.810424
+    },
+    {
+     "what": "walks",
+     "material": "compacted beige earth/gravel",
+     "colour": "#cdbb9a",
+     "size": "3-5 m wide, straight, edged by clipped box hedges 0.5-0.8 m",
+     "confidence": "photo"
+    },
+    {
+     "what": "lamps",
+     "material": "probably the same globe_cluster posts as Kefalari grove (r04); not visible in the aerial",
+     "colour": "#16201a",
+     "confidence": "inferred"
+    },
+    {
+     "what": "old water tank (Dexameni)",
+     "x": -105,
+     "z": 35,
+     "size": "tank ~4 m diameter x 4 m high on a frame of thin cast-iron columns ~3 m high",
+     "colour": "#4f5e4a",
+     "material": "riveted iron plates, inscription band",
+     "where": "north-east tip of the grove, across the slip road from Platanos square (photo geotag x=-98, z=49; exact position estimated)",
+     "confidence": "photo",
+     "lat": 38.072385,
+     "lon": 23.811303
+    },
+    {
+     "what": "registered carob tree (Ceratonia siliqua)",
+     "x": -256.7,
+     "z": -71.4,
+     "confidence": "inferred",
+     "lat": 38.073343,
+     "lon": 23.809574
+    },
+    {
+     "what": "dovecote",
+     "x": -287.4,
+     "z": -83.9,
+     "confidence": "inferred",
+     "lat": 38.073456,
+     "lon": 23.809224
+    },
+    {
+     "what": "gate (west, towards the station)",
+     "x": -282.3,
+     "z": -75.5,
+     "confidence": "inferred",
+     "lat": 38.07338,
+     "lon": 23.809282
+    },
+    {
+     "what": "bench (wood, backrest)",
+     "x": -181.1,
+     "z": -33.0,
+     "confidence": "inferred",
+     "lat": 38.072997,
+     "lon": 23.810435
+    },
+    {
+     "what": "Flower Show stalls (seasonal, late April-May)",
+     "where": "along the main walks",
+     "confidence": "description"
+    },
+    {
+     "what": "ALSOS CAFE BAR (cafe with terrace)",
+     "x": -288.1,
+     "z": -3.7,
+     "confidence": "inferred",
+     "lat": 38.072733,
+     "lon": 23.809216
+    },
+    {
+     "what": "kiosk (periptero)",
+     "x": -89.2,
+     "z": -1.5,
+     "where": "east tip, Platanos side",
+     "confidence": "inferred",
+     "lat": 38.072714,
+     "lon": 23.811483
+    },
+    {
+     "what": "kiosk (periptero)",
+     "x": -340.2,
+     "z": -89.2,
+     "where": "west end, station forecourt",
+     "confidence": "inferred",
+     "lat": 38.073504,
+     "lon": 23.808622
+    },
+    {
+     "what": "kiosk (periptero)",
+     "x": -346.7,
+     "z": -58.6,
+     "where": "west edge on Grigoriou Lampraki",
+     "confidence": "inferred",
+     "lat": 38.073228,
+     "lon": 23.808547
+    },
+    {
+     "what": "steps up to Platanos square (paving stones)",
+     "x": -86.5,
+     "z": 17.1,
+     "where": "from (-90.9,16.0) to (-82.0,18.2)",
+     "confidence": "inferred",
+     "lat": 38.072546,
+     "lon": 23.811514
+    },
+    {
+     "what": "lit decorative fountains at the station end",
+     "where": "x=-335,z=-81.5 and x=-339.7,z=-27.0",
+     "confidence": "inferred"
+    }
+   ],
+   "paths": [
+    {
+     "osm": "way/244452690",
+     "kind": "footway",
+     "surface": "gravel",
+     "pts": [
+      [
+       -357.0,
+       -47.4
+      ],
+      [
+       -342.8,
+       -51.4
+      ],
+      [
+       -324.7,
+       -50.4
+      ],
+      [
+       -320.5,
+       -43.0
+      ],
+      [
+       -291.4,
+       -34.5
+      ],
+      [
+       -282.0,
+       -32.2
+      ],
+      [
+       -268.7,
+       -28.0
+      ],
+      [
+       -253.1,
+       -24.8
+      ],
+      [
+       -204.5,
+       -12.2
+      ],
+      [
+       -187.2,
+       -7.3
+      ],
+      [
+       -163.2,
+       -0.5
+      ],
+      [
+       -135.0,
+       5.6
+      ],
+      [
+       -100.6,
+       14.4
+      ],
+      [
+       -99.7,
+       13.9
+      ],
+      [
+       -90.9,
+       16.0
+      ]
+     ],
+     "note": "MAIN AXIS: the long gravel walk station -> Platanos, passes 5 m north of the round fountain"
+    },
+    {
+     "osm": "way/418588993",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -268.7,
+       -28.0
+      ],
+      [
+       -276.9,
+       12.5
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/418588997",
+     "kind": "steps",
+     "surface": "paving_stones",
+     "pts": [
+      [
+       -90.9,
+       16.0
+      ],
+      [
+       -82.0,
+       18.2
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/418589004",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -187.2,
+       -7.3
+      ],
+      [
+       -174.5,
+       -35.9
+      ],
+      [
+       -166.5,
+       -56.5
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/420141138",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -324.7,
+       -50.4
+      ],
+      [
+       -321.8,
+       -78.1
+      ],
+      [
+       -284.3,
+       -66.4
+      ],
+      [
+       -291.4,
+       -34.5
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/420141139",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -174.5,
+       -35.9
+      ],
+      [
+       -189.7,
+       -44.1
+      ],
+      [
+       -209.8,
+       -45.7
+      ],
+      [
+       -228.0,
+       -45.8
+      ],
+      [
+       -236.8,
+       -49.1
+      ],
+      [
+       -242.3,
+       -50.6
+      ],
+      [
+       -244.0,
+       -55.8
+      ],
+      [
+       -284.3,
+       -66.4
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/420141140",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -100.6,
+       14.4
+      ],
+      [
+       -111.7,
+       22.3
+      ],
+      [
+       -129.3,
+       19.7
+      ],
+      [
+       -150.3,
+       13.3
+      ],
+      [
+       -183.0,
+       6.0
+      ],
+      [
+       -221.1,
+       -3.4
+      ],
+      [
+       -234.8,
+       -7.5
+      ],
+      [
+       -246.2,
+       -10.5
+      ],
+      [
+       -255.7,
+       -12.8
+      ],
+      [
+       -254.7,
+       -15.8
+      ],
+      [
+       -253.1,
+       -24.8
+      ],
+      [
+       -250.4,
+       -30.5
+      ],
+      [
+       -246.9,
+       -32.4
+      ],
+      [
+       -241.3,
+       -37.4
+      ],
+      [
+       -242.3,
+       -50.6
+      ]
+     ],
+     "note": ""
+    },
+    {
+     "osm": "way/978580471",
+     "kind": "footway",
+     "surface": "gravel/earth (inferred from photo)",
+     "pts": [
+      [
+       -284.3,
+       -66.4
+      ],
+      [
+       -282.3,
+       -75.5
+      ],
+      [
+       -279.5,
+       -88.4
+      ]
+     ],
+     "note": ""
+    }
+   ],
+   "pathsNote": "OSM path network (game metres). The aerial r05 (Dec 2022) shows MORE walks than OSM: a formal grid of straight walks with hedged oval/rectangular beds around the fountain; use the OSM paths as the skeleton and add the hedged beds between them.",
+   "confidence": "photo (r05 aerial, r07 tank) + description (news on the Flower Show) + inferred (OSM)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%86%CE%BB%CF%83%CE%BF%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_4106.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%94%CE%B5%CE%BE%CE%B1%CE%BC%CE%B5%CE%BD%CE%AE_%CE%86%CE%BB%CF%83%CE%BF%CF%85%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_7946.JPG",
+    "https://www.protothema.gr/zoi/article/673004/erhetai-i-63i-anthokomiki-ekthesi-kifisias/",
+    "https://www.athensvoice.gr/life/life-in-athens/321643/i-kifisia-tis-anthokomikis-ekthesis-tote/"
+   ],
+   "lat": 38.072829,
+   "lon": 23.810159
+  },
+  {
+   "key": "agora",
+   "name": "Αγορά Κηφισιάς (the Agora arcade, Kolokotroni)",
+   "x": 345.6,
+   "z": 10,
+   "description": "Pedestrian shopping courtyard off Kolokotroni (malls 'Foinikes' at Kolokotroni 7, 40 x 30 m, and Kolokotroni 9). Its signature is a white late-19th-century folly: two round turrets with conical roofs clad in copper/bronze-coloured sheet and topped by gilded finials, linked by a gabled centre bay; red clay ridge tiles, a frieze of carved fleur-de-lis ornaments under the eaves, tall arched shop windows. Courtyard floor of white-grey marble slabs with red insets, clipped box hedges in raised beds, tall Washingtonia palms, black lamp posts with two/three opal globes.",
+   "elements": [
+    {
+     "what": "turret building",
+     "size": "each turret ~6 m diameter, ~9 m to the eaves, cone ~4 m",
+     "colour": "#f1eee6",
+     "material": "plaster; cone #b08a4a; tiles #b4573d",
+     "confidence": "photo"
+    },
+    {
+     "what": "courtyard paving",
+     "material": "marble_slabs",
+     "colour": "#cfcac6",
+     "confidence": "photo"
+    },
+    {
+     "what": "palms (Washingtonia)",
+     "size": "12-15 m",
+     "confidence": "photo"
+    },
+    {
+     "what": "lamps",
+     "material": "globe_cluster (2 and 3 globes)",
+     "confidence": "photo"
+    },
+    {
+     "what": "Foinikes mall",
+     "x": 328.9,
+     "z": -21.6,
+     "size": "40.4 x 29.8 m",
+     "confidence": "inferred",
+     "lat": 38.072895,
+     "lon": 23.81625
+    },
+    {
+     "what": "Marks & Spencer",
+     "x": 338.7,
+     "z": 45.3,
+     "confidence": "inferred",
+     "lat": 38.072292,
+     "lon": 23.816361
+    },
+    {
+     "what": "GANT",
+     "x": 332.5,
+     "z": 57.5,
+     "confidence": "inferred",
+     "lat": 38.072182,
+     "lon": 23.816291
+    }
+   ],
+   "confidence": "photo (r06, r12 - Commons title of r12: Kolokotroni 7) + inferred (OSM; exact position of the turret building in the courtyard not verified)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%91%CE%B3%CE%BF%CF%81%CE%AC_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_0910.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7_7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0913.jpg"
+   ],
+   "lat": 38.07261,
+   "lon": 23.81644
+  },
+  {
+   "key": "kotsika_house_ralph_lauren",
+   "name": "Οικία Κότσικα (Kotsika house, 1910) - Ralph Lauren, Kassaveti 19",
+   "x": 170.6,
+   "z": 57.1,
+   "description": "Listed 1910 villa (Wikidata Q122260203) in the Kassaveti 19 courtyard, set back ~17-30 m north of Kassaveti (OSM way 1076768348, map building 425). Three storeys in rough-faced honey-coloured limestone with lighter rusticated quoins and window surrounds, a white moulded string course, steep gables with white carved timber bargeboards (Swiss-cottage style), a canted bay with a first-floor balcony, navy-blue awnings with the shop name in white; clipped shrubs and terracotta planters at the steps. The Starbucks pavilion stands to its WEST in the same courtyard (OSM way 1076768349, x=157.6, z=63.1) - see shops.json.",
+   "elements": [
+    {
+     "what": "facade",
+     "colour": "#c4a68a",
+     "material": "stone",
+     "confidence": "photo"
+    },
+    {
+     "what": "awnings",
+     "colour": "#1d2c5a",
+     "confidence": "photo"
+    },
+    {
+     "what": "Starbucks pavilion (courtyard, west of the villa)",
+     "x": 157.6,
+     "z": 63.1,
+     "confidence": "description",
+     "lat": 38.072132,
+     "lon": 23.814297
+    }
+   ],
+   "confidence": "photo (r20) + official (Wikidata listing) + description (research-shops, shops.json)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B9%CE%BA%CE%AF%CE%B1_%CE%9A%CF%8C%CF%84%CF%83%CE%B9%CE%BA%CE%B1,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0931.jpg",
+    "https://www.wikidata.org/wiki/Q122260203",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.072186,
+   "lon": 23.814445
+  },
+  {
+   "key": "agios_dimitrios",
+   "name": "Άγιος Δημήτριος Κηφισιάς (Metropolitan church of Kifisia)",
+   "x": -17.5,
+   "z": 294,
+   "description": "Large Orthodox church (OSM footprint ~27 x 20 m) at the south end of Kyriazi / Agiou Dimitriou with a small park and playground behind it. Cream/white plaster with white marble trim, two square bell towers flanking the west front (three stages, arched openings, small domed tops with crosses), a central dome with red tiles over the crossing, a gold-ground mosaic of the saint in the arch over the triple-arched porch, red tiled roofs. Paved forecourt with steps and railings; cars park around it.",
+   "elements": [
+    {
+     "what": "church",
+     "size": "27 x 20 m footprint; towers ~22 m; dome ~18 m (estimates from r13)",
+     "colour": "#efe6d2",
+     "material": "plaster, marble",
+     "confidence": "photo"
+    },
+    {
+     "what": "church park (Agiou Dimitriou)",
+     "x": -22.5,
+     "z": 323.8,
+     "confidence": "inferred",
+     "lat": 38.069783,
+     "lon": 23.812243
+    },
+    {
+     "what": "playground",
+     "x": -29.1,
+     "z": 341.2,
+     "confidence": "inferred",
+     "lat": 38.069626,
+     "lon": 23.812168
+    },
+    {
+     "what": "fountain",
+     "x": 20.4,
+     "z": 283.7,
+     "confidence": "inferred",
+     "lat": 38.070144,
+     "lon": 23.812733
+    },
+    {
+     "what": "marble memorial plaque",
+     "x": 16.3,
+     "z": 304.8,
+     "confidence": "inferred",
+     "lat": 38.069954,
+     "lon": 23.812686
+    }
+   ],
+   "confidence": "photo (r13) + inferred (OSM)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9C%CE%B7%CF%84%CF%81%CE%BF%CF%80%CE%BF%CE%BB%CE%B9%CF%84%CE%B9%CE%BA%CF%8C%CF%82_%CE%BD%CE%B1%CF%8C%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_7915.jpg"
+   ],
+   "lat": 38.070051,
+   "lon": 23.8123
+  },
+  {
+   "key": "goulandris",
+   "name": "Μουσείο Γουλανδρή Φυσικής Ιστορίας (Goulandris Natural History Museum), Levidou 13",
+   "x": 188.5,
+   "z": -185.2,
+   "description": "Museum in a cream neoclassical/chalet mansion: two storeys, white pilasters and window surrounds, steep red-tiled gables with dark-red carved bargeboards and finials, a single-storey wing with a balustraded roof terrace; forecourt of large stone slabs with ancient pithos jars and marble fragments, low stone wall with black railings, exhibition banners between the ground-floor windows. The GAIA centre is next door (x=163, z=-197) and the Retsinas mansion (x=188, z=-189) is part of the complex.",
+   "elements": [
+    {
+     "what": "mansion",
+     "colour": "#efe3bf",
+     "material": "plaster",
+     "confidence": "photo"
+    },
+    {
+     "what": "pithos jars in the forecourt",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (r14) + inferred (OSM)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9C%CE%BF%CF%85%CF%83%CE%B5%CE%AF%CE%BF_%CE%93%CE%BF%CF%85%CE%BB%CE%B1%CE%BD%CE%B4%CF%81%CE%AE_7886.jpg"
+   ],
+   "lat": 38.074368,
+   "lon": 23.814649
+  },
+  {
+   "key": "kefalari",
+   "name": "Πλατεία Κεφαλαρίου / Άλσος Κεφαλαρίου (Kefalari square and grove)",
+   "x": 651,
+   "z": -248,
+   "description": "Hilltop square and grove 700 m north-east of Platanos (13,039 m2, 137 x 97 m). Large shady trees, wooden benches with backrests (OSM maps 15), metal litter baskets, a rectangular ornamental basin (31 x 14 m) in the middle, the church of the Metamorfosi Sotiros (26 x 18 m) on its west side with a small chapel, a marble drinking fountain inscribed 'ΔΗΜΟΣ ΑΘΗΝΑΙΩΝ 1872', a bronze statue of Pavlos Melas (by Natalia Mela) and busts of Konstantinos Tsatsos and Konstantinos Aktenas; a kiosk on the north corner; children's playground (entrance behind the Eurobank branch). Grand hotels around it (Theoxenia Palace, Semiramis, Pentelikon, SAY).",
+   "elements": [
+    {
+     "what": "ornamental basin",
+     "x": 672.8,
+     "z": -239.3,
+     "size": "30.7 x 13.7 m",
+     "confidence": "inferred",
+     "lat": 38.074856,
+     "lon": 23.82017
+    },
+    {
+     "what": "church Metamorfosi Sotiros",
+     "x": 626.5,
+     "z": -244.2,
+     "size": "26.4 x 18.5 m",
+     "confidence": "inferred",
+     "lat": 38.0749,
+     "lon": 23.819642
+    },
+    {
+     "what": "chapel",
+     "x": 633.3,
+     "z": -219.6,
+     "size": "8.5 x 4.9 m",
+     "confidence": "inferred",
+     "lat": 38.074678,
+     "lon": 23.81972
+    },
+    {
+     "what": "drinking fountain 1872",
+     "x": 626.0,
+     "z": -206.7,
+     "material": "marble",
+     "confidence": "inferred",
+     "lat": 38.074562,
+     "lon": 23.819637
+    },
+    {
+     "what": "statue of Pavlos Melas",
+     "x": 664.7,
+     "z": -191.5,
+     "material": "bronze",
+     "confidence": "inferred",
+     "lat": 38.074425,
+     "lon": 23.820078
+    },
+    {
+     "what": "bust of K. Tsatsos",
+     "x": 684.1,
+     "z": -248.4,
+     "confidence": "inferred",
+     "lat": 38.074938,
+     "lon": 23.820299
+    },
+    {
+     "what": "bust of K. Aktenas",
+     "x": 707.2,
+     "z": -274.7,
+     "confidence": "inferred",
+     "lat": 38.075175,
+     "lon": 23.820562
+    },
+    {
+     "what": "kiosk (periptero)",
+     "x": 623,
+     "z": -197,
+     "size": "8.4 x 5.8 m",
+     "confidence": "inferred",
+     "lat": 38.074475,
+     "lon": 23.819602
+    },
+    {
+     "what": "abandoned kiosk",
+     "x": 627,
+     "z": -277,
+     "confidence": "inferred",
+     "lat": 38.075196,
+     "lon": 23.819648
+    },
+    {
+     "what": "benches (wood, backrest)",
+     "where": "x,z: 729,-264; 731,-262; 699,-227; 677,-257; 674,-259; 656,-253; 654,-252; 657,-250; 649,-270; 652,-268; 703,-270; 680,-252; 660,-249; 709,-278",
+     "confidence": "inferred"
+    },
+    {
+     "what": "recycling containers (purple clothes, 2 blue glass)",
+     "x": 631,
+     "z": -289,
+     "confidence": "inferred",
+     "lat": 38.075304,
+     "lon": 23.819694
+    },
+    {
+     "what": "planting",
+     "where": "whole grove",
+     "material": "tall Atlas/Himalayan cedars and Aleppo pines, deciduous trees, lawns, beds of agave and shrubs",
+     "confidence": "photo"
+    },
+    {
+     "what": "paths",
+     "material": "compacted beige earth, unkerbed",
+     "colour": "#cdb894",
+     "size": "3-4 m",
+     "confidence": "photo"
+    },
+    {
+     "what": "lamps",
+     "material": "black cast-iron post ~4 m with three opal globes on curved swan-neck arms plus one on top (style globe_cluster)",
+     "colour": "#16201a",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "inferred (OSM) + photo r04 (planting, lamps, paths)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%86%CE%BB%CF%83%CE%BF%CF%82_%CE%9A%CE%B5%CF%86%CE%B1%CE%BB%CE%B1%CF%81%CE%AF%CE%BF%CF%85_8587.JPG",
+    "https://www.kidslovegreece.com/activity/playground-kefalari/"
+   ],
+   "lat": 38.074934,
+   "lon": 23.819922
+  },
+  {
+   "key": "isa",
+   "name": "Διεθνές Σχολείο της Αθήνας (International School of Athens, ISA)",
+   "x": 897.2,
+   "z": -433.5,
+   "description": "Private international school, Artemidos 42 & Xenias, Kefalari/Kifisia 145 62, 1.2 km north-east of Platanos. Official: 'located in a historic building ... main school building set on 6,100 m2 of landscaped grounds', multipurpose outdoor courts for basketball, volleyball, handball, mini-soccer and street hockey, a separate playground for the lower school; uses nearby municipal gym/pitch. OSM: school ground polygon 92.8 x 42.4 m (3,834 m2 - smaller than the official 6,100 m2, so the OSM outline is probably incomplete), one multi-sport court 32.3 x 18.6 m (fits a 28 x 15 m basketball court with run-off) at x=899, z=-450 and a small soccer pitch 31.5 x 16.2 m at x=914, z=-451 side by side, the main building 51.4 x 33.7 m north of the courts (x=902, z=-413), two gates (x=831.6, z=-385.1 and x=869.3, z=-445.3). The EYDAP water tower (x=876.5, z=-495) and a pine wood lie just south. A school directory describes the main building as 'adapted for educational purposes from a neo-classical, four-storey former hotel' and the school brochure (search snippet) gives ~6,000 m2 of floor space - consistent with 4 storeys on the 51.4 x 33.7 m OSM footprint (1,662 m2 x 4 = 6,650 m2). An older version of the school's campus page (search snippet) says the building dates 'from the early 1900s', recently renovated. So: a 4-storey neoclassical former hotel of the early 1900s (cf. the similar former Palace hotel, places.json palace_hotel). Colour/details NOT confirmed by a photo.",
+   "elements": [
+    {
+     "what": "school ground (OSM)",
+     "where": "OSM way 1086751865",
+     "size": "92.8 x 42.4 m, bearing -174 deg",
+     "confidence": "inferred"
+    },
+    {
+     "what": "main building (OSM outline)",
+     "x": 902,
+     "z": -413,
+     "size": "51.4 x 33.7 m footprint, 4 storeys (description), neoclassical former hotel",
+     "confidence": "description",
+     "lat": 38.076421,
+     "lon": 23.822783
+    },
+    {
+     "what": "service road loop and drive",
+     "where": "gate x=831.6,z=-385.1 -> (832.5,-404) -> loop round the building west of the school: (794.9,-407.1) (789.5,-414.3) (790.9,-436.5) (805.3,-452.7) (861.2,-447.7) (864,-445.6) -> gate x=869.3,z=-445.3 -> (876.3,-444.6)",
+     "confidence": "inferred"
+    },
+    {
+     "what": "school ground outline (OSM)",
+     "where": "(884.4,-472.5) (926.4,-466.7) (915.6,-375.5) (875.2,-380.1)",
+     "confidence": "inferred"
+    },
+    {
+     "what": "multi-sport court: basketball",
+     "x": 898.9,
+     "z": -450.0,
+     "size": "32.3 x 18.6 m paved court, long axis roughly E-W (bearing 97 deg); hoops at both ends",
+     "confidence": "inferred",
+     "lat": 38.076754,
+     "lon": 23.822748
+    },
+    {
+     "what": "mini-soccer pitch",
+     "x": 914.1,
+     "z": -451.5,
+     "size": "31.5 x 16.2 m, long axis N-S",
+     "confidence": "inferred",
+     "lat": 38.076768,
+     "lon": 23.822921
+    },
+    {
+     "what": "gate",
+     "x": 831.6,
+     "z": -385.1,
+     "confidence": "inferred",
+     "lat": 38.076169,
+     "lon": 23.821981
+    },
+    {
+     "what": "gate",
+     "x": 869.3,
+     "z": -445.3,
+     "confidence": "inferred",
+     "lat": 38.076712,
+     "lon": 23.82241
+    },
+    {
+     "what": "building west of the school (OSM)",
+     "x": 824,
+     "z": -429,
+     "size": "64.5 x 33.5 m",
+     "confidence": "inferred",
+     "lat": 38.076565,
+     "lon": 23.821894
+    },
+    {
+     "what": "EYDAP water tower",
+     "x": 876.5,
+     "z": -495.4,
+     "size": "9.5 x 9.2 m footprint",
+     "confidence": "inferred",
+     "lat": 38.077163,
+     "lon": 23.822492
+    }
+   ],
+   "confidence": "official (school website) + description (directory: neoclassical 4-storey former hotel) + inferred (OSM)",
+   "sources": [
+    "https://www.isa.edu.gr/page/campuses",
+    "https://www.isa.edu.gr/page/athletics",
+    "https://english-schools.org/greece/international-school-athens.htm",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.076605,
+   "lon": 23.822728
+  },
+  {
+   "key": "kifisias_297",
+   "name": "Neoclassical house, Kifisias Avenue 297",
+   "x": -37,
+   "z": -394,
+   "description": "Restored two-storey neoclassical house on Kifisias Avenue north of the centre: pale ochre-yellow plaster, white pilasters/cornices, slate-blue shutters and doors, a marble balcony on two columns over the entrance, round oculus in the pediment, terracotta-tiled hip roof with a ridge acroterion and dark eaves; marble path flanked by lawns, magnolias and cypresses.",
+   "elements": [
+    {
+     "what": "house",
+     "colour": "#e7d08f",
+     "material": "plaster; shutters #3d5a80",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (r08); position = photo geotag (camera), house within ~20 m",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%AF%CE%B1%CF%82_297_0887.jpg"
+   ],
+   "lat": 38.07625,
+   "lon": 23.812078
+  },
+  {
+   "key": "cinema_chloe",
+   "name": "Θερινός κινηματογράφος Χλόη (open-air cinema Chloe), Kassaveti",
+   "x": 148.7,
+   "z": 51.5,
+   "description": "Open-air summer cinema on the north side of Kassaveti (OSM outline ~36 m): high walls along the street with a box-office entrance and poster cases.",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.072236,
+   "lon": 23.814195
+  },
+  {
+   "key": "cinema_bomboniera",
+   "name": "Θερινός κινηματογράφος Μπομπονιέρα (open-air cinema Bomboniera), Papadiamanti 12",
+   "x": 129.1,
+   "z": -83.6,
+   "description": "Open-air summer cinema (OSM outline ~62 m) on Papadiamanti.",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.073453,
+   "lon": 23.813972
+  },
+  {
+   "key": "drosinis_museum",
+   "name": "Μουσείο Δροσίνη / Δημοτική Βιβλιοθήκη (Drosinis Museum, municipal library)",
+   "x": -52.4,
+   "z": 165.9,
+   "description": "Villa of the poet Georgios Drosinis on Drosini street, now museum and library.",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.071205,
+   "lon": 23.811903
+  },
+  {
+   "key": "town_hall",
+   "name": "Δημαρχείο Κηφισιάς (Kifisia Town Hall)",
+   "x": 190.4,
+   "z": -509.6,
+   "description": "Municipal town hall (OSM node).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.077291,
+   "lon": 23.814671
+  },
+  {
+   "key": "police",
+   "name": "Αστυνομικό Τμήμα Κηφισιάς (police station)",
+   "x": 63.8,
+   "z": -219,
+   "description": "Police station (OSM outline ~30 m).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.074673,
+   "lon": 23.813227
+  },
+  {
+   "key": "zirinio",
+   "name": "Δημοτικό Στάδιο Κηφισιάς «Ι. Ζηρίνης» (Zirinio stadium)",
+   "x": -23,
+   "z": 587.1,
+   "description": "Municipal sports centre south of the centre (OSM ~194 m).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.067411,
+   "lon": 23.812238
+  },
+  {
+   "key": "villa_kazouli",
+   "name": "Βίλα Καζούλη (Villa Kazouli)",
+   "x": -196.8,
+   "z": 568.9,
+   "description": "Historic villa in its park, south of the centre (public building).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.067575,
+   "lon": 23.810256
+  },
+  {
+   "key": "archaeological_collection",
+   "name": "Αρχαιολογική Συλλογή Κηφισιάς",
+   "x": 387.9,
+   "z": 140.2,
+   "description": "Archaeological collection near the east end of Kassaveti.",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.071437,
+   "lon": 23.816922
+  },
+  {
+   "key": "hotel_semiramis",
+   "name": "Semiramis Hotel",
+   "x": 782.4,
+   "z": -203.7,
+   "description": "Design hotel at Kefalari (OSM node).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.074535,
+   "lon": 23.82142
+  },
+  {
+   "key": "hotel_theoxenia_palace",
+   "name": "Theoxenia Palace",
+   "x": 643.2,
+   "z": -166.5,
+   "description": "Grand hotel on the north side of Kefalari square (OSM node).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.0742,
+   "lon": 23.819833
+  },
+  {
+   "key": "hotel_pentelikon",
+   "name": "Pentelikon",
+   "x": 900.7,
+   "z": -248.6,
+   "description": "Grand hotel (OSM node).",
+   "elements": [],
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.07494,
+   "lon": 23.822768
+  },
+  {
+   "key": "levidou_26",
+   "name": "Villa, Levidou 26",
+   "x": 326,
+   "z": -363,
+   "description": "White two-storey early-modern/art-deco villa with a flat roof terrace and parapet, horizontal mouldings, a round-cornered first-floor balcony with black railing; low white plinth wall with black bar railing and bitter-orange trees along the sidewalk; a dark-green kifisia_lantern post on the sidewalk; Levidou here is a single asphalt lane with a narrow sidewalk.",
+   "elements": [
+    {
+     "what": "villa",
+     "colour": "#ecebe6",
+     "material": "plaster",
+     "confidence": "photo"
+    },
+    {
+     "what": "lantern post",
+     "material": "kifisia_lantern",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (img/streets/c4_d1.jpg); position = photo geotag (camera)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Λεβίδου_26,_Κηφισιά_0894.jpg"
+   ],
+   "lat": 38.07597,
+   "lon": 23.816217
+  },
+  {
+   "key": "deligianni_48",
+   "name": "Abandoned villa, Georganta / Deligianni 48",
+   "x": 424,
+   "z": -290,
+   "description": "Derelict two-storey villa: ochre plaster peeling to brick, red tiled hip roof, a small rooftop belvedere, broken shutters, graffiti on the ground floor, an external stair on the right; garden overgrown with long grass, young cypresses and a eucalyptus.",
+   "elements": [
+    {
+     "what": "villa",
+     "colour": "#cdb48e",
+     "material": "plaster over brick",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (img/streets/c4_d2.jpg); position = photo geotag",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Γεωργαντά_και_Δεληγιάννη_48,_Κηφισιά_0896.jpg"
+   ],
+   "lat": 38.075313,
+   "lon": 23.817334
+  },
+  {
+   "key": "palace_hotel",
+   "name": "Former Palace hotel, Kolokotroni (east end)",
+   "x": 564,
+   "z": -142,
+   "description": "Large neoclassical former hotel: 5-6 storeys in cream/pale-yellow plaster with white cornices and window surrounds, wrought-iron balconies on every floor, a corner tower bay and a pedimented attic with the word ΠΑΛΑΣ; plane trees and pines in front.",
+   "elements": [
+    {
+     "what": "building",
+     "colour": "#efdcae",
+     "material": "plaster",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (img/streets/c4_d3.jpg); position = photo geotag (camera; building within ~30 m)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Ξενοδοχείο_Παλάς,_Κηφισιά_0903.jpg"
+   ],
+   "lat": 38.073979,
+   "lon": 23.81893
+  },
+  {
+   "key": "perraki_house",
+   "name": "Oikia Perraki (chalet, Kolokotroni area) - SkourasMed",
+   "x": 284,
+   "z": 13,
+   "description": "Single-storey chalet on a raised base: peach plaster, a steep gable over the porch in red-brown carved timber (fretwork bargeboards, balustrade, slender posts), red tiled roof, wide white marble steps with side walls; courtyard paved in grey-brown concrete block pavers laid in a pattern; black lantern posts with square glass lanterns.",
+   "elements": [
+    {
+     "what": "chalet",
+     "colour": "#e8c9ae",
+     "material": "plaster, carved timber #8a3b2a",
+     "confidence": "photo"
+    },
+    {
+     "what": "courtyard paving",
+     "material": "concrete block pavers, grey-brown",
+     "colour": "#8f857c",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (img/streets/c4_d4.jpg); position = photo geotag",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Οικία_Περράκη,_Κηφισσιά_0914.jpg"
+   ],
+   "lat": 38.072583,
+   "lon": 23.815738
+  },
+  {
+   "key": "national_bank",
+   "name": "Εθνική Τράπεζα (National Bank of Greece), Kifisias Avenue at Platanos",
+   "x": -46,
+   "z": -63.3,
+   "description": "Modern three-storey white building on the WEST side of Kifisias Avenue just north of Platanos (OSM way 262269079, ~33 m): white cladding, full-height glass curtain-wall bays at the corners, a low pyramid skylight in the middle of a flat roof covered in blue solar panels; it stands on a stepped paved plaza with planters and young palms facing the avenue.",
+   "elements": [
+    {
+     "what": "building",
+     "colour": "#eef0f0",
+     "material": "white panels + glass",
+     "confidence": "photo"
+    },
+    {
+     "what": "roof",
+     "material": "solar panels #2c4f8a around a glass pyramid",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "photo (r09 aerial) + inferred (OSM)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4102.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.07327,
+   "lon": 23.811976
+  },
+  {
+   "key": "mela_arcade",
+   "name": "Μέλα arcade (former Grand Hotel de Kifissia, 1897) - KFC, Kifisias 238",
+   "x": 0,
+   "z": -12,
+   "description": "Arcade building on the EAST side of Kifisias Avenue opposite Platanos. The aerial r09 shows the buildings on this side with large red tiled hip roofs and colonnaded cafe terraces; which roof is the Mela arcade is inferred from the address, not seen. Hosts KFC (see shops.json / INTERIORS.md for the interior and the history).",
+   "elements": [
+    {
+     "what": "colonnade + roof",
+     "colour": "#f2efe8",
+     "material": "plaster columns, red tile roof #b5583e",
+     "confidence": "photo"
+    }
+   ],
+   "confidence": "inferred (address; r09 shows the block character only)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4102.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ],
+   "lat": 38.072808,
+   "lon": 23.8125
+  }
+ ]
+}

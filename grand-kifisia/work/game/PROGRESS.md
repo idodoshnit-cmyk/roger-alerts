@@ -31,3 +31,19 @@ Private copy: work/game/gk3. Shots: work/game/shots. Test scripts: work/game/tes
 - "Add guns": a separate weapons bot will build js/81_weapons.js (paintball markers and toy blasters only — see the Weapons rule in docs/OWNER_BRIEF.md). Give it clean hooks and document them
   in docs/GAMEPLAY.md: registerAction({id,label,key,onDown,onUp,visible}) for extra touch buttons/keys, a HUD weapon/ammo slot, setAimMode(on) for an over-the-shoulder aiming camera with a reticle,
   and a way for missions to equip/holster. You do not build the weapons themselves.
+
+- 00:50 (Nov 21) RESUMED (session 3). Found MORE than the log said: work copy ALSO has index.html (new markup/CSS, 377 lines) and src/90_head.js + src/90_tail.js
+  (input + main loop + debug hook), assembled into gk3/js/90_main.js by work/game/tools/build_main.py (boot() is taken verbatim from MAIN; `--main` writes MAIN too).
+  Still missing: 84_ambience.js, 87b_mission_data.js, 88_menu.js. Nothing integrated, nothing run yet. Main changed only in mats files (atlas/sky/tex).
+  NOW: write the 3 files -> one harness run -> integrate (delete main 85_hud_missions.js, replace index.html (I own it), build_main.py --main).
+- 08:50 (Nov 21) RESUMED (session 4). Wrote 88_menu.js (MENU, openMenu/closeMenu/menuTab/menuKey/menuMapInfo, titleReady, startGame, newGame w/ in-page confirm, openingCinematic 4 shots).
+  Fixed: stationFront name clash with 30_buildings (renamed stationDoorPt in 87b), radar never initialised (radarResize in startGame), #wslot markup added (hudWeapon), dlgOpen body class hides pads/keys.
+  Smoke test (tests/smoke.js) passes with 0 errors at 844x390: title, play, walk, HUD, all 5 tabs, dialogue, gyro intro. NEXT: portrait run + gyro playthrough -> INTEGRATE.
+- 09:10 INTEGRATED into main: index.html, 80_player, 84_ambience, 85_hud, 86_map, 87_missions, 87b_mission_data, 88_menu, fonts/, 90_main (build_main --main, boot verbatim); deleted main js/85_hud_missions.js. Backups of previous main files in work/game/tmp/*.prev.*. Smoke on main: 0 errors. NEXT: scripted playthrough of all 6 missions, GAMEPLAY.md, CREDITS fonts.
+- 10:30 IB students (tag labels via hudTags, linesOnly dialogue, fallback spawner on 'start' event), docs/GAMEPLAY.md written, CREDITS fonts appended. Waiting for browser slot to verify IB (tests/ib.js), then integrate 85_hud/87/87b/88/index.html.
+- 12:50 UTC (Nov 21) RESUMED (session 5). IB students (85_hud hudTags, 87 linesOnly, 87b ibStudents, 88 'start' event) were NOT yet in main. Synced copy from main (21 files), .ntag CSS added to MAIN index.html + copy.
+  New orders (ORDERS.md 12:50): interiors+game "every shop enterable, Enter <name>, test 10 shops" -> tests/shops.js; cars "driving much simpler" -> my part = touch layout (one-finger steer, auto-gas, big brake, auto-reverse) + car camera.
+- 13:25 written in copy (NOT yet integrated, test queued: tests/all.js = shops.js 844x390 + drive.js 390x844, log tmp/all_a.log):
+  one-finger driving (90_head joySet car rail steer; 80_player readStick auto-gas while thumb down, CARX{t,exit,cruise}; carBtn exit-at-speed auto-brake; index.html big BRAKE pad, bCar.ready pulse;
+  85_hud ONB_DRIVE hint; 88_menu setting autoGas), map search (88_menu mapFind + #mapFind CSS), districtName shows INTERIORS name indoors. GAMEPLAY.md updated.
+  NEXT: read all_a.log + shots -> fix -> integrate 80/85/86/87/87b/88 + 90_main(build_main --main) + index.html (hand-merge into MAIN: CSS blocks + bBrake markup).

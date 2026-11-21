@@ -27,11 +27,12 @@ const TEX={ready:false,size:0,nsize:0,layers:0,nlayers:0,bytes:0,spare:4,free:[]
      opts.nrm    name of the tile whose normal map to use, opts.nrmRep (uv multiplier), opts.nrmK (strength)
      opts.spec (F0, default .03) opts.shin (Blinn exponent) opts.refl (mirror-like sky reflection 0..1)
      opts.glass (reflectivity of the masked area) opts.glassDark (how much the masked area is darkened by day) opts.glowK (night emission)
-     opts.macro (large-scale tint variation 0..1) opts.transl (leaf back-lighting) opts.flow (uv drift, water) */
+     opts.macro (large-scale tint variation 0..1) opts.transl (leaf back-lighting) opts.flow (uv drift, water)
+     opts.vc (0..1, default 1: how much of the vertex colour's HUE is applied; its brightness always is. Foliage and grass use 0.3 so the photo keeps its natural green) */
 function defTile(name,painter,o){o=o||{};let id=T[name];if(id===undefined){id=T[name]=_nextTile++;if(id>255)throw new Error('too many material tiles')}
   const rep=o.rep===undefined?[1,1]:(typeof o.rep==='number'?[o.rep,o.rep]:o.rep);
   const d={id,name,painter:painter||null,photo:o.photo||null,alias:o.alias||null,src:o.src||null,cut:!!o.cut,rep,nrm:o.nrm===undefined?null:o.nrm,nrmRep:o.nrmRep||1,nrmK:o.nrmK===undefined?1:o.nrmK,
-    spec:o.spec===undefined?0.03:o.spec,shin:o.shin||12,refl:o.refl||0,glass:o.glass||0,glassDark:o.glassDark||0,glowK:o.glowK===undefined?1.7:o.glowK,macro:o.macro||0,transl:o.transl||0,flow:o.flow||0,metric:!!o.metric,layer:-1,nlayer:-1};
+    spec:o.spec===undefined?0.03:o.spec,shin:o.shin||12,refl:o.refl||0,glass:o.glass||0,glassDark:o.glassDark||0,glowK:o.glowK===undefined?1.7:o.glowK,macro:o.macro||0,transl:o.transl||0,flow:o.flow||0,vc:o.vc===undefined?1:o.vc,metric:!!o.metric,layer:-1,nlayer:-1};
   if(o.needs)for(const n of o.needs)TEX.keep.add(n);
   const old=TILE[id];TILE[id]=d;
   if(TEX.ready){// registered (or replaced) after the array was built: reuse the tile's own layer, or take one of the spare layers
@@ -90,21 +91,21 @@ const facadeBg=(g,S)=>{pBg(g,'plaster',S,null,0.8);pWeather(g,S)};
 (function(){
   const P=(name,rep,o)=>defTile(name,null,Object.assign({photo:name,rep,nrm:name},o));
   /* --- photographic ground --- (rep = caller UV unit in metres / real size of the photo; see docs/MATERIALS.md) */
-  P('asph',3,{spec:.045,shin:22,macro:.5});P('asph2',2.5,{spec:.045,shin:20,macro:.5});P('asphP',2,{spec:.04,shin:18,macro:.4});
+  P('asph',2.857,{spec:.045,shin:22,macro:.5,nrmK:.9});P('asph2',2.5,{spec:.045,shin:20,macro:.5,nrmK:.7});P('asphP',2,{spec:.04,shin:18,macro:.4,nrmK:.8});
   P('pavers',1.15,{spec:.03,shin:14,macro:.4});P('brick',1,{spec:.03,shin:14,macro:.4});P('marble',1.25,{spec:.05,shin:46,refl:.05,macro:.3});
   P('slabs',1.6,{spec:.03,shin:14,macro:.4});P('platf',1.1,{spec:.03,shin:16,macro:.35});P('gravel',1.1,{spec:.02,shin:8,macro:.4});P('parkG',1.2,{spec:.02,shin:8,macro:.45});
-  P('soil',2.5,{spec:.02,shin:6,macro:.5});P('grass',2,{spec:.02,shin:6,macro:.6});P('dryG',3,{spec:.02,shin:6,macro:.6});P('ballast',1.5,{spec:.03,shin:10,macro:.35});
+  P('soil',2.5,{spec:.02,shin:6,macro:.5});P('grass',2,{spec:.02,shin:6,macro:.7,vc:.3});P('dryG',3,{spec:.02,shin:6,macro:.6,vc:.3});P('ballast',2.16,{spec:.03,shin:10,macro:.35});
   P('curb',[1.5,2],{spec:.04,shin:24});P('tactile',[1.5,1.5],{spec:.03,shin:12});
   P('pool',2,{spec:.08,shin:160,refl:.45,flow:1,nrmK:.7});P('water',2,{spec:.08,shin:200,refl:.85,flow:.6,nrmK:.8});
   /* --- photographic walls and roofs --- */
   P('plaster',1.5,{spec:.02,shin:8,macro:.3,nrmK:.9});P('plasterW',1.5,{spec:.02,shin:8,macro:.3});P('plasterC',1,{spec:.02,shin:8,macro:.3});
   P('concrete',2,{spec:.03,shin:12,macro:.3});P('ashlar',1.25,{spec:.03,shin:10,macro:.25});P('rubble',1.25,{spec:.03,shin:10,macro:.25});P('brickw',2,{spec:.03,shin:10,macro:.25});
-  P('marbleW',1.5,{spec:.05,shin:50,refl:.04,macro:.2});P('tiles',.57,{spec:.03,shin:14,macro:.35});P('flatroof',1.67,{spec:.02,shin:8,macro:.5});
+  P('marbleW',1.5,{spec:.05,shin:50,refl:.04,macro:.2});P('karystos',1,{spec:.04,shin:24,macro:.3});P('timber',1,{spec:.04,shin:20,macro:.15});P('tiles',.8,{spec:.035,shin:16,macro:.4});P('flatroof',1.67,{spec:.02,shin:8,macro:.5});
   /* --- wood, metal (light tint carriers: callers multiply their own colour), bark, foliage --- */
   P('wood',.67,{spec:.03,shin:14});P('metal',1,{spec:.12,shin:36,refl:.03,nrmK:.5});P('metalL',1,{spec:.2,shin:42,refl:.06,nrmK:.5});P('canopy',[2,1],{spec:.08,shin:30});P('shutterM',1,{spec:.1,shin:30});
   P('bark',[1.6667,1.5],{spec:.015,shin:6});P('barkPine',[.8333,.8],{spec:.015,shin:6});P('barkDark',[1.6667,1.5],{spec:.015,shin:6});P('barkPalm',[.8333,1],{spec:.015,shin:6});
-  P('hedge',1,{spec:.02,shin:10,macro:.35,nrmK:.8});P('orangeF',1,{spec:.02,shin:10,macro:.3,nrmK:.8});
-  for(const n of['leaves','leafPine','leafCypress','leafOlive','leafOrange','leafPalm'])defTile(n,null,{photo:n,cut:true,spec:.02,shin:14,transl:.55});
+  P('hedge',1,{spec:.02,shin:10,macro:.35,nrmK:.8,vc:.3});P('orangeF',1,{spec:.02,shin:10,macro:.3,nrmK:.8,vc:.3});
+  for(const n of['leaves','leafPine','leafCypress','leafOlive','leafOrange','leafPalm'])defTile(n,null,{photo:n,cut:true,spec:.02,shin:14,transl:.55,vc:.3});
   defTile('noise',null,{photo:'noise'});
   for(const d of TILE.slice())if(d&&d.photo&&d.name!=='noise')TM[d.name]=defTile(d.name+'_m',null,Object.assign({},d,{photo:null,alias:d.name,metric:true}));
   /* --- aliases --- */
@@ -181,13 +182,13 @@ const lutData=new Float32Array(4*256*4),lutTex=new THREE.DataTexture(lutData,4,2
 function writeLut(){for(let id=0;id<256;id++){const d=TILE[id],o=id*16;if(!d){lutData.fill(0,o,o+16);lutData[o+1]=lutData[o+2]=1;lutData[o+3]=-1;continue}
     const nd=d.nrm&&T[d.nrm]!==undefined?TILE[T[d.nrm]]:null;let ru=d.rep[0],rv=d.rep[1];
     if(d.metric){const b=TILE[T[d.alias]],m=b&&b.photo&&TEX.man&&TEX.man.meta[b.photo]?TEX.man.meta[b.photo].m:2;ru=rv=1/(m||2)}
-    lutData.set([d.layer<0?0:d.layer,ru,rv,nd&&nd.nlayer>=0?nd.nlayer:-1, d.nrmRep,d.nrmK,d.spec,d.shin, d.refl,d.glass,d.glassDark,d.glowK, d.macro,d.transl,d.flow,0],o)}
+    lutData.set([d.layer<0?0:d.layer,ru,rv,nd&&nd.nlayer>=0?nd.nlayer:-1, d.nrmRep,d.nrmK,d.spec,d.shin, d.refl,d.glass,d.glassDark,d.glowK, d.macro,d.transl,d.flow,(d.cut?2:0)+clamp(d.vc,0,1)],o)}
   lutTex.needsUpdate=true;if(T.noise!==undefined&&TILE[T.noise])U.noiseL.value=Math.max(0,TILE[T.noise].layer)}
 function loadImg(url){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('could not load '+url));im.src=url})}
 const _cv=(s,rf)=>{const c=document.createElement('canvas');c.width=c.height=s;return[c,c.getContext('2d',{willReadFrequently:!!rf})]};
 let _texBusy=null,_painters=null;
 function glBindArr(gl,t){renderer.state.bindTexture(gl.TEXTURE_2D_ARRAY,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,gl.NONE)}
-function glNewArr(gl,fmt,size,layers,aniso){const t=gl.createTexture();glBindArr(gl,t);gl.texStorage3D(gl.TEXTURE_2D_ARRAY,Math.round(Math.log2(size))+1,fmt,size,size,layers);
+function glNewArr(gl,fmt,size,layers,aniso){const t=gl.createTexture();glBindArr(gl,t);gl.texStorage3D(gl.TEXTURE_2D_ARRAY,Math.floor(Math.log2(size))+1,fmt,size,size,layers);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_T,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   const ext=renderer.extensions.get('EXT_texture_filter_anisotropic');if(ext&&aniso>1)gl.texParameterf(gl.TEXTURE_2D_ARRAY,ext.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(aniso,renderer.capabilities.getMaxAnisotropy()));return t}
 /* paint one procedural tile into RGBA bytes (bottom row first, as GL wants it) */
@@ -259,45 +260,61 @@ function paintAtlas(){/* kept for old callers: the atlas is now built by initMat
 
 /* ============================== WORLD MATERIAL ============================== */
 const GK_VPARS=`
-attribute vec4 aRect;attribute float aGlow;uniform highp sampler2D uLut;uniform float uTime;
-varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec3 vP3;varying vec3 vWp;`;
+attribute vec4 aRect;attribute float aGlow;uniform highp sampler2D uLut;uniform float uTime;uniform vec3 uWind;
+varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec4 vP3;varying vec3 vWp;`;
 const GK_VMAIN=`
 {int gkId=int(aRect.x*255.0+0.5);
  vec4 gk0=texelFetch(uLut,ivec2(0,gkId),0),gk1=texelFetch(uLut,ivec2(1,gkId),0),gk2=texelFetch(uLut,ivec2(2,gkId),0),gk3=texelFetch(uLut,ivec2(3,gkId),0);
  vTuv=vec4(uv*gk0.yz+gk3.z*uTime*vec2(0.031,0.017),aGlow,gk0.x);
- vP1=vec4(gk0.w,gk1.x,gk1.y,gk3.x);vP2=vec4(gk1.z,gk1.w,gk2.x,gk2.y);vP3=vec3(gk2.z,gk2.w,gk3.y);
+ vP1=vec4(gk0.w,gk1.x,gk1.y,gk3.x);vP2=vec4(gk1.z,gk1.w,gk2.x,gk2.y);vP3=vec4(gk2.z,gk2.w,gk3.y,gk3.w);
  vec4 gkW=vec4(transformed,1.0);
  #ifdef USE_INSTANCING
  gkW=instanceMatrix*gkW;
  #endif
  vWp=(modelMatrix*gkW).xyz;}`;
+const GK_VWIND=`
+#ifdef USE_INSTANCING
+{// wind: the crown leans with slow gusts (more the higher above the trunk base) and every leaf card flutters a little; phase from the tree's position
+ vec3 gkO=instanceMatrix[3].xyz;float gkPh=dot(gkO.xz,vec2(0.37,0.23));float gkHt=clamp(transformed.y*0.11,0.0,1.0);gkHt*=gkHt;
+ float gkG=sin(uTime*0.9+gkPh)+0.5*sin(uTime*2.3+gkPh*1.7);
+ vec3 gkF=sin(uTime*vec3(3.1,2.7,3.7)+transformed.zxy*vec3(1.7,2.3,1.9)+gkPh);
+ vec3 gkD=vec3(uWind.x,0.0,uWind.y)*(gkG*gkHt*uWind.z)+gkF*(0.3*uWind.z*step(0.6,transformed.y));
+ mvPosition.xyz+=mat3(viewMatrix)*gkD;gl_Position=projectionMatrix*mvPosition;vWp+=gkD;}
+#endif`;
 const GK_FPARS=`
 uniform mediump sampler2DArray uArr;
 #ifdef GK_NRM
 uniform mediump sampler2DArray uNrm;
 #endif
 uniform sampler2D uLamp;uniform vec4 uLampR;uniform vec2 uLampH;uniform vec3 uLampC;uniform vec3 uShopC;
-uniform float uNight;uniform float uNoiseL;uniform vec3 uSkyZ;uniform vec3 uSkyH;uniform vec3 uSkyG;uniform vec4 uFogSun;uniform vec2 uSunXZ;
-varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec3 vP3;varying vec3 vWp;`;
+uniform float uNight;uniform float uNoiseL;uniform float uHaze;uniform vec3 uGlowC;uniform vec3 uSkyZ;uniform vec3 uSkyH;uniform vec3 uSkyG;uniform vec4 uFogSun;uniform vec2 uSunXZ;
+varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec4 vP3;varying vec3 vWp;
+float gkSunVis=1.0;`;
 const GK_FMAP=`
 vec4 texel=texture(uArr,vec3(vTuv.xy,floor(vTuv.w+0.5)));
 #ifdef GK_CUT
  vec2 gkS=vec2(textureSize(uArr,0).xy);vec2 gkDx=dFdx(vTuv.xy)*gkS,gkDy=dFdy(vTuv.xy)*gkS;
  float gkLod=max(0.0,0.5*log2(max(dot(gkDx,gkDx),dot(gkDy,gkDy))+1e-8));
- if(texel.a*(1.0+0.25*gkLod)<0.5)discard;
  float gm=0.0;
+ if(vP3.w>1.5){if(texel.a*(1.0+0.25*gkLod)<0.5)discard;}else gm=clamp((1.0-texel.a)*2.0,0.0,1.0);   // only tiles registered with cut:true are cut out; others keep their glass mask
 #else
  float gm=clamp((1.0-texel.a)*2.0,0.0,1.0);
 #endif
-diffuseColor.rgb*=texel.rgb;
+diffuseColor.rgb*=texel.rgb;float gkVc=vP3.w-2.0*step(1.5,vP3.w);
 {vec3 gkN=texture(uArr,vec3((vWp.xz+vWp.y*vec2(0.61,0.37))*0.043,uNoiseL)).rgb;diffuseColor.rgb*=1.0+((gkN.r-0.5)*0.75+(gkN.g-0.5)*0.45)*vP1.w;}`;
+const GK_FCOLOR=`
+#if defined( USE_COLOR_ALPHA )
+ diffuseColor.rgb*=mix(vec3(dot(vColor.rgb,vec3(0.2126,0.7152,0.0722))),vColor.rgb,gkVc);
+#elif defined( USE_COLOR )
+ diffuseColor.rgb*=mix(vec3(dot(vColor,vec3(0.2126,0.7152,0.0722))),vColor,gkVc);
+#endif`;
 const GK_FNORMAL=`
 #ifdef GK_LEAF
  normal=normal*faceDirection;
 #endif
 #ifdef GK_NRM
-{vec2 gkUv=vTuv.xy*vP1.y;vec2 gkXY=texture(uNrm,vec3(gkUv,floor(max(vP1.x,0.0)+0.5))).rg*2.0-1.0;gkXY*=vP1.z*(1.0-gm)*step(-0.5,vP1.x);
- vec3 gkQ0=dFdx(-vViewPosition),gkQ1=dFdy(-vViewPosition);vec2 gkS0=dFdx(gkUv),gkS1=dFdy(gkUv);
+{vec2 gkUv=vTuv.xy*vP1.y;vec2 gkXY=texture(uNrm,vec3(gkUv,floor(max(vP1.x,0.0)+0.5))).rg*2.0-1.0;vec3 gkQ0=dFdx(-vViewPosition),gkQ1=dFdy(-vViewPosition);vec2 gkS0=dFdx(gkUv),gkS1=dFdy(gkUv);
+ float gkNs=float(textureSize(uNrm,0).x);gkXY*=vP1.z*(1.0-gm)*step(-0.5,vP1.x)/(1.0+0.3*max(0.0,0.5*log2(max(dot(gkS0,gkS0),dot(gkS1,gkS1))*gkNs*gkNs+1e-8)));
  vec3 gkQ1p=cross(gkQ1,normal),gkQ0p=cross(normal,gkQ0);vec3 gkT=gkQ1p*gkS0.x+gkQ0p*gkS1.x,gkB=gkQ1p*gkS0.y+gkQ0p*gkS1.y;
  float gkD=max(dot(gkT,gkT),dot(gkB,gkB));float gkSc=gkD==0.0?0.0:faceDirection*inversesqrt(gkD);
  normal=normalize(gkT*(gkXY.x*gkSc)+gkB*(gkXY.y*gkSc)+normal*sqrt(max(0.06,1.0-dot(gkXY,gkXY))));}
@@ -317,34 +334,36 @@ const GK_FEXTRA=`
  reflectedLight.indirectSpecular+=gkEnv*(0.05+0.95*pow(1.0-gkNV,5.0))*max(vP2.z,gkGl);
  vec3 gkL=texture2D(uLamp,(vWp.xz-uLampR.xy)*uLampR.zw).rgb;
  float gkH=vWp.y-(uLampH.x+gkL.b*uLampH.y);float gkNy=dot(normal,viewMatrix[1].xyz);
- reflectedLight.indirectDiffuse+=(uLampC*gkL.r+uShopC*gkL.g)*((1.0-smoothstep(3.0,9.5,gkH))*(0.5+0.5*gkNy)*uNight)*material.diffuseColor;
+ reflectedLight.indirectDiffuse+=(uLampC*gkL.r+uShopC*gkL.g)*((1.0-smoothstep(2.0,7.5,gkH))*(0.5+0.5*gkNy)*uNight)*material.diffuseColor;
+ {vec3 gkNw=(vec4(normal,0.0)*viewMatrix).xyz;float gkW=saturate(dot(gkNw.xz,uSunXZ)*0.75+0.25+0.25*gkNw.y);reflectedLight.indirectDiffuse+=uGlowC*(gkW*gkW)*material.diffuseColor;}
  #ifdef GK_LEAF
   #if NUM_DIR_LIGHTS > 0
-  reflectedLight.directDiffuse+=directionalLights[0].color*material.diffuseColor*(RECIPROCAL_PI*vP3.z*saturate(dot(-normal,directionalLights[0].direction)*0.8+0.2));
+  reflectedLight.directDiffuse+=directionalLights[0].color*material.diffuseColor*(gkSunVis*RECIPROCAL_PI*vP3.z*saturate(dot(-normal,directionalLights[0].direction)*0.8+0.2));
   #endif
  #endif
 }`;
 const GK_FFOG=`
 #ifdef USE_FOG
- float fogFactor=smoothstep(fogNear,fogFar,vFogDepth);
+ float fogFactor=1.0-(1.0-smoothstep(fogNear,fogFar,vFogDepth))*exp(-vFogDepth*uHaze);
  float gkSg=max(dot(normalize(vWp.xz-cameraPosition.xz+vec2(1e-4)),uSunXZ),0.0);
  gl_FragColor.rgb=mix(gl_FragColor.rgb,mix(fogColor,uFogSun.rgb,gkSg*gkSg*gkSg*uFogSun.a),fogFactor);
 #endif`;
 function gkUniforms(sh){sh.uniforms.uLut={value:lutTex};sh.uniforms.uArr={value:arrTex};sh.uniforms.uNrm={value:nrmTex};sh.uniforms.uTime=U.time;sh.uniforms.uNight=U.night;sh.uniforms.uNoiseL=U.noiseL;
-  sh.uniforms.uLamp=U.lamp;sh.uniforms.uLampR=U.lampR;sh.uniforms.uLampH=U.lampH;sh.uniforms.uLampC=U.lampC;sh.uniforms.uShopC=U.shopC;sh.uniforms.uSkyZ=U.skyZ;sh.uniforms.uSkyH=U.skyH;sh.uniforms.uSkyG=U.skyG;sh.uniforms.uFogSun=U.fogSun;sh.uniforms.uSunXZ=U.sunXZ}
+  sh.uniforms.uLamp=U.lamp;sh.uniforms.uLampR=U.lampR;sh.uniforms.uLampH=U.lampH;sh.uniforms.uLampC=U.lampC;sh.uniforms.uShopC=U.shopC;sh.uniforms.uSkyZ=U.skyZ;sh.uniforms.uSkyH=U.skyH;sh.uniforms.uSkyG=U.skyG;sh.uniforms.uFogSun=U.fogSun;sh.uniforms.uSunXZ=U.sunXZ;sh.uniforms.uHaze=U.haze;sh.uniforms.uGlowC=U.glowC;sh.uniforms.uWind=U.wind}
 /* worldMat({cut, leaf}) — the shared world material. cut: alpha cut-out, double sided. leaf: foliage cards (normals not flipped, translucent). */
-function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';
+function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={GK_WORLD:''};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';
   m.onBeforeCompile=sh=>{gkUniforms(sh);
-    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>'+GK_VPARS).replace('#include <project_vertex>','#include <project_vertex>'+GK_VMAIN);
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>'+GK_FPARS).replace('#include <map_fragment>',GK_FMAP).replace('#include <specularmap_fragment>','float specularStrength=1.0;')
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>'+GK_VPARS).replace('#include <project_vertex>','#include <project_vertex>'+GK_VMAIN+(o.leaf?GK_VWIND:''));
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>'+GK_FPARS).replace('#include <map_fragment>',GK_FMAP).replace('#include <color_fragment>',GK_FCOLOR).replace('#include <specularmap_fragment>','float specularStrength=1.0;')
       .replace('#include <normal_fragment_maps>',GK_FNORMAL).replace('#include <lights_phong_fragment>',GK_FPHONG).replace('#include <lights_fragment_end>','#include <lights_fragment_end>'+GK_FEXTRA).replace('#include <fog_fragment>',GK_FFOG)};
   m.customProgramCacheKey=()=>'gkWorld'+(o.cut?'C':'')+(o.leaf?'L':'');
   if(o.leaf)m.onBeforeRender=(r,s,c,g,obj)=>{if(obj.castShadow&&!obj.customDepthMaterial)obj.customDepthMaterial=MAT.depthCut};
   return m}
 /* depth material for alpha cut-outs so that foliage casts leaf-shaped shadows */
 function cutDepthMat(){const m=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,side:THREE.DoubleSide});
-  m.onBeforeCompile=sh=>{sh.uniforms.uLut={value:lutTex};sh.uniforms.uArr={value:arrTex};
-    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aRect;uniform highp sampler2D uLut;varying vec3 vTuvD;').replace('#include <uv_vertex>','#include <uv_vertex>\n{int gkId=int(aRect.x*255.0+0.5);vec4 gk0=texelFetch(uLut,ivec2(0,gkId),0);vTuvD=vec3(uv*gk0.yz,gk0.x);}');
+  m.onBeforeCompile=sh=>{sh.uniforms.uLut={value:lutTex};sh.uniforms.uArr={value:arrTex};sh.uniforms.uTime=U.time;sh.uniforms.uWind=U.wind;
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aRect;uniform highp sampler2D uLut;uniform float uTime;uniform vec3 uWind;varying vec3 vTuvD;').replace('#include <uv_vertex>','#include <uv_vertex>\n{int gkId=int(aRect.x*255.0+0.5);vec4 gk0=texelFetch(uLut,ivec2(0,gkId),0);vTuvD=vec3(uv*gk0.yz,gk0.x);}')
+      .replace('#include <project_vertex>','#include <project_vertex>'+GK_VWIND.replace('vWp+=gkD;',''));
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform mediump sampler2DArray uArr;varying vec3 vTuvD;').replace('#include <map_fragment>','if(texture(uArr,vec3(vTuvD.xy,floor(vTuvD.z+0.5))).a<0.42)discard;')};
   m.customProgramCacheKey=()=>'gkDepthCut';return m}
 

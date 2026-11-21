@@ -22,18 +22,39 @@ function saveSettings(){store.set('settings',SETTINGS)}
 
 /* ============================== PLAYER ============================== */
 const player={x:0,z:0,y:0,vy:0,yaw:0,spd:0,car:null,health:100,money:SAVE.money,air:false,knock:0,busy:0,interior:null,// interior: key of the walk-in interior the player is inside (null = outdoors)
-  vx:0,vz:0,mv:0,step:0,ball:false,frozen:false,blocked:0};
+  vx:0,vz:0,mv:0,step:0,hdg:0,ball:false,frozen:false,blocked:0};
 let ph;
 const input={jx:0,jy:0,sprint:false,brake:false,gas:false,rev:false,looking:false};const keys={};
 let camYaw=0,camPitch=0.2,lastDrag=0,camDist=4.4,camShake=0,camBoomMax=1e9;// camBoomMax: temporary upper limit of the boom (dialogue close-ups)
 /* other modules may push fn(dt) here from their boot-time init: called once per simulated frame while the game runs */
 const FRAME_HOOKS=[];
+/* extra action buttons / keys for other modules (weapons…): registerAction({id,label|()=>label,key:'KeyQ',onDown,onUp,visible:()=>bool,hold:bool}).
+   The touch button is created in the HUD when the game starts; the key works on desktop. Returns the record (set .active=true to light the button). */
+const XACT=[];
+function registerAction(a){if(!a||!a.id)return null;const old=XACT.findIndex(o=>o.id===a.id);if(old>=0){if(XACT[old].el)XACT[old].el.remove();XACT.splice(old,1)}XACT.push(a);if(typeof xactBuild==='function')xactBuild();return a}
+/* the absolute weapons rule (docs/OWNER_BRIEF.md): never indoors, in a car, inside the school or within 150 m of it, or in a mission that forbids them */
+function distToPoly(poly,x,z){let bd=1e9;for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz||1e-9,u=clamp(((x-a[0])*dx+(z-a[1])*dz)/L2,0,1),d=Math.hypot(x-a[0]-dx*u,z-a[1]-dz*u);if(d<bd)bd=d}return bd}
+function weaponsAllowed(){if(player.interior||player.car||player.busy>0||player.knock>0)return false;if(typeof mission!=='undefined'&&mission&&mission.M.noWeapons)return false;
+  if(MAP&&MAP.isa){if(Math.hypot(player.x-MAP.isa.gate[0],player.z-MAP.isa.gate[1])<150)return false;if(ISA.poly&&(pip(ISA.poly,player.x,player.z)||distToPoly(ISA.poly,player.x,player.z)<150))return false}return true}
+/* over-the-shoulder aiming camera with a reticle (for the weapons module); the character then faces where the camera looks and strafes */
+function setAimMode(on){on=!!on&&!player.car;if(CAMS.aim===on)return;CAMS.aim=on;document.body.classList.toggle('aim',on)}
+/* world-space ray through the centre of the screen: returns {o:Vector3,d:Vector3} (shared objects — copy if you keep them) */
+const _aim={o:new THREE.Vector3(),d:new THREE.Vector3()};
+function aimRay(){camera.getWorldPosition(_aim.o);camera.getWorldDirection(_aim.d);return _aim}
 const PMOVE={R:0.3,WALK:1.6,RUN:4.4,SPRINT:6.5,GRAV:19.6,JUMP:5.2,SUB:0.12};
 const _ply1={x:0,z:0},SKIP_AIR=['p','t'];
 function readStick(car){let jx=input.jx,jy=input.jy;const kx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),ky=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
   if(kx||ky){if(car){jx=kx;jy=ky}else{const l=Math.hypot(kx,ky);jx=kx/l;jy=ky/l}}
-  if(car){if(input.gas)jy=-1;else if(input.rev)jy=1}
+  if(car){const c=player.car,v=c?c.vf||0:0;
+    if(CARX.exit){jy=v>0.4?1:0}/* getting out at speed: brake to a stop, then the door opens (inputTick) */
+    else if(input.gas)jy=-1;else if(input.rev)jy=1;
+    else if(!ky&&inputMode==='touch'){/* one-finger driving: a thumb on the steering side drives at a relaxed city pace (GAS = faster);
+        thumb lifted = the car rolls to a gentle stop. Hold BRAKE to stop, keep holding to reverse. Settings → "Auto-accelerate" turns it off. */
+      if(SETTINGS.autoGas!==false&&typeof JOY!=='undefined'&&JOY.id!==null)jy=-clamp((CARX.cruise-v)*0.32,0,1);else if(v>1.2)jy=0.12}
+    if(!kx)jx=Math.sign(jx)*Math.pow(Math.abs(jx),1.3)}/* finer control around the centre */
   _ply1.x=jx;_ply1.z=jy;return _ply1}
+/* driving state owned by the controls: t = seconds in the current car, exit = brake-to-stop-then-exit pending, cruise = auto-accelerate speed (m/s) */
+const CARX={t:0,exit:false,cruise:13.9};
 /* resolve the on-foot capsule (a circle in plan) against the world at point p; returns true when something pushed back */
 function footSolve(p,ox,oz){let hit=false;const skip=player.y-groundY(player.x,player.z)>0.7?SKIP_AIR:null;
   for(let i=0;i<3;i++){if(!collide(p,PMOVE.R,skip))break;hit=true}
@@ -58,13 +79,15 @@ function updatePlayer(dt){const car=player.car;const st=readStick(!!car);let jx=
   if(keys.ControlLeft||keys.AltLeft)target=Math.min(target,PMOVE.WALK);
   if(player.interior)target=Math.min(target,2.6);
   /* heading follows the stick: exponential ease with a speed-dependent rate cap, so it never snaps and never wobbles */
-  if(mag>0.02){const d=wrapA(Math.atan2(mx,mz)-player.yaw),ad=Math.abs(d),s01=clamp(player.spd/PMOVE.SPRINT,0,1);
+  const aim=CAMS.aim;if(aim){target=Math.min(target,2.6);player.yaw=wrapA(player.yaw+wrapA(camYaw-player.yaw)*(1-Math.exp(-18*dt)));if(mag>0.02)player.hdg=Math.atan2(mx,mz)}
+  else if(mag>0.02){const d=wrapA(Math.atan2(mx,mz)-player.yaw),ad=Math.abs(d),s01=clamp(player.spd/PMOVE.SPRINT,0,1);
     const cap=lerp(13,6.5,s01)*dt;player.yaw=wrapA(player.yaw+clamp(d*(1-Math.exp(-lerp(16,9,s01)*dt)),-cap,cap));
     if(ad>1.9)target*=lerp(1,0.25,clamp((ad-1.9)/1.0,0,1))}// pivot on the spot before running back the other way
+  if(!aim)player.hdg=player.yaw;
   /* speed: exponential approach with a minimum slope so it settles cleanly (frame-rate independent) */
   {const ds=target-player.spd;if(ds!==0){const k=ds>0?(player.air?2:6.5):(player.air?1:9);let s=ds*(1-Math.exp(-k*dt));const mn=(ds>0?2.5:5)*dt;if(Math.abs(s)<mn)s=Math.sign(ds)*Math.min(Math.abs(ds),mn);player.spd+=s}}
   const ox=player.x,oz=player.z;let px=ox,pz=oz,hit=false;
-  if(player.spd>0.001){const dist=player.spd*dt,n=Math.max(1,Math.ceil(dist/PMOVE.SUB)),fx=Math.sin(player.yaw)*dist/n,fz=Math.cos(player.yaw)*dist/n;
+  if(player.spd>0.001){const dist=player.spd*dt,n=Math.max(1,Math.ceil(dist/PMOVE.SUB)),fx=Math.sin(player.hdg)*dist/n,fz=Math.cos(player.hdg)*dist/n;
     for(let i=0;i<n;i++){_ply2.x=px+fx;_ply2.z=pz+fz;if(footSolve(_ply2,px,pz))hit=true;px=_ply2.x;pz=_ply2.z}}
   const adx=px-ox,adz=pz-oz,mvRaw=dt>0?Math.hypot(adx,adz)/dt:0;player.vx=dt>0?adx/dt:0;player.vz=dt>0?adz/dt:0;
   /* blocked by a wall: bleed the speed so the character shuffles instead of running on the spot */
@@ -81,8 +104,8 @@ function updatePlayer(dt){const car=player.car;const st=readStick(!!car);let jx=
 const _ply2={x:0,z:0};
 function playerJump(){if(player.car||player.busy>0||player.air||player.knock>0||player.frozen)return false;player.vy=PMOVE.JUMP;player.air=true;return true}
 /* place the player somewhere (missions, respawn, interiors): keeps the vertical state and camera consistent */
-function placePlayer(x,z,yaw){player.x=x;player.z=z;player.step=lvl(x,z);player.y=terr(x,z)+player.step;player.vy=0;player.air=false;player.spd=player.mv=player.vx=player.vz=0;if(yaw!=null){player.yaw=yaw;camYaw=yaw}
-  if(ph){ph.root.position.set(x,player.y,z);ph.root.rotation.y=player.yaw}CAMS.ok=false}
+function placePlayer(x,z,yaw,soft){player.x=x;player.z=z;player.step=lvl(x,z);player.y=terr(x,z)+player.step;player.vy=0;player.air=false;player.spd=player.mv=player.vx=player.vz=0;if(yaw!=null){player.yaw=player.hdg=yaw;if(!soft)camYaw=yaw}
+  if(ph){ph.root.position.set(x,player.y,z);ph.root.rotation.y=player.yaw}if(!soft)CAMS.ok=false}
 function hurt(n,why){if(player.health<=0)return;player.health-=n;if(typeof hudHurt==='function')hudHurt(n);
   if(player.health<=0){player.health=100;const fee=Math.min(player.money,15);STATS.knocked++;if(fee>0){if(typeof addMoney==='function')addMoney(-fee,'Hospital bill');else player.money=Math.round((player.money-fee)*100)/100}
     if(typeof mission!=='undefined'&&mission&&typeof failMission==='function'){respawn(true);failMission(why+'.');return}
@@ -97,7 +120,7 @@ function respawn(quiet){if(player.car)exitCar(true);if(player.interior&&typeof e
    copy of the player's position, the boom length is eased against obstacles (in fast, out slow), and the camera is then placed rigidly
    from those smooth values — so nothing in the chain can jerk. freeCam (a function) takes over for cut-scenes. */
 let camT=new THREE.Vector3(),camP=new THREE.Vector3(),freeCam=null;
-const CAMS={ok:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,ax:0,az:0,avx:0,avz:0,d:4.4,dv:0,fov:60,fv:0,lvx:0,lvy:0,yv:0,pv:0,roll:0,rv:0,rev:0,t:0,rise:0,risev:0,sh:0,shv:0,hide:false};
+const CAMS={ok:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,ax:0,az:0,avx:0,avz:0,d:4.4,dv:0,fov:60,fv:0,lvx:0,lvy:0,yv:0,pv:0,roll:0,rv:0,rev:0,t:0,rise:0,risev:0,sh:0,shv:0,hide:false,aim:false};
 const PITCH_MIN=-0.25,PITCH_MAX=1.15;
 let _sdV=0;
 /* critically damped spring (Game Programming Gems 4 "SmoothDamp"); returns the new value, new velocity in _sdV */
@@ -109,7 +132,7 @@ function camRay(ax,az,bx,bz,indoor){stamp++;let best=1;const dx=bx-ax,dz=bz-az;c
       const ex=s.bx-s.ax,ez=s.bz-s.az,den=dx*ez-dz*ex;if(Math.abs(den)<1e-9)continue;const t=((s.ax-ax)*ez-(s.az-az)*ex)/den,u=((s.ax-ax)*dz-(s.az-az)*dx)/den;if(t>0&&t<best&&u>=-0.02&&u<=1.02)best=t}}
   return best}
 function camSnap(){const c=player.car;CAMS.x=c?c.x:player.x;CAMS.z=c?c.z:player.z;CAMS.y=(c?(c.y||terr(c.x,c.z))+1.15:player.y+1.5);CAMS.vx=CAMS.vy=CAMS.vz=CAMS.ax=CAMS.az=CAMS.avx=CAMS.avz=CAMS.dv=CAMS.yv=CAMS.pv=CAMS.lvx=CAMS.lvy=0;CAMS.d=Math.min(CAMS.d,c?7:camDist);CAMS.ok=true}
-function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
+function updateCamera(dt){if(CUT&&freeCam!==CUT.f)CUT.end(true,true);if(freeCam){freeCam(dt);CAMS.ok=false;return}
   const c=player.car,indoor=!!player.interior,idle=(performance.now()-lastDrag)/1000;
   const tx=c?c.x:player.x,tz=c?c.z:player.z,ty=c?(c.y||terr(c.x,c.z))+1.15:player.y+1.5;
   if(!CAMS.ok||Math.abs(CAMS.x-tx)+Math.abs(CAMS.z-tz)>14)camSnap();
@@ -121,10 +144,10 @@ function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
     want=5.4+Math.min(4.2,sp*0.11);fovT=58+Math.min(22,sp*0.72);const la=clamp((c.vf||0)*0.16,-1.5,4.5);lax=Math.sin(c.yaw)*la;laz=Math.cos(c.yaw)*la;stXZ=0.05;stY=0.22;pivUp=0.35;
     rollT=clamp(-(c.steer||0)*sp*0.004,-0.04,0.04)}
   else{const mv=player.mv;
-    if(idle>1.6&&!input.looking&&mv>0.9&&!player.frozen){const d=wrapA(player.yaw-camYaw),ad=Math.abs(d);/* ease behind the direction of travel — but not while the player runs towards the camera */
+    if(idle>1.6&&!input.looking&&mv>0.9&&!player.frozen&&!CAMS.aim){const d=wrapA(player.yaw-camYaw),ad=Math.abs(d);/* ease behind the direction of travel — but not while the player runs towards the camera */
       const w=(1-sstep((ad-2.0)/0.8))*clamp(mv/PMOVE.RUN,0,1.3);camYaw+=d*(1-Math.exp(-dt*1.15*w));
       camPitch+=(0.2-camPitch)*(1-Math.exp(-dt*0.5*w))}
-    want=Math.min(indoor?Math.min(camDist,2.9):camDist,camBoomMax);fovT=indoor?64:(player.spd>PMOVE.RUN+0.6?66:60);const la=indoor?0.08:0.2;lax=player.vx*la;laz=player.vz*la;if(player.air)stY=0.3}
+    want=Math.min(indoor?Math.min(camDist,2.9):camDist,camBoomMax);fovT=indoor?64:(player.spd>PMOVE.RUN+0.6?66:60);if(CAMS.aim){want=Math.min(want,2.1);fovT=47;pivUp=0.2}const la=indoor?0.08:0.2;lax=player.vx*la;laz=player.vz*la;if(player.air)stY=0.3}
   CAMS.x=sdamp(CAMS.x,tx,CAMS.vx,stXZ,dt);CAMS.vx=_sdV;CAMS.z=sdamp(CAMS.z,tz,CAMS.vz,stXZ,dt);CAMS.vz=_sdV;CAMS.y=sdamp(CAMS.y,ty,CAMS.vy,stY,dt);CAMS.vy=_sdV;
   CAMS.ax=sdamp(CAMS.ax,lax,CAMS.avx,0.4,dt);CAMS.avx=_sdV;CAMS.az=sdamp(CAMS.az,laz,CAMS.avz,0.4,dt);CAMS.avz=_sdV;
   const cp=Math.cos(camPitch),sp_=Math.sin(camPitch),sy=Math.sin(camYaw),cy=Math.cos(camYaw),rx=-cy,rz=sy;
@@ -136,7 +159,7 @@ function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
   CAMS.d=sdamp(CAMS.d,dT,CAMS.dv,dT<CAMS.d?0.05:0.5,dt);CAMS.dv=_sdV;if(t<1&&CAMS.d>dT+0.2){CAMS.d=dT+0.2;if(CAMS.dv>0)CAMS.dv=0}
   const squeeze=1-clamp(CAMS.d/Math.max(1.2,want*0.6),0,1);/* 0 = full boom, 1 = pressed against the player */
   CAMS.rise=sdamp(CAMS.rise,squeeze*0.55,CAMS.risev,0.18,dt);CAMS.risev=_sdV;
-  const shT=c||indoor?0:0.3*clamp((CAMS.d-1.2)/2,0,1);CAMS.sh=sdamp(CAMS.sh,shT,CAMS.shv,0.3,dt);CAMS.shv=_sdV;
+  const shT=c?0:CAMS.aim?0.62:indoor?0:0.3*clamp((CAMS.d-1.2)/2,0,1);CAMS.sh=sdamp(CAMS.sh,shT,CAMS.shv,CAMS.aim?0.14:0.3,dt);CAMS.shv=_sdV;
   const d=CAMS.d,piv=CAMS.y+pivUp+CAMS.rise;let cx=px-sy*d*cp+rx*CAMS.sh,cz=pz-cy*d*cp+rz*CAMS.sh,cyy=piv+d*sp_+(c?0.55:0.1);
   const floor=groundY(cx,cz)+0.35;if(cyy<floor)cyy=floor;
   camP.set(cx,cyy,cz);camT.set(px+rx*CAMS.sh,piv+(c?0.1:0.12),pz+rz*CAMS.sh);
@@ -147,6 +170,7 @@ function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
   /* do not look through the character's head when the camera is squeezed right up to it */
   if(!c&&ph&&player.busy<=0){const hide=d<0.8;if(hide||CAMS.hide)ph.root.visible=!hide;CAMS.hide=hide}}
 /* cut-scene helper: run fn(t,dt) as the camera for `secs` seconds (t = 0..1), then return to the chase camera; resolves when done or skipped */
-let cutSkip=null;
-function camCut(secs,fn,opt){return new Promise(res=>{let t=0;const o=opt||{};const end=skipped=>{if(freeCam!==f)return;freeCam=null;cutSkip=null;CAMS.ok=false;document.body.classList.remove('skippable');if(typeof cinema==='function'&&!o.keepBars)cinema(false);res(skipped===true)};
-  const f=dt=>{t+=dt/secs;fn(Math.min(1,t),dt);if(t>=1)end(false)};freeCam=f;cutSkip=o.noSkip?null:()=>end(true);document.body.classList.toggle('skippable',!o.noSkip);if(typeof cinema==='function'&&!o.noBars)cinema(true,o.title,o.sub)})}
+let cutSkip=null,CUT=null;
+function camCut(secs,fn,opt){if(CUT)CUT.end(true);return new Promise(res=>{let t=0,over=false;const o=opt||{};
+  const end=(skipped,taken)=>{if(over)return;over=true;if(!taken&&freeCam===f)freeCam=null;if(CUT&&CUT.f===f)CUT=null;cutSkip=null;CAMS.ok=false;document.body.classList.remove('skippable');if(typeof cinema==='function'&&!o.keepBars)cinema(false);res(skipped===true)};
+  const f=dt=>{t+=dt/secs;fn(Math.min(1,t),dt,t*secs);if(t>=1)end(false)};freeCam=f;CUT={f,end};cutSkip=o.noSkip?null:()=>end(true);document.body.classList.toggle('skippable',!o.noSkip);if(typeof cinema==='function'&&!o.noBars)cinema(true,o.title,o.sub)})}

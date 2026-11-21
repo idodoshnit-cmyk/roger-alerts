@@ -2,5 +2,21 @@
 ## Log
 - (run 1, 15:10) created work copy, took baseline shots (work/streets/shots/base_*.png, views in views_base.json). No code changes.
 - (run 2, 20:10) resumed; reading code. Nothing integrated yet.
+- (run 3, Nov 21 00:50) read all owned files + core + MATERIALS.md. No research data exists yet (gk3/data empty, no docs/research/STREETS.md, no MAP_DATA.md, no ORDERS.md).
+  Plan = 5 milestones, each integrated to main right after its test run:
+  A ground (20_ground.js): road surface in strips + road-coordinate decals (lane lines, bays, arrows, stop lines, zebras, manholes, drains, patches), per-street sidewalk material, tree pits, stairs.
+  B props (50_props.js): real lamp/bollard/bench/bin/signal/sign/bus-shelter/kiosk models, light pools.
+  C trees (45_trees.js): branching trunks + leaf cards, wind sway, LOD.
+  D walls (40_walls.js): pillars, gates, bougainvillea.
+  E rail/station (55_rail.js) + parks (Alsos) + Platanos.
 ## Next
-- read 00_core/20/40/45/50/55, MATERIALS.md; first small integrated improvement ASAP.
+- Milestone A in progress (writing work/streets/gk3/js/20_ground.js).
+- (run 4, Nov 21 08:30) synced main (mats atlas/core/sky), re-tested (A2_*, no errors, ~520k tris whole scene), INTEGRATED 20_ground.js milestone A into main.
+- (run 4, 09:10) Milestone B INTEGRATED: 50_props.js rewritten (real-design lamp0 lantern / lamp1 green globe / lamp2 column, bollard band/ball per street, benches face walkways + SEATS for NPCs, wheeled bins at kerb (estimated), scooters, signals w/ visors, octagon stop signs, OASA shelters w/ stop-name plates, periptera, marble fountains); distance-LOD pools (PPOOL, updatePropLOD called from updateChunkVis in 55_rail.js). placed() for lamps/bollards/benches/bins/signals/stops/bus/kiosk/fountain/trees. Shots B1_* verified, no errors; kasW tris 516k→452k, calls 147→130.
+## Next
+- C trees (45_trees.js): branching trunks + leaf cards, LOD. Then D walls, E rail/station/Alsos, Platanos landmark tree, taxi rank.
+- (run 4, ~09:20) Trees rewritten in copy (branching skeleton + leaf cards, 3-tier lodPool, updateTreeLOD from updateChunkVis) - C1 shots good (planes look like r16), densified leaves. Synced main (map v3, many new modules). Props: research styles (streets.json lamps/bollards styles: lamp0 lantern, lamp1 globe, lamp2 10 m mast, lampP pole_arm, lampC cluster; bollard cyl_black_yellow / ball_green / cone_black_gold), v3 bench yaw, MAP.seats respected, kiosk yaw, bus shelter flag, fountain radius, taxi/clock/play/charging/bike/water/info. 20_ground: fetch data/streets.json at load, fillets drawn. docs/STREETS_IMPL.md written. Test D1 running -> then integrate 20/45/50/55.
+- (run 4) D1 test OK (no errors). Then in copy: walls (bougainvillea defTile 'bougain', mapped gates buildGates called from buildWalls), rail (sleepers via lodPool, third rail + cover), block-paved carriageways (CARRIAGEWAY table: Kolokotroni red-brown, Levidou grey), shelters fit pavement depth, denser plane/pine leaves, places.json fetch + placeEl(), landmark elements (Platanos old plane at research pos (-68.1,14.2), pedestal monument, statues/busts, Dexameni water tank, dovecote, buffer stops, ornamental basin, Platanos taxi rank). D2 failed (pole undefined, fixed). Test E1 running; if clean -> integrate 20/40/45/50/55 NOW.
+- (run 4) E1 clean -> INTEGRATED 20/40/45/50/55 into main (trees rewrite, research-style props, walls bougainvillea+gates, rail sleepers/third rail, places.json landmarks, paved carriageways). Next: main check + walktest; staged in tmp/F: park globe_cluster lamps, overhead cables (pole_arm), Alsos box hedges; Kolokotroni tint stronger.
+- (run 5, Nov 21 13:10) resumed. F work (park globe_cluster lamps, overhead cables, Alsos hedges, red_tile sidewalks) in copy but f1/f2 tests hung at Play click (30 s). Wrote work/streets/diag.js (deferred click + timing). Testing snapshot work/streets/snap (=copy at 13:09) as F3. Next: segments-aware specs (Kassaveti w/m/e), baluster_green_yellow bollard, kifisia_double_globe lamp.
+- (run 5, 13:45) in copy (untested, after snap): streetSpecAt() segments (20_ground), bollardY baluster_green_yellow + lampD kifisia_double_globe models (50_props), wheeled_1100 colour+curved lid, cycleTracks() (dark strip + white band + bike symbols, Kassaveti W / Kolokotroni 1 / Levidou 1 / Dilighianni), sidewalkTint (Kyriazi charcoal), segWallStyle (Kassaveti E green bars N / white bars S, Kolokotroni rubble N), park hedges skip if LM 'park' registered.

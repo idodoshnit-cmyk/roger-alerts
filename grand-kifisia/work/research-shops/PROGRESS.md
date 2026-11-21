@@ -1,18 +1,48 @@
 # research-shops — PROGRESS
 
-## State found on (re)start 2026-11-20 ~20:25
-- No PROGRESS.md existed; a previous run (15:09–15:15) left: `osm_pois.json` (525 OSM POIs with x,z and distance d from spawn),
-  `plotmap.py` (plots buildings+POIs around a point), `sample.py` (median colour of an image box), `raw/` (mythosplus.gr pages + vrisko page, 22 Mythos photos),
-  `view/` (downscaled copies), and 18 Mythos images already copied to `docs/research/img/shops/mythos_*.jpg`.
-- NOT yet written: docs/research/SHOPS.md, INTERIORS.md, GAPS_SHOPS.md, gk3/data/shops.json, img/SOURCES.md lines.
+## State (updated 2026-11-21 10:00 UTC, fourth run — end of run 4: all published; next = items under Next)
+- Run 1 (15:09): osm_pois.json (525 OSM POIs with x,z,d from spawn), plotmap.py, sample.py, raw/ (mythosplus.gr pages), 18 Mythos photos in docs/research/img/shops/.
+- Run 2 (20:21-20:26): docs/research/INTERIORS.md published with section 1 = Mythos Plus COMPLETE (plan, counter, menu with real prices).
+- Run 3 (now): building shops.json pipeline.
+
+- Run 4 (08:25): resuming at Next#2 (web research on named places). Found in raw/web/sbe_kifissia_big.jpg (starbuckseverywhere 2008): Starbucks = 2-storey wood+brick former Kassavetis stable set back in a paved courtyard; Ralph Lauren sign on the stone building beside the courtyard entrance.
 
 ## Done
-(nothing published yet)
+- 00:58 shops.json v1 PUBLISHED in MAIN (388 entries: Mythos curated 'photo' + 387 OSM POIs inferred with category/brand-typical look). Regenerate: python3 build_shops.py
+- INTERIORS.md §1 Mythos Plus (photo + official menu).
 
-## Next
-1. Look at Mythos photos, parse menu → publish INTERIORS.md (Mythos first) + first shops.json (Mythos).
-2. PAUL, Starbucks (+ building Kassaveti 19), KFC, AB Levidou 2, Sephora address.
-3. Ralph Lauren store, all supermarkets, spawn-junction shops, then street by street.
+- 08:55 shops.json v2 PUBLISHED (392): curated Ralph Lauren (way/1076768348 = Kotsikas house, map b425, photo), Starbucks (key starbucks-kassaveti19, map b426 behind/west of RL, photo 2008), Sephora (key sephora-levidou8, Levidou 8 east side, official address, brand-typical look), KFC (key kfc-kifisias238, Mela arcade = ex Grand Hotel 1897, official), PAUL (node/4565941901, official+brand-typical).
+  KEY FINDINGS: map special.starbucks wrongly on b425 (RL villa) -> should be b426. Sephora EXISTS at Levidou 8 (not in OSM; census geocode wrong). Old Starbucks Kifisias 238-240 closed. OSM 'Gordo' also at Kifisias 238-240.
+
+- 09:10 SHOPS.md PUBLISHED (action list + Kassaveti 19 courtyard, Sephora, KFC, PAUL, supermarkets). img/SOURCES.md lines appended. AB + Thanopoulos curated (description).
+
+- 09:25 INTERIORS.md §2-6 PUBLISHED (Starbucks, PAUL, KFC, AB, Sephora; typical insides sized to real footprints). Sephora moved to x141.5 z2.
+
+## Next (in order)
+- 09:50 GAPS_SHOPS.md PUBLISHED (9 harness views on MAIN, screenshots in docs/research/img/shops/gaps/). Found: game's sephora place on WEST side of Levidou (wrong; real = east, even numbers). shops.json not loaded by any module yet. Varsos curated.
+0. NEXT: photos for KFC/Mela arcade, PAUL, AB, Sephora (Commons when rate limit clears: geosearch around each); places 9-25 of GAPS list; street-by-street enrichment.
+1. build_shops.py + curated.py -> gk3/data/shops.json v1 (Mythos curated + all OSM POIs category/brand-inferred). PUBLISH.
+2. Web research: PAUL, Starbucks (Kassaveti 19 + building), KFC (Kifisias 238-240; OSM now shows "Gordo" there - check), AB Levidou 2, Sephora address, Ralph Lauren, supermarkets (Thanopoulos Dragoumi 6).
+3. SHOPS.md, INTERIORS.md §2-5 (PAUL, Starbucks, KFC, AB), img/SOURCES.md.
+4. GAPS_SHOPS.md (one harness run with ~12 views on MAIN).
+5. Street-by-street enrichment.
 
 ## Decisions
-- shops.json is written from a Python source-of-truth script in work/research-shops/build_shops.py (entries in work/research-shops/entries/*.py or a single data file), always validated before copy to MAIN.
+- Starbucks = map b426 (photo 2008 + 2021 night photo) despite the locator pin; RL = b425 Kotsikas house. Sephora placed east side of Levidou by house-number parity.
+- ORDERS_DONE.md entry appended 09:55 (cross-agent findings).
+- shops.json is generated: `python3 work/research-shops/build_shops.py` (reads osm_pois.json + curated.py, validates, writes gk3/data/shops.json in MAIN). Never hand-edit shops.json.
+- Inferred entries: category-typical + brand-typical colours, deterministic variety by hash of the OSM id; always confidence "inferred".
+
+## RUN 5 (started 08:47 UTC real clock) — ORDER: help research-arch with per-building facade specs (Kassaveti, Levidou, Kyriazi, Kifisias, Platanos) + Hondos Center + generic shop interior templates
+- commons_crawl.py running in background (resumable; state work/research-shops/commons/index.json; log commons/crawl.log; 12 s spacing + backoff).
+- Openverse (api.openverse.org, anonymous, page_size<=20) used for CC Flickr photos -> openverse.jsonl.
+- Kotsovolos Kyriazi 36: newmoney.gr photos saved docs/research/img/shops/kotsovolos_0*_REFONLY.jpg (white facade #f0f4f5, red K #fb3d38; opposite building grey #9eaab1 with arcade).
+- companyspace.com = Cloudflare-blocked; kifissia.gr Levidou photo-report PDF = 404.
+- PLAN: publish shops.json top-level "buildings" {osmWay: spec in buildings_spec.json schema} for research-arch to merge + SHOPS.md "Facades by street" section; INTERIORS.md §7 Hondos + §8 generic templates.
+- 09:30 PUBLISHED shops.json v3 in MAIN: new top-level `interiorTemplates` (22 templates; keys = game CAT2TPL names + kiosk/arcade/cinema_leisure/fuel/hondos_center_kifisia; source work/research-shops/templates.py),
+  every shop has interior.template; new top-level `buildings` (152 records keyed "w<osm way>": 4 photo facade specs [RL villa, Starbucks pavilion, Mythos b294, Kyriazi 36 Kotsovolos b391] + 148 ground-floor tenant records; source facades.py, uses mapidx.py).
+  INTERIORS.md §7 Hondos + §8 templates generated by gen_interiors_md.py (re-run after editing templates.py).
+- NEXT: Commons crawl results -> view photos of shopping-street buildings -> add PH records in facades.py; SHOPS.md "Facades by street" section; ORDERS_DONE entry; tell research-arch.
+- 09:10 shops.json republished: 6 PHOTO building records (+ w1077112775 Kolokotroni 7 Marina Rinaldi twin-turret pavilion b477, + w1075949217 Kassaveti 1 neoclassical on Platanos b291 with HSBC). SHOPS.md §9 generated (gen_shops_md.py). ORDERS_DONE entry appended. SOURCES/CREDITS appended.
+- commons crawler STOPPED (429s; state kept in commons/index.json, ~194 titles). Now commons_thumbs.py downloads 39 candidate thumbs (commons/want.txt -> commons/th/cNN.jpg, log commons/thumbs.log; 20 s spacing, backoff).
+- NEXT: view thumbs (sheet.py) -> PH records for shopping-street buildings; then GAPS_SHOPS refresh (harness) if time.

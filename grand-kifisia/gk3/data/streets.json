@@ -1,0 +1,7226 @@
+{
+ "version": "2026-11-21.0908",
+ "author": "research-streets",
+ "notes": "Keys are Greek OSM names (match ROADS by name). Coordinates: game metres, x=(lon-23.8125)*87716, z=-(lat-38.0727)*110998. researched=false entries are derived from OSM tags/map geometry only. styles{} is the catalogue of real local street-furniture designs referenced by lamps.style, bollards.style, sidewalk.materialDetail, etc. Confidence: photo | official | description | inferred.",
+ "styles": {
+  "lamps": {
+   "kifisia_globe": {
+    "desc": "Cast-iron pedestrian post: stepped round plinth, bulbous fluted base to 0.9 m, slim fluted shaft, collar, one opal-white sphere on top. Stands in the sidewalk 0.5 m behind the kerb.",
+    "heightM": 3.6,
+    "globeDiaM": 0.45,
+    "baseDiaM": 0.32,
+    "shaftDiaM": 0.09,
+    "colour": "#1f3a2c",
+    "globeColour": "#f3f1e8",
+    "light": "warm white, ~3000 K",
+    "seen": [
+     "Kassaveti east (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "kifisia_lantern": {
+    "desc": "Cast-iron traditional post: square-to-round fluted base 0.9 m with a spiral garland relief winding up the lower shaft, slim shaft, four-sided tapering glass lantern with a small roof and finial.",
+    "heightM": 4.0,
+    "lanternM": [
+     0.38,
+     0.38,
+     0.6
+    ],
+    "baseDiaM": 0.35,
+    "shaftDiaM": 0.1,
+    "colour": "#1c3328",
+    "glassColour": "#e9e2c8",
+    "light": "warm white",
+    "seen": [
+     "Kolokotroni (r17,r18)",
+     "Othonos (r15)",
+     "Levidou (r19)"
+    ],
+    "confidence": "photo"
+   },
+   "kifisia_double_globe": {
+    "desc": "Dark-green cast-iron post ~4 m with a decorative scroll cross-arm carrying TWO opal-white spheres (one each side, slightly above the arm) and a small finial between them.",
+    "heightM": 4.0,
+    "armSpanM": 0.8,
+    "globeDiaM": 0.4,
+    "colour": "#1f3a2c",
+    "globeColour": "#f3f1e8",
+    "seen": [
+     "Kyriazi near Kotsovolos, x~88 z~133 (kots02)"
+    ],
+    "confidence": "photo"
+   },
+   "kifisia_lantern_double": {
+    "desc": "Same post as kifisia_lantern with a short cross-arm carrying two lanterns (seen where the sidewalk is wide, north side of Kolokotroni).",
+    "heightM": 4.2,
+    "armSpanM": 0.9,
+    "colour": "#1c3328",
+    "seen": [
+     "Kolokotroni north side (r17)"
+    ],
+    "confidence": "photo"
+   },
+   "globe_cluster": {
+    "desc": "Black/dark-green slim post with 2 or 3 opal globes on short curved arms (park and courtyard lamp).",
+    "heightM": 3.6,
+    "globes": 3,
+    "globeDiaM": 0.4,
+    "colour": "#16201a",
+    "seen": [
+     "Agora courtyard, 2 and 3 globes (r06)",
+     "Kefalari grove: 3 globes on curved swan-neck arms + 1 on top (r04)"
+    ],
+    "confidence": "photo"
+   },
+   "avenue_mast": {
+    "desc": "Tall galvanised steel road-lighting column with a single or double curved arm and LED/sodium luminaire, in the median or at the kerb of Kifisias Avenue.",
+    "heightM": 10,
+    "armM": 1.8,
+    "colour": "#8d9194",
+    "seen": [
+     "Kifisias Avenue (OSM lit=yes; typical Attica avenue column)"
+    ],
+    "confidence": "inferred"
+   },
+   "pole_arm": {
+    "desc": "Residential streets: no decorative posts. A luminaire on a 1.2 m galvanised arm bolted at ~7 m to the concrete (or tarred wooden) electricity pole; overhead cables run pole to pole along one side of the street.",
+    "heightM": 7,
+    "poleDiaM": 0.28,
+    "colour": "#9a968c",
+    "seen": [
+     "utility poles with overhead lines on Kassaveti east (r16) and Levidou (r19)"
+    ],
+    "confidence": "photo"
+   }
+  },
+  "bollards": {
+   "ball_green": {
+    "desc": "Slim round steel post with a collar and a ball finial; set 0.3 m behind the kerb on BOTH sidewalks to stop pavement parking.",
+    "heightM": 0.95,
+    "diaM": 0.09,
+    "ballDiaM": 0.14,
+    "colour": "#1f3a2c",
+    "spacingM": 2.4,
+    "seen": [
+     "Kassaveti east (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "baluster_green_yellow": {
+    "desc": "Cast-iron baluster bollard: round flared foot, slim tapering body, one yellow band ~0.12 m below the top, acorn/ball finial; very dark green (reads black at night). Stands at the kerb edge of the shop sidewalk.",
+    "heightM": 0.7,
+    "diaM": 0.14,
+    "colour": "#1d3a2c",
+    "bandColour": "#d6b21c",
+    "spacingM": 4.0,
+    "seen": [
+     "Kassaveti north side in front of Mythos Plus (mythos01)"
+    ],
+    "confidence": "photo"
+   },
+   "cone_black_gold": {
+    "desc": "Short cast-iron baluster bollard: flared round foot, tapering body, neck ring painted gold/yellow, rounded cap. Lines the edge between the cycle track and the carriageway.",
+    "heightM": 0.6,
+    "diaM": 0.16,
+    "colour": "#15171a",
+    "bandColour": "#c9a227",
+    "spacingM": 1.5,
+    "seen": [
+     "Kolokotroni (r17,r18)"
+    ],
+    "confidence": "photo"
+   },
+   "cyl_black_yellow": {
+    "desc": "Plain black steel cylinder with a ribbed top section and one yellow reflective band 0.12 m high about 0.15 m below the top. Dense rows on both sides of the paved lane.",
+    "heightM": 0.8,
+    "diaM": 0.13,
+    "colour": "#17181a",
+    "bandColour": "#e3b40f",
+    "spacingM": 1.25,
+    "seen": [
+     "Levidou (r19)"
+    ],
+    "confidence": "photo"
+   }
+  },
+  "paving": {
+   "red_tile": {
+    "desc": "Terracotta-red square cement tiles ~0.3 x 0.3 m laid in a straight grid with fine joints, in panels separated by bands of the same tile; tree pits are plain earth squares ~1.2 m edged with a flat concrete band. A yellow ribbed tactile strip 0.4 m wide runs along the middle of the sidewalk.",
+    "colour": "#b0614a",
+    "shadeColour": "#785a50",
+    "tactileColour": "#d9b53a",
+    "maps_to": "red_brick",
+    "seen": [
+     "Kolokotroni south sidewalk (r17,r18)",
+     "Platanos square sidewalks (r11)"
+    ],
+    "confidence": "photo"
+   },
+   "buff_pavers": {
+    "desc": "Small rectangular concrete block pavers ~0.1 x 0.2 m, grey-buff with a pink cast, laid stretcher/herringbone; flush cast-iron service covers.",
+    "colour": "#a8998c",
+    "maps_to": "grey_pavers",
+    "seen": [
+     "Kassaveti east sidewalks (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "redbrown_block_road": {
+    "desc": "CARRIAGEWAY surface (not sidewalk): rectangular concrete block pavers ~0.1 x 0.2 m in red-brown/mauve tones, stretcher bond across the street, with a 0.3 m band of pale concrete blocks along each edge; yellow zig-zag / box markings painted on the blocks at stops and entrances.",
+    "colour": "#9a8177",
+    "edgeBandColour": "#c9c2b6",
+    "seen": [
+     "Kolokotroni (r17,r18); OSM surface=sett"
+    ],
+    "confidence": "photo"
+   },
+   "grey_block_road": {
+    "desc": "CARRIAGEWAY of pale grey concrete block pavers ~0.1 x 0.2 m in stretcher bond, flush with the side walkways (no raised kerb; bollards do the separating).",
+    "colour": "#a29e99",
+    "seen": [
+     "Levidou, block between Kassaveti and Kolokotroni, 2015 (r19)"
+    ],
+    "confidence": "photo"
+   },
+   "cycle_asphalt": {
+    "desc": "Cycle track: smooth dark-grey fine asphalt/screed strip, level with the sidewalk and 2-3 cm above the block carriageway, edged on the road side by a 0.25 m white concrete band.",
+    "colour": "#6f6d6b",
+    "edgeBandColour": "#d6d2c8",
+    "seen": [
+     "Kolokotroni (r17,r18)"
+    ],
+    "confidence": "photo"
+   },
+   "marble_slabs": {
+    "desc": "White-grey Pentelic-type marble slabs in mixed rectangles (0.3-0.6 m) laid in bands, with small red clay insets at joints.",
+    "colour": "#cfcac6",
+    "insetColour": "#b4573d",
+    "maps_to": "marble",
+    "seen": [
+     "Agora courtyard, Kolokotroni (r06)",
+     "garden path of the neoclassical house Kifisias 297 (r08)"
+    ],
+    "confidence": "photo"
+   },
+   "cement_slabs": {
+    "desc": "Standard Greek municipal sidewalk: grey pressed-cement slabs 0.4 x 0.4 m (often with a 4x4 grooved pattern), patched with poured concrete at driveways.",
+    "colour": "#9c9a94",
+    "maps_to": "slabs",
+    "seen": [
+     "typical for residential Kifisia; not photographed street by street"
+    ],
+    "confidence": "inferred"
+   },
+   "asphalt_fresh": {
+    "colour": "#3b3b3d"
+   },
+   "asphalt_worn": {
+    "colour": "#6e6a66",
+    "desc": "Sun-bleached asphalt with darker trench patches and round/rectangular cast-iron covers (r16, r21)."
+   },
+   "kerb": {
+    "desc": "Kerbs are pale precast concrete / white-grey marble-chip blocks 0.15 m wide with a 0.12-0.15 m upstand; at Platanos square the kerb face is painted yellow (no stopping).",
+    "colour": "#cfcabc",
+    "yellow": "#e0b62a",
+    "seen": [
+     "r16",
+     "r11"
+    ],
+    "confidence": "photo"
+   }
+  },
+  "railings": {
+   "green_x_guard": {
+    "desc": "Pedestrian guard-rail panels along the kerb: dark-green square-tube frame 1.0 m high x 2.0 m long, infill of two crossing diagonals with a small diamond at the centre; posts every 2 m.",
+    "heightM": 1.0,
+    "panelM": 2.0,
+    "colour": "#2e5a45",
+    "seen": [
+     "station forecourt (r21)"
+    ],
+    "confidence": "photo"
+   },
+   "green_lattice_low": {
+    "desc": "Low ornamental railing around planted verges: dark-green posts with pointed caps every 2 m, lattice/diamond mesh panel 0.8 m high.",
+    "heightM": 0.8,
+    "colour": "#1f3a2c",
+    "seen": [
+     "Othonos (r15)"
+    ],
+    "confidence": "photo"
+   },
+   "garden_green_bars": {
+    "desc": "Property boundary: 0.6-1.0 m plastered or rubble-stone plinth wall with square stone/plaster piers every 3-4 m and 1.0-1.2 m of vertical bar railing between them, usually dark green, backed by a clipped hedge or ivy.",
+    "colour": "#2f5d3a",
+    "seen": [
+     "Kassaveti east (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "garden_white_bars": {
+    "desc": "White vertical-bar railing 1.0 m high on a low beige plastered wall.",
+    "colour": "#e9e6df",
+    "seen": [
+     "Kassaveti east, south side (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "rubble_wall": {
+    "desc": "Dry-look rubble limestone garden wall 0.9-1.2 m high in pale grey-white stone, hedge above.",
+    "colour": "#bdb8ad",
+    "seen": [
+     "Kolokotroni north side (r17)",
+     "Kassaveti east (r16)"
+    ],
+    "confidence": "photo"
+   }
+  },
+  "bins": {
+   "wheeled_1100": {
+    "desc": "Municipal 1100-litre four-wheel container, dark grey-green body with a curved lid, usually standing in the carriageway against the kerb; often with graffiti tags.",
+    "sizeM": [
+     1.37,
+     1.07,
+     1.3
+    ],
+    "colour": "#3a4a44",
+    "seen": [
+     "Kassaveti east (r16)"
+    ],
+    "confidence": "photo"
+   },
+   "litter_post": {
+    "desc": "Small dark-green litter basket on a post near crossings.",
+    "sizeM": [
+     0.4,
+     0.3,
+     1.0
+    ],
+    "colour": "#2d4f3c",
+    "seen": [
+     "Platanos (r11, black bin at the corner)"
+    ],
+    "confidence": "photo"
+   }
+  },
+  "signs": {
+   "street_plate": {
+    "desc": "Greek street-name plate: blue enamel rectangle ~0.6 x 0.2 m with white capitals, Greek on top and Latin transliteration below, fixed on the corner building or wall at 2.5-3 m.",
+    "colour": "#1d4fa0",
+    "confidence": "inferred"
+   },
+   "taxi": {
+    "desc": "Athens taxis are yellow saloons (Skoda Octavia / Mercedes E / Toyota) with a roof TAXI light.",
+    "colour": "#f0c810",
+    "seen": [
+     "Platanos (r11)"
+    ],
+    "confidence": "photo"
+   }
+  }
+ },
+ "sources": {
+  "r16": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%B1%CF%83%CF%83%CE%B1%CE%B2%CE%AD%CF%84%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0921.jpg",
+  "r17": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0906.jpg",
+  "r18": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0907.jpg",
+  "r19": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9B%CE%B5%CE%B2%CE%AF%CE%B4%CE%BF%CF%85_7899.jpg",
+  "r15": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%8C%CE%B8%CF%89%CE%BD%CE%BF%CF%82_8572.jpg",
+  "r11": "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_%CE%A0%CE%BB%CE%AC%CF%84%CE%B1%CE%BD%CE%BF%CF%82_7863.jpg",
+  "r09": "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4102.jpg",
+  "r10": "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4110.jpg",
+  "r21": "https://commons.wikimedia.org/wiki/File:%CE%A3%CF%84%CE%B1%CE%B8%CE%BC%CF%8C%CF%82_%CE%97%CE%A3%CE%91%CE%A0_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_7951.JPG",
+  "r00": "https://commons.wikimedia.org/wiki/File:Attica_06-13_Kifissia_metro_station.jpg",
+  "r06": "https://commons.wikimedia.org/wiki/File:%CE%91%CE%B3%CE%BF%CF%81%CE%AC_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_0910.jpg",
+  "r12": "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7_7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0913.jpg",
+  "r05": "https://commons.wikimedia.org/wiki/File:%CE%86%CE%BB%CF%83%CE%BF%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_4106.jpg",
+  "r07": "https://commons.wikimedia.org/wiki/File:%CE%94%CE%B5%CE%BE%CE%B1%CE%BC%CE%B5%CE%BD%CE%AE_%CE%86%CE%BB%CF%83%CE%BF%CF%85%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_7946.JPG",
+  "r13": "https://commons.wikimedia.org/wiki/File:%CE%9C%CE%B7%CF%84%CF%81%CE%BF%CF%80%CE%BF%CE%BB%CE%B9%CF%84%CE%B9%CE%BA%CF%8C%CF%82_%CE%BD%CE%B1%CF%8C%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_7915.jpg",
+  "r14": "https://commons.wikimedia.org/wiki/File:%CE%9C%CE%BF%CF%85%CF%83%CE%B5%CE%AF%CE%BF_%CE%93%CE%BF%CF%85%CE%BB%CE%B1%CE%BD%CE%B4%CF%81%CE%AE_7886.jpg",
+  "r04": "https://commons.wikimedia.org/wiki/File:%CE%86%CE%BB%CF%83%CE%BF%CF%82_%CE%9A%CE%B5%CF%86%CE%B1%CE%BB%CE%B1%CF%81%CE%AF%CE%BF%CF%85_8587.JPG",
+  "r08": "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%AF%CE%B1%CF%82_297_0887.jpg",
+  "r20": "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B9%CE%BA%CE%AF%CE%B1_%CE%9A%CF%8C%CF%84%CF%83%CE%B9%CE%BA%CE%B1,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0931.jpg",
+  "mythos01": "docs/research/img/shops/mythos_01_street_front_night.jpg (from https://www.mythosplus.gr/ - reference only)",
+  "kots02": "docs/research/img/shops/kotsovolos_02_kyriazi_opposite_newmoney_REFONLY.jpg (opening of Kotsovolos, Kyriazi; press photo - reference only)",
+  "osm": "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+  "study3_2021": "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A7%CE%9D%CE%99%CE%9A%CE%97%20%CE%A0%CE%95%CE%A1%CE%99%CE%93%CE%A1%CE%91%CE%A6%CE%97%20%28S%29.pdf (Municipality of Kifisia, study 3/2021: reconstruction of the cycle tracks on Kassaveti, Levidou, Kolokotroni and Vas. Amalias; known only from the search-engine summary, the file itself was unreachable on 2026-11-21)",
+  "study24_2021": "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A5%CE%A7%CE%9F%CE%A3%20%CE%A6%CE%A9%CE%A4%CE%9F%CE%93%CE%A1.%20%CE%A4%CE%95%CE%9A%CE%9C%CE%97%CE%A1%CE%99%CE%A9%CE%A3%CE%97%CE%A3_s.pdf (Municipality of Kifisia, study 24/2021: bioclimatic redevelopment of public spaces, Levidou & Panagitsas; search-engine summary only)",
+  "wp_station": "https://en.wikipedia.org/wiki/Kifissia_metro_station"
+ },
+ "streets": [
+  {
+   "name": "Κασσαβέτη",
+   "nameLatin": "Kassaveti",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "eastbound (uphill, away from Kifisias Avenue)",
+   "carriagewayM": 6.0,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "red_brick",
+    "materialDetail": "red_tile on the commercial block (inferred from Platanos/Kolokotroni); buff_pavers on the residential east end (photo)",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 2.4,
+    "style": "ball_green"
+   },
+   "trees": {
+    "species": "plane (Platanus orientalis), old, pollarded, leaning trunks with mottled cream/olive bark",
+    "spacingM": 9,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_globe",
+    "spacingM": 22
+   },
+   "cycleTrack": {
+    "present": true,
+    "side": "south (right-hand side of the one-way traffic) - side inferred",
+    "widthM": 2.4,
+    "surface": "cycle_asphalt",
+    "twoWay": true,
+    "extent": "Kifisias Avenue to the Levidou/Kyriazi junction (OSM cycleway=track on ways 1268628932 and 108224959)"
+   },
+   "character": "Kifisia's best-known cafe and shopping street. It starts at Platanos square on Kifisias Avenue and climbs gently east (2.7 %) for 440 m. The first 160 m (to the junction with Levidou, Kyriazi and Agiou Dimitriou - the player's spawn) are lined shop-to-shop with cafes, fast food and boutiques under big plane trees; east of the junction it turns residential within one block: garden walls, railings, hedges and villas behind them.",
+   "crossSection": "WEST BLOCK (looking east, the direction of traffic): north facades | private forecourt with cafe terraces ~4.4 m | sidewalk ~2.6 m | kerb | 6.0 m asphalt, two lanes one-way (left lane used by the taxi queue / stopping, right lane running) | 2.4 m two-way cycle track | sidewalk ~4.0 m | south facades.  Total facade to facade 19-21.5 m (measured from OSM building outlines).\nEAST END (photo r16, x~300): garden wall + green railing | 3.0 m buff-paver sidewalk with plane trees in 1.5 m earth pits and ball-top bollards every 2.4 m | pale kerb 0.15 m | 3.8 m asphalt single lane, no markings | kerb | 3.0 m buff-paver sidewalk with ball-top bollards and globe lamp posts | low beige wall + white railing.",
+   "segments": [
+    {
+     "id": "kassaveti_w",
+     "ax": -68,
+     "az": 46,
+     "bx": 94,
+     "bz": 61,
+     "lengthM": 162,
+     "osmWays": [
+      1268628932,
+      108224959
+     ],
+     "kind": "shopping_street",
+     "carriagewayM": 6.0,
+     "lanes": 2,
+     "surface": "asphalt",
+     "parking": "none",
+     "sidewalkNorthM": 2.6,
+     "sidewalkSouthM": 4.0,
+     "forecourtNorthM": 4.4,
+     "cycleTrack": "south, 2.4 m",
+     "sidewalkMaterial": "red_brick",
+     "sidewalkMaterialDetail": "red_tile: glossy terracotta squares ~0.35 m in a straight grid with darker bands (photo mythos01, north side)",
+     "bollardsSeg": {
+      "present": true,
+      "side": "north kerb (seen); south kerb not seen",
+      "spacingM": 4.0,
+      "style": "baluster_green_yellow",
+      "confidence": "photo"
+     },
+     "terraces": "cafe terraces on the north forecourt enclosed by low black steel frames (~1 m) with glass/plants, black fabric awnings over the shopfronts, patio heaters (photo mythos01)",
+     "trees": "old plane trees planted in the north sidewalk at the kerb (pale mottled trunk left of Mythos, photo)",
+     "overhead": "cables strung between facades and a utility pole (photo)",
+     "note": "Shop block. North side W->E: Varsos, Holland & Barrett, Nova, Ancho, To Kalamaki..., Veneti bakery, Mythos Plus, Goody's, Everest (corner of Levidou). South side: Dust Cream, Vodafone, AB Vasilopoulos (corner of Kyriazi). Cafe tables stand on the north forecourts, not on the public sidewalk. Mapped zebra crossings at both ends. Widths are derived from OSM sidewalk centre-lines and building outlines, not from a survey.",
+     "confidence": "inferred",
+     "a": [
+      38.072286,
+      23.811725
+     ],
+     "b": [
+      38.07215,
+      23.813572
+     ]
+    },
+    {
+     "id": "kassaveti_m",
+     "ax": 94,
+     "az": 61,
+     "bx": 236,
+     "bz": 109,
+     "lengthM": 150,
+     "osmWays": [
+      108224925
+     ],
+     "kind": "shopping_street",
+     "carriagewayM": 4.5,
+     "lanes": 1,
+     "surface": "asphalt",
+     "parking": "none",
+     "bollardsSeg": {
+      "present": true,
+      "side": "both kerbs",
+      "spacingM": 2.4,
+      "style": "ball_green",
+      "confidence": "inferred"
+     },
+     "lampsSeg": {
+      "style": "kifisia_globe",
+      "confidence": "inferred"
+     },
+     "sidewalkNorthM": 2.8,
+     "sidewalkSouthM": 2.8,
+     "sidewalkMaterial": "grey_pavers",
+     "note": "Transition block: Kifisia Tower / La Pasteria on the south corner, Carpo, Desigual, Germanos and the open-air cinema Chloe (north side, x~150), then boutiques in converted villas (Different Beast, Kassaveti Tower). Street narrows to one lane; bollards and globe lamps start.",
+     "confidence": "inferred",
+     "a": [
+      38.07215,
+      23.813572
+     ],
+     "b": [
+      38.071718,
+      23.815191
+     ]
+    },
+    {
+     "id": "kassaveti_e",
+     "ax": 236,
+     "az": 109,
+     "bx": 407,
+     "bz": 166,
+     "lengthM": 180,
+     "osmWays": [
+      742577733,
+      742577734
+     ],
+     "kind": "residential",
+     "carriagewayM": 3.8,
+     "lanes": 1,
+     "surface": "asphalt",
+     "parking": "none",
+     "maxspeed": 30,
+     "bollardsSeg": {
+      "present": true,
+      "side": "both kerbs",
+      "spacingM": 2.4,
+      "style": "ball_green",
+      "confidence": "photo"
+     },
+     "lampsSeg": {
+      "style": "kifisia_globe",
+      "side": "south sidewalk",
+      "confidence": "photo"
+     },
+     "sidewalkNorthM": 3.0,
+     "sidewalkSouthM": 3.0,
+     "sidewalkMaterial": "grey_pavers",
+     "note": "Exactly as in photo r16 (camera at x=303, z=134 looking east): single unmarked asphalt lane between two paved sidewalks, ball-top bollards on both kerbs, old plane trees on the north sidewalk whose trunks lean over the road, globe lamp posts on the south sidewalk, an 1100 L wheeled bin standing on the sidewalk build-out, garden walls with stone piers and green railings (north) and a beige wall with white railing (south). Ends at Georganta / G. Karaiskaki.",
+     "confidence": "photo",
+     "a": [
+      38.071718,
+      23.815191
+     ],
+     "b": [
+      38.071204,
+      23.81714
+     ]
+    }
+   ],
+   "landmarks": [
+    {
+     "name": "Platanos square / Kifisias Avenue (start)",
+     "x": -68,
+     "z": 46,
+     "lat": 38.072286,
+     "lon": 23.811725
+    },
+    {
+     "name": "Roman funerary monument (corner with Kifisias, south side)",
+     "x": -51.5,
+     "z": 61.6,
+     "lat": 38.072145,
+     "lon": 23.811913
+    },
+    {
+     "name": "Mythos Plus",
+     "x": 75.4,
+     "z": 45.7,
+     "lat": 38.072288,
+     "lon": 23.81336
+    },
+    {
+     "name": "AB Vasilopoulos",
+     "x": 56.7,
+     "z": 83.8,
+     "lat": 38.071945,
+     "lon": 23.813146
+    },
+    {
+     "name": "Spawn junction Kassaveti/Levidou/Kyriazi/Ag. Dimitriou",
+     "x": 94,
+     "z": 61,
+     "lat": 38.07215,
+     "lon": 23.813572
+    },
+    {
+     "name": "Open-air cinema Chloe",
+     "x": 148.7,
+     "z": 51.5,
+     "lat": 38.072236,
+     "lon": 23.814195
+    },
+    {
+     "name": "Starbucks (Kassaveti 19, placed by address)",
+     "x": 158,
+     "z": 53.5,
+     "lat": 38.072218,
+     "lon": 23.814301
+    },
+    {
+     "name": "Archaeological Collection of Kifisia (near the east end)",
+     "x": 388,
+     "z": 140,
+     "lat": 38.071439,
+     "lon": 23.816923
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 443,
+    "lenFocusM": 361,
+    "elevM": [
+     27.3,
+     38.8
+    ],
+    "gradePct": {
+     "median": 2.7,
+     "max": 6.7
+    },
+    "bbox": [
+     -68,
+     46,
+     407,
+     166
+    ],
+    "facadeGapM": {
+     "median": 21.5,
+     "p20": 19.0,
+     "p80": 27.8,
+     "n": 43
+    },
+    "longestWay": {
+     "from": [
+      94,
+      61
+     ],
+     "to": [
+      236,
+      109
+     ],
+     "heading": "E",
+     "bearing": 109,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     108224925,
+     108224959,
+     742577733,
+     742577734,
+     1268628932
+    ],
+    "junctions": [
+     {
+      "street": "Αγίου Δημητρίου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Agiou Dimitriou"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Κυριαζή",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kyriazi"
+     },
+     {
+      "street": "Γρηγορίου Αυξεντίου",
+      "x": 201,
+      "z": 97,
+      "nameLatin": "Grigoriou Afxentiou"
+     },
+     {
+      "street": "Γεωργίου Δροσίνη",
+      "x": -12,
+      "z": 51,
+      "nameLatin": "Georgiou Drosini"
+     },
+     {
+      "street": "Κύπρου",
+      "x": 292,
+      "z": 128,
+      "nameLatin": "Kyprou"
+     },
+     {
+      "street": "Χρήστου Λαδά",
+      "x": 368,
+      "z": 154,
+      "nameLatin": "Christou Lada"
+     },
+     {
+      "street": "Καραϊσκάκη Γ.",
+      "x": 407,
+      "z": 166,
+      "nameLatin": "G. Karaiskaki"
+     },
+     {
+      "street": "Γεωργαντά",
+      "x": 407,
+      "z": 166,
+      "nameLatin": "Georganta"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -68,
+      "z": 46,
+      "nameLatin": "Kifisias Avenue"
+     }
+    ],
+    "mapRoadLenM": 493
+   },
+   "confidence": "photo (east end r16; west block north side: paving, bollards, terraces from mythos01) / inferred (rest)",
+   "sources": [
+    "docs/research/img/shops/mythos_01_street_front_night.jpg (from https://www.mythosplus.gr/ - reference only)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%B1%CF%83%CF%83%CE%B1%CE%B2%CE%AD%CF%84%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0921.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_%CE%A0%CE%BB%CE%AC%CF%84%CE%B1%CE%BD%CE%BF%CF%82_7863.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A7%CE%9D%CE%99%CE%9A%CE%97%20%CE%A0%CE%95%CE%A1%CE%99%CE%93%CE%A1%CE%91%CE%A6%CE%97%20%28S%29.pdf (Municipality of Kifisia, study 3/2021: reconstruction of the cycle tracks on Kassaveti, Levidou, Kolokotroni and Vas. Amalias; known only from the search-engine summary, the file itself was unreachable on 2026-11-21)"
+   ]
+  },
+  {
+   "name": "Κηφισίας",
+   "nameLatin": "Kifisias Avenue",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "avenue",
+   "direction": "north-south; dual carriageway south of Platanos square, single two-way carriageway north of it",
+   "carriagewayM": 7.0,
+   "lanes": 2,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 3.5,
+    "material": "red_brick",
+    "materialDetail": "red_tile around Platanos square (photo r11); cement_slabs elsewhere (inferred)",
+    "curb": "concrete, painted yellow at Platanos"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane (Platanus) and mulberry on the sidewalks; oleander/shrubs in the median",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "avenue_mast",
+    "spacingM": 30
+   },
+   "character": "Kifisias Avenue (national road EO83) is the spine of the suburb. Coming from Athens it is a dual carriageway - two lanes each way with a narrow median - up to Platanos square, where the two carriageways pass either side of the planted island; north of the square (from about z=-30) it is ONE carriageway with one lane each way plus bus stops, lined with banks, shops and offices, and it leaves the centre past the Othonos and Deligianni junctions. Traffic lights at Kassaveti, Platanos, Panagitsas/Papadiamanti, Othonos and Deligianni.",
+   "crossSection": "SOUTH OF PLATANOS (dual): facade | 3-4 m sidewalk | 7.0 m southbound carriageway (2 lanes, white dashed lane line, solid edge lines) | 1.5-2 m raised median with shrubs and mast lights | 7.0 m northbound carriageway (2 lanes) | 3-4 m sidewalk | facade. Facade to facade ~30 m.\nNORTH OF PLATANOS (single): facade | 3 m sidewalk | 9-10 m carriageway: one lane each way, double white centre line, bus bays | 3 m sidewalk | facade. Narrowest facade gap 18 m.",
+   "segments": [
+    {
+     "id": "kifisias_dual_nb",
+     "ax": -116,
+     "az": 274,
+     "bx": -27,
+     "bz": -18,
+     "lengthM": 315,
+     "osmWays": [
+      420644145,
+      733729211,
+      1268628933,
+      1268628934,
+      964992521,
+      260124790
+     ],
+     "carriagewayM": 7.0,
+     "lanes": 2,
+     "oneway": true,
+     "surface": "asphalt",
+     "note": "Northbound carriageway (east one). Passes the Roman monument block and the corner of Kassaveti (x=-68, z=46); zebra + signals there.",
+     "confidence": "inferred",
+     "a": [
+      38.070231,
+      23.811178
+     ],
+     "b": [
+      38.072862,
+      23.812192
+     ]
+    },
+    {
+     "id": "kifisias_dual_sb",
+     "ax": -33,
+     "az": -22,
+     "bx": -125,
+     "bz": 274,
+     "lengthM": 320,
+     "osmWays": [
+      1305799266,
+      733729216,
+      1268628935,
+      260124792,
+      753565258
+     ],
+     "carriagewayM": 7.0,
+     "lanes": 2,
+     "oneway": true,
+     "surface": "asphalt",
+     "note": "Southbound carriageway (west one), along the east edge of the Platanos island and then the Alsos side.",
+     "confidence": "inferred",
+     "a": [
+      38.072898,
+      23.812124
+     ],
+     "b": [
+      38.070231,
+      23.811075
+     ]
+    },
+    {
+     "id": "kifisias_north",
+     "ax": -25,
+     "az": -30,
+     "bx": -36,
+     "bz": -354,
+     "lengthM": 330,
+     "osmWays": [
+      408314361,
+      653760199,
+      753562914,
+      753562915,
+      25648858,
+      660027074
+     ],
+     "carriagewayM": 9.5,
+     "lanes": 2,
+     "oneway": false,
+     "surface": "asphalt",
+     "note": "Single carriageway through the northern centre: KFC at Kifisias 238-240 (x=-4, z=-11), National Bank (x=-46, z=-63), Plaisio (x=-44, z=-229), police station nearby on Othonos side. AERIAL r09 (Dec 2022, camera over Platanos looking north up the avenue): old plane trees (bare in winter) on BOTH sidewalks forming a continuous canopy; the National Bank on the WEST side is a modern 3-storey white block with full-height glass curtain-wall bays and a low pyramid skylight roof covered in blue solar panels, set back behind a stepped paved plaza with young palms; on the EAST side low buildings with large red tiled hip roofs and colonnaded cafe terraces (the Mela arcade / KFC block is among them - identified by address, not by the photo); a signalised zebra with a crowd at Platanos, a white kiosk/shelter on the east sidewalk, buses and taxis in the stream; a yellow-painted kerb curve at the square.",
+     "confidence": "photo (r09 aerial) / inferred (widths)",
+     "a": [
+      38.07297,
+      23.812215
+     ],
+     "b": [
+      38.075889,
+      23.81209
+     ]
+    }
+   ],
+   "landmarks": [
+    {
+     "name": "Platanos square island",
+     "x": -66,
+     "z": 5,
+     "lat": 38.072655,
+     "lon": 23.811748
+    },
+    {
+     "name": "Kassaveti junction (signals)",
+     "x": -68,
+     "z": 46,
+     "lat": 38.072286,
+     "lon": 23.811725
+    },
+    {
+     "name": "KFC",
+     "x": -3.9,
+     "z": -10.8,
+     "lat": 38.072797,
+     "lon": 23.812456
+    },
+    {
+     "name": "National Bank of Greece",
+     "x": -46,
+     "z": -63.3,
+     "lat": 38.07327,
+     "lon": 23.811976
+    },
+    {
+     "name": "Othonos junction",
+     "x": -22,
+     "z": -247,
+     "lat": 38.074925,
+     "lon": 23.812249
+    },
+    {
+     "name": "Deligianni junction",
+     "x": -36,
+     "z": -354,
+     "lat": 38.075889,
+     "lon": 23.81209
+    },
+    {
+     "name": "Agios Dimitrios cathedral (south)",
+     "x": -17.5,
+     "z": 294,
+     "lat": 38.070051,
+     "lon": 23.8123
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 712,
+    "lenFocusM": 575,
+    "elevM": [
+     25.6,
+     32.4
+    ],
+    "gradePct": {
+     "median": 3.0,
+     "max": 4.7
+    },
+    "bbox": [
+     -125,
+     -323,
+     -1,
+     274
+    ],
+    "facadeGapM": {
+     "median": 29.9,
+     "p20": 18.3,
+     "p80": 34.3,
+     "n": 58
+    },
+    "longestWay": {
+     "from": [
+      -116,
+      274
+     ],
+     "to": [
+      -76,
+      59
+     ],
+     "heading": "N",
+     "bearing": 11,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     25648839,
+     25648858,
+     260124790,
+     260124792,
+     408314361,
+     420644145,
+     653760199,
+     733729211,
+     733729216,
+     753562914,
+     753562915,
+     753565258,
+     964992521,
+     1268628933,
+     1268628934,
+     1268628935,
+     1305799265,
+     1305799266
+    ],
+    "junctions": [
+     {
+      "street": "Όθωνος",
+      "x": -22,
+      "z": -247,
+      "nameLatin": "Othonos"
+     },
+     {
+      "street": "Πλατεία Πλατάνου",
+      "x": -37,
+      "z": -2,
+      "nameLatin": "Plateia Platanou (Platanos Square)"
+     },
+     {
+      "street": "Ηρώδου Αττικού",
+      "x": -87,
+      "z": 57,
+      "nameLatin": "Irodou Attikou"
+     },
+     {
+      "street": "Παναγίτσας",
+      "x": -5,
+      "z": -74,
+      "nameLatin": "Panagitsas"
+     },
+     {
+      "street": "Γεωργίου Δροσίνη",
+      "x": -116,
+      "z": 182,
+      "nameLatin": "Georgiou Drosini"
+     },
+     {
+      "street": "Παπαδιαμάντη",
+      "x": -2,
+      "z": -136,
+      "nameLatin": "Papadiamanti"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": -68,
+      "z": 46,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Αδριανού",
+      "x": -42,
+      "z": -9,
+      "nameLatin": "Adrianou"
+     },
+     {
+      "street": "Σολωμού",
+      "x": -4,
+      "z": -163,
+      "nameLatin": "Solomou"
+     },
+     {
+      "street": "Μητροπολίτου Ιακώβου",
+      "x": -118,
+      "z": 121,
+      "nameLatin": "Mitropolitou Iakovou"
+     }
+    ],
+    "mapRoadLenM": 1123
+   },
+   "confidence": "inferred (geometry from OSM; surfaces/furniture typical)",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_%CE%A0%CE%BB%CE%AC%CF%84%CE%B1%CE%BD%CE%BF%CF%82_7863.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_4102.jpg"
+   ]
+  },
+  {
+   "name": "Κολοκοτρώνη",
+   "nameLatin": "Kolokotroni",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "eastbound (uphill towards Kefalari)",
+   "carriagewayM": 3.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "redbrown_block_road",
+   "parking": "left",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "red_brick",
+    "materialDetail": "red_tile with a yellow tactile strip",
+    "curb": "concrete, low (2-3 cm) on the cycle-track side"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cone_black_gold"
+   },
+   "trees": {
+    "species": "plane (Platanus orientalis), large, in the south sidewalk and in the north parking strip",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 20
+   },
+   "cycleTrack": {
+    "present": true,
+    "side": "south (right-hand side of the one-way traffic)",
+    "widthM": 2.8,
+    "surface": "cycle_asphalt",
+    "twoWay": true,
+    "extent": "Levidou to x~545 (OSM cycleway=track on way 108224776, 449 m)"
+   },
+   "character": "The elegant shopping street of Kifisia: boutiques in old villas and small arcades (Agora, Aigli, Foinikes, Shoppingland), running 560 m uphill (3 %) from Levidou to Charilaou Trikoupi / Kefalari. Unmistakable surface: the carriageway is paved with red-brown concrete blocks, a grey cycle track runs along its south side behind a line of little black-and-gold bollards, and the south sidewalk is red tile under tall plane trees with spiral-decorated lantern posts.",
+   "crossSection": "Looking WEST (downhill, as in photos r17 and r18), left to right = south to north: garden wall / shopfront | 3.0 m red-tile sidewalk (plane trees in earth pits and lantern posts stand in its outer 1 m; yellow tactile strip down the middle) | 2.8 m dark-grey cycle track | 0.25 m white concrete band carrying cone bollards every 1.5 m | 3.5 m lane of red-brown blocks (traffic comes towards you: one-way eastbound) | 2.0 m parallel parking on the same blocks, marked by a pale block band; yellow zig-zag where stopping is banned | 0.15 m kerb | 2.5 m sidewalk | rubble-stone garden wall with hedge / shopfront. Facade to facade 22-28 m.",
+   "segments": [
+    {
+     "id": "kolokotroni_1",
+     "ax": 144,
+     "az": -29,
+     "bx": 545,
+     "bz": -97,
+     "lengthM": 449,
+     "osmWays": [
+      108224776
+     ],
+     "carriagewayM": 3.5,
+     "lanes": 1,
+     "surface": "redbrown_block_road",
+     "parking": "left",
+     "note": "OSM tags this way lanes=2: the second \"lane\" is the parking strip. Shops both sides for the first 250 m (Foinikas arcade at no. 1, x=210 z=-45; Aigli arcades no. 8, x=200-226 z=17-36; Shoppingland x=256 z=-13; Foinikes / Agora complex at no. 7 (x=329 z=-22) with the white turreted folly (Rinaldi in 2015; photos r12 and r06, x~312-345 z~10-16); Marks & Spencer x=339 z=45, GANT). East of x~400 mostly villas (Villa Elli, no. 26, x=493 z=18).",
+     "confidence": "photo",
+     "a": [
+      38.072961,
+      23.814142
+     ],
+     "b": [
+      38.073574,
+      23.818713
+     ]
+    },
+    {
+     "id": "kolokotroni_2",
+     "ax": 545,
+     "az": -97,
+     "bx": 610,
+     "bz": -188,
+     "lengthM": 112,
+     "osmWays": [
+      458813118
+     ],
+     "carriagewayM": 5.0,
+     "lanes": 1,
+     "surface": "redbrown_block_road",
+     "parking": "both",
+     "note": "Bends north-east to Charilaou Trikoupi beside the former Palace hotel; no cycle track on this piece in OSM. Double-lantern posts on the north side (photo r17 was taken at x=535, z=-73).",
+     "confidence": "photo",
+     "a": [
+      38.073574,
+      23.818713
+     ],
+     "b": [
+      38.074394,
+      23.819454
+     ]
+    }
+   ],
+   "landmarks": [
+    {
+     "name": "Corner Levidou / Panagitsas (start)",
+     "x": 144,
+     "z": -29,
+     "lat": 38.072961,
+     "lon": 23.814142
+    },
+    {
+     "name": "Agora of Kifisia (white turreted arcade, 1930s style)",
+     "x": 345.6,
+     "z": 10,
+     "lat": 38.07261,
+     "lon": 23.81644
+    },
+    {
+     "name": "Ralph Lauren, stone villa at Kolokotroni 7",
+     "x": 312,
+     "z": -12,
+     "lat": 38.072808,
+     "lon": 23.816057
+    },
+    {
+     "name": "Villa Elli, Kolokotroni 26 (N. Plastiras lived here)",
+     "x": 492.6,
+     "z": 17.6,
+     "lat": 38.072541,
+     "lon": 23.818116
+    },
+    {
+     "name": "Former Palace hotel",
+     "x": 563,
+     "z": -142,
+     "lat": 38.073979,
+     "lon": 23.818918
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 562,
+    "lenFocusM": 562,
+    "elevM": [
+     33.2,
+     51.3
+    ],
+    "gradePct": {
+     "median": 3.0,
+     "max": 5.8
+    },
+    "bbox": [
+     144,
+     -188,
+     610,
+     22
+    ],
+    "facadeGapM": {
+     "median": 28.1,
+     "p20": 22.2,
+     "p80": 36.0,
+     "n": 40
+    },
+    "longestWay": {
+     "from": [
+      144,
+      -29
+     ],
+     "to": [
+      545,
+      -97
+     ],
+     "heading": "E",
+     "bearing": 80,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     108224776,
+     458813118
+    ],
+    "junctions": [
+     {
+      "street": "Λεβίδου",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Παναγίτσας",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Panagitsas"
+     },
+     {
+      "street": "Κύπρου",
+      "x": 325,
+      "z": 22,
+      "nameLatin": "Kyprou"
+     },
+     {
+      "street": "Γεωργαντά",
+      "x": 417,
+      "z": 3,
+      "nameLatin": "Georganta"
+     },
+     {
+      "street": "Χλόης",
+      "x": 504,
+      "z": -46,
+      "nameLatin": "Chlois"
+     },
+     {
+      "street": "Πεντέλης",
+      "x": 545,
+      "z": -97,
+      "nameLatin": "Pentelis"
+     },
+     {
+      "street": "Μυκόνου",
+      "x": 574,
+      "z": -140,
+      "nameLatin": "Mykonou"
+     },
+     {
+      "street": "Φιλαδελφέως",
+      "x": 610,
+      "z": -188,
+      "nameLatin": "Filadelfeos"
+     }
+    ],
+    "mapRoadLenM": 561
+   },
+   "confidence": "photo",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0906.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0907.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%91%CE%B3%CE%BF%CF%81%CE%AC_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_0910.jpg",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%BF%CE%BB%CE%BF%CE%BA%CE%BF%CF%84%CF%81%CF%8E%CE%BD%CE%B7_7,_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_0913.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A7%CE%9D%CE%99%CE%9A%CE%97%20%CE%A0%CE%95%CE%A1%CE%99%CE%93%CE%A1%CE%91%CE%A6%CE%97%20%28S%29.pdf (Municipality of Kifisia, study 3/2021: reconstruction of the cycle tracks on Kassaveti, Levidou, Kolokotroni and Vas. Amalias; known only from the search-engine summary, the file itself was unreachable on 2026-11-21)"
+   ]
+  },
+  {
+   "name": "Κυριαζή",
+   "nameLatin": "Kyriazi",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "northbound (arrives at the spawn junction from the south)",
+   "carriagewayM": 4.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "materialDetail": "dark charcoal-grey stone/concrete slabs ~0.4 x 0.6 m with paler joint bands (photo kots02 at x~88 z~133); red_tile near the junction (inferred)",
+    "colour": "#4a4a4c",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cyl_black_yellow",
+    "confidence": "inferred"
+   },
+   "trees": {
+    "species": "stone/Aleppo pines with reddish trunks overhanging (photo kots02), bitter orange and plane",
+    "spacingM": 8,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_double_globe",
+    "spacingM": 25,
+    "confidence": "photo (kots02)"
+   },
+   "character": "Narrow one-way street (facade to facade only 14-15 m) that brings traffic up from Agiou Dimitriou church to the spawn junction. AB Vasilopoulos fills its west side at the junction, the Kifisia Tower / La Pasteria block the east side; further south small shops, the Hotel des Roses side and Norte wine bar (no. 9) near the church square.",
+   "crossSection": "shopfront | 2.2 m sidewalk | kerb | 4.0 m asphalt, one lane northbound | 2.0 m parallel parking (east side, where the width allows) | kerb | 2.2 m sidewalk | shopfront.  Derived from the 14-15 m facade gap. Opposite Kotsovolos: a modern 4-5 storey block clad in grey panels with a ground-floor arcade (kots02).",
+   "landmarks": [
+    {
+     "name": "Spawn junction (north end)",
+     "x": 94,
+     "z": 61,
+     "lat": 38.07215,
+     "lon": 23.813572
+    },
+    {
+     "name": "AB Vasilopoulos (west side)",
+     "x": 56.7,
+     "z": 83.8,
+     "lat": 38.071945,
+     "lon": 23.813146
+    },
+    {
+     "name": "Kifisia Tower (east side)",
+     "x": 107.9,
+     "z": 81.6,
+     "lat": 38.071965,
+     "lon": 23.81373
+    },
+    {
+     "name": "Norte Wine Bar, Kyriazi 9",
+     "x": 21.8,
+     "z": 276.5,
+     "lat": 38.070209,
+     "lon": 23.812749
+    },
+    {
+     "name": "Agios Dimitrios church square (south end)",
+     "x": -17.5,
+     "z": 294,
+     "lat": 38.070051,
+     "lon": 23.8123
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 165,
+    "lenFocusM": 118,
+    "elevM": [
+     34.5,
+     41.1
+    ],
+    "gradePct": {
+     "median": 4.3,
+     "max": 5.6
+    },
+    "bbox": [
+     1,
+     61,
+     94,
+     371
+    ],
+    "facadeGapM": {
+     "median": 15.1,
+     "p20": 14.1,
+     "p80": 32.0,
+     "n": 21
+    },
+    "longestWay": {
+     "from": [
+      1,
+      371
+     ],
+     "to": [
+      94,
+      61
+     ],
+     "heading": "N",
+     "bearing": 17,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     30611774
+    ],
+    "junctions": [
+     {
+      "street": "Αλωνίων",
+      "x": 50,
+      "z": 235,
+      "nameLatin": "Alonion"
+     },
+     {
+      "street": "Αγίου Δημητρίου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Agiou Dimitriou"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Levidou"
+     }
+    ],
+    "mapRoadLenM": 325
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Λεβίδου",
+   "nameLatin": "Levidou",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "northbound (from the spawn junction towards Kolokotroni, Othonos and Deligianni)",
+   "carriagewayM": 3.8,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "grey_block_road (photo 2015) - OSM 2024 says asphalt",
+   "parking": "left",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "grey_pavers",
+    "materialDetail": "same grey blocks as the lane, flush, separated by bollards",
+    "curb": "none (flush) on the first block; concrete further north"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.25,
+    "style": "cyl_black_yellow"
+   },
+   "trees": {
+    "species": "mixed: stone pines and planes overhanging from the gardens, bitter-orange and mulberry in the sidewalk",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "cycleTrack": {
+    "present": true,
+    "side": "east (right-hand side of the one-way traffic) - side inferred",
+    "widthM": 2.2,
+    "surface": "cycle_asphalt",
+    "twoWay": true,
+    "extent": "spawn junction to Kolokotroni (OSM cycleway=track on way 108224868)"
+   },
+   "character": "Leaves the spawn junction to the north-east. The first 103 m (to the corner of Kolokotroni and Panagitsas) is a quiet, leafy, shared-surface lane: PAUL stands on its east side in a villa set back behind a garden. North of Kolokotroni it passes the Panagitsa chapel area, the Kouvoutsakis gallery (no. 11) and the Goulandris Natural History Museum (no. 13) and continues as a one-lane residential street to Othonos and Deligianni.",
+   "crossSection": "FIRST BLOCK (photo r19, camera at the Kolokotroni corner looking south-west towards the spawn junction): hedge / garden wall | 2.5-3 m walkway of grey blocks | row of black bollards with a yellow band every 1.25 m | 3.8 m lane of pale grey concrete blocks, no kerb, no markings | row of bollards | parking bay / walkway 2.5 m (cars nose-to-tail beyond the bollards on the north-west side) | hedge. Lantern posts stand in the bollard line on the south-east side. Facade to facade 22-31 m: the buildings sit far back behind gardens.",
+   "segments": [
+    {
+     "id": "levidou_1",
+     "ax": 94,
+     "az": 61,
+     "bx": 144,
+     "bz": -29,
+     "lengthM": 103,
+     "osmWays": [
+      108224868
+     ],
+     "carriagewayM": 3.8,
+     "lanes": 1,
+     "surface": "grey_block_road",
+     "parking": "left",
+     "note": "Block between Kassaveti and Kolokotroni; PAUL at x=125.5, z=33 (east side). Photo r19 is from April 2015; the 2021 municipal study planned new surfacing for the cycle track here, so the colour of the lane today may differ.",
+     "confidence": "photo",
+     "a": [
+      38.07215,
+      23.813572
+     ],
+     "b": [
+      38.072961,
+      23.814142
+     ]
+    },
+    {
+     "id": "levidou_2",
+     "ax": 144,
+     "az": -29,
+     "bx": 250,
+     "bz": -225,
+     "lengthM": 225,
+     "osmWays": [
+      388932358
+     ],
+     "carriagewayM": 4.5,
+     "lanes": 1,
+     "surface": "asphalt",
+     "parking": "right",
+     "note": "Kolokotroni to Othonos: Kouvoutsakis gallery (Levidou 11, x=155, z=-131), Goulandris Natural History Museum and Retsina mansion (Levidou 13, x=188, z=-189). Gardens, stone walls, pines.",
+     "confidence": "inferred",
+     "a": [
+      38.072961,
+      23.814142
+     ],
+     "b": [
+      38.074727,
+      23.81535
+     ]
+    },
+    {
+     "id": "levidou_3",
+     "ax": 250,
+     "az": -225,
+     "bx": 438,
+     "bz": -571,
+     "lengthM": 391,
+     "osmWays": [
+      388932358
+     ],
+     "carriagewayM": 4.5,
+     "lanes": 1,
+     "surface": "asphalt",
+     "parking": "right",
+     "note": "Othonos to the stream bridge: villas and apartment blocks behind walls (Levidou 26 neoclassical house at x=326, z=-363).",
+     "confidence": "inferred",
+     "a": [
+      38.074727,
+      23.81535
+     ],
+     "b": [
+      38.077844,
+      23.817493
+     ]
+    }
+   ],
+   "landmarks": [
+    {
+     "name": "Spawn junction",
+     "x": 94,
+     "z": 61,
+     "lat": 38.07215,
+     "lon": 23.813572
+    },
+    {
+     "name": "PAUL",
+     "x": 125.5,
+     "z": 33.1,
+     "lat": 38.072402,
+     "lon": 23.813931
+    },
+    {
+     "name": "Pocket park / planned fountain wall at Levidou & Panagitsas (municipal study 24/2021)",
+     "x": 140,
+     "z": -32,
+     "lat": 38.072988,
+     "lon": 23.814096
+    },
+    {
+     "name": "Panagitsa chapel",
+     "x": 124.9,
+     "z": -50.5,
+     "lat": 38.073155,
+     "lon": 23.813924
+    },
+    {
+     "name": "Art Gallery Kouvoutsakis, Levidou 11",
+     "x": 155.5,
+     "z": -131.2,
+     "lat": 38.073882,
+     "lon": 23.814273
+    },
+    {
+     "name": "Goulandris Natural History Museum, Levidou 13",
+     "x": 188.5,
+     "z": -185.2,
+     "lat": 38.074368,
+     "lon": 23.814649
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 402,
+    "lenFocusM": 358,
+    "elevM": [
+     33.2,
+     40.2
+    ],
+    "gradePct": {
+     "median": 2.2,
+     "max": 3.2
+    },
+    "bbox": [
+     94,
+     -571,
+     438,
+     61
+    ],
+    "facadeGapM": {
+     "median": 31.4,
+     "p20": 22.1,
+     "p80": 39.1,
+     "n": 32
+    },
+    "longestWay": {
+     "from": [
+      144,
+      -29
+     ],
+     "to": [
+      438,
+      -571
+     ],
+     "heading": "NE",
+     "bearing": 28,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     108224868,
+     388932358
+    ],
+    "junctions": [
+     {
+      "street": "Αγίου Δημητρίου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Agiou Dimitriou"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Κυριαζή",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kyriazi"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Παναγίτσας",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Panagitsas"
+     },
+     {
+      "street": "Αργυροπούλου",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Argyropoulou"
+     },
+     {
+      "street": "Παπαδιαμάντη",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Papadiamanti"
+     },
+     {
+      "street": "Δημοσθένους",
+      "x": 224,
+      "z": -175,
+      "nameLatin": "Dimosthenous"
+     },
+     {
+      "street": "Όθωνος",
+      "x": 250,
+      "z": -225,
+      "nameLatin": "Othonos"
+     }
+    ],
+    "mapRoadLenM": 719
+   },
+   "confidence": "photo (first block, 2015) / inferred (rest)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%9B%CE%B5%CE%B2%CE%AF%CE%B4%CE%BF%CF%85_7899.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A7%CE%9D%CE%99%CE%9A%CE%97%20%CE%A0%CE%95%CE%A1%CE%99%CE%93%CE%A1%CE%91%CE%A6%CE%97%20%28S%29.pdf (Municipality of Kifisia, study 3/2021: reconstruction of the cycle tracks on Kassaveti, Levidou, Kolokotroni and Vas. Amalias; known only from the search-engine summary, the file itself was unreachable on 2026-11-21)",
+    "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A5%CE%A7%CE%9F%CE%A3%20%CE%A6%CE%A9%CE%A4%CE%9F%CE%93%CE%A1.%20%CE%A4%CE%95%CE%9A%CE%9C%CE%97%CE%A1%CE%99%CE%A9%CE%A3%CE%97%CE%A3_s.pdf (Municipality of Kifisia, study 24/2021: bioclimatic redevelopment of public spaces, Levidou & Panagitsas; search-engine summary only)"
+   ]
+  },
+  {
+   "name": "Πλατεία Πλατάνου",
+   "nameLatin": "Plateia Platanou (Platanos Square)",
+   "priority": 1,
+   "researched": true,
+   "inMap": true,
+   "kind": "square_loop",
+   "direction": "south-west then south (slip road around the west side of the Platanos island)",
+   "carriagewayM": 6.5,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 3.5,
+    "material": "red_brick",
+    "materialDetail": "red_tile, yellow-painted kerb",
+    "curb": "concrete, painted yellow"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane (the old plane tree that names the square) and smaller planes",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 20
+   },
+   "character": "The 109 m slip road that leaves southbound Kifisias Avenue, runs round the west side of the Platanos island past the edge of the Alsos and the bus stops, and rejoins the avenue opposite Kassaveti. See places.json 'platanos_square'.",
+   "crossSection": "Alsos edge (low wall, railing, trees) | 3.5 m red-tile sidewalk with bus shelter | yellow kerb | 6.5 m asphalt, two lanes one-way | kerb | planted island of the square.",
+   "landmarks": [
+    {
+     "name": "Bus stop PLATEIA PLATANOU",
+     "x": -84.1,
+     "z": 26.5,
+     "lat": 38.072461,
+     "lon": 23.811541
+    },
+    {
+     "name": "Decorative fountain on the island",
+     "x": -61,
+     "z": -3.2,
+     "lat": 38.072729,
+     "lon": 23.811805
+    },
+    {
+     "name": "Alsos entrance path",
+     "x": -95,
+     "z": 20,
+     "lat": 38.07252,
+     "lon": 23.811417
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 109,
+    "lenFocusM": 109,
+    "elevM": [
+     24.9,
+     27.1
+    ],
+    "gradePct": {
+     "median": 2.8,
+     "max": 6.8
+    },
+    "bbox": [
+     -87,
+     -13,
+     -37,
+     57
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      -42,
+      -9
+     ],
+     "to": [
+      -84,
+      26
+     ],
+     "heading": "SW",
+     "bearing": 230,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     260124791,
+     754551053,
+     1305799268
+    ],
+    "junctions": [
+     {
+      "street": "Κηφισίας",
+      "x": -42,
+      "z": -9,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Αδριανού",
+      "x": -42,
+      "z": -9,
+      "nameLatin": "Adrianou"
+     },
+     {
+      "street": "Ηρώδου Αττικού",
+      "x": -87,
+      "z": 57,
+      "nameLatin": "Irodou Attikou"
+     }
+    ],
+    "mapRoadLenM": 109
+   },
+   "confidence": "inferred (OSM geometry) + photo r11 for materials",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC_%CE%A0%CE%BB%CE%AC%CF%84%CE%B1%CE%BD%CE%BF%CF%82_7863.jpg"
+   ]
+  },
+  {
+   "name": "Όθωνος",
+   "nameLatin": "Othonos",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential_avenue",
+   "direction": "eastbound east of the railway/Kifisias (two lanes); mapped one-way throughout",
+   "carriagewayM": 6.0,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "left",
+   "sidewalk": {
+    "widthM": 2.0,
+    "material": "slabs",
+    "materialDetail": "concrete kerb with a planted verge behind it on the villa stretch",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane (Platanus), very large, forming a closed canopy; Judas trees (pink blossom in April) in gardens",
+    "spacingM": 9,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "One of the grand villa avenues: a tunnel of huge plane trees. West of Kifisias Avenue it comes up from the railway bridge past the station depot; east of it it runs past the police station and the Goulandris museum grounds to Levidou and on towards Kefalari.",
+   "crossSection": "Villa stretch east of Kifisias (photo r15, at x~230, z=-233): old stone wall | planted verge 1.5-2 m with shrubs behind a low green lattice railing, plane trunks (0.8-1 m diameter) standing in it | concrete kerb | 5.5-6 m asphalt, no markings | kerb | verge with shrubs and lantern posts | 1.8 m sidewalk | wall with hedge and garage gate.",
+   "landmarks": [
+    {
+     "name": "Kifisias Avenue junction (signals)",
+     "x": -22,
+     "z": -247,
+     "lat": 38.074925,
+     "lon": 23.812249
+    },
+    {
+     "name": "Police station",
+     "x": 63.8,
+     "z": -219,
+     "lat": 38.074673,
+     "lon": 23.813227
+    },
+    {
+     "name": "GAIA Centre / Goulandris museum, Othonos 100",
+     "x": 163,
+     "z": -197,
+     "lat": 38.074475,
+     "lon": 23.814358
+    },
+    {
+     "name": "Levidou crossing",
+     "x": 250,
+     "z": -225,
+     "lat": 38.074727,
+     "lon": 23.81535
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 457,
+    "lenFocusM": 251,
+    "elevM": [
+     25.1,
+     38.7
+    ],
+    "gradePct": {
+     "median": 3.0,
+     "max": 6.9
+    },
+    "bbox": [
+     -247,
+     -266,
+     250,
+     -225
+    ],
+    "facadeGapM": {
+     "median": 26.6,
+     "p20": 21.6,
+     "p80": 35.2,
+     "n": 32
+    },
+    "longestWay": {
+     "from": [
+      -22,
+      -247
+     ],
+     "to": [
+      250,
+      -225
+     ],
+     "heading": "E",
+     "bearing": 95,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     220277817,
+     361500816
+    ],
+    "junctions": [
+     {
+      "street": "Γρηγορίου Λαμπράκη",
+      "x": -322,
+      "z": -272,
+      "nameLatin": "Grigoriou Lampraki"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -22,
+      "z": -247,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Διονύσου",
+      "x": 104,
+      "z": -236,
+      "nameLatin": "Dionysou"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 250,
+      "z": -225,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Αμαλίας",
+      "x": -247,
+      "z": -266,
+      "nameLatin": "Amalias (Vasilissis Amalias)"
+     },
+     {
+      "street": "Κόκοτα",
+      "x": -141,
+      "z": -257,
+      "nameLatin": "Kokota"
+     }
+    ],
+    "mapRoadLenM": 850
+   },
+   "confidence": "photo (villa stretch) / inferred",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:%CE%9F%CE%B4%CF%8C%CF%82_%CE%8C%CE%B8%CF%89%CE%BD%CE%BF%CF%82_8572.jpg",
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αγίου Δημητρίου",
+   "nameLatin": "Agiou Dimitriou",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "south-west bound from the spawn junction down to the cathedral and Kifisias Avenue",
+   "carriagewayM": 4.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "bitter orange, pines from gardens",
+    "spacingM": 9,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Fourth arm of the spawn junction: leaves it to the south-west beside AB Vasilopoulos, passes a pocket park (x=66, z=131) and Miltiadou, then splits around the cathedral of Agios Dimitrios and its square/playground before reaching Kifisias Avenue. It rises 6.5 m towards the junction (4.3 %).",
+   "crossSection": "building / garden wall | 2 m slab sidewalk | 4.5 m asphalt one lane | 2 m parking | 2 m sidewalk | wall.",
+   "landmarks": [
+    {
+     "name": "Spawn junction",
+     "x": 94,
+     "z": 61,
+     "lat": 38.07215,
+     "lon": 23.813572
+    },
+    {
+     "name": "Pocket park",
+     "x": 65.6,
+     "z": 131.4,
+     "lat": 38.071516,
+     "lon": 23.813248
+    },
+    {
+     "name": "Agios Dimitrios cathedral",
+     "x": -17.5,
+     "z": 294,
+     "lat": 38.070051,
+     "lon": 23.8123
+    },
+    {
+     "name": "Playground south of the church",
+     "x": -29,
+     "z": 341,
+     "lat": 38.069628,
+     "lon": 23.812169
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 175,
+    "lenFocusM": 129,
+    "elevM": [
+     34.5,
+     41.1
+    ],
+    "gradePct": {
+     "median": 4.3,
+     "max": 5.4
+    },
+    "bbox": [
+     6,
+     61,
+     94,
+     215
+    ],
+    "facadeGapM": {
+     "median": 29.5,
+     "p20": 17.1,
+     "p80": 33.3,
+     "n": 24
+    },
+    "longestWay": {
+     "from": [
+      94,
+      61
+     ],
+     "to": [
+      6,
+      215
+     ],
+     "heading": "SW",
+     "bearing": 210,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     730280161
+    ],
+    "junctions": [
+     {
+      "street": "Αλωνίων",
+      "x": 20,
+      "z": 229,
+      "nameLatin": "Alonion"
+     },
+     {
+      "street": "Αγίων Θεοδώρων",
+      "x": 20,
+      "z": 229,
+      "nameLatin": "Agion Theodoron"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Κυριαζή",
+      "x": 94,
+      "z": 61,
+      "nameLatin": "Kyriazi"
+     },
+     {
+      "street": "Μιλτιάδου",
+      "x": 65,
+      "z": 110,
+      "nameLatin": "Miltiadou"
+     }
+    ],
+    "mapRoadLenM": 445
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://commons.wikimedia.org/wiki/File:%CE%9C%CE%B7%CF%84%CF%81%CE%BF%CF%80%CE%BF%CE%BB%CE%B9%CF%84%CE%B9%CE%BA%CF%8C%CF%82_%CE%BD%CE%B1%CF%8C%CF%82_%CE%9A%CE%B7%CF%86%CE%B9%CF%83%CE%B9%CE%AC%CF%82_7915.jpg"
+   ]
+  },
+  {
+   "name": "Αδριανού",
+   "nameLatin": "Adrianou",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "westbound: from Platanos square down past the Alsos and the station forecourt",
+   "carriagewayM": 6.0,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.5,
+    "material": "red_brick",
+    "materialDetail": "red_tile near Platanos, slabs lower down (inferred)",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane, pine (Alsos edge)",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "Leaves Platanos square to the west along the north edge of the Alsos (Platanos underground/surface car park on its north side) and drops 10 m to the station forecourt: the walking route from the square to the trains.",
+   "crossSection": "car park / buildings | 2.5 m sidewalk | 6.0 m asphalt | 2.5 m sidewalk | Alsos boundary: low wall with railing and tall pines.",
+   "landmarks": [
+    {
+     "name": "Platanos square",
+     "x": -45,
+     "z": -12,
+     "lat": 38.072808,
+     "lon": 23.811987
+    },
+    {
+     "name": "Platanos Parking",
+     "x": -125,
+     "z": -88,
+     "lat": 38.073493,
+     "lon": 23.811075
+    },
+    {
+     "name": "Station forecourt",
+     "x": -350,
+     "z": -85,
+     "lat": 38.073466,
+     "lon": 23.80851
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 327,
+    "lenFocusM": 327,
+    "elevM": [
+     15.2,
+     25.7
+    ],
+    "gradePct": {
+     "median": 3.5,
+     "max": 5.9
+    },
+    "bbox": [
+     -351,
+     -108,
+     -42,
+     -9
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      -65,
+      -26
+     ],
+     "to": [
+      -279,
+      -88
+     ],
+     "heading": "W",
+     "bearing": 286,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324883,
+     977757257,
+     1072623063
+    ],
+    "junctions": [
+     {
+      "street": "Κόκοτα",
+      "x": -170,
+      "z": -58,
+      "nameLatin": "Kokota"
+     },
+     {
+      "street": "Αμαλίας",
+      "x": -279,
+      "z": -88,
+      "nameLatin": "Amalias (Vasilissis Amalias)"
+     },
+     {
+      "street": "Γρηγορίου Λαμπράκη",
+      "x": -351,
+      "z": -108,
+      "nameLatin": "Grigoriou Lampraki"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -42,
+      "z": -9,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Πλατεία Πλατάνου",
+      "x": -42,
+      "z": -9,
+      "nameLatin": "Plateia Platanou (Platanos Square)"
+     }
+    ],
+    "mapRoadLenM": 327
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αργυροπούλου",
+   "nameLatin": "Argyropoulou",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "westbound",
+   "carriagewayM": 4.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.5,
+    "material": "grey_pavers",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cyl_black_yellow"
+   },
+   "trees": {
+    "species": "plane, bitter orange",
+    "spacingM": 9,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "Boutique street parallel to Kolokotroni on its north side (Alpha Bank, Art Flyer at no. 15); sidewalk centre-lines only 6.6 m apart, so a single lane.",
+   "crossSection": "shopfront | 2.5 m sidewalk | 4.0 m asphalt | 2.5 m sidewalk | shopfront.",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 237,
+    "lenFocusM": 237,
+    "elevM": [
+     34.5,
+     40.7
+    ],
+    "gradePct": {
+     "median": 2.8,
+     "max": 3.5
+    },
+    "bbox": [
+     177,
+     -88,
+     404,
+     -24
+    ],
+    "facadeGapM": {
+     "median": 21.6,
+     "p20": 19.1,
+     "p80": 27.5,
+     "n": 32
+    },
+    "longestWay": {
+     "from": [
+      404,
+      -24
+     ],
+     "to": [
+      177,
+      -88
+     ],
+     "heading": "W",
+     "bearing": 286,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     653757659
+    ],
+    "junctions": [
+     {
+      "street": "Λεβίδου",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Παπαδιαμάντη",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Papadiamanti"
+     }
+    ],
+    "mapRoadLenM": 237
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αρτέμιδος",
+   "nameLatin": "Artemidos",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "southbound",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "pines and cypresses from the school and villa grounds",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street on the route to the International School of Athens (ISA, campus between Xenias and Artemidos around x=897, z=-433). High walls and fences, school signs, speed limit signs; quiet except at school-run times.",
+   "crossSection": "school fence / wall | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | villa wall.",
+   "landmarks": [
+    {
+     "name": "ISA campus",
+     "x": 897.2,
+     "z": -433.5,
+     "lat": 38.076605,
+     "lon": 23.822728
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 325,
+    "lenFocusM": 280,
+    "elevM": [
+     55.2,
+     61.8
+    ],
+    "gradePct": {
+     "median": 2.8,
+     "max": 6.2
+    },
+    "bbox": [
+     817,
+     -476,
+     880,
+     412
+    ],
+    "facadeGapM": {
+     "median": 25.2,
+     "p20": 22.2,
+     "p80": 28.2,
+     "n": 24
+    },
+    "longestWay": {
+     "from": [
+      869,
+      -376
+     ],
+     "to": [
+      850,
+      412
+     ],
+     "heading": "S",
+     "bearing": 181,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32084542,
+     273715130
+    ],
+    "junctions": [
+     {
+      "street": "Ξενίας",
+      "x": 869,
+      "z": -376,
+      "nameLatin": "Xenias"
+     },
+     {
+      "street": "Δηληγιάννη",
+      "x": 858,
+      "z": -273,
+      "nameLatin": "Deligianni"
+     },
+     {
+      "street": "Φιλαδελφέως",
+      "x": 848,
+      "z": -167,
+      "nameLatin": "Filadelfeos"
+     }
+    ],
+    "mapRoadLenM": 894
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Γεωργίου Δροσίνη",
+   "nameLatin": "Georgiou Drosini",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "lane",
+   "direction": "north-east bound",
+   "carriagewayM": 4.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.5,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cyl_black_yellow"
+   },
+   "trees": {
+    "species": "bitter orange",
+    "spacingM": 8,
+    "sides": "one"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "Very narrow lane (facades only 4-7 m apart in places) behind the Kassaveti/Kifisias corner block: Cinemax 3 cinema (Drosini 16), the Drosinis Museum / municipal library villa (x=-52, z=166), small shops (Leonidas, Hemp oil...). A flight of steps (23 m, highway=steps) connects its south-west end down to Kifisias Avenue.",
+   "crossSection": "shopfront | 1.5 m sidewalk | 4.0 m asphalt | 1.5 m sidewalk | shopfront.",
+   "landmarks": [
+    {
+     "name": "Cinemax 3",
+     "x": -42,
+     "z": 133.5,
+     "lat": 38.071497,
+     "lon": 23.812021
+    },
+    {
+     "name": "Drosinis Museum / library",
+     "x": -52.4,
+     "z": 165.9,
+     "lat": 38.071205,
+     "lon": 23.811903
+    },
+    {
+     "name": "Steps down to Kifisias Avenue",
+     "x": -107,
+     "z": 175,
+     "lat": 38.071123,
+     "lon": 23.81128
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 159,
+    "lenFocusM": 106,
+    "elevM": [
+     30.6,
+     34.2
+    ],
+    "gradePct": {
+     "median": 3.4,
+     "max": 5.1
+    },
+    "bbox": [
+     -116,
+     51,
+     -12,
+     182
+    ],
+    "facadeGapM": {
+     "median": 7.4,
+     "p20": 4.2,
+     "p80": 13.8,
+     "n": 26
+    },
+    "longestWay": {
+     "from": [
+      -57,
+      134
+     ],
+     "to": [
+      -12,
+      51
+     ],
+     "heading": "NE",
+     "bearing": 29,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642572,
+     389226508,
+     389226509
+    ],
+    "junctions": [
+     {
+      "street": "Κηφισίας",
+      "x": -116,
+      "z": 182,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Κυριακού",
+      "x": -57,
+      "z": 134,
+      "nameLatin": "Kyriakou"
+     },
+     {
+      "street": "Μιλτιάδου",
+      "x": -26,
+      "z": 85,
+      "nameLatin": "Miltiadou"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": -12,
+      "z": 51,
+      "nameLatin": "Kassaveti"
+     }
+    ],
+    "mapRoadLenM": 171
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Δηληγιάννη",
+   "nameLatin": "Deligianni",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential_avenue",
+   "direction": "westbound (from Kefalari down to Kifisias Avenue and the station side)",
+   "carriagewayM": 5.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane and pine",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "cycleTrack": {
+    "present": true,
+    "side": "right",
+    "widthM": 2.2,
+    "surface": "cycle_asphalt",
+    "twoWay": true,
+    "extent": "only way 108225469, x=-228..-332 west of Kifisias Avenue"
+   },
+   "character": "Long one-way avenue (the bus route down from Kefalari square): villas, embassies' residences and apartment blocks behind walls; 12 m of fall over 640 m. Crosses Kifisias Avenue at signals (x=-36, z=-354) and continues west to the railway.",
+   "crossSection": "wall | 2 m sidewalk | 5.5 m asphalt: one lane + parking | 2 m sidewalk | wall.",
+   "landmarks": [
+    {
+     "name": "Kefalari square end",
+     "x": 624,
+     "z": -295,
+     "lat": 38.075358,
+     "lon": 23.819614
+    },
+    {
+     "name": "Georganta corner, neoclassical house no. 48",
+     "x": 424,
+     "z": -290,
+     "lat": 38.075313,
+     "lon": 23.817334
+    },
+    {
+     "name": "Kifisias Avenue junction",
+     "x": -36,
+     "z": -354,
+     "lat": 38.075889,
+     "lon": 23.81209
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 400,
+    "lenFocusM": 270,
+    "elevM": [
+     52.0,
+     63.6
+    ],
+    "gradePct": {
+     "median": 2.9,
+     "max": 6.0
+    },
+    "bbox": [
+     -36,
+     -354,
+     1387,
+     -223
+    ],
+    "facadeGapM": {
+     "median": 30.8,
+     "p20": 22.3,
+     "p80": 33.7,
+     "n": 22
+    },
+    "longestWay": {
+     "from": [
+      599,
+      -297
+     ],
+     "to": [
+      -36,
+      -354
+     ],
+     "heading": "W",
+     "bearing": 275,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     119883829,
+     388932368,
+     463466363,
+     660542221,
+     660542225
+    ],
+    "junctions": [
+     {
+      "street": "Πατριάρχου Γρηγορίου Ε",
+      "x": 546,
+      "z": -301,
+      "nameLatin": "Patriarchou Grigoriou E"
+     },
+     {
+      "street": "Αύρας",
+      "x": 999,
+      "z": -260,
+      "nameLatin": "Avras"
+     },
+     {
+      "street": "Αρτέμιδος",
+      "x": 858,
+      "z": -273,
+      "nameLatin": "Artemidos"
+     },
+     {
+      "street": "Χαριλάου Τρικούπη",
+      "x": 765,
+      "z": -281,
+      "nameLatin": "Charilaou Trikoupi"
+     }
+    ],
+    "mapRoadLenM": 1622
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μιλτιάδου",
+   "nameLatin": "Miltiadou",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "lane",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "bitter orange",
+    "spacingM": 8,
+    "sides": "one"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Short (95 m) back street parallel to Kassaveti behind AB Vasilopoulos, between Drosini and Agiou Dimitriou; facade gap 14 m, service entrances, the side of Hotel des Roses.",
+   "crossSection": "wall | 1.6 m sidewalk | 5.0 m asphalt (two-way in OSM, effectively one lane + parked cars) | 1.6 m sidewalk | wall.",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 95,
+    "lenFocusM": 95,
+    "elevM": [
+     32.4,
+     36.0
+    ],
+    "gradePct": {
+     "median": 3.9,
+     "max": 6.5
+    },
+    "bbox": [
+     -26,
+     85,
+     65,
+     110
+    ],
+    "facadeGapM": {
+     "median": 14.2,
+     "p20": 13.8,
+     "p80": 15.2,
+     "n": 15
+    },
+    "longestWay": {
+     "from": [
+      -26,
+      85
+     ],
+     "to": [
+      65,
+      110
+     ],
+     "heading": "E",
+     "bearing": 105,
+     "oneway": null
+    },
+    "osmWays": [
+     83642546
+    ],
+    "junctions": [
+     {
+      "street": "Γεωργίου Δροσίνη",
+      "x": -26,
+      "z": 85,
+      "nameLatin": "Georgiou Drosini"
+     },
+     {
+      "street": "Αγίου Δημητρίου",
+      "x": 65,
+      "z": 110,
+      "nameLatin": "Agiou Dimitriou"
+     }
+    ],
+    "mapRoadLenM": 95
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ξενίας",
+   "nameLatin": "Xenias",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "eastbound",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "pine, plane",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Leads from Kefalari (Deligianni / Kolokotroni top) east towards the ISA campus; a bus stop and one signalised junction; rises 10 m.",
+   "crossSection": "wall | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall.",
+   "landmarks": [
+    {
+     "name": "ISA campus",
+     "x": 897.2,
+     "z": -433.5,
+     "lat": 38.076605,
+     "lon": 23.822728
+    },
+    {
+     "name": "EYDAP water tower",
+     "x": 876.5,
+     "z": -495.4,
+     "lat": 38.077163,
+     "lon": 23.822492
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 322,
+    "lenFocusM": 196,
+    "elevM": [
+     53.9,
+     64.5
+    ],
+    "gradePct": {
+     "median": 3.3,
+     "max": 6.2
+    },
+    "bbox": [
+     580,
+     -408,
+     1148,
+     -347
+    ],
+    "facadeGapM": {
+     "median": 27.6,
+     "p20": 27.1,
+     "p80": 35.9,
+     "n": 16
+    },
+    "longestWay": {
+     "from": [
+      755,
+      -388
+     ],
+     "to": [
+      1148,
+      -347
+     ],
+     "heading": "E",
+     "bearing": 96,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     119883799,
+     616531531
+    ],
+    "junctions": [
+     {
+      "street": "Χαριλάου Τρικούπη",
+      "x": 755,
+      "z": -388,
+      "nameLatin": "Charilaou Trikoupi"
+     },
+     {
+      "street": "Αρτέμιδος",
+      "x": 869,
+      "z": -376,
+      "nameLatin": "Artemidos"
+     },
+     {
+      "street": "Αύρας",
+      "x": 1008,
+      "z": -362,
+      "nameLatin": "Avras"
+     }
+    ],
+    "mapRoadLenM": 572
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Παναγίτσας",
+   "nameLatin": "Panagitsas",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "eastbound from Kifisias Avenue to the Levidou/Kolokotroni corner",
+   "carriagewayM": 5.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cyl_black_yellow"
+   },
+   "trees": {
+    "species": "bitter orange",
+    "spacingM": 8,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "156 m boutique street (Funky Buddha, Sandy Costa, United Colors of Benetton, Collective...) climbing from the KFC corner on Kifisias Avenue to the little Panagitsa chapel and the corner of Levidou and Kolokotroni. Facade gap 15-17 m.",
+   "crossSection": "shopfront | 2.2 m sidewalk | 5.5 m asphalt: one lane + parking on the south side | 2.2 m sidewalk | shopfront.",
+   "landmarks": [
+    {
+     "name": "KFC corner on Kifisias",
+     "x": -5,
+     "z": -74,
+     "lat": 38.073367,
+     "lon": 23.812443
+    },
+    {
+     "name": "Panagitsa chapel",
+     "x": 124.9,
+     "z": -50.5,
+     "lat": 38.073155,
+     "lon": 23.813924
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 156,
+    "lenFocusM": 156,
+    "elevM": [
+     28.6,
+     33.1
+    ],
+    "gradePct": {
+     "median": 3.1,
+     "max": 4.2
+    },
+    "bbox": [
+     -5,
+     -74,
+     144,
+     -29
+    ],
+    "facadeGapM": {
+     "median": 17.2,
+     "p20": 15.5,
+     "p80": 25.4,
+     "n": 21
+    },
+    "longestWay": {
+     "from": [
+      -5,
+      -74
+     ],
+     "to": [
+      144,
+      -29
+     ],
+     "heading": "E",
+     "bearing": 107,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324917
+    ],
+    "junctions": [
+     {
+      "street": "Κηφισίας",
+      "x": -5,
+      "z": -74,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 144,
+      "z": -29,
+      "nameLatin": "Levidou"
+     }
+    ],
+    "mapRoadLenM": 156
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Παπαδιαμάντη",
+   "nameLatin": "Papadiamanti",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "shopping_street",
+   "direction": "westbound to Kifisias Avenue",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "block pavers (OSM surface=paving_stones)",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.5,
+    "material": "grey_pavers",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 1.5,
+    "style": "cyl_black_yellow"
+   },
+   "trees": {
+    "species": "plane, bitter orange",
+    "spacingM": 9,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_lantern",
+    "spacingM": 25
+   },
+   "character": "Paved shopping street north of Panagitsas: the open-air cinema Bomboniera (no. 12, x=129, z=-84), Cosmote, galleries. OSM maps both sidewalks (centre-lines 7.8 m apart).",
+   "crossSection": "shopfront | 2.5 m sidewalk | 5.0 m block-paved carriageway: one lane + parking | 2.5 m sidewalk | shopfront.",
+   "landmarks": [
+    {
+     "name": "Open-air cinema Bomboniera",
+     "x": 129.1,
+     "z": -83.6,
+     "lat": 38.073453,
+     "lon": 23.813972
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 185,
+    "lenFocusM": 185,
+    "elevM": [
+     30.4,
+     34.3
+    ],
+    "gradePct": {
+     "median": 2.6,
+     "max": 4.5
+    },
+    "bbox": [
+     -2,
+     -136,
+     177,
+     -88
+    ],
+    "facadeGapM": {
+     "median": 17.5,
+     "p20": 15.9,
+     "p80": 26.1,
+     "n": 16
+    },
+    "longestWay": {
+     "from": [
+      177,
+      -88
+     ],
+     "to": [
+      -2,
+      -136
+     ],
+     "heading": "W",
+     "bearing": 285,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     461028136
+    ],
+    "junctions": [
+     {
+      "street": "Αργυροπούλου",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Argyropoulou"
+     },
+     {
+      "street": "Λεβίδου",
+      "x": 177,
+      "z": -88,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Διονύσου",
+      "x": 78,
+      "z": -115,
+      "nameLatin": "Dionysou"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -2,
+      "z": -136,
+      "nameLatin": "Kifisias Avenue"
+     }
+    ],
+    "mapRoadLenM": 185
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)",
+    "https://www.kifissia.gr/sites/default/files/00_new_%CE%A4%CE%95%CE%A5%CE%A7%CE%9F%CE%A3%20%CE%A6%CE%A9%CE%A4%CE%9F%CE%93%CE%A1.%20%CE%A4%CE%95%CE%9A%CE%9C%CE%97%CE%A1%CE%99%CE%A9%CE%A3%CE%97%CE%A3_s.pdf (Municipality of Kifisia, study 24/2021: bioclimatic redevelopment of public spaces, Levidou & Panagitsas; search-engine summary only)"
+   ]
+  },
+  {
+   "name": "Φιλαδελφέως",
+   "nameLatin": "Filadelfeos",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "eastbound",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 1.8,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "pine, cypress, plane from gardens",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Quiet villa street on the plateau east of the centre (elevation 51-57 m), signals where it meets Charilaou Trikoupi.",
+   "crossSection": "wall | 1.8 m sidewalk | 5.0 m asphalt | 1.8 m sidewalk | wall.",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 290,
+    "lenFocusM": 152,
+    "elevM": [
+     51.4,
+     57.2
+    ],
+    "gradePct": {
+     "median": 1.7,
+     "max": 5.3
+    },
+    "bbox": [
+     610,
+     -188,
+     1379,
+     -118
+    ],
+    "facadeGapM": {
+     "median": 24.0,
+     "p20": 20.0,
+     "p80": 27.3,
+     "n": 18
+    },
+    "longestWay": {
+     "from": [
+      757,
+      -175
+     ],
+     "to": [
+      1379,
+      -118
+     ],
+     "heading": "E",
+     "bearing": 95,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32084555,
+     425513803,
+     463481606
+    ],
+    "junctions": [
+     {
+      "street": "Χαριλάου Τρικούπη",
+      "x": 757,
+      "z": -175,
+      "nameLatin": "Charilaou Trikoupi"
+     },
+     {
+      "street": "Αρτέμιδος",
+      "x": 848,
+      "z": -167,
+      "nameLatin": "Artemidos"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 610,
+      "z": -188,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Κεφαλλαρίου",
+      "x": 668,
+      "z": -183,
+      "nameLatin": "Kefalariou"
+     }
+    ],
+    "mapRoadLenM": 772
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Χαριλάου Τρικούπη",
+   "nameLatin": "Charilaou Trikoupi",
+   "priority": 2,
+   "researched": true,
+   "inMap": true,
+   "kind": "avenue",
+   "direction": "north-south along the east side of the centre; one-way pairs near Kefalari",
+   "carriagewayM": 7.0,
+   "lanes": 2,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "both",
+   "maxspeed": 30,
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane and pine",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "The main north-south road of upper Kifisia, linking Kolokotroni's top end with Kefalari square. Tertiary road, 30 km/h, several signalised junctions (8 mapped signals), bus stop. Hotels and large villas (Theoxenia Palace at x=643, z=-166).",
+   "crossSection": "wall | 2.2 m sidewalk | 7.0 m asphalt, one lane each way with centre line (widening to 4 lanes at the Kefalari end) | 2.2 m sidewalk | wall.",
+   "landmarks": [
+    {
+     "name": "Top of Kolokotroni",
+     "x": 610,
+     "z": -188,
+     "lat": 38.074394,
+     "lon": 23.819454
+    },
+    {
+     "name": "Theoxenia Palace hotel",
+     "x": 643.2,
+     "z": -166.5,
+     "lat": 38.0742,
+     "lon": 23.819833
+    },
+    {
+     "name": "Kefalari square",
+     "x": 660,
+     "z": -250,
+     "lat": 38.074952,
+     "lon": 23.820024
+    }
+   ],
+   "geometry": {
+    "lenPlayM": 630,
+    "lenFocusM": 386,
+    "elevM": [
+     52.9,
+     56.0
+    ],
+    "gradePct": {
+     "median": 1.5,
+     "max": 3.1
+    },
+    "bbox": [
+     732,
+     -485,
+     765,
+     -73
+    ],
+    "facadeGapM": {
+     "median": 40.1,
+     "p20": 29.1,
+     "p80": 41.4,
+     "n": 24
+    },
+    "longestWay": {
+     "from": [
+      765,
+      -281
+     ],
+     "to": [
+      755,
+      -388
+     ],
+     "heading": "N",
+     "bearing": 354,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     204808665,
+     463466361,
+     463466362,
+     463481578,
+     463481583,
+     463481597,
+     463481603,
+     660335290,
+     660335291
+    ],
+    "junctions": [
+     {
+      "street": "Ξενίας",
+      "x": 755,
+      "z": -388,
+      "nameLatin": "Xenias"
+     },
+     {
+      "street": "Δηληγιάννη",
+      "x": 757,
+      "z": -282,
+      "nameLatin": "Deligianni"
+     },
+     {
+      "street": "Πεντέλης",
+      "x": 739,
+      "z": -73,
+      "nameLatin": "Pentelis"
+     },
+     {
+      "street": "Φιλαδελφέως",
+      "x": 750,
+      "z": -176,
+      "nameLatin": "Filadelfeos"
+     }
+    ],
+    "mapRoadLenM": 1287
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Γρηγορίου Λαμπράκη",
+   "nameLatin": "Grigoriou Lampraki",
+   "priority": 3,
+   "researched": true,
+   "inMap": true,
+   "kind": "avenue",
+   "direction": "southbound",
+   "carriagewayM": 6.5,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "maxspeed": 30,
+   "sidewalk": {
+    "widthM": 2.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "plane, mulberry",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "West of the railway, lower town (elevation 12-18 m): two-lane one-way street with bus stops and a taxi stand.",
+   "crossSection": "building | 2 m sidewalk | 6.5 m asphalt, two lanes | 2 m sidewalk | building.",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 303,
+    "lenFocusM": 211,
+    "elevM": [
+     12.0,
+     18.0
+    ],
+    "gradePct": {
+     "median": 2.2,
+     "max": 3.3
+    },
+    "bbox": [
+     -406,
+     -272,
+     -322,
+     104
+    ],
+    "facadeGapM": {
+     "median": 30.1,
+     "p20": 21.1,
+     "p80": 36.0,
+     "n": 6
+    },
+    "longestWay": {
+     "from": [
+      -322,
+      -272
+     ],
+     "to": [
+      -349,
+      -121
+     ],
+     "heading": "S",
+     "bearing": 190,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     175516375,
+     194095312,
+     733729213,
+     733729215,
+     977757258
+    ],
+    "junctions": [
+     {
+      "street": "Όθωνος",
+      "x": -322,
+      "z": -272,
+      "nameLatin": "Othonos"
+     },
+     {
+      "street": "Ηρώδου Αττικού",
+      "x": -362,
+      "z": -7,
+      "nameLatin": "Irodou Attikou"
+     },
+     {
+      "street": "Αδριανού",
+      "x": -351,
+      "z": -108,
+      "nameLatin": "Adrianou"
+     }
+    ],
+    "mapRoadLenM": 591
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Κύπρου",
+   "nameLatin": "Kyprou",
+   "priority": 3,
+   "researched": true,
+   "inMap": true,
+   "kind": "residential",
+   "direction": "northbound",
+   "carriagewayM": 4.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "block pavers (OSM surface=paving_stones)",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.8,
+    "material": "grey_pavers",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": true,
+    "spacingM": 2.4,
+    "style": "ball_green"
+   },
+   "trees": {
+    "species": "plane, pine",
+    "spacingM": 10,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "kifisia_globe",
+    "spacingM": 25
+   },
+   "character": "Paved residential street south of Kassaveti (neoclassical house at Kyprou 19, x=253, z=249).",
+   "crossSection": "wall | 1.8 m sidewalk | 4.5 m paved lane | 1.8 m sidewalk | wall.",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 157,
+    "lenFocusM": 104,
+    "elevM": [
+     36.0,
+     37.7
+    ],
+    "gradePct": {
+     "median": 2.2,
+     "max": 4.1
+    },
+    "bbox": [
+     244,
+     22,
+     325,
+     281
+    ],
+    "facadeGapM": {
+     "median": 18.6,
+     "p20": 15.2,
+     "p80": 28.5,
+     "n": 11
+    },
+    "longestWay": {
+     "from": [
+      244,
+      281
+     ],
+     "to": [
+      325,
+      22
+     ],
+     "heading": "N",
+     "bearing": 18,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642595
+    ],
+    "junctions": [
+     {
+      "street": "Διγενή",
+      "x": 279,
+      "z": 168,
+      "nameLatin": "Digeni"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": 292,
+      "z": 128,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 325,
+      "z": 22,
+      "nameLatin": "Kolokotroni"
+     }
+    ],
+    "mapRoadLenM": 464
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Charilaou Trikoupi",
+   "nameLatin": "Charilaou Trikoupi",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Charilaou Trikoupi str.",
+   "nameLatin": "Charilaou Trikoupi Str.",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Filadelfeos Str.",
+   "nameLatin": "Filadelfeos Str.",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αγίων Ασωμάτων",
+   "nameLatin": "Agion Asomaton",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.6 m sidewalk | 6.8 m asphalt | 3.6 m sidewalk | wall/garden (facade-to-facade median 18.3 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 68,
+    "lenFocusM": 0,
+    "elevM": [
+     10.3,
+     14.3
+    ],
+    "gradePct": {
+     "median": 6.9,
+     "max": 8.5
+    },
+    "bbox": [
+     -603,
+     -191,
+     -412,
+     -186
+    ],
+    "facadeGapM": {
+     "median": 18.3,
+     "p20": 17.5,
+     "p80": 20.4,
+     "n": 7
+    },
+    "longestWay": {
+     "from": [
+      -603,
+      -186
+     ],
+     "to": [
+      -412,
+      -190
+     ],
+     "heading": "E",
+     "bearing": 89,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     420644142
+    ],
+    "junctions": [
+     {
+      "street": "Τατοΐου",
+      "x": -412,
+      "z": -190,
+      "nameLatin": "Tatoiou"
+     }
+    ],
+    "mapRoadLenM": 191
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αγίων Θεοδώρων",
+   "nameLatin": "Agion Theodoron",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 3.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 0.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 0.6 m sidewalk | 3.0 m asphalt | 0.6 m sidewalk | wall/garden (facade-to-facade median 7.3 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 75,
+    "lenFocusM": 0,
+    "elevM": [
+     36.6,
+     41.0
+    ],
+    "gradePct": {
+     "median": 6.6,
+     "max": 7.2
+    },
+    "bbox": [
+     -62,
+     176,
+     20,
+     229
+    ],
+    "facadeGapM": {
+     "median": 7.3,
+     "p20": 4.5,
+     "p80": 16.2,
+     "n": 11
+    },
+    "longestWay": {
+     "from": [
+      20,
+      229
+     ],
+     "to": [
+      -62,
+      176
+     ],
+     "heading": "NW",
+     "bearing": 303,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324797
+    ],
+    "junctions": [
+     {
+      "street": "Αγίου Δημητρίου",
+      "x": 20,
+      "z": 229,
+      "nameLatin": "Agiou Dimitriou"
+     },
+     {
+      "street": "Αλωνίων",
+      "x": 20,
+      "z": 229,
+      "nameLatin": "Alonion"
+     },
+     {
+      "street": "Κυριακού",
+      "x": -62,
+      "z": 176,
+      "nameLatin": "Kyriakou"
+     }
+    ],
+    "mapRoadLenM": 100
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αλωνίων",
+   "nameLatin": "Alonion",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "main_street",
+   "carriagewayM": 3.3,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Not individually researched; values derived from OpenStreetMap tags and the map geometry.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 3.3 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 724
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αμαλίας",
+   "nameLatin": "Amalias (Vasilissis Amalias)",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 5.7,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 5.7 m sidewalk | 6.0 m asphalt | 5.7 m sidewalk | wall/garden (facade-to-facade median 25.7 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 171,
+    "lenFocusM": 124,
+    "elevM": [
+     18.0,
+     22.2
+    ],
+    "gradePct": {
+     "median": 2.7,
+     "max": 3.5
+    },
+    "bbox": [
+     -279,
+     -266,
+     -247,
+     -88
+    ],
+    "facadeGapM": {
+     "median": 25.7,
+     "p20": 20.9,
+     "p80": 33.0,
+     "n": 19
+    },
+    "longestWay": {
+     "from": [
+      -279,
+      -88
+     ],
+     "to": [
+      -247,
+      -266
+     ],
+     "heading": "N",
+     "bearing": 10,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83517163
+    ],
+    "junctions": [
+     {
+      "street": "Αδριανού",
+      "x": -279,
+      "z": -88,
+      "nameLatin": "Adrianou"
+     },
+     {
+      "street": "Όθωνος",
+      "x": -247,
+      "z": -266,
+      "nameLatin": "Othonos"
+     }
+    ],
+    "mapRoadLenM": 288
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αχαρνών",
+   "nameLatin": "Acharnon",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "main_street",
+   "carriagewayM": 7.5,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Not individually researched; values derived from OpenStreetMap tags and the map geometry.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 7.5 m asphalt | 2.2 m sidewalk | wall/garden (facade-to-facade median 20.2 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 103,
+    "lenFocusM": 57,
+    "elevM": [
+     6.3,
+     13.4
+    ],
+    "gradePct": {
+     "median": 7.8,
+     "max": 8.6
+    },
+    "bbox": [
+     -549,
+     -131,
+     -407,
+     -128
+    ],
+    "facadeGapM": {
+     "median": 20.2,
+     "p20": 18.6,
+     "p80": 35.9,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      -549,
+      -131
+     ],
+     "to": [
+      -407,
+      -128
+     ],
+     "heading": "E",
+     "bearing": 91,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     742565133
+    ],
+    "junctions": [
+     {
+      "street": "Τατοΐου",
+      "x": -407,
+      "z": -128,
+      "nameLatin": "Tatoiou"
+     }
+    ],
+    "mapRoadLenM": 662
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Αύρας",
+   "nameLatin": "Avras",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden (facade-to-facade median 31.4 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 241,
+    "lenFocusM": 0,
+    "elevM": [
+     60.7,
+     65.2
+    ],
+    "gradePct": {
+     "median": 1.9,
+     "max": 4.0
+    },
+    "bbox": [
+     920,
+     -676,
+     1035,
+     674
+    ],
+    "facadeGapM": {
+     "median": 31.4,
+     "p20": 24.6,
+     "p80": 41.1,
+     "n": 19
+    },
+    "longestWay": {
+     "from": [
+      1035,
+      -676
+     ],
+     "to": [
+      920,
+      674
+     ],
+     "heading": "S",
+     "bearing": 185,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32084534
+    ],
+    "junctions": [
+     {
+      "street": "Σύρου",
+      "x": 1026,
+      "z": -575,
+      "nameLatin": "Syrou"
+     },
+     {
+      "street": "Ξενίας",
+      "x": 1008,
+      "z": -362,
+      "nameLatin": "Xenias"
+     },
+     {
+      "street": "Δηληγιάννη",
+      "x": 999,
+      "z": -260,
+      "nameLatin": "Deligianni"
+     }
+    ],
+    "mapRoadLenM": 1354
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Γεωργαντά",
+   "nameLatin": "Georganta",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.0 m asphalt | 3.0 m sidewalk | wall/garden (facade-to-facade median 24.9 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 269,
+    "lenFocusM": 168,
+    "elevM": [
+     39.1,
+     44.1
+    ],
+    "gradePct": {
+     "median": 2.0,
+     "max": 3.0
+    },
+    "bbox": [
+     405,
+     -312,
+     433,
+     166
+    ],
+    "facadeGapM": {
+     "median": 24.9,
+     "p20": 22.7,
+     "p80": 32.1,
+     "n": 15
+    },
+    "longestWay": {
+     "from": [
+      433,
+      -312
+     ],
+     "to": [
+      410,
+      103
+     ],
+     "heading": "S",
+     "bearing": 183,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     531626215,
+     572481254
+    ],
+    "junctions": [
+     {
+      "street": "Πατριάρχου Γρηγορίου Ε",
+      "x": 421,
+      "z": -121,
+      "nameLatin": "Patriarchou Grigoriou E"
+     },
+     {
+      "street": "Δημοσθένους",
+      "x": 420,
+      "z": -99,
+      "nameLatin": "Dimosthenous"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 417,
+      "z": 3,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Καραϊσκάκη Γ.",
+      "x": 410,
+      "z": 103,
+      "nameLatin": "G. Karaiskaki"
+     },
+     {
+      "street": "Κασσαβέτη",
+      "x": 407,
+      "z": 166,
+      "nameLatin": "Kassaveti"
+     }
+    ],
+    "mapRoadLenM": 575
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Γρηγορίου Αυξεντίου",
+   "nameLatin": "Grigoriou Afxentiou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 4.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 4.0 m sidewalk | 6.0 m asphalt | 4.0 m sidewalk | wall/garden (facade-to-facade median 20.7 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 110,
+    "lenFocusM": 56,
+    "elevM": [
+     36.0,
+     40.5
+    ],
+    "gradePct": {
+     "median": 4.3,
+     "max": 5.3
+    },
+    "bbox": [
+     145,
+     97,
+     201,
+     258
+    ],
+    "facadeGapM": {
+     "median": 20.7,
+     "p20": 16.2,
+     "p80": 27.5,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      201,
+      97
+     ],
+     "to": [
+      145,
+      258
+     ],
+     "heading": "S",
+     "bearing": 199,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642574
+    ],
+    "junctions": [
+     {
+      "street": "Κασσαβέτη",
+      "x": 201,
+      "z": 97,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Διγενή",
+      "x": 185,
+      "z": 144,
+      "nameLatin": "Digeni"
+     }
+    ],
+    "mapRoadLenM": 171
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Δαρειώτου",
+   "nameLatin": "Dareiotou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 5.1,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 5.1 m sidewalk | 6.8 m asphalt | 5.1 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 6,
+    "lenFocusM": 0,
+    "elevM": [
+     23.4,
+     23.4
+    ],
+    "gradePct": {
+     "median": 0.8,
+     "max": 0.8
+    },
+    "bbox": [
+     -209,
+     124,
+     -208,
+     263
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      -209,
+      263
+     ],
+     "to": [
+      -208,
+      124
+     ],
+     "heading": "N",
+     "bearing": 0,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     881874052
+    ],
+    "junctions": [
+     {
+      "street": "Μητροπολίτου Ιακώβου",
+      "x": -208,
+      "z": 124,
+      "nameLatin": "Mitropolitou Iakovou"
+     }
+    ],
+    "mapRoadLenM": 139
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Δημοσθένους",
+   "nameLatin": "Dimosthenous",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.0 m asphalt | 3.0 m sidewalk | wall/garden (facade-to-facade median 22.8 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 210,
+    "lenFocusM": 157,
+    "elevM": [
+     37.1,
+     43.2
+    ],
+    "gradePct": {
+     "median": 3.3,
+     "max": 4.5
+    },
+    "bbox": [
+     224,
+     -175,
+     420,
+     -99
+    ],
+    "facadeGapM": {
+     "median": 22.8,
+     "p20": 21.8,
+     "p80": 33.3,
+     "n": 4
+    },
+    "longestWay": {
+     "from": [
+      224,
+      -175
+     ],
+     "to": [
+      420,
+      -99
+     ],
+     "heading": "E",
+     "bearing": 111,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324920
+    ],
+    "junctions": [
+     {
+      "street": "Λεβίδου",
+      "x": 224,
+      "z": -175,
+      "nameLatin": "Levidou"
+     },
+     {
+      "street": "Γεωργαντά",
+      "x": 420,
+      "z": -99,
+      "nameLatin": "Georganta"
+     }
+    ],
+    "mapRoadLenM": 210
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Διγενή",
+   "nameLatin": "Digeni",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.4,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.4 m sidewalk | 6.0 m asphalt | 2.4 m sidewalk | wall/garden (facade-to-facade median 19.9 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 98,
+    "lenFocusM": 10,
+    "elevM": [
+     37.3,
+     37.8
+    ],
+    "gradePct": {
+     "median": 1.1,
+     "max": 2.0
+    },
+    "bbox": [
+     185,
+     144,
+     279,
+     168
+    ],
+    "facadeGapM": {
+     "median": 19.9,
+     "p20": 13.9,
+     "p80": 24.9,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      185,
+      144
+     ],
+     "to": [
+      279,
+      168
+     ],
+     "heading": "E",
+     "bearing": 104,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642560
+    ],
+    "junctions": [
+     {
+      "street": "Γρηγορίου Αυξεντίου",
+      "x": 185,
+      "z": 144,
+      "nameLatin": "Grigoriou Afxentiou"
+     },
+     {
+      "street": "Κύπρου",
+      "x": 279,
+      "z": 168,
+      "nameLatin": "Kyprou"
+     }
+    ],
+    "mapRoadLenM": 98
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Διονύσου",
+   "nameLatin": "Dionysou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.0 m asphalt | 3.0 m sidewalk | wall/garden (facade-to-facade median 29.6 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 196,
+    "lenFocusM": 148,
+    "elevM": [
+     30.5,
+     35.8
+    ],
+    "gradePct": {
+     "median": 2.7,
+     "max": 5.4
+    },
+    "bbox": [
+     78,
+     -541,
+     169,
+     -115
+    ],
+    "facadeGapM": {
+     "median": 29.6,
+     "p20": 21.7,
+     "p80": 34.2,
+     "n": 17
+    },
+    "longestWay": {
+     "from": [
+      169,
+      -541
+     ],
+     "to": [
+      78,
+      -115
+     ],
+     "heading": "S",
+     "bearing": 192,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     30611782
+    ],
+    "junctions": [
+     {
+      "street": "Όθωνος",
+      "x": 104,
+      "z": -236,
+      "nameLatin": "Othonos"
+     },
+     {
+      "street": "Παπαδιαμάντη",
+      "x": 78,
+      "z": -115,
+      "nameLatin": "Papadiamanti"
+     }
+    ],
+    "mapRoadLenM": 436
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Δραγούμη",
+   "nameLatin": "Dragoumi",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Δροσίνη",
+   "nameLatin": "Drosini",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ευβοίας",
+   "nameLatin": "Evvoias",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.9,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.9 m sidewalk | 6.0 m asphalt | 2.9 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 108
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ευρυάλης",
+   "nameLatin": "Evryalis",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 34,
+    "lenFocusM": 0,
+    "elevM": [
+     58.5,
+     58.8
+    ],
+    "gradePct": {
+     "median": 1.0,
+     "max": 1.7
+    },
+    "bbox": [
+     949,
+     -682,
+     1628,
+     -548
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      1628,
+      -651
+     ],
+     "to": [
+      949,
+      -548
+     ],
+     "heading": "W",
+     "bearing": 261,
+     "oneway": null
+    },
+    "osmWays": [
+     32084520
+    ],
+    "mapRoadLenM": 803
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ζηρίνη",
+   "nameLatin": "Zirini",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "main_street",
+   "carriagewayM": 7.5,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Not individually researched; values derived from OpenStreetMap tags and the map geometry.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 7.5 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 110
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ηρώδου Αττικού",
+   "nameLatin": "Irodou Attikou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.8 m asphalt | 3.0 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 282,
+    "lenFocusM": 282,
+    "elevM": [
+     12.5,
+     27.1
+    ],
+    "gradePct": {
+     "median": 5.7,
+     "max": 7.6
+    },
+    "bbox": [
+     -362,
+     -7,
+     -87,
+     57
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      -362,
+      -7
+     ],
+     "to": [
+      -87,
+      57
+     ],
+     "heading": "E",
+     "bearing": 103,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324839
+    ],
+    "junctions": [
+     {
+      "street": "Γρηγορίου Λαμπράκη",
+      "x": -362,
+      "z": -7,
+      "nameLatin": "Grigoriou Lampraki"
+     },
+     {
+      "street": "Μενάνδρου",
+      "x": -289,
+      "z": 10,
+      "nameLatin": "Menandrou"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -87,
+      "z": 57,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Πλατεία Πλατάνου",
+      "x": -87,
+      "z": 57,
+      "nameLatin": "Plateia Platanou (Platanos Square)"
+     }
+    ],
+    "mapRoadLenM": 282
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Θεσσαλονίκης",
+   "nameLatin": "Thessalonikis",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.8 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 198
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Καποδιστρίου",
+   "nameLatin": "Kapodistriou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden (facade-to-facade median 26.5 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 87,
+    "lenFocusM": 6,
+    "elevM": [
+     49.2,
+     51.1
+    ],
+    "gradePct": {
+     "median": 2.4,
+     "max": 3.0
+    },
+    "bbox": [
+     618,
+     -83,
+     632,
+     35
+    ],
+    "facadeGapM": {
+     "median": 26.5,
+     "p20": 24.4,
+     "p80": 39.3,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      632,
+      -83
+     ],
+     "to": [
+      618,
+      35
+     ],
+     "heading": "S",
+     "bearing": 187,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32084797
+    ],
+    "junctions": [
+     {
+      "street": "Πεντέλης",
+      "x": 632,
+      "z": -83,
+      "nameLatin": "Pentelis"
+     },
+     {
+      "street": "Χλόης",
+      "x": 618,
+      "z": 35,
+      "nameLatin": "Chlois"
+     }
+    ],
+    "mapRoadLenM": 492
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Καραϊσκάκη Γ.",
+   "nameLatin": "G. Karaiskaki",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden (facade-to-facade median 29.2 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 77,
+    "lenFocusM": 0,
+    "elevM": [
+     39.2,
+     40.1
+    ],
+    "gradePct": {
+     "median": 1.9,
+     "max": 2.7
+    },
+    "bbox": [
+     407,
+     103,
+     721,
+     166
+    ],
+    "facadeGapM": {
+     "median": 29.2,
+     "p20": 29.2,
+     "p80": 29.2,
+     "n": 1
+    },
+    "longestWay": {
+     "from": [
+      421,
+      117
+     ],
+     "to": [
+      721,
+      151
+     ],
+     "heading": "E",
+     "bearing": 96,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     25648757,
+     630241997,
+     630241999
+    ],
+    "junctions": [
+     {
+      "street": "Κασσαβέτη",
+      "x": 407,
+      "z": 166,
+      "nameLatin": "Kassaveti"
+     },
+     {
+      "street": "Γεωργαντά",
+      "x": 407,
+      "z": 166,
+      "nameLatin": "Georganta"
+     }
+    ],
+    "mapRoadLenM": 376
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Κεφαλλαρίου",
+   "nameLatin": "Kefalariou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 4.6,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.2 m sidewalk | 4.6 m asphalt | 1.2 m sidewalk | wall/garden (facade-to-facade median 13.4 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 103,
+    "lenFocusM": 74,
+    "elevM": [
+     51.8,
+     52.4
+    ],
+    "gradePct": {
+     "median": 0.3,
+     "max": 1.9
+    },
+    "bbox": [
+     658,
+     -183,
+     668,
+     -80
+    ],
+    "facadeGapM": {
+     "median": 13.4,
+     "p20": 13.1,
+     "p80": 29.1,
+     "n": 4
+    },
+    "longestWay": {
+     "from": [
+      668,
+      -183
+     ],
+     "to": [
+      658,
+      -80
+     ],
+     "heading": "S",
+     "bearing": 185,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     344073317
+    ],
+    "junctions": [
+     {
+      "street": "Φιλαδελφέως",
+      "x": 668,
+      "z": -183,
+      "nameLatin": "Filadelfeos"
+     },
+     {
+      "street": "Πεντέλης",
+      "x": 658,
+      "z": -80,
+      "nameLatin": "Pentelis"
+     }
+    ],
+    "mapRoadLenM": 103
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Κοκκιναρά",
+   "nameLatin": "Kokkinara",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "main_street",
+   "carriagewayM": 7.5,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Not individually researched; values derived from OpenStreetMap tags and the map geometry.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 7.5 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 414
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Κυριακού",
+   "nameLatin": "Kyriakou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 2.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 0.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 0.6 m sidewalk | 2.8 m asphalt | 0.6 m sidewalk | wall/garden (facade-to-facade median 9.8 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 56,
+    "lenFocusM": 9,
+    "elevM": [
+     34.2,
+     36.9
+    ],
+    "gradePct": {
+     "median": 5.1,
+     "max": 5.5
+    },
+    "bbox": [
+     -80,
+     134,
+     -57,
+     281
+    ],
+    "facadeGapM": {
+     "median": 9.8,
+     "p20": 8.0,
+     "p80": 20.4,
+     "n": 11
+    },
+    "longestWay": {
+     "from": [
+      -80,
+      281
+     ],
+     "to": [
+      -62,
+      176
+     ],
+     "heading": "N",
+     "bearing": 10,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642559,
+     630238196
+    ],
+    "junctions": [
+     {
+      "street": "Αγίων Θεοδώρων",
+      "x": -62,
+      "z": 176,
+      "nameLatin": "Agion Theodoron"
+     },
+     {
+      "street": "Γεωργίου Δροσίνη",
+      "x": -57,
+      "z": 134,
+      "nameLatin": "Georgiou Drosini"
+     }
+    ],
+    "mapRoadLenM": 150
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Κόκοτα",
+   "nameLatin": "Kokota",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.8 m asphalt | 3.0 m sidewalk | wall/garden (facade-to-facade median 27.3 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 201,
+    "lenFocusM": 170,
+    "elevM": [
+     23.1,
+     25.7
+    ],
+    "gradePct": {
+     "median": 1.1,
+     "max": 2.8
+    },
+    "bbox": [
+     -170,
+     -257,
+     -141,
+     -58
+    ],
+    "facadeGapM": {
+     "median": 27.3,
+     "p20": 18.4,
+     "p80": 32.6,
+     "n": 9
+    },
+    "longestWay": {
+     "from": [
+      -170,
+      -58
+     ],
+     "to": [
+      -153,
+      -166
+     ],
+     "heading": "N",
+     "bearing": 9,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     418589008,
+     418589009
+    ],
+    "junctions": [
+     {
+      "street": "Όθωνος",
+      "x": -141,
+      "z": -257,
+      "nameLatin": "Othonos"
+     },
+     {
+      "street": "Σολωμού",
+      "x": -153,
+      "z": -166,
+      "nameLatin": "Solomou"
+     },
+     {
+      "street": "Αδριανού",
+      "x": -170,
+      "z": -58,
+      "nameLatin": "Adrianou"
+     }
+    ],
+    "mapRoadLenM": 201
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "ΛΕΩΦΟΡΟΣ ΚΗΦΙΣΙΑΣ",
+   "nameLatin": "Leoforos Kifisias",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Λάμπρου Κατσώνη",
+   "nameLatin": "Labrou Katsoni",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.8 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 205
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Λεωφόρος Κηφισίας",
+   "nameLatin": "Leoforos Kifisias",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.6,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.6 m sidewalk | 5.0 m asphalt | 1.6 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {},
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μαυρομιχάλη",
+   "nameLatin": "Mavromichali",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 383
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μενάνδρου",
+   "nameLatin": "Menandrou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 5.3,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 5.3 m sidewalk | 6.0 m asphalt | 5.3 m sidewalk | wall/garden (facade-to-facade median 20.3 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 80,
+    "lenFocusM": 32,
+    "elevM": [
+     16.9,
+     17.1
+    ],
+    "gradePct": {
+     "median": 0.4,
+     "max": 0.6
+    },
+    "bbox": [
+     -302,
+     10,
+     -289,
+     250
+    ],
+    "facadeGapM": {
+     "median": 20.3,
+     "p20": 19.7,
+     "p80": 23.6,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      -289,
+      10
+     ],
+     "to": [
+      -293,
+      250
+     ],
+     "heading": "S",
+     "bearing": 181,
+     "oneway": null
+    },
+    "osmWays": [
+     32324846
+    ],
+    "junctions": [
+     {
+      "street": "Ηρώδου Αττικού",
+      "x": -289,
+      "z": 10,
+      "nameLatin": "Irodou Attikou"
+     },
+     {
+      "street": "Ευβοίας",
+      "x": -299,
+      "z": 116,
+      "nameLatin": "Evvoias"
+     }
+    ],
+    "mapRoadLenM": 241
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μητροπολίτου Ιακώβου",
+   "nameLatin": "Mitropolitou Iakovou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 4.1,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 4.1 m sidewalk | 6.8 m asphalt | 4.1 m sidewalk | wall/garden (facade-to-facade median 29.5 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 100,
+    "lenFocusM": 1,
+    "elevM": [
+     22.9,
+     30.1
+    ],
+    "gradePct": {
+     "median": 7.7,
+     "max": 8.2
+    },
+    "bbox": [
+     -443,
+     113,
+     -118,
+     187
+    ],
+    "facadeGapM": {
+     "median": 29.5,
+     "p20": 20.5,
+     "p80": 33.8,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      -118,
+      121
+     ],
+     "to": [
+      -443,
+      172
+     ],
+     "heading": "W",
+     "bearing": 261,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32324844
+    ],
+    "junctions": [
+     {
+      "street": "Κηφισίας",
+      "x": -118,
+      "z": 121,
+      "nameLatin": "Kifisias Avenue"
+     },
+     {
+      "street": "Δαρειώτου",
+      "x": -208,
+      "z": 124,
+      "nameLatin": "Dareiotou"
+     }
+    ],
+    "mapRoadLenM": 340
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μυκόνου",
+   "nameLatin": "Mykonou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.7,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.7 m sidewalk | 6.0 m asphalt | 3.7 m sidewalk | wall/garden (facade-to-facade median 17.8 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 97,
+    "lenFocusM": 68,
+    "elevM": [
+     48.5,
+     50.4
+    ],
+    "gradePct": {
+     "median": 2.0,
+     "max": 3.7
+    },
+    "bbox": [
+     490,
+     -188,
+     574,
+     -140
+    ],
+    "facadeGapM": {
+     "median": 17.8,
+     "p20": 14.9,
+     "p80": 21.6,
+     "n": 8
+    },
+    "longestWay": {
+     "from": [
+      574,
+      -140
+     ],
+     "to": [
+      490,
+      -188
+     ],
+     "heading": "NW",
+     "bearing": 300,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     399292483
+    ],
+    "junctions": [
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 574,
+      "z": -140,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Πατριάρχου Γρηγορίου Ε",
+      "x": 490,
+      "z": -188,
+      "nameLatin": "Patriarchou Grigoriou E"
+     }
+    ],
+    "mapRoadLenM": 97
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Μυρσίνης",
+   "nameLatin": "Myrsinis",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 205
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Νάξου",
+   "nameLatin": "Naxou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 140
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Νυμφών",
+   "nameLatin": "Nymfon",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 40,
+    "lenFocusM": 0,
+    "elevM": [
+     54.9,
+     55.1
+    ],
+    "gradePct": {
+     "median": 0.5,
+     "max": 1.9
+    },
+    "bbox": [
+     719,
+     -1001,
+     845,
+     -540
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      845,
+      -540
+     ],
+     "to": [
+      719,
+      -1001
+     ],
+     "heading": "N",
+     "bearing": 345,
+     "oneway": "no"
+    },
+    "osmWays": [
+     32084426
+    ],
+    "mapRoadLenM": 479
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ομήρου",
+   "nameLatin": "Omirou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 5.1,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 5.1 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 301
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Πατριάρχου Γρηγορίου Ε",
+   "nameLatin": "Patriarchou Grigoriou E",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.9,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.9 m sidewalk | 6.0 m asphalt | 3.9 m sidewalk | wall/garden (facade-to-facade median 25.3 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 190,
+    "lenFocusM": 0,
+    "elevM": [
+     44.0,
+     50.0
+    ],
+    "gradePct": {
+     "median": 2.7,
+     "max": 5.9
+    },
+    "bbox": [
+     421,
+     -301,
+     546,
+     -121
+    ],
+    "facadeGapM": {
+     "median": 25.3,
+     "p20": 23.5,
+     "p80": 37.8,
+     "n": 18
+    },
+    "longestWay": {
+     "from": [
+      421,
+      -121
+     ],
+     "to": [
+      546,
+      -301
+     ],
+     "heading": "NE",
+     "bearing": 35,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     399292482
+    ],
+    "junctions": [
+     {
+      "street": "Γεωργαντά",
+      "x": 421,
+      "z": -121,
+      "nameLatin": "Georganta"
+     },
+     {
+      "street": "Μυκόνου",
+      "x": 490,
+      "z": -188,
+      "nameLatin": "Mykonou"
+     },
+     {
+      "street": "Δηληγιάννη",
+      "x": 546,
+      "z": -301,
+      "nameLatin": "Deligianni"
+     }
+    ],
+    "mapRoadLenM": 233
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Πατριάρχου Μαξίμου",
+   "nameLatin": "Patriarchou Maximou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 2,
+    "lenFocusM": 0,
+    "gradePct": {
+     "median": null,
+     "max": null
+    },
+    "bbox": [
+     580,
+     -408,
+     613,
+     -308
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      613,
+      -308
+     ],
+     "to": [
+      580,
+      -408
+     ],
+     "heading": "N",
+     "bearing": 341,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642591
+    ],
+    "mapRoadLenM": 327
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Πεντέλης",
+   "nameLatin": "Pentelis",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden (facade-to-facade median 26.5 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 181,
+    "lenFocusM": 91,
+    "elevM": [
+     48.8,
+     53.5
+    ],
+    "gradePct": {
+     "median": 2.7,
+     "max": 2.9
+    },
+    "bbox": [
+     545,
+     -97,
+     739,
+     -73
+    ],
+    "facadeGapM": {
+     "median": 26.5,
+     "p20": 23.4,
+     "p80": 36.7,
+     "n": 14
+    },
+    "longestWay": {
+     "from": [
+      739,
+      -73
+     ],
+     "to": [
+      632,
+      -83
+     ],
+     "heading": "W",
+     "bearing": 275,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     458813117,
+     463481588
+    ],
+    "junctions": [
+     {
+      "street": "Χαριλάου Τρικούπη",
+      "x": 747,
+      "z": -73,
+      "nameLatin": "Charilaou Trikoupi"
+     },
+     {
+      "street": "Καποδιστρίου",
+      "x": 632,
+      "z": -83,
+      "nameLatin": "Kapodistriou"
+     },
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 545,
+      "z": -97,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Κεφαλλαρίου",
+      "x": 658,
+      "z": -80,
+      "nameLatin": "Kefalariou"
+     }
+    ],
+    "mapRoadLenM": 1710
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Σολωμού",
+   "nameLatin": "Solomou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 5.9,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 5.9 m sidewalk | 6.8 m asphalt | 5.9 m sidewalk | wall/garden (facade-to-facade median 29.7 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 148,
+    "lenFocusM": 148,
+    "elevM": [
+     25.4,
+     31.7
+    ],
+    "gradePct": {
+     "median": 4.6,
+     "max": 5.8
+    },
+    "bbox": [
+     -153,
+     -166,
+     -4,
+     -163
+    ],
+    "facadeGapM": {
+     "median": 29.7,
+     "p20": 19.6,
+     "p80": 34.3,
+     "n": 14
+    },
+    "longestWay": {
+     "from": [
+      -153,
+      -166
+     ],
+     "to": [
+      -4,
+      -163
+     ],
+     "heading": "E",
+     "bearing": 91,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     83642565
+    ],
+    "junctions": [
+     {
+      "street": "Κόκοτα",
+      "x": -153,
+      "z": -166,
+      "nameLatin": "Kokota"
+     },
+     {
+      "street": "Κηφισίας",
+      "x": -4,
+      "z": -163,
+      "nameLatin": "Kifisias Avenue"
+     }
+    ],
+    "mapRoadLenM": 148
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Στροφυλίου",
+   "nameLatin": "Strofyliou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 4.2,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.2 m sidewalk | 4.2 m asphalt | 1.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 119
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Συγγρού",
+   "nameLatin": "Syngrou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 278
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Σωκράτους",
+   "nameLatin": "Sokratous",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.8 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 637
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Σύρου",
+   "nameLatin": "Syrou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 395
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Τατοΐου",
+   "nameLatin": "Tatoiou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 2,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 3.0,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 3.0 m sidewalk | 6.8 m asphalt | 3.0 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 271,
+    "lenFocusM": 183,
+    "elevM": [
+     10.3,
+     14.6
+    ],
+    "gradePct": {
+     "median": 1.6,
+     "max": 3.4
+    },
+    "bbox": [
+     -422,
+     -280,
+     -394,
+     36
+    ],
+    "facadeGapM": {
+     "median": null,
+     "p20": null,
+     "p80": null,
+     "n": 0
+    },
+    "longestWay": {
+     "from": [
+      -407,
+      -128
+     ],
+     "to": [
+      -394,
+      36
+     ],
+     "heading": "S",
+     "bearing": 176,
+     "oneway": null
+    },
+    "osmWays": [
+     217443803,
+     244451384,
+     754995851
+    ],
+    "junctions": [
+     {
+      "street": "Αχαρνών",
+      "x": -407,
+      "z": -128,
+      "nameLatin": "Acharnon"
+     },
+     {
+      "street": "Αγίων Ασωμάτων",
+      "x": -412,
+      "z": -190,
+      "nameLatin": "Agion Asomaton"
+     }
+    ],
+    "mapRoadLenM": 429
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Ταϋγέτου",
+   "nameLatin": "Taygetou",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 4.5,
+   "lanes": 1,
+   "oneway": false,
+   "surface": "asphalt",
+   "parking": "none",
+   "sidewalk": {
+    "widthM": 1.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 1.2 m sidewalk | 4.5 m asphalt | 1.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 81
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Φιλύρων",
+   "nameLatin": "Filyron",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.8,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.8 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 184
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Χλόης",
+   "nameLatin": "Chlois",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 5.7,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 5.7 m sidewalk | 6.0 m asphalt | 5.7 m sidewalk | wall/garden (facade-to-facade median 19.6 m from OSM buildings)",
+   "landmarks": [],
+   "geometry": {
+    "lenPlayM": 137,
+    "lenFocusM": 80,
+    "elevM": [
+     44.5,
+     47.0
+    ],
+    "gradePct": {
+     "median": 1.4,
+     "max": 5.2
+    },
+    "bbox": [
+     504,
+     -46,
+     727,
+     48
+    ],
+    "facadeGapM": {
+     "median": 19.6,
+     "p20": 18.4,
+     "p80": 20.1,
+     "n": 7
+    },
+    "longestWay": {
+     "from": [
+      504,
+      -46
+     ],
+     "to": [
+      727,
+      48
+     ],
+     "heading": "SE",
+     "bearing": 113,
+     "oneway": "yes"
+    },
+    "osmWays": [
+     32084793
+    ],
+    "junctions": [
+     {
+      "street": "Κολοκοτρώνη",
+      "x": 504,
+      "z": -46,
+      "nameLatin": "Kolokotroni"
+     },
+     {
+      "street": "Καποδιστρίου",
+      "x": 618,
+      "z": 35,
+      "nameLatin": "Kapodistriou"
+     }
+    ],
+    "mapRoadLenM": 268
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  },
+  {
+   "name": "Χρήστου Λαδά",
+   "nameLatin": "Christou Lada",
+   "priority": 3,
+   "researched": false,
+   "inMap": true,
+   "kind": "residential",
+   "carriagewayM": 6.0,
+   "lanes": 1,
+   "oneway": true,
+   "surface": "asphalt",
+   "parking": "right",
+   "sidewalk": {
+    "widthM": 2.2,
+    "material": "slabs",
+    "curb": "concrete"
+   },
+   "bollards": {
+    "present": false,
+    "spacingM": 0,
+    "style": ""
+   },
+   "trees": {
+    "species": "mixed garden trees (pine, cypress, bitter orange) behind walls",
+    "spacingM": 12,
+    "sides": "both"
+   },
+   "lamps": {
+    "style": "pole_arm",
+    "spacingM": 30
+   },
+   "character": "Residential street of the Kifisia garden suburb: villas and 3-4 storey apartment blocks set back behind walls and railings with gardens; no shops unless listed in shops.json/census.json. Generic description - not individually researched.",
+   "crossSection": "wall/garden | 2.2 m sidewalk | 6.0 m asphalt | 2.2 m sidewalk | wall/garden",
+   "landmarks": [],
+   "geometry": {
+    "mapRoadLenM": 360
+   },
+   "confidence": "inferred",
+   "sources": [
+    "https://www.openstreetmap.org/ (extract kif.osm, bbox 23.804,38.0675-23.8265,38.0795; ODbL)"
+   ]
+  }
+ ]
+}

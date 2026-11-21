@@ -43,3 +43,24 @@ NEXT (in order): docs/CHARACTERS.md + CREDITS.md → fix chef head texture (f110
   when it can be avoided (spawn by least-recently-used avatar), vary height/build per person, and that the homeless man scene is in MAIN and easy to find (anchor: MAP.key.sephora when the data agent
   publishes it, else the Hondos center cosmetics store). A weapons bot will later add paintball markers: expose hold/aim poses if cheap, and mark children, CAST characters and the homeless man as protected
   (a boolean on the person record) so other modules can never target them.
+
+## Session 3 (restart Nov 21 00:48)
+- State on entry: main == my copy for 60_people.js, 75_npc.js, models/*. No docs/ORDERS.md yet. docs/CHARACTERS.md + CREDITS.md are written (v1).
+- Plan this session (integrate after each): (A) protected flag + LRU avatars + height/build variation + Sephora anchor check → (B) aim/hold poses for weapons → (C) chef head tex + more avatars (≥49 distinct street people) → (D) close-up QA per role → (E) start/stop transitions → (F) dog → (G) driver hook w/ cars agent → docs.
+- (session 3 did, not logged): 61 avatars built (tools/chars/cast.js), packs split rb_people.json + rb_people2.json (pp.more), tex 61 webp; LRU pickAvatar (fewest users), repeat → tint/scale; isProtected(p) + person.protected / npc.protected (children, cast, homeless); N_WALK 28 + N_POOL 21. Lineups s4/new1.png new2.png look right.
+
+## Session 4 (restart Nov 21 08:24)
+- main now: MAP.key.sephora (129.4,-3.5) + map shop "SEPHORA" on Levidou; HUD split into 85_hud/86_map/87_missions/87b_mission_data/88_menu (npcLine gone; talkTo calls npcSay; 87b stranger mission uses castNpc/castGive).
+- findPoi order: map shop name → MAP.key snapped to nearest shop → facadePoi (PLACED / data/census.json loaded in loadReal as PPL.census, snapped to street-facing facade with no fence between) → fallback.
+- tests/lib.js: renamed simTimers→__gkTimers (game now has simTimers()), sim() also runs inputTick/FRAME_HOOKS/flushCars.
+- 08:56 INTEGRATED into main: 61 avatars (2 packs), LRU casting, protected flags, census/facade Sephora anchor. main boots, no errors (shots/s4/main4_*).
+- 09:20 weapons/reactions (in my copy, verified in viewer: shots/s4/pose2.png pose3.png flinch_*.png): hk clips aim_pistol/hold_pistol/aim_rifle/hold_rifle/flinch/cower/hands_up (handkeyed.js; hand rotations fitted numerically with work/chars/tmp/fithand.js),
+  props marker_p/marker_r (vcBoxes), person.aimPitch, person.handWorld(), person.handProp; 75_npc: npcReact(n,what,x,z), npcTargets(x,z,r), state 'react', p.resume. docs/CHARACTERS.md updated.
+  tools/chars/poses.js = pose sheet tool (node poses.js out.png act[:carry|:up],... av WxH T speed).
+  NEXT: t7 game test → integrate → ORDERS_DONE → (C) chef head tex → (D) close-up QA → (E) start/stop transitions → dog.
+
+## Session 5 (restart Nov 21 12:45)
+- State on entry: copy has (unintegrated) weapons poses/reactions + 3 ISA IB Student cast entries (cast.json, label via castLabel/updateLabels in 75_npc.js, backpack wear, laptop prop). ORDERS: IB students (integrate now), Sephora moved to EAST side Levidou 8 (door ≈ 141.5, 2).
+- Plan: sync main → check Sephora key → game test IB students + homeless → integrate → ORDERS_DONE → then QA/polish.
+- 13:50 INTEGRATED into main: 3 ISA IB Students (label, backpack, IB-only dialog via n.dialog=castDialog / cast field `only`), weapons poses + npcReact/npcTargets, homeless at the new MAP.key.sephora (east side Levidou, verified t7_home.png), setCarry(null) now removes the carry prop. Verified in game t7 (shots/s5/t7_*), no errors. castDialog itself not yet clicked in game.
+  Known: ib_starbucks has no terrace seat at Starbucks → stands (fallback). m11 looks ~30: picking a younger avatar (lineup young_m.png pending).

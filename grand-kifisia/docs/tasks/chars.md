@@ -37,3 +37,6 @@ You own: gk3/js/60_people.js, gk3/js/75_npc.js, gk3/models/**, /tmp/claude-0/-ho
 - A crowd shot at the spawn junction and at Platanos square by day; café terrace shots; a night shot of the ISA guard.
 - Stats: skinned-character count, triangles, draw calls; people asset download size.
 - Run the three missions' people-related paths without errors (talk to an NPC, punch one, hit one with a car: see the globals in 85_hud_missions.js / 72_driving.js).
+
+## OWNER UPDATE 2026-11-21 — "ISA IB Student" NPCs (OWNER_BRIEF item 13)
+Add 3 fictional teen NPCs with a floating "ISA IB Student" label (ISA gate, Starbucks Kassaveti 19 with laptop, station platform). Talking to them returns a random line from the IB list in OWNER_BRIEF item 13 (add more in the same spirit). Use the existing talk/INTER hooks; if the talk UI lives in game files, expose the lines via a data field on the person record and tell game in docs/ORDERS.md. Integrate quickly.

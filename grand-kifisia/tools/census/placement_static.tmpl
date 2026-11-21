@@ -1,0 +1,86 @@
+# Shop placement audit — game signs vs. reality
+
+**Part A (research-census): truth = OSM-surveyed + verified addresses, audit of the map data, before/after, rules, real street order.** Parts B/C (data: runtime sign dump vs OSM, pipeline) follow after Part A.
+
+Owner: research-census (ORDERS item 16, shared with data and research-shops). Generated {{generated}} by `tools/census/09_placement_audit.py` → `10_placement_plot.py` → `11_placement_report.py`.
+Audited map: **current main** `gk3/kifisia_map.json` built {{mapgen}} from census {{mapcensus}}; "before" = the map built 2026-11-21T08:50 (census 202611210845). Truth: OSM (kif.osm) + census.json {{census}}.
+Machine-readable result for the pipeline: **`gk3/data/placement_audit.json`** (one record per game sign: truth facade, delta, flags, action). Anyone can re-run the audit on any map: `python3 tools/census/09_placement_audit.py <map.json> [--out=audit.json]`.
+
+## 1. Verdict
+
+| metric (detailed area) | before (map 08:50) | **now (main {{mapgen}})** |
+|---|---:|---:|
+| signs drawn | {{b_signs}} | **{{signs}}** |
+| misplaced or should not be there | {{b_nbad}} ({{b_pbad}} %) | **{{nbad}} ({{pbad}} %)** |
+| duplicate signs (same business twice) | {{b_dup}} | **{{dup}}** |
+| wrong side of the street | {{b_side}} | **{{side}}** |
+| facing the wrong street | {{b_street}} | **{{street}}** |
+| wrong building (beyond the position error) | {{b_bld}} | **{{bld}}** |
+| OSM-surveyed shops more than 4 m from their real shopfront | {{b_osm4}} of {{b_nosm}} | **{{osm4}} of {{nosm}}** |
+| OSM shops: median / 90th percentile distance to their real shopfront | {{b_osmmed}} / {{b_osmp90}} m | **{{osmmed}} / {{osmp90}} m** |
+| non-OSM signs sitting on an OSM shop's spot | {{b_squat}} | **{{squat}}** |
+| closed shops drawn | {{b_closed}} | **{{closed}}** |
+| signs with no listing behind them | {{b_unver}} | **{{unver}}** |
+| single-listing shops drawn (one source; allowed on free frontage only) | {{b_single}} | **{{single}}** |
+| real businesses (OSM / verified address) with no sign | {{b_missing}} | **{{missing}}** |
+
+{{verdict_now}}
+
+## 2. What "real" means here
+
+| truth kind | signs now | how the real position is known | tolerance |
+|---|---:|---|---|
+| `osm` | {{tosm}} | OSM node/way surveyed by mappers (the raw point in the map POI, or the OSM object the census links to), carried perpendicular onto the street-facing edge of the building that contains it (or the nearest building within 15 m), preferring edges that face its `addr:street`. An OSM *building* (way) is right on any frontage of that building. | **4 m** (the order's threshold) |
+| `address` | {{taddr}} | census tier A with street + number and two independent listings or a web/vrisko confirmation; position = census best position (OSM > house-number geocode on odd/even sides > Foursquare > Overture) | max(4 m, census `posErrM`); judged on **building, street and side**, not on the exact point |
+| `single` | {{tsingle}} | census tier B: one fresh listing; position = census best position | same as `address`; flagged SINGLE_LISTING |
+| none | {{tnone}} | no listing in OSM or census tiers A/B | flagged UNVERIFIED |
+
+Flags (a sign can have several): **DUPLICATE** (same OSM id, same census entry, or same normalised name within 60 m as another sign; the copy nearest to the real place is kept, OSM-sourced signs always win),
+**WRONG_SIDE** (across the street from the truth; judged only when the truth side is reliable: OSM, house-number geocode, or error ≤ 12 m), **WRONG_STREET** (faces another street although the truth building has a frontage on the address street),
+**WRONG_BUILDING** (not on the truth building and farther than the tolerance), **SHIFTED** (OSM: same building but > 4 m along the facade; address: farther than its error),
+**ON_OSM_BAY** (a non-OSM sign covers the truth facade point of a displaced OSM shop), **CLOSED** (census tier X / open = false), **UNVERIFIED**, **SINGLE_LISTING**, **MISSING**.
+Deltas are game sign facade point → truth facade point (for OSM the raw node often lies 2–8 m inside the building, so the raw distance would overstate errors).
+
+## 3. What was wrong in the 08:50 map (diagnosis that drove data's v3.1 rebuild)
+
+1. **{{b_dup}} duplicate signs** — the same business drawn twice, the second copy often 50–360 m away (Tommy Hilfiger, Vintage Lovers, Swarovski, The Body Shop, Eye-Q, Sparkle boutique, Advanced Plastic Surgery…): Overture records not matched to the OSM/census record of the same shop.
+2. **OSM-surveyed shops pushed off their spot ({{b_osm4}} > 4 m)**: bays packed along each facade in a fixed order, so on crowded facades (Kolokotroni block b33, b443/b444, Argyropoulou b492/b495, Kifisias b301/b305) surveyed shops slid along the frontage or round the corner, and unverified/single-listing signs took their place.
+3. **Stale census positions**: that map used census 202611210845, before the house-number geocoder fix (Kifisias even numbers 244–256 had been 300–380 m off); a cluster of ~30 signs (Serras Flowers, BOMBERG, Advanced Hair Clinics…) sat on one Kifisias building 230–390 m south of their addresses.
+4. **Nearest-free-facade snapping**: signs went to the nearest free street-facing edge within 45–90 m, regardless of the address's street and side ({{b_street}} wrong street, {{b_side}} wrong side).
+5. Census fix made in this round (13:35, census 202611211336, which v3.1 uses): a web entry geocoded from its own address no longer counts as an independent position (Zara/Sephora had "agreed" with themselves); when the preferred source disagrees with the address, a source that agrees with the address is taken; raw points are snapped to the side of the street given by the house-number parity (e.g. American Vintage, Levidou 5 → west side; Sephora stays at Levidou 8 east side, x 139.8 z 2.5).
+
+## 4. Remaining problems in the current map
+
+{{remaining}}
+
+## 5. Pipeline rules (for data — build_map3.py) and acceptance test
+
+Use `gk3/data/placement_audit.json` directly: every sign has `tf` = truth facade `{b, e, t, fx, fz, faces}` and `action` (`keep`, `keep_if_free`, `move_to_truth`, `move_to_truth_if_free`, `merge_into:<id>`, `move_off_osm_bay`, `drop`, `drop_or_plate`); `missing[]` lists real businesses without a sign, with their `tf`.
+
+1. **OSM first, exactly where surveyed.** Each OSM shop's bay centred on its `tf` (b, e, t). If bays collide, shrink widths (min 3 m) or move the *non-OSM* neighbour; an OSM bay never moves more than 2 m. If a building's frontage cannot hold all its OSM shops, put the surplus on a directory plate at the door — never round the corner onto another street.
+2. **Then verified addresses** (`truth.kind == "address"`): on the frontage of `tf.b` that faces `truth.street`, on the side given by house-number parity, ordered by house number between the OSM neighbours.
+3. **Single listings**: only on frontage of their truth building (or a neighbour on the same side of the same street within their `errM`) that is still free after steps 1–2; otherwise a plate/directory entry. Never on an OSM bay.
+4. **Duplicates**: one sign per business. 5. **Closed** and census tier C/X: not built; **UNVERIFIED**: no shopfront.
+6. **Never the wrong side or the wrong street**: reject any facade candidate across the street from `tf` or facing a different street than `truth.street`.
+7. **Acceptance** before integrating: `python3 tools/census/09_placement_audit.py <candidate map>` → DUPLICATE 0, WRONG_SIDE 0, WRONG_STREET 0, CLOSED 0, OSM > 4 m only where step 1 fell back to a plate (listed). Current main: {{accept}}.
+
+## Images (current main; top-down, north up, game metres)
+
+Green square = game sign correct; red square = misplaced; pink = single listing within its error; grey outline = unverified; blue circle = OSM truth at its facade; green/cyan triangle = address truth; coloured line = every delta > 4 m (red wrong side, orange wrong building, magenta wrong street, yellow shifted on the same building, dashed purple duplicate, grey within the address error); black × = real business with no sign.
+
+![overview](img/placement/overview.png)
+
+| | |
+|---|---|
+| ![Kassaveti west + Platanos](img/placement/kassaveti_west_platanos.png) | ![spawn + Kassaveti east](img/placement/spawn_kassaveti_east.png) |
+| ![Levidou south](img/placement/levidou_south.png) | ![Levidou north](img/placement/levidou_north.png) |
+| ![Kyriazi](img/placement/kyriazi.png) | ![Kifisias north](img/placement/kifisias_north.png) |
+| ![Kifisias south](img/placement/kifisias_south.png) | ![Kolokotroni + Argyropoulou west](img/placement/kolokotroni_argyropoulou_west.png) |
+| ![Kolokotroni + Argyropoulou east](img/placement/kolokotroni_argyropoulou_east.png) | |
+
+## Limits (honest)
+
+- "Real" for non-OSM shops is an address-level position (10–30 m). The audit judges those on building, street and side, not on the metre. Exact unit boundaries inside a building are not in any open source.
+- OSM nodes are mapper placements: usually on or just inside the right shopfront, occasionally at a building centroid; a few OSM shops may have closed since they were mapped (OSM has no reliable closure data here).
+- Kyriazi house numbers are sparse in OSM (3 exact numbers); positions of Kyriazi 30–40 listings (Zara, Gap, Sugarfree, eyeQ, Kiko) carry ±15–30 m.
+- The audit checks the map data the renderer reads (`MAP.pois` facade points). Whether `31_shopfronts.js` draws each bay exactly there is the buildings/data runtime check (ORDERS item 16).

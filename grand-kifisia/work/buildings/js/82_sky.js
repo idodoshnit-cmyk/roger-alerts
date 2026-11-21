@@ -10,15 +10,15 @@ function sunDir(h,out){const H=(h-SKY.noon)*Math.PI/12,sl=Math.sin(SKY.lat),cl=M
 /* keyframes over the sun's elevation in degrees */
 const KE=[-18,-8,-3,0,4,10,25,60];
 const KEY={
-  zen:[[.012,.016,.040],[.032,.048,.115],[.085,.135,.30],[.15,.24,.47],[.19,.32,.60],[.19,.37,.70],[.16,.38,.77],[.12,.35,.79]],          // display colours of the dome
-  hor:[[.050,.052,.080],[.10,.11,.19],[.33,.31,.42],[.60,.52,.55],[.74,.70,.68],[.78,.80,.83],[.74,.83,.92],[.71,.82,.94]],
-  horSun:[[.050,.052,.080],[.40,.20,.16],[.95,.47,.23],[1.0,.62,.30],[1.0,.78,.50],[1.0,.90,.72],[.90,.92,.94],[.84,.89,.96]],
+  zen:[[.014,.018,.040],[.030,.050,.125],[.075,.14,.32],[.13,.24,.50],[.17,.32,.62],[.19,.37,.70],[.16,.38,.77],[.12,.35,.79]],          // display colours of the dome
+  hor:[[.082,.068,.074],[.115,.12,.19],[.30,.34,.48],[.56,.58,.66],[.72,.74,.78],[.78,.80,.83],[.74,.83,.92],[.71,.82,.94]],
+  horSun:[[.082,.068,.074],[.40,.22,.15],[.98,.50,.22],[1.0,.64,.30],[1.0,.80,.52],[1.0,.90,.72],[.90,.92,.94],[.84,.89,.96]],
   glow:[0,.8,1,1,.9,.6,.25,.1],
   cloud:[[.06,.065,.09],[.13,.13,.2],[.55,.36,.36],[.95,.66,.5],[1,.86,.72],[1,.96,.9],[1,1,1],[1,1,1]],
-  sunI:[0,0,0,.42,1.4,2.0,2.45,2.6],sunC:[[1,.5,.22],[1,.5,.22],[1,.5,.22],[1,.50,.22],[1,.64,.38],[1,.80,.58],[1,.93,.80],[1,.97,.90]],     // lights (linear)
-  hemiI:[.22,.25,.42,.6,.75,.85,.95,1.0],hemiS:[[.24,.31,.58],[.27,.34,.60],[.44,.46,.68],[.64,.62,.74],[.72,.74,.88],[.72,.80,.98],[.70,.81,1],[.69,.80,1]],
+  sunI:[0,0,0,.40,1.0,1.6,2.35,2.6],sunC:[[1,.5,.22],[1,.5,.22],[1,.5,.22],[1,.46,.20],[1,.52,.26],[1,.62,.36],[1,.82,.60],[1,.96,.88]],     // lights (linear)
+  hemiI:[.10,.13,.34,.58,.76,.88,1.08,1.16],hemiS:[[.20,.28,.60],[.24,.32,.66],[.42,.44,.72],[.66,.58,.72],[.74,.68,.80],[.72,.76,.94],[.70,.81,1],[.69,.80,1]],
   hemiG:[[.17,.13,.10],[.18,.14,.11],[.3,.24,.2],[.5,.38,.28],[.55,.44,.33],[.52,.46,.38],[.5,.46,.40],[.5,.46,.40]],
-  expo:[.95,.95,.85,.68,.58,.54,.52,.52],disc:[0,0,0,.9,1,1,1,1]};
+  expo:[.88,.86,.84,.76,.70,.64,.55,.52],disc:[0,0,0,.9,1,1,1,1]};
 const _k3=[0,0,0];
 function kf(e,a){if(e<=KE[0])return a[0];for(let i=1;i<KE.length;i++)if(e<=KE[i]){const t=(e-KE[i-1])/(KE[i]-KE[i-1]);return a[i-1]+(a[i]-a[i-1])*t}return a[a.length-1]}
 function kf3(e,a,out){let i=1;if(e<=KE[0]){out[0]=a[0][0];out[1]=a[0][1];out[2]=a[0][2];return out}while(i<KE.length-1&&e>KE[i])i++;const t=clamp((e-KE[i-1])/(KE[i]-KE[i-1]),0,1),p=a[i-1],q=a[i];out[0]=p[0]+(q[0]-p[0])*t;out[1]=p[1]+(q[1]-p[1])*t;out[2]=p[2]+(q[2]-p[2])*t;return out}
@@ -35,8 +35,10 @@ float fbm(vec2 p){float a=0.5,s=0.0;for(int i=0;i<4;i++){s+=a*vn(p);p=p*2.03+vec
 void main(){
  vec3 d=normalize(vDir);float h=d.y;
  float sg=max(dot(normalize(d.xz+vec2(1e-5)),normalize(uSunDir.xz+vec2(1e-5))),0.0);sg=sg*sg*sg*uGlow;
- vec3 hor=mix(uHor,uHorSun,sg);
- vec3 col=mix(hor,uZen,pow(clamp(h,0.0,1.0),0.45));
+ vec3 hor=mix(uHor,uHorSun,sg);float hc=clamp(h,0.0,1.0);
+ vec3 col=mix(uHor,uZen,pow(hc,0.45));
+ float g1=sg*exp(-hc*8.0),g2=sg*(exp(-hc*3.0)-exp(-hc*8.0));
+ col=mix(col,uHorSun,g1);col=mix(col,uHorSun*vec3(1.0,1.12,1.25)+vec3(0.0,0.03,0.08),g2*0.55);
  float sd=max(dot(d,uSunDir),0.0);
  col+=uSunCol*(pow(sd,6.0)*0.10+pow(sd,48.0)*0.20+pow(sd,700.0)*0.55)*uSunVis;
  if(h>0.0){
@@ -45,7 +47,7 @@ void main(){
   float dens=smoothstep(0.50,0.80,c*0.62+c2*0.38+uCloudAmt)*smoothstep(0.015,0.20,h);
   vec3 cc=mix(uCloud,hor,0.22)+uSunCol*pow(sd,10.0)*0.22*uSunVis;
   if(uStars>0.01){vec2 sp=vec2(atan(d.z,d.x)*40.0,asin(clamp(h,-1.0,1.0))*64.0);vec2 ip=floor(sp),fp=fract(sp)-0.5;float r=h21(ip);
-   float st=step(0.90,r)*smoothstep(0.15,0.0,length(fp+(vec2(h21(ip+3.1),h21(ip+7.7))-0.5)*0.6))*(0.35+0.65*h21(ip+1.7));
+   float st=step(0.962,r)*smoothstep(0.15,0.0,length(fp+(vec2(h21(ip+3.1),h21(ip+7.7))-0.5)*0.6))*(0.35+0.65*h21(ip+1.7));
    col+=vec3(0.85,0.92,1.0)*st*uStars*smoothstep(0.03,0.30,h);}
   float md=max(dot(d,uMoonDir),0.0);col+=vec3(0.96,0.95,0.86)*(smoothstep(0.99962,0.99978,md)+pow(md,260.0)*0.10)*uMoon;
   col=mix(col,cc,dens*0.78);
@@ -80,7 +82,7 @@ function skyEnv(force){if(!ENV.pm){ENV.pm=new THREE.PMREMGenerator(renderer);ENV
 const LIGHTS=[];function addLight(x,z,r,kind,a){LIGHTS.push([x,z,r||12,kind?1:0,a===undefined?0.85:a]);SKY.lamps=false}
 function buildLampMap(){const [bx0,bz0,bx1,bz1]=BOUNDS,res=1.5,w=Math.ceil((bx1-bx0)/res),h=Math.ceil((bz1-bz0)/res);const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});
   g.fillStyle='#000';g.fillRect(0,0,w,h);g.globalCompositeOperation='lighter';
-  const blob=(x,z,r,ch,a)=>{const px=(x-bx0)/res,py=(z-bz0)/res,pr=r/res,col=ch?'0,255,0':'255,0,0';const gr=g.createRadialGradient(px,py,0,px,py,pr);gr.addColorStop(0,`rgba(${col},${a})`);gr.addColorStop(0.3,`rgba(${col},${a*0.55})`);gr.addColorStop(0.65,`rgba(${col},${a*0.16})`);gr.addColorStop(1,`rgba(${col},0)`);g.fillStyle=gr;g.fillRect(px-pr,py-pr,pr*2,pr*2)};
+  const blob=(x,z,r,ch,a)=>{const px=(x-bx0)/res,py=(z-bz0)/res,pr=r/res,col=ch?'0,255,0':'255,0,0';const gr=g.createRadialGradient(px,py,0,px,py,pr);gr.addColorStop(0,`rgba(${col},${a})`);gr.addColorStop(0.22,`rgba(${col},${a*0.6})`);gr.addColorStop(0.5,`rgba(${col},${a*0.2})`);gr.addColorStop(0.8,`rgba(${col},${a*0.05})`);gr.addColorStop(1,`rgba(${col},0)`);g.fillStyle=gr;g.fillRect(px-pr,py-pr,pr*2,pr*2)};
   for(const l of LIGHTS)blob(l[0],l[1],l[2],l[3],l[4]);
   if(!LIGHTS.some(l=>l[3]===0))for(const l of MAP.lamps){const x=l[0]/10,z=l[1]/10;if(l[2]===2){const yaw=l[3]+(l[4]>0?Math.PI:0);blob(x+Math.sin(yaw)*1.7,z+Math.cos(yaw)*1.7,17,0,0.8)}else blob(x,z,l[2]===0?12:11,0,0.85)}
   if(typeof EXTRA!=='undefined'&&EXTRA.lamp2)for(const e of EXTRA.lamp2)blob(e[0],e[1],24,1,0.8);
@@ -101,16 +103,18 @@ function updateSky(dt){tod=(tod+dt*todRate+24)%24;const e=SKY.elev=sunDir(tod,su
   // dome
   SKYU.uZen.value.fromArray(kf3(e,KEY.zen,_k3));const hc=kf3(e,KEY.hor,_k3);SKYU.uHor.value.fromArray(hc);scene.fog.color.setRGB(hc[0],hc[1],hc[2]);
   const hs=kf3(e,KEY.horSun,_k3),gl=kf(e,KEY.glow);SKYU.uHorSun.value.fromArray(hs);SKYU.uGlow.value=gl;U.fogSun.value.set(hs[0],hs[1],hs[2],gl);
-  const hl=Math.hypot(sunV.x,sunV.z)||1;U.sunXZ.value.set(sunV.x/hl,sunV.z/hl);SKYU.uSunDir.value.copy(sunV);
+  const hl=Math.hypot(sunV.x,sunV.z)||1;U.sunXZ.value.set(sunV.x/hl,sunV.z/hl);
+  {const f=0.5*gl*clamp(1-e/16,0,1)*clamp((e+9)/7,0,1);U.glowC.value.setRGB(Math.pow(hs[0],2.2)*f,Math.pow(hs[1],2.2)*f,Math.pow(hs[2],2.2)*f);// warm light from the bright horizon around a low sun
+   const wt=U.time.value;U.wind.value.z=0.05+0.035*Math.sin(wt*0.07)+0.02*Math.sin(wt*0.23+1.3)}SKYU.uSunDir.value.copy(sunV);
   const sc=kf3(e,KEY.sunC,_k3);SKYU.uSunCol.value.set(sc[0],sc[1]*0.95+0.05,sc[2]*0.9+0.1);SKYU.uSunVis.value=kf(e,KEY.disc);
-  const night=SKY.night=clamp((2-e)/7,0,1);const deep=clamp((-4-e)/8,0,1);SKYU.uStars.value=deep;SKYU.uMoon.value=deep;SKYU.uCloud.value.fromArray(kf3(e,KEY.cloud,_k3));
+  const night=SKY.night=clamp((2-e)/7,0,1);const deep=clamp((-4-e)/8,0,1);SKYU.uStars.value=deep*0.6;SKYU.uMoon.value=deep;SKYU.uCloud.value.fromArray(kf3(e,KEY.cloud,_k3));
   // lights: the one directional light is the sun by day and the moon at night
-  const sI=kf(e,KEY.sunI),mI=0.24*deep;
+  const sI=kf(e,KEY.sunI),mI=0.13*deep;
   if(sI>0.001||mI<=0){lightV.copy(sunV);if(lightV.y<0.035){lightV.y=0.035;lightV.normalize()}sun.intensity=sI;sun.color.setRGB(sc[0],sc[1],sc[2])}else{lightV.copy(moonV);sun.intensity=mI;sun.color.setRGB(0.50,0.62,1.0)}
   const hsC=kf3(e,KEY.hemiS,_k3);hemi.color.setRGB(hsC[0],hsC[1],hsC[2]);const hg=kf3(e,KEY.hemiG,_k3);hemi.groundColor.setRGB(hg[0],hg[1],hg[2]);hemi.intensity=kf(e,KEY.hemiI);amb.intensity=0.07;
   renderer.toneMappingExposure=player.interior?SKY.indoorExposure:kf(e,KEY.expo);
   // night switches: window glow, lamp heads, lamp light on the ground
-  U.night.value=night;U.lampC.value.setRGB(1.25,0.86,0.47);U.shopC.value.setRGB(1.0,0.90,0.74);if(poolMesh)poolMesh.material.opacity=night*0.22;
+  U.night.value=night;U.lampC.value.setRGB(1.55,1.02,0.52);U.shopC.value.setRGB(1.0,0.90,0.74);if(poolMesh)poolMesh.material.opacity=night*0.22;
   // sky colours seen in reflections (linear)
   const z=SKYU.uZen.value,k=1.45;U.skyZ.value.setRGB(Math.pow(z.x,2.2)*k,Math.pow(z.y,2.2)*k,Math.pow(z.z,2.2)*k);U.skyH.value.setRGB(Math.pow(hc[0],2.2)*k,Math.pow(hc[1],2.2)*k,Math.pow(hc[2],2.2)*k);
   const gd=0.012+0.11*clamp((e+4)/14,0,1);U.skyG.value.setRGB(gd,gd*0.96,gd*0.9);

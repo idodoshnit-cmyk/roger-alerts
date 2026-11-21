@@ -1,0 +1,1 @@
+[{"name":"stats","eval":"JSON.stringify({park:PARKLM.stats,lm:LM.built})"},{"name":"eyeW","cam":[-206.2,1.7,-19.2,-182,1.2,-12.7]},{"name":"spawn","at":"spawn"}]

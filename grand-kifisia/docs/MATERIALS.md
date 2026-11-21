@@ -9,6 +9,10 @@ Owner: agent `mats`. Files: `gk3/js/10_atlas.js` (materials), `gk3/js/82_sky.js`
   glass/water/polished stone, night window glow and a street-lamp light map.
 - **Your code keeps working unchanged**: `T.<name>` ids, `RECT[T.name]` handed to `GB`, UVs "in tile repeats", `MAT.atlas / MAT.cut / MAT.leaf / MAT.signs`, the `aGlow` flag.
   All the old `T` names still exist (table in §3).
+- **New building materials (2026-11-21)**: `TM.karystos` — irregular grey-green Karystos/Pelion stone slabs (the classic Athenian stone base, garden wall and step
+  cladding; Poly Haven stone_tiles, 3.17 m repeat) and `TM.timber` — stained horizontal timber boards (cladding, pergolas, doors, the Starbucks stable; Poly Haven
+  wooden_planks, 2 m repeat; real colour, use a white vertex colour). For sawn **stone-plate cladding** (stone_clad_base / stone_cladding in buildings_spec.json) use
+  `TM.marbleW` with the stone colour as vertex colour (e.g. `#e3d3b8` beige limestone); for rusticated/ashlar villas `TM.ashlar`; for rubble garden walls `TM.rubble`.
 - New for you: `TM.<name>` (the same photo material with **UVs in metres**), `defTile()` (register your own painted or image layer), `texSrc()`, `tileM()`,
   `addLight()` (night light map), `useEnv()` (reflection map that follows the time of day), `SKY`, `sun2` (second shadow cascade).
 - WebGL 2 is now required (every phone browser since ~2021 has it). Without it the loading screen says so and boot stops with a clear message.
@@ -36,20 +40,20 @@ Rows named `*_m` are the `TM.*` twins (listed for completeness; use them as `TM.
 
 | id | T.name | kind | source | photo repeat (m) | 1 caller UV unit (m) | normal | spec/shin | notes |
 |---|---|---|---|---|---|---|---|---|
-| 0 | asph | photo | PH gravel_stones | 2 | 6 | asph | 0.045/22 | macro 0.5 |
+| 0 | asph | photo | PH clean_asphalt | 2.1 | 6 | asph | 0.045/22 | macro 0.5 |
 | 1 | asph2 | photo | PH asphalt_pit_lane | 2 | 5 | asph2 | 0.045/20 | macro 0.5 |
 | 2 | pavers | photo | PH concrete_pavers | 1.92 | 2.21 | pavers | 0.03/14 | macro 0.4 |
 | 3 | brick | photo | PH herringbone_brick_03 | 1.98 | 1.98 | brick | 0.03/14 | macro 0.4 |
 | 4 | marble | photo | PH marble_01 | 1.5 | 1.88 | marble | 0.05/46 | reflective 0.05, macro 0.3 |
 | 5 | slabs | photo | PH concrete_pavement | 1.8 | 2.88 | slabs | 0.03/14 | macro 0.4 |
-| 6 | grass | photo | PH forrest_ground_01 | 2 | 4 | grass | 0.02/6 | macro 0.6 |
+| 6 | grass | photo | PH forrest_ground_01 | 2 | 4 | grass | 0.02/6 | macro 0.7 |
 | 7 | gravel | photo | PH gravel_floor | 2.25 | 2.48 | gravel | 0.02/8 | macro 0.4 |
 | 8 | soil | photo | PH forest_leaves_04 | 1.5 | 3.75 | soil | 0.02/6 | macro 0.5 |
 | 9 | curb | photo | PH concrete_wall_009 + joints | 1 | 1.5 × 2 | curb | 0.04/24 |  |
 | 10 | paint | painted |  | — | see text | asph | 0.06/30 |  |
 | 11 | tactile | photo | generated: yellow blister paving on PH concrete_pavement | 0.8 | 1.2 | tactile | 0.03/12 |  |
 | 12 | platf | photo | PH concrete_tiles_02 | 1.825 | 2.01 | platf | 0.03/16 | macro 0.35 |
-| 13 | ballast | photo | PH ganges_river_pebbles | 2.16 | 3.24 | ballast | 0.03/10 | macro 0.35 |
+| 13 | ballast | photo | PH river_small_rocks | 1.5 | 3.24 | ballast | 0.03/10 | macro 0.35 |
 | 14 | water | photo | generated | 3 | 6 | water | 0.08/200 | reflective 0.85 |
 | 15 | pool | photo | generated | 1.5 | 3 | pool | 0.08/160 | reflective 0.45 |
 | 16 | plaster | photo | PH white_stucco | 2 | 3 | plaster | 0.02/8 | macro 0.3 |
@@ -57,7 +61,7 @@ Rows named `*_m` are the `TM.*` twins (listed for completeness; use them as `TM.
 | 18 | rubble | photo | PH stone_wall | 2 | 2.5 | rubble | 0.03/10 | macro 0.25 |
 | 19 | concrete | photo | PH concrete_wall_009 | 1.8 | 3.6 | concrete | 0.03/12 | macro 0.3 |
 | 20 | brickw | photo | PH red_brick | 1.4 | 2.8 | brickw | 0.03/10 | macro 0.25 |
-| 21 | tiles | photo | PH ceramic_roof_01 | 3.5 | 1.99 | tiles | 0.03/14 | macro 0.35 |
+| 21 | tiles | photo | PH clay_roof_tiles_02 | 2.5 | 2 | tiles | 0.035/16 | macro 0.4 |
 | 22 | flatroof | photo | PH granular_concrete | 2.4 | 4.01 | flatroof | 0.02/8 | macro 0.5 |
 | 23 | solar | painted |  | — | see text | — | 0.08/120 | glass mask |
 | 24 | win | painted |  | — | see text | plaster | 0.02/8 | glass mask |
@@ -104,61 +108,65 @@ Rows named `*_m` are the `TM.*` twins (listed for completeness; use them as `TM.
 | 65 | plasterW | photo | PH painted_plaster_wall | 2 | 3 | plasterW | 0.02/8 | macro 0.3 |
 | 66 | plasterC | photo | PH beige_wall_002 | 3 | 3 | plasterC | 0.02/8 | macro 0.3 |
 | 67 | marbleW | photo | PH stone_tile_wall | 2 | 3 | marbleW | 0.05/50 | reflective 0.04, macro 0.2 |
-| 68 | shutterM | photo | PH painted_metal_shutter | 2 | 2 | shutterM | 0.1/30 |  |
-| 69 | barkPine | photo | PH pine_bark | 2 | 1.67 × 1.6 | barkPine | 0.015/6 |  |
-| 70 | barkDark | photo | PH bark_brown_02 | 1 | 1.67 × 1.5 | barkDark | 0.015/6 |  |
-| 71 | barkPalm | photo | PH palm_bark | 1.86 | 1.55 × 1.86 | barkPalm | 0.015/6 |  |
-| 72 | leafPine | photo | composited from polyhaven model:pine_tree_01 needle twigs | 2 | 2 | — | 0.02/14 | alpha cut-out |
-| 73 | leafCypress | photo | composited from polyhaven model:fir_tree_01 twigs | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
-| 74 | leafOlive | photo | composited from polyhaven model:shrub_02 leaves | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
-| 75 | leafOrange | photo | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.2 | 1.2 | — | 0.02/14 | alpha cut-out |
-| 76 | leafPalm | photo | built from polyhaven model:fern_02 frond | 3 | 3 | — | 0.02/14 | alpha cut-out |
-| 77 | noise | photo | generated noise (macro variation) | — | see text | — | 0.03/12 |  |
-| 78 | asph_m | alias of asph | PH gravel_stones | 2 | 6 | asph | 0.045/22 | macro 0.5 |
-| 79 | asph2_m | alias of asph2 | PH asphalt_pit_lane | 2 | 5 | asph2 | 0.045/20 | macro 0.5 |
-| 80 | pavers_m | alias of pavers | PH concrete_pavers | 1.92 | 2.21 | pavers | 0.03/14 | macro 0.4 |
-| 81 | brick_m | alias of brick | PH herringbone_brick_03 | 1.98 | 1.98 | brick | 0.03/14 | macro 0.4 |
-| 82 | marble_m | alias of marble | PH marble_01 | 1.5 | 1.88 | marble | 0.05/46 | reflective 0.05, macro 0.3 |
-| 83 | slabs_m | alias of slabs | PH concrete_pavement | 1.8 | 2.88 | slabs | 0.03/14 | macro 0.4 |
-| 84 | grass_m | alias of grass | PH forrest_ground_01 | 2 | 4 | grass | 0.02/6 | macro 0.6 |
-| 85 | gravel_m | alias of gravel | PH gravel_floor | 2.25 | 2.48 | gravel | 0.02/8 | macro 0.4 |
-| 86 | soil_m | alias of soil | PH forest_leaves_04 | 1.5 | 3.75 | soil | 0.02/6 | macro 0.5 |
-| 87 | curb_m | alias of curb | PH concrete_wall_009 + joints | 1 | 1.5 × 2 | curb | 0.04/24 |  |
-| 88 | tactile_m | alias of tactile | generated: yellow blister paving on PH concrete_pavement | 0.8 | 1.2 | tactile | 0.03/12 |  |
-| 89 | platf_m | alias of platf | PH concrete_tiles_02 | 1.825 | 2.01 | platf | 0.03/16 | macro 0.35 |
-| 90 | ballast_m | alias of ballast | PH ganges_river_pebbles | 2.16 | 3.24 | ballast | 0.03/10 | macro 0.35 |
-| 91 | water_m | alias of water | generated | 3 | 6 | water | 0.08/200 | reflective 0.85 |
-| 92 | pool_m | alias of pool | generated | 1.5 | 3 | pool | 0.08/160 | reflective 0.45 |
-| 93 | plaster_m | alias of plaster | PH white_stucco | 2 | 3 | plaster | 0.02/8 | macro 0.3 |
-| 94 | ashlar_m | alias of ashlar | PH sandstone_blocks_05 | 3 | 3.75 | ashlar | 0.03/10 | macro 0.25 |
-| 95 | rubble_m | alias of rubble | PH stone_wall | 2 | 2.5 | rubble | 0.03/10 | macro 0.25 |
-| 96 | concrete_m | alias of concrete | PH concrete_wall_009 | 1.8 | 3.6 | concrete | 0.03/12 | macro 0.3 |
-| 97 | brickw_m | alias of brickw | PH red_brick | 1.4 | 2.8 | brickw | 0.03/10 | macro 0.25 |
-| 98 | tiles_m | alias of tiles | PH ceramic_roof_01 | 3.5 | 1.99 | tiles | 0.03/14 | macro 0.35 |
-| 99 | flatroof_m | alias of flatroof | PH granular_concrete | 2.4 | 4.01 | flatroof | 0.02/8 | macro 0.5 |
-| 100 | hedge_m | alias of hedge | composited from polyhaven model leaves (searsia_lucida, island_tree_01) | 1.5 | 1.5 | hedge | 0.02/10 | macro 0.35 |
-| 101 | bark_m | alias of bark | PH japanese_sycamore | 1.1 | 1.83 × 1.65 | bark | 0.015/6 |  |
-| 102 | leaves_m | alias of leaves | composited from polyhaven model:shrub_01 leaves | 2 | 2 | — | 0.02/14 | alpha cut-out |
-| 103 | wood_m | alias of wood | PH wood_planks | 1.5 | 1.01 | wood | 0.03/14 |  |
-| 104 | metal_m | alias of metal | PH green_metal_rust | 1 | 1 | metal | 0.12/36 | reflective 0.03 |
-| 105 | canopy_m | alias of canopy | PH factory_wall | 3 | 6 × 3 | canopy | 0.08/30 |  |
-| 106 | metalL_m | alias of metalL | PH blue_metal_plate | 2.5 | 2.5 | metalL | 0.2/42 | reflective 0.06 |
-| 107 | parkG_m | alias of parkG | PH sandy_gravel | 2.1 | 2.52 | parkG | 0.02/8 | macro 0.45 |
-| 108 | dryG_m | alias of dryG | PH withered_grass | 2 | 6 | dryG | 0.02/6 | macro 0.6 |
-| 109 | orangeF_m | alias of orangeF | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.5 | 1.5 | orangeF | 0.02/10 | macro 0.3 |
-| 110 | asphP_m | alias of asphP | PH asphalt_02 | 3 | 6 | asphP | 0.04/18 | macro 0.4 |
-| 111 | plasterW_m | alias of plasterW | PH painted_plaster_wall | 2 | 3 | plasterW | 0.02/8 | macro 0.3 |
-| 112 | plasterC_m | alias of plasterC | PH beige_wall_002 | 3 | 3 | plasterC | 0.02/8 | macro 0.3 |
-| 113 | marbleW_m | alias of marbleW | PH stone_tile_wall | 2 | 3 | marbleW | 0.05/50 | reflective 0.04, macro 0.2 |
-| 114 | shutterM_m | alias of shutterM | PH painted_metal_shutter | 2 | 2 | shutterM | 0.1/30 |  |
-| 115 | barkPine_m | alias of barkPine | PH pine_bark | 2 | 1.67 × 1.6 | barkPine | 0.015/6 |  |
-| 116 | barkDark_m | alias of barkDark | PH bark_brown_02 | 1 | 1.67 × 1.5 | barkDark | 0.015/6 |  |
-| 117 | barkPalm_m | alias of barkPalm | PH palm_bark | 1.86 | 1.55 × 1.86 | barkPalm | 0.015/6 |  |
-| 118 | leafPine_m | alias of leafPine | composited from polyhaven model:pine_tree_01 needle twigs | 2 | 2 | — | 0.02/14 | alpha cut-out |
-| 119 | leafCypress_m | alias of leafCypress | composited from polyhaven model:fir_tree_01 twigs | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
-| 120 | leafOlive_m | alias of leafOlive | composited from polyhaven model:shrub_02 leaves | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
-| 121 | leafOrange_m | alias of leafOrange | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.2 | 1.2 | — | 0.02/14 | alpha cut-out |
-| 122 | leafPalm_m | alias of leafPalm | built from polyhaven model:fern_02 frond | 3 | 3 | — | 0.02/14 | alpha cut-out |
+| 68 | karystos | photo | PH stone_tiles | 3.17 | 3.17 | karystos | 0.04/24 | macro 0.3 |
+| 69 | timber | photo | PH wooden_planks | 2 | 2 | timber | 0.04/20 | macro 0.15 |
+| 70 | shutterM | photo | PH painted_metal_shutter | 2 | 2 | shutterM | 0.1/30 |  |
+| 71 | barkPine | photo | PH pine_bark | 2 | 1.67 × 1.6 | barkPine | 0.015/6 |  |
+| 72 | barkDark | photo | PH bark_brown_02 | 1 | 1.67 × 1.5 | barkDark | 0.015/6 |  |
+| 73 | barkPalm | photo | PH palm_bark | 1.86 | 1.55 × 1.86 | barkPalm | 0.015/6 |  |
+| 74 | leafPine | photo | composited from polyhaven model:pine_tree_01 needle twigs | 2 | 2 | — | 0.02/14 | alpha cut-out |
+| 75 | leafCypress | photo | composited from polyhaven model:fir_tree_01 twigs | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
+| 76 | leafOlive | photo | composited from polyhaven model:shrub_02 leaves | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
+| 77 | leafOrange | photo | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.2 | 1.2 | — | 0.02/14 | alpha cut-out |
+| 78 | leafPalm | photo | built from polyhaven model:fern_02 frond | 3 | 3 | — | 0.02/14 | alpha cut-out |
+| 79 | noise | photo | generated noise (macro variation) | — | see text | — | 0.03/12 |  |
+| 80 | asph_m | alias of asph | PH clean_asphalt | 2.1 | 6 | asph | 0.045/22 | macro 0.5 |
+| 81 | asph2_m | alias of asph2 | PH asphalt_pit_lane | 2 | 5 | asph2 | 0.045/20 | macro 0.5 |
+| 82 | pavers_m | alias of pavers | PH concrete_pavers | 1.92 | 2.21 | pavers | 0.03/14 | macro 0.4 |
+| 83 | brick_m | alias of brick | PH herringbone_brick_03 | 1.98 | 1.98 | brick | 0.03/14 | macro 0.4 |
+| 84 | marble_m | alias of marble | PH marble_01 | 1.5 | 1.88 | marble | 0.05/46 | reflective 0.05, macro 0.3 |
+| 85 | slabs_m | alias of slabs | PH concrete_pavement | 1.8 | 2.88 | slabs | 0.03/14 | macro 0.4 |
+| 86 | grass_m | alias of grass | PH forrest_ground_01 | 2 | 4 | grass | 0.02/6 | macro 0.7 |
+| 87 | gravel_m | alias of gravel | PH gravel_floor | 2.25 | 2.48 | gravel | 0.02/8 | macro 0.4 |
+| 88 | soil_m | alias of soil | PH forest_leaves_04 | 1.5 | 3.75 | soil | 0.02/6 | macro 0.5 |
+| 89 | curb_m | alias of curb | PH concrete_wall_009 + joints | 1 | 1.5 × 2 | curb | 0.04/24 |  |
+| 90 | tactile_m | alias of tactile | generated: yellow blister paving on PH concrete_pavement | 0.8 | 1.2 | tactile | 0.03/12 |  |
+| 91 | platf_m | alias of platf | PH concrete_tiles_02 | 1.825 | 2.01 | platf | 0.03/16 | macro 0.35 |
+| 92 | ballast_m | alias of ballast | PH river_small_rocks | 1.5 | 3.24 | ballast | 0.03/10 | macro 0.35 |
+| 93 | water_m | alias of water | generated | 3 | 6 | water | 0.08/200 | reflective 0.85 |
+| 94 | pool_m | alias of pool | generated | 1.5 | 3 | pool | 0.08/160 | reflective 0.45 |
+| 95 | plaster_m | alias of plaster | PH white_stucco | 2 | 3 | plaster | 0.02/8 | macro 0.3 |
+| 96 | ashlar_m | alias of ashlar | PH sandstone_blocks_05 | 3 | 3.75 | ashlar | 0.03/10 | macro 0.25 |
+| 97 | rubble_m | alias of rubble | PH stone_wall | 2 | 2.5 | rubble | 0.03/10 | macro 0.25 |
+| 98 | concrete_m | alias of concrete | PH concrete_wall_009 | 1.8 | 3.6 | concrete | 0.03/12 | macro 0.3 |
+| 99 | brickw_m | alias of brickw | PH red_brick | 1.4 | 2.8 | brickw | 0.03/10 | macro 0.25 |
+| 100 | tiles_m | alias of tiles | PH clay_roof_tiles_02 | 2.5 | 2 | tiles | 0.035/16 | macro 0.4 |
+| 101 | flatroof_m | alias of flatroof | PH granular_concrete | 2.4 | 4.01 | flatroof | 0.02/8 | macro 0.5 |
+| 102 | hedge_m | alias of hedge | composited from polyhaven model leaves (searsia_lucida, island_tree_01) | 1.5 | 1.5 | hedge | 0.02/10 | macro 0.35 |
+| 103 | bark_m | alias of bark | PH japanese_sycamore | 1.1 | 1.83 × 1.65 | bark | 0.015/6 |  |
+| 104 | leaves_m | alias of leaves | composited from polyhaven model:shrub_01 leaves | 2 | 2 | — | 0.02/14 | alpha cut-out |
+| 105 | wood_m | alias of wood | PH wood_planks | 1.5 | 1.01 | wood | 0.03/14 |  |
+| 106 | metal_m | alias of metal | PH green_metal_rust | 1 | 1 | metal | 0.12/36 | reflective 0.03 |
+| 107 | canopy_m | alias of canopy | PH factory_wall | 3 | 6 × 3 | canopy | 0.08/30 |  |
+| 108 | metalL_m | alias of metalL | PH blue_metal_plate | 2.5 | 2.5 | metalL | 0.2/42 | reflective 0.06 |
+| 109 | parkG_m | alias of parkG | PH sandy_gravel | 2.1 | 2.52 | parkG | 0.02/8 | macro 0.45 |
+| 110 | dryG_m | alias of dryG | PH withered_grass | 2 | 6 | dryG | 0.02/6 | macro 0.6 |
+| 111 | orangeF_m | alias of orangeF | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.5 | 1.5 | orangeF | 0.02/10 | macro 0.3 |
+| 112 | asphP_m | alias of asphP | PH asphalt_02 | 3 | 6 | asphP | 0.04/18 | macro 0.4 |
+| 113 | plasterW_m | alias of plasterW | PH painted_plaster_wall | 2 | 3 | plasterW | 0.02/8 | macro 0.3 |
+| 114 | plasterC_m | alias of plasterC | PH beige_wall_002 | 3 | 3 | plasterC | 0.02/8 | macro 0.3 |
+| 115 | marbleW_m | alias of marbleW | PH stone_tile_wall | 2 | 3 | marbleW | 0.05/50 | reflective 0.04, macro 0.2 |
+| 116 | karystos_m | alias of karystos | PH stone_tiles | 3.17 | 3.17 | karystos | 0.04/24 | macro 0.3 |
+| 117 | timber_m | alias of timber | PH wooden_planks | 2 | 2 | timber | 0.04/20 | macro 0.15 |
+| 118 | shutterM_m | alias of shutterM | PH painted_metal_shutter | 2 | 2 | shutterM | 0.1/30 |  |
+| 119 | barkPine_m | alias of barkPine | PH pine_bark | 2 | 1.67 × 1.6 | barkPine | 0.015/6 |  |
+| 120 | barkDark_m | alias of barkDark | PH bark_brown_02 | 1 | 1.67 × 1.5 | barkDark | 0.015/6 |  |
+| 121 | barkPalm_m | alias of barkPalm | PH palm_bark | 1.86 | 1.55 × 1.86 | barkPalm | 0.015/6 |  |
+| 122 | leafPine_m | alias of leafPine | composited from polyhaven model:pine_tree_01 needle twigs | 2 | 2 | — | 0.02/14 | alpha cut-out |
+| 123 | leafCypress_m | alias of leafCypress | composited from polyhaven model:fir_tree_01 twigs | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
+| 124 | leafOlive_m | alias of leafOlive | composited from polyhaven model:shrub_02 leaves | 1.5 | 1.5 | — | 0.02/14 | alpha cut-out |
+| 125 | leafOrange_m | alias of leafOrange | composited from polyhaven model:island_tree_01 leaves + drawn fruit | 1.2 | 1.2 | — | 0.02/14 | alpha cut-out |
+| 126 | leafPalm_m | alias of leafPalm | built from polyhaven model:fern_02 frond | 3 | 3 | — | 0.02/14 | alpha cut-out |
 
 Painted tiles (kind "painted") are drawn by a painter function into a 240×240 design space and rendered at the layer resolution (512² on medium/high):
 - facade bays `win`, `balc`, `neo`, `neoC`, `villaW`, `small`, `plain`, `lobby`, `neoDoor`, `trim`, `church`: one tile = one bay (≈3 m wide) × one storey (≈3.1 m); background is the
@@ -185,7 +193,7 @@ Options: `rep` (number or `[u,v]`: texture repeats per caller UV unit, default 1
 `nrm` (name of a PHOTO tile whose normal map to use; `nrmRep` uv multiplier, `nrmK` strength) · `spec` (specular F0, default .03) · `shin` (Blinn exponent, default 12) ·
 `refl` (mirror-like sky reflection 0..1: polished stone .05, water .5–.85) · `glass` (reflectivity of the masked area, 1 = window glass) · `glassDark` (how much the masked area
 is darkened by day, 0..1) · `glowK` (night emission of the masked area × the vertex `glow`, default 1.7) · `macro` (large-scale tint variation 0..1 that hides tiling) ·
-`transl` (leaf back-lighting) · `flow` (uv drift for water) · `alias`, `src`, `photo`, `needs` as above.
+`transl` (leaf back-lighting) · `flow` (uv drift for water) · `vc` (0..1, default 1: how much of the vertex colour's HUE is applied — its brightness always is; foliage, hedges and grass use .3 so the photo keeps its natural green while callers can still darken/lighten per vertex) · `alias`, `src`, `photo`, `needs` as above.
 - `paint(tileId, painter, cut)` (legacy) replaces the painter of an existing tile. `texSrc(name)` returns the canvas of a photo layer (only for names listed in some tile's `needs`).
 - **After boot**: `defTile()` on an existing painted tile repaints and re-uploads just that layer (cheap, with its own mip chain) — use this for content that changes
   (a menu board per shop). A brand-new painted/image tile registered after boot takes one of `TEX.spare` (= 4) spare layers; when they are used up it falls back to plain
@@ -213,6 +221,9 @@ with a Fresnel term) → street-lamp/shop light from the light map at night → 
   `sun2` renders a wide box (±125 m / ±150 m) every 8th frame. A patch of three's light loop (in `00_core.js`, applied to **every** lit material: world, people, cars,
   interiors) blends the two and applies the sun's light once; `sun2.intensity` is 0 on purpose. **Do not add other shadow-casting DirectionalLights**; point/spot lights are fine.
 - Soft-shadow filter is patched to 3×3 taps with quadratic weights (9 texture reads instead of three's 16).
+- **Wind**: `MAT.leaf` / `MAT.depthCut` on INSTANCED meshes sway in the wind (crown lean grows with height above the instance origin, plus a small per-card flutter; phase from the
+  instance position; shadows sway with the leaves). `U.wind.value` = (dirX, dirZ, strength) — `82_sky.js` animates the strength in slow gusts; set it from gameplay if you want a storm.
+- **Horizon glow**: around sunrise/sunset the world material gets a warm fill light from the bright sky around the low sun (`U.glowC`, driven by `82_sky.js`).
 - Set `mesh.castShadow` / `mesh.receiveShadow` as usual. Thin alpha cut-outs cast correct shadows only if the mesh uses `MAT.leaf` (automatic) or you set
   `mesh.customDepthMaterial = MAT.depthCut` yourself.
 - `Q.sh` (near map size, 0 = shadows off on `low`), `Q.sh2`, `Q.shN`, `Q.shF` describe the cascades; `applyQuality()` (re)configures them.
@@ -237,10 +248,10 @@ with a Fresnel term) → street-lamp/shop light from the light map at night → 
 ## 8. Quality presets and memory
 | preset | pixel ratio | layers | normal maps | shadows | view distance | MSAA | texture memory (colour + normal arrays, with mips) |
 |---|---|---|---|---|---|---|---|
-| low | 0.7 | 256² | none | off | 170 m | off | ≈ 27 MB |
-| medium | 1.0 | 512² | 256² | 2 × 1024² | 240 m | on | ≈ 113 MB |
-| high | 1.4 | 512² | 512² | 2 × 2048² | 320 m | on | ≈ 133 MB |
-(80 colour layers incl. 4 spare; 39 normal layers.) Changing the preset in the pause menu rebuilds the arrays in the background (`texQuality()`, called by `applyQuality()`).
+| low | 0.7 | 256² | none | off | 170 m | off | ≈ 28 MB |
+| medium | 1.0 | 512² | 256² | 2 × 1024² | 240 m | on | ≈ 116 MB |
+| high | 1.4 | 512² | 512² | 2 × 2048² | 320 m | on | ≈ 136 MB |
+(82 colour layers incl. 4 spare; 41 normal layers.) Changing the preset in the pause menu rebuilds the arrays in the background (`texQuality()`, called by `applyQuality()`).
 `SETTINGS.aa=false` (localStorage `gk2_settings`) turns multisampling off. Download size of `gk3/tex/`: 8.2 MB (3 colour sheets .webp, 1 alpha sheet, 3 normal sheets .jpg, manifest).
 Texture loading at boot: decode 7 images, upload 80 layers, yielding to the page between layers; progress is reported through `setLoad()`.
 
@@ -258,5 +269,5 @@ All photographic sources are **CC0** from Poly Haven (polyhaven.com); the exact 
 
 ## 11. Verified / known gaps (updated as the work proceeds)
 - Verified in the headless harness (SwiftShader) on medium, in MAIN: boots without errors, day / golden hour / dusk / night views, both shadow cascades, night light map.
-- Not yet verified at the time of writing (this section is updated): low/high presets and switching presets at runtime, the no-WebGL2 message, late `defTile()` after boot.
+- Verified 2026-11-21 09:40 with `tools/tex/mtest.js` on MAIN (all checks passed, no page errors): late `defTile()` after boot takes a spare layer, repaint keeps its layer, spare layers exhausted → warning + white fallback, `tileM()`, runtime preset switch low → high → medium (texture sizes 256/512/512, shadows off on low), no-WebGL2 message on the loading screen.
 - No real phone was available to this team: frame-rate numbers do not exist; budgets are judged by triangles, draw calls and texture memory.

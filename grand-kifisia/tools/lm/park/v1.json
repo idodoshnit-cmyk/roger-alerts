@@ -1,0 +1,9 @@
+[{"name":"stats","eval":"JSON.stringify({park:PARKLM.stats,lm:LM.built,calls:renderer.info.render.calls})"},
+{"name":"top","cam":[-182,140,-10,-181.5,0,-12]},
+{"name":"overSW","cam":[-215,35,55,-185,0,-10]},
+{"name":"eyeW","cam":[-206.2,1.7,-19.2,-182,1.2,-12.7]},
+{"name":"eyeFnt","cam":[-176,1.7,-4,-185,1.4,-17]},
+{"name":"pav","cam":[-200,3,22,-189,2,9]},
+{"name":"cafe","cam":[-290,2.5,14,-288,1.5,-4]},
+{"name":"west","cam":[-300,25,-70,-260,0,-30]},
+{"name":"tank","cam":[-125,4,40,-109,2,33]}]

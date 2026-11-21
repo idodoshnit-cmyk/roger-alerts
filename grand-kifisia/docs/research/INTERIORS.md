@@ -5,7 +5,11 @@ Status (updated continuously; newest facts win over older docs):
 | interior | status | confidence | evidence |
 |---|---|---|---|
 | Mythos Plus, Kassaveti 13 | **complete (v1)** | photo (22 official photos, all looked at) + official menu | docs/research/img/shops/mythos_*.jpg |
-| PAUL, Starbucks, KFC, AB Vasilopoulos, Sephora/Hondos | being researched — sections are appended below as they are finished | — | — |
+| Starbucks (Kassaveti 19 courtyard pavilion, map b426) | **v1 (§2)** | exterior PHOTO + official facts; inside TYPICAL, sized to the real footprint | img/shops/starbucks_01_* |
+| PAUL (Levidou 4) | **v1 (§3)** | official facts + Wolt prices; look TYPICAL | — |
+| KFC (Kifisias 238, Mela arcade) | **v1 (§4)** | official facts; look TYPICAL | — |
+| AB Vasilopoulos (Levidou 2 / Kassaveti 8) | **v1 (§5)** | OSM footprint; look TYPICAL | — |
+| Sephora (Levidou 8) | **v1 (§6)** | official address; look TYPICAL | — |
 
 Conventions used in every plan below
 - Units are metres, 1:1. Local axes are the interiors agent's: **origin = centre of the street door on the inner face of the front wall, +z = out to the street,
@@ -215,3 +219,462 @@ sign yellow `#f5b81c` · neon `#ffe65a`.
 ### 1.12 Sources
 - https://www.mythosplus.gr/ (home), /mythos-plus (about), /menu, /epikoinonia (contact) — text and the 22 photos (© Mythos Plus; reference only, not shipped). Local copies: docs/research/img/shops/mythos_01…18.
 - OpenStreetMap node/10098110169 and building footprint (ODbL).
+
+---
+
+## 2. STARBUCKS — Kassaveti 19 courtyard pavilion (map b426), two storeys
+
+### 2.1 What the place is
+OFFICIAL/PHOTO: a converted two-storey **timber-and-brick former stable** standing at the back-west of the Kassaveti 19 courtyard (NOT on the street; the stone villa east of it is Ralph Lauren).
+Footprint from OSM ≈ **14.4 × 6.8 m**, long axis roughly N–S; the glazed front with the balcony faces the courtyard (SSE). Opened 2005. Hours Mo–Fr 08:00–23:00, Sa–Su 08:30–23:30.
+Interior: no photo of this branch's inside was found — everything inside is TYPICAL (Starbucks "heritage" fit-out in an old timber building), sized to the real footprint.
+
+### 2.2 Plan (origin = courtyard door; −z into the shop)
+- Room: 6.4 m wide (x −3.2…+3.2) × 13.8 m deep (z 0…−13.8). Ground-floor clear height 3.0 m; first floor 2.7 m to the eaves, open to the hipped roof timbers in the middle (ridge 4.6 m above the first floor).
+- Bar: along the right wall (x +2.0…+3.2) from z −3.5 to −10.5, height 1.05 m, depth 0.75 m; customer side faces left. Order point/till at z −4; hand-off plane at z −9.5 (with a small "Pick-up" sign).
+  Pastry vitrine 1.4 m long at the till (curved glass, 3 shelves). Behind the bar on the wall: 2 espresso machines (each 0.85 × 0.55 × 0.5 m, silver), 2 grinders, a sink, under-counter fridges, shelves of mugs and cups, the menu board above at 2.1–2.8 m.
+- Stair: straight timber stair along the left wall, foot at z −9, rising toward the back to the first-floor landing at z −13 (13 risers 0.175 m, width 0.95 m, dark handrail).
+- Ground-floor seating (left half): 4 small round tables (Ø 0.6 m) with 8 wooden chairs, a long communal table (2.4 × 0.9 m, 6 stools) near the front glazing, 2 leather armchairs.
+- First floor: gallery room the full footprint; 2 sofas, 6 armchairs, 4 low tables, window bar along the front glazing with 6 stools; door to the **full-width timber balcony** (1.4 m deep) over the courtyard with 2 tables under a green umbrella.
+- Toilet: back-left corner of the ground floor (1.6 × 2.0 m).
+
+### 2.3 Surfaces and lighting (TYPICAL, matched to the PHOTO exterior)
+- Floor: wide dark-oiled oak boards (#5a4030); entrance mat 1.2 × 0.9 m. Walls: exposed old red brick (#8a4b32) to 1.2 m and on the back wall; dark-stained timber framing and boarding above (#5a4030); ceiling joists exposed.
+- Bar front: vertical dark timber slats; top: dark stone/quartz (#2b2b2b). Menu board: black board (2.4 × 0.7 m) with white hand-lettered items and prices (use the list in shops.json `items`).
+- Lighting: warm 2700 K pendants (black metal shades) over the bar every 1.2 m at 2.2 m, wall lamps over the tables; front glazing glows at night.
+- Palette: #1e6b57 (green accents: aprons, cup sleeves, small "STARBUCKS COFFEE" text panel), #5a4030, #8a4b32, #d9c7a8, #2b2b2b.
+
+### 2.4 People: 2 baristas behind the bar (green aprons, black shirts), 3–4 seated customers with laptops/cups, 1 in the queue.
+
+---
+
+## 3. PAUL — Levidou 4 (map b434, NE corner of the spawn junction)
+
+### 3.1 What the place is
+OFFICIAL: PAUL boulangerie-café Kifisia, Λεβίδου 4, tel. 210 808 4288; prices from PAUL on Wolt (Nov 2026). Inside and shopfront: PAUL brand-TYPICAL (no photo of this branch found yet).
+
+### 3.2 Plan (origin = door on Levidou; −z into the shop)
+- Room 9.5 m wide (x −4.75…+4.75) × 12 m deep; ceiling 3.4 m.
+- Sales counter: a long refrigerated glass vitrine across the room at z −5.5 from x −4.2 to +1.5 (6 m long, 1.1 m high, curved glass top to 1.35 m): left part viennoiserie (croissants, pains au chocolat), middle sandwiches and tortillas, right part pâtisserie (éclairs, tartelettes, millefeuille, macarons in rows of colours). Till + card terminal at the right end.
+- Behind the counter (z −6.3…−7.0): the **bread wall** — dark wooden racks 2.4 m high × 5 m long with wicker baskets of baguettes (vertical), round loaves (pain PAUL rond, campagne), seeded loaves; a coffee machine and a juice fridge at the right end; a door to the bakehouse/kitchen at x −4 (staff only).
+- Café seating in front of the counter and along the windows (front 5 m): 6 small marble-top bistro tables (Ø 0.6 m) with 12 cane/rattan bistro chairs; a wall banquette (dark green leather) along the left wall.
+- Window display: wooden shelves with loaves and a cake stand facing the street.
+
+### 3.3 Surfaces, light, palette (TYPICAL)
+- Floor: black-and-white cement tiles (0.2 m, checker or small pattern). Walls: cream (#efe6d2) above dark wood wainscot (#2b1d14) to 1.1 m; framed black-and-white photos of old French bakeries; "PAUL — Maison de Qualité depuis 1889" painted in gold serif on a dark panel above the bread wall.
+- Lighting: warm brass pendants with glass globes over the counter, brass wall sconces; counter lights inside the vitrine.
+- Palette: #2b1d14, #d9c48a (gold lettering), #efe6d2, #8b5a2b (bread/wicker), #111111.
+- People: 2 staff in black aprons/caps behind the counter, 2–3 customers at tables, 1 at the counter.
+
+---
+
+## 4. KFC — Kifisias Ave 238-240 (Mela arcade, ex-Grand Hotel de Kifissia), map b305
+
+### 4.1 What the place is
+OFFICIAL: KFC Kifisia, Λεωφ. Κηφισίας 238 (KFC Greece store list): Su–We 12:00–24:00, Th 10:00–24:00, Fr–Sa 12:00–01:00. It is a unit in the ground floor of the Mela shopping centre (the 1897 Grand Hotel de Kifissia), facing Platanos square / Kifisias Ave.
+Interior: KFC brand-TYPICAL (current "global design" fit-out); no photo of this branch found.
+
+### 4.2 Plan (origin = street door; −z into the shop)
+- Room 9 m wide × 15 m deep, ceiling 3.6 m (old hotel ground floor; exposed tall windows on the street side).
+- Counter: across the room at z −9, from x −3.5 to +3.5, 1.05 m high, white top, red front with white vertical stripes; 4 tills; above it 4 digital menu screens (each 1.0 × 0.56 m) in a row at 2.4 m showing buckets, burgers, wraps with prices (use shops.json `items`).
+- Behind: stainless kitchen line (fryers, holding cabinets with orange heat lamps, drinks dispenser with Pepsi/7Up taps), a pass with trays.
+- 3 self-order kiosks (0.6 × 0.4 × 1.8 m portrait touch screens) on the left wall at z −4…−6. Drinks/condiment station (napkins, sauces) on the right at z −6.
+- Seating in the front 8 m: 6 four-seat tables (wood-look top, black metal legs), a long bench along the left wall with 4 two-seat tables, high bar along the street window with 6 stools.
+
+### 4.3 Surfaces, light, palette (TYPICAL)
+- Floor: dark grey porcelain tiles 0.6 × 0.6 m. Walls: white, one feature wall of red-and-white vertical stripes (stripe width 0.25 m) behind the counter; black graphic panels with large white text (food words only, no logos).
+- Lighting: bright 3500 K downlights, black pendant cones over the tables; red-lit counter front.
+- Palette: #e4002b, #ffffff, #1a1a1a, #a0703c (wood-look), #f2ede4.
+- People: 2 cashiers in black/red uniforms with caps, 1 cook visible behind, 3–4 customers.
+
+---
+
+## 5. AB VASILOPOULOS — Levidou 2 / Kassaveti 8 (map b30), town-centre supermarket
+
+### 5.1 What the place is
+OSM/description: the supermarket fills the ground floor of the 3-storey corner block on the SW corner of the spawn junction (footprint ≈ 33 × 21 m), with frontage on Kassaveti and Levidou.
+Inside: TYPICAL of a town-centre AB of ~450–550 m² sales area (no photo of this branch found).
+
+### 5.2 Plan (origin = entrance; −z into the store)
+- Sales floor ≈ 26 × 18 m, ceiling 3.2 m (suspended grid with light panels).
+- Entrance with automatic sliding doors (2.4 m wide) + a separate exit; inside on the right: 3 checkout counters (each 2.8 m long belt + till, 1.0 m apart) facing the exit; cigarettes/sweets rack behind the tills; baskets and a few small trolleys at the door.
+- First section: fruit & vegetables (tilted wooden crates on stepped stands, 2 islands 3 × 1.2 m + a wall unit), bakery shelf with bagged bread.
+- 6 aisles (gondolas 1.6–1.8 m high, 9–10 m long, 1.8 m aisle width), ends with promo stacks; categories in order: pasta/rice/pulses, oil/canned, breakfast/coffee, snacks/biscuits, drinks (water, soft drinks, beer, wine), household/cleaning, personal care.
+- Back wall: open dairy and chilled cabinets (yogurt, milk, feta, cheeses, cold cuts) 12 m long, 2.0 m high with lit shelves; a corner of freezers (chest freezers with glass lids).
+- Optional service counter (deli/cheese) 4 m long on the side wall with a clerk.
+
+### 5.3 Surfaces, light, palette (TYPICAL)
+- Floor: light grey/beige terrazzo or porcelain tiles 0.6 m. Walls: white; category signs hanging from the ceiling (white text on coloured panels: ΦΡΟΥΤΑ & ΛΑΧΑΝΙΚΑ, ΓΑΛΑΚΤΟΚΟΜΙΚΑ, ΑΝΑΨΥΚΤΙΚΑ, ΚΑΘΑΡΙΣΤΙΚΑ …). Shelves white metal with price-label strips.
+- Lighting: bright 4000 K LED panels / linear lights over the aisles.
+- People: 2 cashiers, 1 shelf-stacker, 3–4 shoppers with baskets.
+- Things to buy (typical Greek supermarket prices, Nov 2026; estimate): bottled water 1.5 l €0.60, bread loaf €1.40, feta 400 g €4.50, Greek yogurt 1 kg €3.90, olive oil 1 l €9.50, tomatoes 1 kg €2.20, bananas 1 kg €1.90, crisps 150 g €2.10, chocolate bar €1.30, soft drink 1.5 l €1.90, beer 330 ml €1.10.
+
+---
+
+## 6. SEPHORA — Levidou 8 (cosmetics store for the homeless-man scene)
+
+### 6.1 What the place is
+OFFICIAL address (Λεβίδου 8, Mo–Fr 09:00–21:00, Sa 09:00–20:00). Not in OSM; unit on the east side of Levidou in map b432/b431 (≈ 35 m north of PAUL). Inside: Sephora brand-TYPICAL.
+
+### 6.2 Plan (origin = door; −z into the store)
+- Unit ≈ 7.5 m wide × 16 m deep, ceiling 3.2 m.
+- Perimeter wall units (2.4 m high) on both side walls: brand bays 1.2 m wide each (make-up left, fragrance right), lit shelves, testers on a sloped lower shelf.
+- Centre: 3 low gondolas (1.4 m high, 3 m long) with skincare and the "SEPHORA collection" (black-and-white packaging) in a row down the middle, 1.4 m aisles.
+- Tills: black gloss counter (2.4 m) at the back right at z −12, bags hanging behind; a make-up service chair (high chair + mirror) at the back left.
+- Floor: glossy white/light-grey tiles; walls white with black-and-white vertical stripe panels at the entrance and behind the tills; ceiling white with bright 4000 K downlights.
+- Palette: #000000, #ffffff, #e5e5e5, #c8102e (small red accents).
+- People: 2 staff in black with a make-up belt, 2 shoppers.
+
+### 6.3 Sources (sections 2–6)
+starbucks.co.uk store locator 42431-97953; starbuckseverywhere.net Attiki/Kifissia (photo 2008); kfc.gr store list (saved 2026-11-21); travelstyle.gr (Grand Hotel de Kifissia, Kifisias 238-240); athensvoice.gr (PAUL branches); wolt.com (PAUL, KFC Kifisia menus); OSM way/668312663 (AB); kifisia.com Kassaveti list; vrisko.gr + tiendeo.gr (Sephora Levidou 8). See SHOPS.md for details.
+
+<!-- BEGIN research-shops generated 7-8 (gen_interiors_md.py) -->
+## 7. HONDOS CENTER — Kolokotroni 3 (OWNER: "nearest comparable cosmetics store")
+
+Machine-readable: `shops.json` → `interiorTemplates.hondos_center_kifisia`; the Hondos entry in `shops.json` has `interior.template = "hondos_center_kifisia"`.
+
+### hondos_center_kifisia — Hondos Center Kifisia - Kolokotroni 3, ground floor of the "Shoppingland" arcade building (OSM node/10095491196, map b475)
+
+- unit: 8–12 m wide x 18–25 m deep, ceiling 3.6 m
+- floor: white gloss porcelain 60x60 (#f3f3f1); walls: white perimeter bays, brand panels (Estee Lauder, Lancome, Dior, Shiseido, Korres, Apivita), mirrors; ceiling: white, dense recessed downlights
+- light: downlights + back-lit brand bays, 4000 K; palette #ffffff #f3f3f1 #1c1c1c #c8102e #d4af37
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - fragrance wall (selective brands), back-lit glass shelves with testers (x6) — left-wall, u 0 v 0.1-0.6, 1.2 x 0.5 x 2.4 m, lacquer + glass #ffffff
+  - make-up brand bays with tester trays (x6) — right-wall, u 1 v 0.1-0.7, 1.2 x 0.5 x 2.4 m, lacquer + acrylic #ffffff
+  - central gondolas: pharmacy-cosmetics, haircare, sun care (x4) — centre, u 0.5 v 0.25-0.8, 3 x 1 x 1.4 m, white lacquer #ffffff
+  - promotional table at the entrance (seasonal gift sets) — door, u 0.5 v 0.12, 1.6 x 0.9 x 0.9 m, gold-trim table #d4af37
+  - tills: 2 stations with carrier bags and gift wrap — back-wall, u 0.7 v 0.9, 3 x 0.7 x 1 m, black gloss #1c1c1c
+  - beauty consultation chair with lit mirror — back-wall, u 0.2 v 0.9, 0.8 x 0.8 x 1.8 m, chrome + leather #1c1c1c
+- people: 3 consultants in black; 3-5 shoppers
+- street side: Ground-floor unit with glazed front inside/along the Shoppingland building on Kolokotroni (Kolokotroni 1-3, between Platanos square side and Kassaveti side); fascia lettering "HONDOS CENTER" (brand logo colours not verified in this run - hondoscenter.com blocked 403; use white letters on black as a neutral stand-in and mark it inferred).
+- confidence: inferred (address/position OSM + Foursquare + Overture; interior = chain-typical, NOT seen for this branch)
+- note: Kifisia also has SEPHORA (Levidou 8) - Hondos is the comparable local chain, ~185 m east of the spawn junction.
+
+## 8. GENERIC SHOP INTERIOR TEMPLATES (every other walk-in shop)
+
+Machine-readable: `shops.json` → `interiorTemplates.<key>`; every shop entry carries `interior.template` = its key. Keys match `CAT2TPL` in `gk3/js/35_interiors.js`. Frame: origin = street-door centre, −z into the shop; place objects by `anchor` + `u`/`v` fractions so they fit the real unit (map frontage x footprint depth). The one photo-based template is `electronics` (Kotsovolos Kyriazi 36, newmoney.gr 2025 opening photos, `docs/research/img/shops/kotsovolos_04_interior_newmoney_REFONLY.jpg`); all others are category-typical for upscale Kifisia (inferred).
+
+### clothes — Fashion boutique (clothes, bags, accessories, lingerie)
+
+- applies to categories: clothes, bag, fashion_accessories, boutique, vintage, leather, fashion, sports
+- unit: 5–9 m wide x 10–18 m deep, ceiling 3.6 m
+- floor: pale oak planks or large cream porcelain tiles 60x120 (#d9c7a8); walls: white or warm grey plaster; one feature wall (brand colour, mirror or timber slats); ceiling: white plaster, black track lights in 2 rows
+- light: track spots on garments + LED strip under shelves, 3000 K; palette #f4f1ea #d9c7a8 #1a1a1a #b8a07a #8c8c8c
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - window display: 2 mannequins on a low plinth — window, u 0.5 v 0.05, 3 x 1.2 x 0.2 m, white lacquer plinth #f4f1ea
+  - hanging rail with garments (wall-mounted, 2 tiers) — left-wall, u 0 v 0.15-0.8, - x 0.5 x 2.4 m, black steel or brass tube #1a1a1a
+  - hanging rail with garments + shelves above — right-wall, u 1 v 0.15-0.8, - x 0.5 x 2.4 m, black steel / oak shelves #1a1a1a
+  - display table with folded knitwear (x2) — centre, u 0.5 v 0.3, 1.6 x 0.8 x 0.8 m, oak / travertine #b8a07a — one behind the other on the centre line
+  - free-standing mannequin — centre, u 0.5 v 0.55, 0.5 x 0.5 x 1.8 m, matte white #f4f1ea
+  - cash desk with card terminal, tissue paper, carrier bags behind — right-wall, u 0.85 v 0.82, 1.6 x 0.6 x 1 m, black lacquer, stone top #1a1a1a
+  - fitting rooms with heavy linen curtains (x2) — back-wall, u 0.3 v 0.97, 1.2 x 1.2 x 2.3 m, linen curtain, mirror #e6dccb
+  - full-length mirror — back-wall, u 0.7 v 0.97, 0.8 x 0.05 x 2 m, mirror, black frame #c9ced3
+  - upholstered pouf / bench — centre, u 0.35 v 0.85, 1 x 0.5 x 0.45 m, velvet #8c8c8c
+- people: 1-2 shop assistants in black; 1-3 shoppers
+- street side: full-height glazing, recessed central door, lettering sign on the fascia, roller shutter box above
+- confidence: inferred (category-typical)
+
+### shoes — Shoe shop
+
+- applies to categories: shoes, shoe_repair
+- unit: 5–8 m wide x 8–15 m deep, ceiling 3.4 m
+- floor: oak planks (#c8ad85); walls: cream; back-lit niche shelving on both long walls; ceiling: white, recessed downlights
+- light: downlights + LED in every shelf niche, 3000 K; palette #f3eee4 #c8ad85 #2b2622 #ffffff
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - back-lit wall shelving, one shoe per niche (6 rows) — left-wall, u 0 v 0.1-0.85, - x 0.35 x 2.4 m, lacquered MDF + LED #f3eee4
+  - back-lit wall shelving — right-wall, u 1 v 0.1-0.7, - x 0.35 x 2.4 m, lacquered MDF + LED #f3eee4
+  - upholstered try-on bench (x2) — centre, u 0.5 v 0.4, 1.8 x 0.6 x 0.45 m, leather #2b2622
+  - floor mirror angled (x2) — centre, u 0.5 v 0.55, 0.4 x 0.05 x 0.6 m, mirror #c9ced3
+  - cash desk — right-wall, u 0.85 v 0.85, 1.5 x 0.6 x 1 m, walnut #2b2622
+  - door to the stock room — back-wall, u 0.3 v 1.0, 0.9 x 0.1 x 2.2 m, flush door #f3eee4
+- people: 1 assistant; 1-2 customers seated trying shoes
+- confidence: inferred (category-typical)
+
+### jewellery — Jeweller / watches
+
+- applies to categories: jewelry, jeweller, watches
+- unit: 4–7 m wide x 7–12 m deep, ceiling 3.3 m
+- floor: dark walnut or grey marble (#4a3a2e); walls: dark lacquer or fabric panels, brass trims; ceiling: dark grey, pin-spots
+- light: pin-spots on each showcase, LED inside showcases (cool 4000 K so diamonds sparkle), 4000 K; palette #1d1a17 #4a3a2e #c9a961 #f2efe9 #2c3e50
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - buzzer-entry glass door with security lock — door, u 0.5 v 0.0, 1 x 0.1 x 2.3 m, glass, brass frame #c9a961
+  - window showcases (lit), facing the street (x2) — window, u 0.5 v 0.05, - x 0.6 x 1.6 m, glass + velvet #1d1a17
+  - wall showcases set into the panelling (x3) — left-wall, u 0 v 0.2-0.8, 1.2 x 0.35 x 1 m, glass #1d1a17
+  - glass counter with velvet trays and 2 stools for clients — right-wall, u 0.8 v 0.3-0.7, 3 x 0.6 x 0.95 m, glass, walnut base #2c3e50
+  - client stool (x2) — right-wall, u 0.65 v 0.5, 0.45 x 0.45 x 0.75 m, brass + velvet #c9a961
+  - safe door / back office — back-wall, u 0.5 v 1.0, 0.9 x 0.2 x 2.1 m, steel #1d1a17
+- people: 1 jeweller in suit; 0-1 client seated
+- street side: narrow front, small lit windows, often a black or bronze frame and a gold-leaf name
+- confidence: inferred (category-typical)
+
+### cafe — Coffee bar / all-day café
+
+- applies to categories: cafe, coffee, tea
+- unit: 5–10 m wide x 8–16 m deep, ceiling 3.6 m
+- floor: terrazzo or patterned cement tiles (#d8d2c8); walls: white plaster + one timber or tiled wall; menu board above the bar; ceiling: exposed or white, pendant lamps
+- light: pendants over the bar, warm wall lights, 2700 K; palette #f2ede4 #d8d2c8 #5a3e2b #1f1f1f #7a8b6a
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - coffee bar: counter with 2-group espresso machine, grinders, pastry display at the front — right-wall, u 0.75 v 0.25-0.6, 4 x 0.7 x 1.05 m, timber front, stone top #5a3e2b
+  - back bar: shelves of cups, fridge with juices — right-wall, u 1 v 0.25-0.6, 4 x 0.6 x 2.2 m, steel + timber #1f1f1f
+  - menu board (chalk or light box) above the back bar — right-wall, u 1 v 0.4, 2 x 0.05 x 0.8 m, black board, white text #1f1f1f
+  - small round table with 2 chairs (x4) — left-wall, u 0.2 v 0.2-0.85, 0.6 x 0.6 x 0.75 m, marble top, metal base #f2ede4
+  - window bar with high stools — window, u 0.3 v 0.05, 2.5 x 0.4 x 1.1 m, timber #5a3e2b
+  - WC door — back-wall, u 0.2 v 1.0, 0.8 x 0.1 x 2.1 m, flush door #f2ede4
+- people: 1-2 baristas; 3-6 customers, some outside
+- street side: outside: 4-10 tables with rattan or metal chairs under cream umbrellas; inside doors folded open in summer
+- confidence: inferred (category-typical)
+
+### restaurant — Restaurant / taverna
+
+- applies to categories: restaurant, bar, pub, biergarten
+- unit: 7–14 m wide x 12–25 m deep, ceiling 3.8 m
+- floor: oak planks or Cretan-style terracotta tiles (#a87b55); walls: plaster in warm white, stone or timber feature wall, framed photos; ceiling: timber beams or white
+- light: warm pendants over tables, candle lights at night, 2700 K; palette #efe6d6 #a87b55 #3a2e27 #6b7f5a #c9a961
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - host stand at the door — door, u 0.6 v 0.08, 0.6 x 0.4 x 1.1 m, timber #3a2e27
+  - table for 4 with chairs (x8) — centre, u 0.5 v 0.15-0.75, 0.8 x 0.8 x 0.75 m, white linen over timber #efe6d6 — grid 2.2 m x 2.0 m
+  - wall banquette with tables for 2 — left-wall, u 0 v 0.2-0.8, - x 0.6 x 0.9 m, upholstered #6b7f5a
+  - bar / pass to the kitchen, wine shelves behind — back-wall, u 0.6 v 0.88, 4 x 0.7 x 1.1 m, timber + marble #3a2e27
+  - kitchen door with porthole — back-wall, u 0.15 v 1.0, 0.9 x 0.1 x 2.1 m, stainless #c9c9c9
+- people: 2 waiters in black aprons; 6-14 diners
+- street side: terrace on the pavement: tables in rows, planters as a fence, umbrellas or an awning
+- confidence: inferred (category-typical)
+
+### fastfood — Souvlaki / gyro / burger counter shop
+
+- applies to categories: fast_food
+- unit: 4–8 m wide x 8–14 m deep, ceiling 3.3 m
+- floor: grey porcelain anti-slip tile (#8f8f8a); walls: white tiles to 2 m, illuminated menu light boxes with photos above the counter; ceiling: white, LED panels
+- light: LED panels + lit menu boxes, 4000 K; palette #f4f4f2 #8f8f8a #b8322a #f2c14e #1c1c1c
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - service counter with till and card terminal — centre, u 0.5 v 0.45, - x 0.7 x 1.05 m, stainless + coloured front #b8322a
+  - vertical gyro spits (2) with radiant burners (x2) — back-wall, u 0.25 v 0.65, 0.6 x 0.6 x 1.4 m, stainless #c9c9c9
+  - charcoal/gas grill line with extractor hood — back-wall, u 0.65 v 0.7, 2 x 0.8 x 0.9 m, stainless #c9c9c9
+  - cold toppings bar (tomato, onion, tzatziki tubs) — centre, u 0.5 v 0.55, 1.6 x 0.5 x 0.9 m, stainless + glass #c9c9c9
+  - illuminated menu light boxes — back-wall, u 0.5 v 0.95, 3 x 0.1 x 0.8 m, light box #1c1c1c
+  - drinks fridge (glass door) — left-wall, u 0 v 0.4, 0.7 x 0.7 x 2 m, branded cooler #b8322a
+  - high table with stools (x2) — window, u 0.3 v 0.1, 1.5 x 0.4 x 1.1 m, laminate #1c1c1c
+- people: 2-3 staff (cap, apron); 2-4 customers waiting, delivery riders with box backpacks outside
+- confidence: inferred (category-typical)
+
+### bakery — Bakery / patisserie / chocolate shop
+
+- applies to categories: bakery, confectionery, pastry, chocolate, ice_cream, deli
+- unit: 5–9 m wide x 8–15 m deep, ceiling 3.5 m
+- floor: white marble or beige porcelain (#ece6da); walls: cream panelling, mirrors, timber bread racks; ceiling: white, a crystal or brass chandelier in upscale ones
+- light: downlights + lit display cases, 3000 K; palette #f6f1e7 #ece6da #c9a961 #6b3e26 #e7c9c1
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - refrigerated glass display counter (cakes, syrup sweets, pies) — centre, u 0.5 v 0.4, - x 0.9 x 1.25 m, glass + white lacquer #f6f1e7
+  - bread racks (timber slats) behind the counter — back-wall, u 0.5 v 0.95, - x 0.4 x 2.2 m, oak #6b3e26
+  - stacked gift boxes and ribbon rolls — right-wall, u 1 v 0.6, 1.5 x 0.4 x 2 m, shelving #e7c9c1
+  - till with weighing scale — centre, u 0.8 v 0.4, 0.8 x 0.6 x 1.1 m, brass #c9a961
+  - ice-cream / gelato freezer (where sold) — window, u 0.3 v 0.1, 1.8 x 0.9 x 1.3 m, glass + steel #f6f1e7
+- people: 2 assistants in white or pastel aprons; 2-4 customers
+- confidence: inferred (category-typical)
+
+### minimarket — Mini-market / convenience
+
+- applies to categories: convenience, greengrocer, butcher, wine, alcohol, e-cigarette, tobacco
+- unit: 5–9 m wide x 8–16 m deep, ceiling 3.2 m
+- floor: light grey tile (#cfcfca); walls: white; shelving to 2.2 m; ceiling: white LED panels
+- light: LED panels, 4000 K; palette #f2f2f0 #cfcfca #2a6aa5 #d13b2f
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - gondola shelving 1.8 m high (x2) — centre, u 0.5 v 0.25-0.85, - x 0.9 x 1.8 m, steel #f2f2f0 — 2 aisles of 1.1 m
+  - wall shelving — left-wall, u 0 v 0.15-0.9, - x 0.5 x 2.2 m, steel #f2f2f0
+  - chilled drinks wall with glass doors — back-wall, u 0.5 v 0.97, - x 0.8 x 2.1 m, refrigerated #2a6aa5
+  - till counter with cigarette rack behind — right-wall, u 0.85 v 0.15, 1.6 x 0.6 x 1 m, laminate #d13b2f
+- people: 1 cashier; 1-2 customers
+- confidence: inferred (category-typical)
+
+### pharmacy — Pharmacy
+
+- applies to categories: pharmacy, chemist, medical_supply, nutrition_supplements, herbalist
+- unit: 5–10 m wide x 10–18 m deep, ceiling 3.4 m
+- floor: white gloss porcelain (#f0f0ee); walls: white shelving with dermo-cosmetic brands (Vichy, La Roche-Posay, Korres, Apivita); ceiling: white, LED lines
+- light: bright LED lines, 4000 K; palette #ffffff #f0f0ee #2e9e5b #1c1c1c #a7c7e7
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - green LED cross sign projecting from the facade (animated) — facade, u 0.9 v 0.0, 0.7 x 0.1 x 0.7 m, LED #2e9e5b
+  - wall shelving of cosmetics, lit — left-wall, u 0 v 0.1-0.75, - x 0.4 x 2.4 m, white lacquer #ffffff
+  - wall shelving — right-wall, u 1 v 0.1-0.6, - x 0.4 x 2.4 m, white lacquer #ffffff
+  - low promotional gondola (x2) — centre, u 0.5 v 0.35, 1.8 x 0.6 x 1.3 m, white lacquer #ffffff
+  - dispensing counter with 2-3 stations and screens — back-wall, u 0.5 v 0.75, - x 0.7 x 1.05 m, white solid surface #1c1c1c
+  - drawer wall of medicines behind the counter — back-wall, u 0.5 v 0.97, - x 0.6 x 2.4 m, pull-out drawers #ffffff
+  - queue-ticket machine and blood-pressure chair — left-wall, u 0.1 v 0.8, 0.5 x 0.5 x 1.4 m, plastic #a7c7e7
+- people: 2 pharmacists in white coats; 1-3 customers
+- street side: green neon cross; glazed front with window displays of sun cream / seasonal products
+- confidence: inferred (category-typical)
+
+### cosmetics — Cosmetics / perfumery / beauty retail (Hondos-, Sephora-, MAC-type)
+
+- applies to categories: cosmetics, perfumery, beauty_retail, candles
+- unit: 6–12 m wide x 12–25 m deep, ceiling 3.6 m
+- floor: white gloss tiles (#f2f2f2); walls: white back-lit brand bays 1.2 m wide; ceiling: white, dense downlights
+- light: downlights + back-lit shelves, 4000 K; palette #ffffff #f2f2f2 #000000 #c8102e #d4af37
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - perimeter brand bays with testers (x8) — left-wall, u 0 v 0.1-0.9, 1.2 x 0.5 x 2.4 m, lacquer + acrylic #ffffff
+  - perimeter brand bays (x8) — right-wall, u 1 v 0.1-0.9, 1.2 x 0.5 x 2.4 m, lacquer + acrylic #ffffff
+  - central gondolas (skincare, haircare) (x3) — centre, u 0.5 v 0.2-0.8, 3 x 1 x 1.4 m, white lacquer #ffffff
+  - make-up service chair with bulb mirror — back-wall, u 0.2 v 0.92, 0.8 x 0.8 x 1.8 m, chrome + leather #000000
+  - tills, carrier bags behind — back-wall, u 0.75 v 0.9, 2.4 x 0.7 x 1 m, black gloss #000000
+- people: 2-3 staff in black with make-up belts; 2-4 shoppers
+- confidence: inferred (category-typical)
+
+### salon — Hair salon / barber / nail & beauty studio
+
+- applies to categories: hairdresser, beauty, massage, tattoo, cosmetic_clinic
+- unit: 4–8 m wide x 8–16 m deep, ceiling 3.3 m
+- floor: grey concrete-look tile or herringbone vinyl (#a9a6a0); walls: white, one dark or blush-pink wall; ceiling: white, round pendant lamps
+- light: bright diffuse + mirror lights, 4000 K; palette #f7f4f0 #a9a6a0 #1c1c1c #e8c4c0 #c9a961
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - reception desk with product shelf — door, u 0.75 v 0.12, 1.4 x 0.6 x 1.05 m, lacquer #1c1c1c
+  - styling station: round mirror + hydraulic chair (x4) — left-wall, u 0 v 0.2-0.7, 1 x 0.6 x 1.8 m, leather chair, brass mirror #1c1c1c
+  - wash basins with reclining chairs (x2) — back-wall, u 0.5 v 0.95, 0.8 x 1.2 x 1 m, ceramic #1c1c1c
+  - manicure table with lamp (nail studios) (x3) — right-wall, u 1 v 0.3-0.7, 1 x 0.5 x 0.75 m, white #f7f4f0
+  - waiting sofa — window, u 0.25 v 0.12, 1.6 x 0.7 x 0.8 m, velvet #e8c4c0
+- people: 2-3 stylists; 2 clients in chairs
+- street side: narrow front, frosted lower glass, name in script letters, sometimes a barber pole
+- confidence: inferred (category-typical)
+
+### optician — Optician
+
+- applies to categories: optician, hearing_aids, audiologist
+- unit: 4–7 m wide x 8–14 m deep, ceiling 3.3 m
+- floor: pale oak (#d8c4a2); walls: white back-lit frame racks; ceiling: white, LED lines
+- light: bright, 4000 K; palette #ffffff #d8c4a2 #1c1c1c #3a6ea5
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - back-lit frame racks (glasses on acrylic pegs) — left-wall, u 0 v 0.1-0.8, - x 0.25 x 2.2 m, acrylic + LED #ffffff
+  - back-lit frame racks — right-wall, u 1 v 0.1-0.6, - x 0.25 x 2.2 m, acrylic + LED #ffffff
+  - fitting desk with mirror and 2 chairs (x2) — centre, u 0.5 v 0.45, 1.6 x 0.8 x 0.75 m, oak + black #1c1c1c
+  - eye-test room door — back-wall, u 0.3 v 1.0, 0.9 x 0.1 x 2.1 m, flush door #ffffff
+- people: 1 optician; 1 customer trying frames
+- confidence: inferred (category-typical)
+
+### bank — Bank branch
+
+- applies to categories: bank, bureau_de_change, money_transfer, post_office, insurance, energy_supplier, telecommunication, mobile_phone
+- unit: 8–16 m wide x 12–22 m deep, ceiling 3.5 m
+- floor: grey granite at the entrance, carpet tiles inside (#9a9a96); walls: white with brand-colour panels and logo wall; ceiling: white acoustic tiles, LED panels
+- light: LED panels, 4000 K; palette #f4f4f2 #9a9a96 #004b87 #d32f2f #1c1c1c
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - 24 h ATM lobby with 2 ATMs (glass vestibule) — window, u 0.2 v 0.08, 2.5 x 1.5 x 2.4 m, glass + steel #004b87
+  - queue-ticket kiosk — door, u 0.6 v 0.15, 0.4 x 0.3 x 1.4 m, steel #004b87
+  - teller desks behind low glass screens (x3) — back-wall, u 0.5 v 0.8, 1.6 x 0.8 x 1.1 m, laminate #f4f4f2
+  - advisor desk with 2 chairs (x2) — left-wall, u 0.15 v 0.5, 1.4 x 0.7 x 0.75 m, laminate #f4f4f2
+  - waiting chairs in a row, queue display screen above — right-wall, u 1 v 0.4, 3 x 0.6 x 0.8 m, upholstered #1c1c1c
+- people: 3 staff in shirts; 2-5 customers holding numbered tickets
+- street side: brand-colour fascia, 24 h ATM in the facade, security door with interlock
+- confidence: inferred (category-typical)
+
+### electronics — Electronics / appliance store (Kotsovolos-, Public-, Plaisio-type) - PHOTO-based (Kotsovolos Kyriazi 36, 2025)
+
+- applies to categories: electronics, computer, electronics_repair, appliance, hifi, video_games, department_store
+- unit: 10–20 m wide x 15–30 m deep, ceiling 4.0 m; 2-3 levels linked by a stair and a glass-railed mezzanine
+- floor: light grey porcelain 60x60 (#d7d7d5); walls: white; category signs in thin red/black letters ("Telecom", "Σπίτι & Τεχνολογία") on the mezzanine edge; ceiling: white, black track spots in rows
+- light: track spots + LED in wall bays, 4000 K; palette #ffffff #d7d7d5 #e3001b #1c1c1c #c8a882
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - entrance vestibule lined with two tall LED screens showing ads — door, u 0.5 v 0.05, 3 x 2.5 x 3 m, LED screens #1a5fd1
+  - white laptop demo tables with oak gantry carrying brand name plates (Lenovo, HP, Asus, Microsoft) (x4) — centre, u 0.5 v 0.25-0.6, 3 x 1.2 x 0.9 m, white lacquer + oak #ffffff
+  - phone accessory wall (hanging packs) under a "Telecom" sign — left-wall, u 0 v 0.2-0.7, - x 0.4 x 2.4 m, slatwall #ffffff
+  - TV wall — back-wall, u 0.5 v 0.97, - x 0.3 x 2.6 m, screens #1c1c1c
+  - mezzanine with glass balustrade — back-wall, u 0.5 v 0.6-1.0, - x - x 3.5 m, glass rail #ffffff
+  - service desk (K-Service / pick-up) — right-wall, u 0.85 v 0.75, 3 x 0.7 x 1.05 m, white + red #e3001b
+- people: 3-4 staff in red shirts; 4-8 shoppers
+- street side: white-clad facade, giant red 3D "K" letter + red box with "ΚΩΤΣΟΒΟΛΟΣ" (see shops.json Kotsovolos)
+- confidence: photo (Kotsovolos Kyriazi 36 only)
+
+### office — Office / estate agent / travel agent / practice
+
+- applies to categories: estate_agent, travel_agent, architect, lawyer, accountant, consulting, doctors, dentist, clinic, advertising_agency, government, private, research, company, office
+- unit: 4–8 m wide x 8–14 m deep, ceiling 3.2 m
+- floor: light vinyl plank or grey tile (#cfc6b8); walls: white; window posters with property listings (estate agents); ceiling: white, LED panels
+- light: LED panels, 4000 K; palette #f4f4f2 #cfc6b8 #3a4a5a #9aa0a6
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - window listing boards (A4 photos in acrylic frames) — window, u 0.5 v 0.03, - x 0.05 x 1.6 m, acrylic #ffffff
+  - reception desk — door, u 0.6 v 0.25, 1.6 x 0.7 x 1.05 m, laminate #3a4a5a
+  - work desks with monitors (x3) — centre, u 0.5 v 0.4-0.85, 1.4 x 0.7 x 0.75 m, white desk #f4f4f2
+  - waiting chairs — left-wall, u 0 v 0.3, 1.5 x 0.6 x 0.8 m, upholstered #9aa0a6
+- people: 1-3 staff at desks
+- confidence: inferred (category-typical)
+
+### kiosk — Periptero (street kiosk)
+
+- applies to categories: kiosk, newsagent, lottery, bookmaker, ticket
+- unit: 1.8–2.4 m wide x 1.8–2.4 m deep, ceiling 2.4 m
+- floor: n/a (served from outside) (#8f8f8a); walls: the outside IS the shop: every face hung with goods; ceiling: projecting flat roof 0.6 m overhang with fluorescent tube
+- light: fluorescent tube under the overhang, 5000 K; palette #e8e4d8 #2a6aa5 #d13b2f #f2c14e #1c1c1c
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - kiosk box with serving hatch on the pavement side — centre, u 0.5 v 0.5, 2 x 2 x 2.4 m, painted steel #e8e4d8
+  - magazine and newspaper racks on the side faces (x2) — left-wall, u 0 v 0.5, 1.8 x 0.2 x 1.6 m, wire racks #ffffff
+  - drinks fridges (Coca-Cola red, Pepsi/Lacta) standing on the pavement (x2) — right-wall, u 1 v 0.5, 0.7 x 0.7 x 1.9 m, branded cooler #d13b2f
+  - ice-cream chest freezer (Algida / Kri Kri) — front, u 0.3 v -0.2, 1 x 0.6 x 0.9 m, branded freezer #2a6aa5
+  - crisps and sweets on clip strips around the hatch (x4) — front, u 0.5 v 0.0, 1.2 x 0.05 x 1 m, clip strips #f2c14e
+- people: 1 kioskas inside the hatch; 0-1 customer
+- confidence: inferred (category-typical)
+
+### home — Gallery / bookshop / gift & home shop
+
+- applies to categories: gallery, books, gift, interior_decoration, houseware, bed, art, arts_centre, museum, florist, musical_instrument, sewing, toys, pet, doityourself, bathroom_furnishing, antiques, stationery, photo, frame, kitchen, furniture, lighting, carpet, curtain, fabric, cannabis
+- unit: 5–10 m wide x 10–18 m deep, ceiling 3.6 m
+- floor: polished concrete or oak (#bdb7ad); walls: white; ceiling: white, track lights
+- light: track spots, 3000 K; palette #ffffff #bdb7ad #2b2b2b #a67c52
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - styled display tables (x3) — centre, u 0.5 v 0.2-0.7, 1.6 x 0.9 x 0.8 m, timber #a67c52
+  - floor-to-ceiling shelving — left-wall, u 0 v 0.1-0.9, - x 0.4 x 2.6 m, timber/white #ffffff
+  - till with wrapping paper rolls — right-wall, u 0.85 v 0.2, 1.4 x 0.6 x 1 m, timber #2b2b2b
+- people: 1 assistant; 1-2 browsers
+- confidence: inferred (category-typical)
+
+### hotel — Hotel lobby
+
+- applies to categories: hotel, guest_house, apartment
+- unit: 10–20 m wide x 10–20 m deep, ceiling 4.0 m
+- floor: polished marble (#efe7da); walls: panelled, warm white, artworks; ceiling: coffered or plaster with a chandelier
+- light: chandelier + table lamps, 2700 K; palette #efe7da #3a2e27 #c9a961 #5b6b5a
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - reception desk — back-wall, u 0.6 v 0.6, 3 x 0.8 x 1.1 m, walnut + marble #3a2e27
+  - seating group: sofa, 2 armchairs, coffee table — left-wall, u 0.25 v 0.45, 3 x 2 x 0.8 m, velvet #5b6b5a
+  - lift doors (x2) — back-wall, u 0.15 v 1.0, 1 x 0.2 x 2.2 m, brass #c9a961
+- people: 1-2 receptionists; porter; 1-2 guests with luggage
+- confidence: inferred (category-typical)
+
+### cinema_leisure — Cinema / bowling / fitness / dance
+
+- applies to categories: cinema, bowling_alley, fitness_centre, sports_hall, dance, theatre, childcare
+- unit: 8–20 m wide x 12–30 m deep, ceiling 4.0 m
+- floor: patterned carpet / rubber (#3a2a2a); walls: dark, posters in light boxes; ceiling: black
+- light: dim + lit posters, 3000 K; palette #2a1416 #7a1f1f #c9a961 #111111
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - ticket + snack counter — back-wall, u 0.5 v 0.6, 4 x 0.8 x 1.1 m, laminate + steel #7a1f1f
+  - poster light boxes (x4) — left-wall, u 0 v 0.2-0.8, 1 x 0.1 x 1.5 m, light box #111111
+- people: 2 staff; 2-6 visitors
+- confidence: inferred (category-typical)
+
+### fuel — Fuel station shop
+
+- applies to categories: fuel, car_wash, car_repair, car, bicycle_rental, bicycle, motorcycle, locksmith, dry_cleaning, laundry, tailor, copyshop, alternative, yes
+- unit: 4–10 m wide x 6–12 m deep, ceiling 3.2 m
+- floor: grey tile (#a0a0a0); walls: white; ceiling: white panels
+- light: LED panels, 4500 K; palette #f2f2f2 #a0a0a0 #1c1c1c #2a6aa5
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - service counter — centre, u 0.5 v 0.5, - x 0.6 x 1.05 m, laminate #1c1c1c
+  - wall shelving / rail of bagged garments (dry cleaners) — back-wall, u 0.5 v 0.95, - x 0.5 x 2.2 m, steel #f2f2f2
+- people: 1 attendant
+- confidence: inferred (category-typical)
+
+### arcade — Shopping arcade / stoa (Kifisia has several: Mela arcade Kifisias 238, Shoppingland Kolokotroni 1, Kassaveti 19 courtyard)
+
+- applies to categories: mall
+- unit: 3.5–6 m wide x 20–50 m deep, ceiling 4.0 m; a covered passage through the block, often bending, with a light well or open courtyard
+- floor: polished cream or grey marble slabs, sometimes with a dark border band (#e6dfd2); walls: shopfronts on both sides: full glazing in black / bronze frames, each unit 3-6 m wide; ceiling: white plaster with recessed downlights; glazed skylight over the courtyard
+- light: downlights + shop window light, 3000 K; palette #e6dfd2 #f4f1ea #1a1a1a #c9a961 #5f6b5a
+- objects (u = 0 left wall … 1 right wall looking in from the door; v = 0 street wall … 1 back wall; size = w x d x h):
+  - arcade entrance portal with the arcade name in brass letters — door, u 0.5 v 0.0, 3.5 x 0.3 x 3.5 m, stone / brass #c9a961
+  - shopfront units (glass, 3-6 m) on both sides (x5) — left-wall, u 0 v 0.05-0.95, 4 x 0.2 x 3.2 m, glass + metal frame #1a1a1a
+  - shopfront units on the right side (x5) — right-wall, u 1 v 0.05-0.95, 4 x 0.2 x 3.2 m, glass + metal frame #1a1a1a
+  - planters with olive or ficus trees in the courtyard (x2) — centre, u 0.5 v 0.6, 0.8 x 0.8 x 2.5 m, stone planter #5f6b5a
+  - café tables in the courtyard (x4) — centre, u 0.5 v 0.7, 0.7 x 0.7 x 0.75 m, metal + marble #f4f1ea
+  - building directory board — left-wall, u 0 v 0.08, 0.8 x 0.05 x 1.6 m, brass/acrylic #1a1a1a
+- people: shoppers walking through; 2-4 café customers in the court
+- confidence: inferred (category-typical)
+
+<!-- END research-shops generated 7-8 -->

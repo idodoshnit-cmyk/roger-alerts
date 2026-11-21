@@ -7,7 +7,12 @@ function buildRail(){const O=(x,z)=>chunkAt(x,z).o;const sl=[];
     for(const s of[-0.72,0.72]){const ax=a[0]+nx*s,az=a[1]+nz*s,bx=b[0]+nx*s,bz=b[1]+nz*s;o.hq([ax-nx*0.04,Y(a[0],a[1])+0.3,az-nz*0.04],[bx-nx*0.04,Y(b[0],b[1])+0.3,bz-nz*0.04],[bx+nx*0.04,Y(b[0],b[1])+0.3,bz+nz*0.04],[ax+nx*0.04,Y(a[0],a[1])+0.3,az+nz*0.04],[0,0],[1,0],[1,1],[0,1],hexc('#c9ccd0'),RECT[T.metalL],0);
       o.wall(ax,az,bx,bz,Y(a[0],a[1])+0.18,Y(b[0],b[1])+0.18,Y(a[0],a[1])+0.3,Y(b[0],b[1])+0.3,-nx*Math.sign(s),-nz*Math.sign(s),0,1,0,1,hexc('#5f5248'),RECT[T.metal],0)}
     for(let s=0;s<l;s+=0.7){const x=a[0]+dx*s/l,z=a[1]+dz*s/l;sl.push([x,terr(x,z)+0.16,z,Math.atan2(dx,dz)+Math.PI/2])}}}
-  const sg=new GB();sg.box(0,0,0,2.5,0.12,0.24,0,hexc('#9a9690'),RECT[T.concrete]);instanced(sg.build(),MAT.atlas,sl,false);
+  // concrete monoblock sleepers every 0.7 m (Line 1), drawn through a distance pool; third rail with its cover board on the outer side of each track
+  const sg=new GB();sg.box(0,0,0,2.5,0.12,0.24,0,hexc('#9a9690'),RECT[T.concrete]);for(const sx of[-0.72,0.72])sg.box(sx,0.075,0,0.16,0.03,0.2,0,hexc('#3a3c3f'),RECT[T.metal]);
+  if(typeof lodPool==='function')lodPool(sl.map(p=>[p[0],p[1],p[2],p[3],1,1,1]),[{geos:[[sg.build(),MAT.atlas]],d:0,cast:false}]);else instanced(sg.build(),MAT.atlas,sl,false);
+  for(const rr of MAP.rail){const ps=resample(unp(rr),3);for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];const dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz)||1;const nx=-dz/l,nz=dx/l,o=O(a[0],a[1]);const ya=terr(a[0],a[1]),yb=terr(b[0],b[1]),k=1.45;
+    const A=[a[0]+nx*k,a[1]+nz*k],B=[b[0]+nx*k,b[1]+nz*k];o.box((A[0]+B[0])/2,(ya+yb)/2+0.28,(A[1]+B[1])/2,0.08,0.1,l,Math.atan2(dx,dz),hexc('#8b8f93'),RECT[T.metalL]);
+    o.box((A[0]+B[0])/2+nx*0.02,(ya+yb)/2+0.37,(A[1]+B[1])/2+nz*0.02,0.26,0.03,l,Math.atan2(dx,dz),hexc('#c8b98f'),RECT[T.wood])}}
   // train path + island platform aligned to it
   const tp=unp(MAP.train);TRAINPATH={ps:tp,cum:cumlen(tp)};const P0=0,P1=96;const pl=[],pr=[];for(let s=P0;s<=P1;s+=4){const p=atLen(tp,TRAINPATH.cum,s);const fx=Math.sin(p[2]),fz=Math.cos(p[2]);const rx=-fz,rz=fx;pl.push([p[0]+rx*1.55,p[1]+rz*1.55]);pr.push([p[0]+rx*8.6,p[1]+rz*8.6])}
   // pick the side away from the other tracks: test which side has the OSM platform
@@ -43,6 +48,6 @@ function buildPlatform(){if(!STATION.platform)return;const ring=STATION.platform
 function finalize(){for(const c of chunks.values()){if(c.o.size()){const m=new THREE.Mesh(c.o.build(),MAT.atlas);m.castShadow=true;m.receiveShadow=true;scene.add(m);c.meshes.push(m)}
   if(c.cut.size()){const m=new THREE.Mesh(c.cut.build(),MAT.cut);m.receiveShadow=true;scene.add(m);c.detail.push(m)}
   if(c.sg.size()){const m=new THREE.Mesh(c.sg.build(),MAT.signs);scene.add(m);c.detail.push(m)}c.o=c.cut=c.sg=null}}
-function updateChunkVis(cx,cz){const d2=Math.pow(Q.dist+40,2),dd=Math.pow(Math.min(Q.dist,200),2);for(const c of chunks.values()){const dx=c.cx-cx,dz=c.cz-cz,d=dx*dx+dz*dz;const v=d<d2;for(const m of c.meshes)m.visible=v;const vd=d<dd;for(const m of c.detail)m.visible=vd}
+function updateChunkVis(cx,cz){if(typeof updatePropLOD==='function')updatePropLOD(cx,cz);if(typeof updateTreeLOD==='function')updateTreeLOD(cx,cz);const d2=Math.pow(Q.dist+40,2),dd=Math.pow(Math.min(Q.dist,200),2);for(const c of chunks.values()){const dx=c.cx-cx,dz=c.cz-cz,d=dx*dx+dz*dz;const v=d<d2;for(const m of c.meshes)m.visible=v;const vd=d<dd;for(const m of c.detail)m.visible=vd}
   const td=Math.pow(Q.dist+60,2),sd=150*150,pd=Math.pow(Math.min(Q.dist,170)+60,2);for(const c of TREECH.values()){const dx=c.cx-cx,dz=c.cz-cz,d=dx*dx+dz*dz;const v=d<td;for(const m of c.detail){m.visible=v;m.castShadow=Q.sh>0&&d<sd}for(const m of c.props){m.visible=d<pd;m.castShadow=Q.sh>0&&d<sd&&m.userData.cast}}}
 

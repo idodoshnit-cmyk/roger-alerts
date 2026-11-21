@@ -1,0 +1,68 @@
+{
+  "about": "Hand-checked corrections applied by 05_merge.py (research-census). aliases: names that mean the same business (normalised keys are unified before matching). rebrand: an entity whose sign changed; matched by a member's normalised name + street. dropAddressPattern: directory entries that are counters inside another shop (no own shopfront). insideAddressPattern: entries inside an arcade/hotel/mall: streetLevel=false.",
+  "aliases": [
+    [
+      "ΕΤΕ",
+      "Εθνική Τράπεζα"
+    ],
+    [
+      "National Bank of Greece",
+      "Εθνική Τράπεζα"
+    ],
+    [
+      "Εθνική Τράπεζα της Ελλάδος",
+      "Εθνική Τράπεζα"
+    ],
+    [
+      "Τράπεζα Πειραιώς",
+      "Piraeus"
+    ],
+    [
+      "Piraeus Bank",
+      "Piraeus"
+    ],
+    [
+      "Starbucks Coffee",
+      "Starbucks"
+    ],
+    [
+      "Ralph Lauren",
+      "Polo Ralph Lauren"
+    ],
+    [
+      "Βασιλόπουλος",
+      "ΑΒ Βασιλόπουλος"
+    ],
+    [
+      "AB Vassilopoulos",
+      "ΑΒ Βασιλόπουλος"
+    ],
+    [
+      "Χόντος",
+      "Hondos center"
+    ],
+    [
+      "Hondos",
+      "Hondos center"
+    ],
+    [
+      "CrediaBank",
+      "HSBC"
+    ]
+  ],
+  "rebrand": [
+    {
+      "match": "HSBC",
+      "street": "Κασσαβέτη",
+      "name": "CrediaBank",
+      "nameLatin": "CrediaBank",
+      "note": "HSBC Greece's retail network went to Pancreta Bank (2024), which merged into Attica Bank, rebranded CrediaBank in 2025; vrisko.gr lists CREDIABANK at Kassaveti 1 (the OSM 'HSBC' address).",
+      "sources": [
+        "https://www.iefimerida.gr/english/attica-bank-rebrands-crediabank-signaling-new-era-greek-banking",
+        "vrisko.gr trapezes/kifisia listing"
+      ]
+    }
+  ],
+  "dropAddressPattern": "Εντός Πολυκαταστήματος|Εντός του Πολυκαταστήματος|Εντός Hondos",
+  "insideAddressPattern": "Εντός|Εσωτερικό|Στοά|Εμπορικού Κέντρου"
+}

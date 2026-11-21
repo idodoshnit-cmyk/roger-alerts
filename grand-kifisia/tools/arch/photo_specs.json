@@ -1,0 +1,1084 @@
+{
+ "_about": "Hand-written per-building specs from looking at photos (research-arch). Merged over the base layer by tools/arch/extract.py. confidence: photo = facade seen in a street-level photo; aerial = roof/massing/colour seen in a drone photo (facade detail partly inferred). 'parts' = sub-volumes when one OSM footprint holds several real buildings (pos 0..1 along the footprint's longest axis from its west/north end).",
+ "w1075949835": {
+  "name": "Mythos Plus building (Kassaveti 13)",
+  "addr": "Κασσαβέτη 13",
+  "style": "interwar",
+  "levels": 2,
+  "gfH": 4.6,
+  "floorH": 3.4,
+  "heightM": 8.5,
+  "roof": "flat",
+  "roofColour": "#bdb7ad",
+  "facade": {
+   "colour": "#c27a55",
+   "material": "plaster",
+   "base": "#a8521f",
+   "trim": "#f4f1ea",
+   "baseNote": "terracotta brick tile ring round the big arch"
+  },
+  "balconies": {
+   "type": "continuous_slab",
+   "rail": "masonry",
+   "perFloor": false,
+   "depthM": 2.5,
+   "note": "first floor is a terrace across the whole front behind a white classical balustrade with turned balusters (top at ~5.7 m); the upper storey is set back ~2.5 m behind it with dark metal-and-glass screens"
+  },
+  "setbackTop": true,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 2,
+  "features": [
+   "big_semicircular_arch_shopfront",
+   "black_steel_factory_glazing",
+   "white_balustrade_terrace",
+   "black_scalloped_drop_awning_11m",
+   "plane_tree_in_front",
+   "glass_windscreen_terrace"
+  ],
+  "photos": [
+   "docs/research/img/shops/mythos_01_street_front_night.jpg",
+   "docs/research/img/shops/mythos_06_garden_entrance_steps.jpg"
+  ],
+  "source": [
+   "osm",
+   "shops.json building (research-shops)",
+   "mythosplus.gr photos (reference only)"
+  ],
+  "confidence": "photo"
+ },
+ "w1076768348": {
+  "name": "Kotsikas House (Ralph Lauren), Kassaveti 19",
+  "addr": "Κασσαβέτη 19",
+  "style": "chalet_villa",
+  "levels": 3,
+  "gfH": 4.3,
+  "floorH": 3.9,
+  "heightM": 13.5,
+  "eavesM": 9.5,
+  "raisedGroundM": 1.6,
+  "roof": "gable",
+  "roofColour": "#a8553a",
+  "roofPitchDeg": 50,
+  "facade": {
+   "colour": "#c9ad8a",
+   "material": "stone",
+   "base": "#cbb093",
+   "trim": "#ece8e1",
+   "joints": "#8a7461",
+   "baseNote": "rusticated quoins and window surrounds of larger blocks"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "masonry",
+   "perFloor": false,
+   "depthM": 1.0,
+   "note": "white pierced stone balustrade on top of the canted ground-floor bay; white timber balcony with square balusters on carved brackets at the gable French window"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "fixed",
+  "shopfronts": 1,
+  "features": [
+   "front_gable_swiss_bargeboards",
+   "king_post_truss_in_gable",
+   "turned_finial",
+   "canted_bay_ground_floor",
+   "white_string_course",
+   "small_pane_white_casements",
+   "segmental_stone_arches",
+   "dormer_with_own_gable",
+   "navy_awnings_first_floor",
+   "glass_canopy_over_entrance",
+   "10_marble_steps",
+   "8_marble_steps_with_black_iron_handrail_right_side",
+   "polygonal_bay_window_GF_with_arched_display_window",
+   "garland_balcony_over_bay",
+   "x_shaped_iron_wall_ties",
+   "basement_window_in_plinth"
+  ],
+  "photos": [
+   "docs/research/img/arch/commons/Οικία_Κότσικα_Κηφισιά_0934.jpg",
+   "ref/r20.jpg",
+   "docs/research/img/shops/ralphlauren_01_kotsikas_house_day_CCBYSA.jpg",
+   "docs/research/img/shops/ralphlauren_03_night_starbucks_left_travelstyle_REFONLY.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Οικία Κότσικα, Κηφισιά 0931.jpg (C messier, CC BY-SA 4.0)",
+   "shops.json building",
+   "commons:File:Οικία Κότσικα, Κηφισιά 0934.jpg (C messier, CC BY-SA 4.0)"
+  ],
+  "confidence": "photo"
+ },
+ "w1076768349": {
+  "name": "Starbucks pavilion, Kassaveti 19 courtyard",
+  "addr": "Κασσαβέτη 19",
+  "style": "chalet_villa",
+  "levels": 2,
+  "gfH": 3.6,
+  "floorH": 3.2,
+  "heightM": 8.0,
+  "roof": "hip",
+  "roofColour": "#a4553c",
+  "facade": {
+   "colour": "#7b5a43",
+   "material": "brick",
+   "base": "stone",
+   "upper": "timber",
+   "trim": "#5a3d2a",
+   "baseNote": "red brick and rough stone piers",
+   "upperNote": "dark-stained timber cladding and glazing"
+  },
+  "balconies": {
+   "type": "continuous_slab",
+   "rail": "wood",
+   "perFloor": false,
+   "depthM": 1.2,
+   "note": "full-width timber balcony on the first floor facing the courtyard"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 1,
+  "features": [
+   "square_rendered_chimney",
+   "small_pane_timber_glazing_both_floors",
+   "green_market_umbrellas_in_courtyard",
+   "courtyard_with_stone_paving_and_planters"
+  ],
+  "photos": [
+   "docs/research/img/shops/starbucks_01_courtyard_2008_REFONLY.jpg"
+  ],
+  "source": [
+   "osm",
+   "shops.json building"
+  ],
+  "confidence": "photo"
+ },
+ "w1075949217": {
+  "name": "HSBC corner (Kassaveti 1 / Platanos square)",
+  "addr": "Κασσαβέτη 1",
+  "style": "neo_villa",
+  "levels": 2,
+  "gfH": 5.0,
+  "floorH": 4.6,
+  "heightM": 13.0,
+  "eavesM": 10.4,
+  "roof": "hip",
+  "roofColour": "#b5573c",
+  "facade": {
+   "colour": "#e9dfbf",
+   "material": "plaster",
+   "base": "#b9b3a6",
+   "trim": "#f6f3ea",
+   "baseNote": "grey stone pilasters between the ground-floor shop bays"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "iron",
+   "perFloor": false,
+   "depthM": 0.6,
+   "note": "small iron-railed balconies under some first-floor windows"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 8,
+  "features": [
+   "pediment_salmon_tympanum_#e8907a_on_square_end",
+   "tall_first_floor_windows_with_moulded_surrounds_and_cornices",
+   "plain_cornice",
+   "ground_floor_shop_bays_between_pilasters",
+   "chimneys"
+  ],
+  "parts": [
+   {
+    "pos": [
+     0.0,
+     0.55
+    ],
+    "style": "neo_villa",
+    "levels": 2,
+    "heightM": 13.0,
+    "note": "the neoclassical block facing Platanos square (HSBC, Swiss Corner)"
+   },
+   {
+    "pos": [
+     0.55,
+     1.0
+    ],
+    "style": "poly_6080",
+    "levels": 4,
+    "heightM": 14.0,
+    "facadeColour": "#efece4",
+    "balconies": "continuous slabs with iron rails, corner balcony, set-back top floor",
+    "note": "white 1960s-70s block along Kassaveti (Travel Plan, Vivify, Pansik)"
+   }
+  ],
+  "photos": [
+   "ref/r11.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισιά Πλάτανος 7863.jpg (C messier, CC BY-SA 4.0)"
+  ],
+  "confidence": "photo"
+ },
+ "w1075949216": {
+  "name": "Kifisias 236 arcade block (Platanos)",
+  "addr": "Κηφισίας 236",
+  "style": "arcade_retail",
+  "levels": 2,
+  "gfH": 4.6,
+  "floorH": 3.8,
+  "heightM": 11.0,
+  "roof": "hip",
+  "roofColour": "#c0623e",
+  "facade": {
+   "colour": "#ece6da",
+   "material": "plaster",
+   "base": "stone",
+   "trim": "#f4f1ea"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 18,
+  "features": [
+   "ground_floor_colonnade_with_cafe_terraces",
+   "multi_hip_terracotta_roof",
+   "glazed_skylight_roof_over_inner_passage",
+   "chimneys"
+  ],
+  "photos": [
+   "ref/r09.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισιά 4102.jpg (C messier, CC BY-SA 4.0) drone view, camera fitted with tools/arch/fitcam.py"
+  ],
+  "confidence": "aerial",
+  "notes": "Kifisias 236 (OPAP, Platanos cafe, Coffeeway, Mela shop listing). Seen at the bottom right of the drone view r09: multi-hip terracotta roofs around a glazed skylight passage, colonnade at ground level."
+ },
+ "w1075952145": {
+  "name": "KFC arcade block (Kifisias Ave at Platanos)",
+  "style": "arcade_retail",
+  "levels": 2,
+  "gfH": 4.4,
+  "floorH": 3.4,
+  "heightM": 10.0,
+  "roof": "hip",
+  "roofColour": "#c4633c",
+  "facade": {
+   "colour": "#efe9dc",
+   "material": "plaster",
+   "base": "stone",
+   "trim": "#f4f1ea"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 14,
+  "features": [
+   "deep_arcade_of_square_cream_pillars_full_height",
+   "low_pitch_hipped_roof_wide_eaves_0.8m",
+   "cafe_terraces_under_arcade",
+   "dark_red_awnings",
+   "kiosk_in_front_at_crossing"
+  ],
+  "notes": "Mela arcade, Kifisias Ave 238 (KFC; former Grand Hotel de Kifissia, 1897, per research-shops text). The drone view r09 shows this footprint as a long arcade building under one low hipped terracotta roof with a deep colonnade of square cream pillars and cafe terraces. No 3-storey neoclassical facade is visible on it from the air. Build the massing from the aerial; detail the facade as restrained neoclassical (cream render, moulded cornice) until a street photo exists.",
+  "photos": [
+   "ref/r09.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισιά 4102.jpg drone view"
+  ],
+  "confidence": "aerial"
+ },
+ "w1075952143": {
+  "style": "poly_6080",
+  "levels": 3,
+  "gfH": 4.2,
+  "floorH": 3.1,
+  "heightM": 11.5,
+  "roof": "flat",
+  "roofColour": "#9a9690",
+  "facade": {
+   "colour": "#f1efea",
+   "material": "plaster",
+   "base": "plaster",
+   "trim": "#f4f1ea"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "awnings": "fabric",
+  "features": [
+   "flat_roof_crowded_with_ac_units",
+   "plain_white_walls",
+   "street_art_mural_on_upper_side_wall"
+  ],
+  "photos": [
+   "ref/r09.jpg"
+  ],
+  "source": [
+   "osm",
+   "drone view r09"
+  ],
+  "confidence": "aerial"
+ },
+ "w1075952142": {
+  "style": "interwar",
+  "levels": 2,
+  "gfH": 4.2,
+  "floorH": 3.6,
+  "heightM": 10.0,
+  "roof": "hip",
+  "roofColour": "#c8653c",
+  "facade": {
+   "colour": "#b9b2a4",
+   "material": "stone",
+   "base": "stone",
+   "trim": "#e9e4da"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "awnings": "fixed",
+  "features": [
+   "rough_grey_beige_stone_walls",
+   "arched_ground_floor_openings",
+   "green_fascia_band_under_eaves",
+   "hipped_terracotta_roof"
+  ],
+  "photos": [
+   "ref/r09.jpg"
+  ],
+  "source": [
+   "osm",
+   "drone view r09"
+  ],
+  "confidence": "aerial"
+ },
+ "w1090553221": {
+  "name": "Neoclassical villa, Kifisias 297",
+  "addr": "Κηφισίας 297",
+  "style": "neo_villa",
+  "levels": 2,
+  "gfH": 4.4,
+  "floorH": 4.2,
+  "heightM": 11.5,
+  "raisedGroundM": 0.6,
+  "roof": "hip",
+  "roofColour": "#a9553a",
+  "facade": {
+   "colour": "#e9d9a4",
+   "material": "plaster",
+   "base": "#f2efe6",
+   "trim": "#f4f1ea",
+   "baseNote": "white plinth"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "iron",
+   "perFloor": false,
+   "depthM": 0.9,
+   "note": "one central balcony over the twin entrance doors"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "symmetric_front_3_bays",
+   "blue_painted_window_frames_and_doors",
+   "dark_eaves_soffit_with_brackets",
+   "round_oculus_in_central_gable",
+   "small_central_cross_gable_with_finial",
+   "lawn_and_marble_path_in_front"
+  ],
+  "photos": [
+   "ref/r08.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισίας 297 0887.jpg (C messier, CC BY-SA 4.0); id matched by camera position (photo geotag next to this footprint)"
+  ],
+  "confidence": "photo"
+ },
+ "w1073283872": {
+  "name": "Kifisia station building (Line 1)",
+  "style": "station",
+  "levels": 1,
+  "gfH": 5.5,
+  "floorH": 0,
+  "heightM": 7.5,
+  "roof": "flat",
+  "roofColour": "#b8b2a8",
+  "facade": {
+   "colour": "#e8c766",
+   "material": "plaster",
+   "base": "#efe9da",
+   "trim": "#f6f3ea"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "features": [
+   "white_pilasters",
+   "central_pediment_with_clock_and_station_name",
+   "white_cornice_and_parapet",
+   "green_doors",
+   "low_iron_fence_in_front"
+  ],
+  "photos": [
+   "ref/r21.jpg",
+   "ref/r00.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Σταθμός ΗΣΑΠ Κηφισιά 7951.JPG (C messier, CC BY-SA 4.0)"
+  ],
+  "confidence": "photo",
+  "notes": "Map style 'station'; footprint id matched as the map's station building. Landmark detail: docs/research/PLACES.md."
+ },
+ "w83642558": {
+  "name": "Άγιος Δημήτριος Κηφισιάς",
+  "style": "church",
+  "levels": 1,
+  "gfH": 10.0,
+  "floorH": 0,
+  "heightM": 22.0,
+  "roof": "dome",
+  "roofColour": "#b85a3c",
+  "facade": {
+   "colour": "#eadfc8",
+   "material": "plaster",
+   "base": "stone",
+   "trim": "#f6f1e6"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "features": [
+   "twin_bell_towers_flanking_west_front",
+   "central_dome_red_tiles_on_drum",
+   "arched_portico",
+   "gold_mosaic_icon_in_tympanum",
+   "marble_steps"
+  ],
+  "photos": [
+   "ref/r13.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Μητροπολιτικός ναός Κηφισιάς 7915.jpg (C messier, CC BY-SA 4.0); id matched as nearest church to the camera"
+  ],
+  "confidence": "photo"
+ },
+ "w1086751869": {
+  "name": "International School of Athens - main building",
+  "addr": "Αρτέμιδος 42 & Ξενίας",
+  "style": "hotel",
+  "levels": 3,
+  "gfH": 4.4,
+  "floorH": 3.9,
+  "heightM": 16.0,
+  "roof": "hip",
+  "roofColour": "#b05a3c",
+  "facade": {
+   "colour": "#eeead9",
+   "material": "plaster",
+   "base": "stone",
+   "baseNote": "low stone plinth with semi-basement windows, garden wall with iron railing",
+   "trim": "#f8f6ee"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "iron",
+   "perFloor": true,
+   "depthM": 0.8,
+   "note": "small black wrought-iron balconies under every first- and second-floor window; wider balcony in the central bay and on the corner bays"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "symmetric_9_bay_west_front",
+   "central_bay_with_curved_segmental_gable_rising_above_cornice",
+   "arched_ground_floor_windows",
+   "tall_french_windows_upper_floors",
+   "moulded_cornice",
+   "pine_trees_in_front_garden",
+   "former_1928_hotel"
+  ],
+  "photos": [
+   "docs/research/img/lm/isa/isa_west_facade_REFONLY.png",
+   "docs/research/img/lm/isa/isa_hotel_1928_REFONLY.png"
+  ],
+  "source": [
+   "osm footprint 51.4 x 33.7 m",
+   "isa.edu.gr ('historic building')",
+   "school directory ('neo-classical, four-storey former hotel') via docs/research/PLACES.md"
+  ],
+  "confidence": "photo",
+  "notes": "West facade from a reference-only photo (lm-isa). The 1928 postcard shows the hotel in rough stone; today it is rendered cream-white.",
+  "raisedGroundM": 1.2
+ },
+ "w1076768346": {
+  "name": "Kassaveti tower arcade (Πύργος Κασσαβέτη)",
+  "style": "retail_modern",
+  "levels": 3,
+  "gfH": 4.2,
+  "floorH": 3.6,
+  "heightM": 12.5,
+  "roof": "flat",
+  "roofColour": "#a9a49b",
+  "facade": {
+   "colour": "#a8674c",
+   "material": "brick",
+   "base": "#8f5640",
+   "trim": "#d9d3c4",
+   "note": "red-brown face brick in stretcher bond everywhere; thin pale-green/grey metal fascia bands over the shop row and over the first-floor gallery"
+  },
+  "balconies": {
+   "type": "recessed",
+   "rail": "iron",
+   "perFloor": false,
+   "depthM": 2.5,
+   "note": "first floor is a recessed gallery/loggia with black iron railing on a brick parapet; timber-framed shop windows behind; second floor a solid brick band"
+  },
+  "awnings": "fixed",
+  "features": [
+   "modern_brick_shopping_arcade",
+   "inner_passage",
+   "recessed_first_floor_gallery_with_black_railing",
+   "white_canvas_fascia_signs_on_shop_row",
+   "courtyard_lanterns_and_brick_planters_in_front",
+   "timber_framed_glazing",
+   "flat_roof_brick_parapet"
+  ],
+  "photos": [
+   "docs/research/img/arch/commons/Οικία_Κότσικα_Κηφισιά_0934.jpg"
+  ],
+  "source": [
+   "osm name",
+   "research-shops (ORDERS 2026-11-21: 'b423 is a modern brick shopping arcade')",
+   "commons:File:Οικία Κότσικα, Κηφισιά 0934.jpg (C messier, CC BY-SA 4.0) (right edge of the photo, the brick building east of the villa)"
+  ],
+  "confidence": "photo",
+  "shopfronts": 4
+ },
+ "w1077112775": {
+  "name": "Kolokotroni 7 pavilion",
+  "addr": "Κολοκοτρώνη 7",
+  "style": "eclectic_pavilion",
+  "levels": 1,
+  "gfH": 6.0,
+  "floorH": 0,
+  "heightM": 11.0,
+  "roof": "flat",
+  "roofColour": "#b4502e",
+  "facade": {
+   "colour": "#f6f3ec",
+   "material": "plaster",
+   "base": "#d9c3a8",
+   "trim": "#ffffff",
+   "baseNote": "rusticated stone plinth ~1.0 m with entrance steps"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 1,
+  "features": [
+   "two_round_towers_with_conical_bronze_ochre_roofs_#a8956c_and_gold_finials",
+   "scalloped_terracotta_tile_cornice_on_towers_and_centre",
+   "arched_display_windows",
+   "fleur_de_lis_frieze",
+   "central_entrance_with_marble_steps",
+   "paved_square_with_box_hedges_in_front"
+  ],
+  "photos": [
+   "ref/r12.jpg",
+   "ref/r06.jpg"
+  ],
+  "source": [
+   "osm footprint w1077112775 (two rounded front corners = the towers; map shop Marina Rinaldi)",
+   "commons:File:Κολοκοτρώνη 7, Κηφισιά 0913.jpg (C messier, CC BY-SA 4.0)",
+   "commons:File:Αγορά Κηφισιάς 0910.jpg (C messier, CC BY-SA 4.0)",
+   "id corrected 2026-11-21: was w1077113199 (= Kolokotroni 11, Agora block) — research-shops had it right"
+  ],
+  "confidence": "photo",
+  "towerRoof": {
+   "shape": "cone",
+   "colour": "#a8956c",
+   "finial": "gold_ball_and_spike",
+   "skirt": "scalloped_terracotta_tiles_#c0562f"
+  }
+ },
+ "w1072202922": {
+  "name": "Ruined stone mansion by the station (OSM building=ruins)",
+  "style": "neo_villa",
+  "styleDetail": "ruin_shell",
+  "levels": 3,
+  "gfH": 4.2,
+  "floorH": 3.8,
+  "heightM": 12.5,
+  "raisedGroundM": 1.0,
+  "roof": "flat",
+  "roofColour": "#8f8676",
+  "facade": {
+   "colour": "#a39a8c",
+   "material": "stone",
+   "base": "#8f877a",
+   "trim": "#c9c2b4",
+   "note": "weathered grey rubble-stone walls with lighter dressed-stone quoins and window surrounds; patches of lost render"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "masonry",
+   "perFloor": false
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "roofless_shell",
+   "empty_window_openings_no_frames",
+   "internal_cross_walls_visible_from_above",
+   "stone_quoins",
+   "vertical_windows_3_per_floor_per_side",
+   "ivy_on_walls",
+   "surrounded_by_trees",
+   "fenced_off"
+  ],
+  "photos": [
+   "ref/r10.jpg"
+  ],
+  "source": [
+   "osm (building=ruins)",
+   "commons:File:Κηφισιά 4110.jpg (C messier, CC BY-SA 4.0, drone view over Kifisia station looking ENE); identified as the only building between Tatoiou and the rail cutting south of the station, matching the OSM ruins tag"
+  ],
+  "confidence": "photo",
+  "roofDetail": "none: roofless ruin, walls end at ragged parapet height, interior open to the sky"
+ },
+ "w1072358338": {
+  "name": "White stepped apartment block, Grigoriou Lampraki (facing the rail)",
+  "style": "poly_8000",
+  "levels": 5,
+  "gfH": 3.2,
+  "floorH": 3.1,
+  "heightM": 16.5,
+  "roof": "flat",
+  "roofColour": "#d6d6d2",
+  "facade": {
+   "colour": "#f2f1ec",
+   "material": "plaster",
+   "base": "#e6e3da",
+   "trim": "#ffffff"
+  },
+  "balconies": {
+   "type": "continuous_slab",
+   "rail": "masonry",
+   "perFloor": true,
+   "depthM": 1.8,
+   "note": "deep wrap-around balconies on every floor, solid white parapets, grey/white roller awnings; facade stepped (saw-tooth) in plan towards the street"
+  },
+  "setbackTop": true,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 0,
+  "features": [
+   "stepped_sawtooth_plan",
+   "penthouse_setback_with_small_roof_rooms",
+   "solar_water_heaters_on_roof",
+   "white_roller_awnings",
+   "green_strip_and_trees_to_street"
+  ],
+  "photos": [
+   "ref/r10.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισιά 4110.jpg (C messier, CC BY-SA 4.0, drone view over Kifisia station looking ENE); id by position (the stepped block east of Gr. Lampraki opposite the platforms)"
+  ],
+  "confidence": "photo"
+ },
+ "w1072358339": {
+  "name": "Hip-roofed house south of the stepped block",
+  "style": "house_suburban",
+  "levels": 3,
+  "gfH": 3.2,
+  "floorH": 3.1,
+  "heightM": 12.0,
+  "roof": "hip",
+  "roofColour": "#c98f63",
+  "facade": {
+   "colour": "#efece4",
+   "material": "plaster",
+   "base": "#e0dbcf"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "masonry",
+   "perFloor": true,
+   "depthM": 1.4
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "fabric",
+  "shopfronts": 0,
+  "features": [
+   "light_terracotta_hip_roof",
+   "roof_solar_panel",
+   "corner_balconies",
+   "chimney"
+  ],
+  "photos": [
+   "ref/r10.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Κηφισιά 4110.jpg (C messier, CC BY-SA 4.0, drone view over Kifisia station looking ENE); id by position (moderate certainty: the hip-roofed house right below the stepped block)"
+  ],
+  "confidence": "photo"
+ },
+ "w1077113199": {
+  "name": "Kolokotroni 11 corner block (Vagenas, Agora Deco&Deli)",
+  "style": "poly_6080",
+  "levels": 4,
+  "gfH": 4.6,
+  "floorH": 3.2,
+  "heightM": 15.5,
+  "roof": "flat",
+  "roofColour": "#c9c4b8",
+  "facade": {
+   "colour": "#e6dcc6",
+   "material": "plaster",
+   "base": "#d8ccb2",
+   "trim": "#f1ebdc",
+   "note": "cream render; strong horizontal solid parapet bands on each upper floor"
+  },
+  "balconies": {
+   "type": "continuous_slab",
+   "rail": "masonry",
+   "perFloor": true,
+   "depthM": 1.4,
+   "note": "solid cream parapets, partly recessed loggias with dark window walls behind"
+  },
+  "setbackTop": true,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 5,
+  "features": [
+   "rounded_glazed_corner_bay_floors_1_2_at_east_corner",
+   "recessed_ground_floor_arcade_with_square_columns",
+   "dark_fascia_white_letter_shop_signs",
+   "flat_roof_with_rooftop_room",
+   "street_trees_in_front"
+  ],
+  "photos": [
+   "ref/r18.jpg"
+  ],
+  "source": [
+   "osm",
+   "commons:File:Οδός Κολοκοτρώνη, Κηφισιά 0907.jpg (C messier, CC BY-SA 4.0); id by position: the block with the rounded east end straight ahead of the camera looking west along Kolokotroni (footprint has the round east corners); partly hidden by plane trees"
+  ],
+  "confidence": "photo"
+ },
+ "w302682638": {
+  "name": "Retsinas Mansion = Goulandris Natural History Museum, Levidou 13",
+  "addr": "Λεβίδου 13",
+  "style": "chalet_villa",
+  "levels": 2,
+  "gfH": 4.6,
+  "floorH": 4.2,
+  "heightM": 12.5,
+  "eavesM": 9.0,
+  "raisedGroundM": 1.2,
+  "roof": "hip",
+  "roofColour": "#b4543a",
+  "roofPitchDeg": 35,
+  "facade": {
+   "colour": "#ecdfa2",
+   "material": "plaster",
+   "base": "#b9ab95",
+   "trim": "#f3f1ea",
+   "baseNote": "plinth / forecourt wall of polygonal (cyclopean) grey-ochre stone with a white marble coping and black iron railings between square white piers"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "iron",
+   "perFloor": false,
+   "note": "single-storey front wing with a flat roof terrace edged by a black iron railing; small corner terraces with iron rails on the main block"
+  },
+  "setbackTop": true,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "dark_red_carved_timber_bargeboards_and_brackets",
+   "ogee_arched_central_gable_with_round_headed_attic_window",
+   "finial_on_gable",
+   "white_pilaster_strips_between_bays",
+   "white_moulded_window_surrounds",
+   "white_louvred_shutters",
+   "single_storey_front_wing_with_roof_terrace",
+   "exhibition_banners_between_ground_floor_windows",
+   "stone_slab_forecourt_with_pithos_jars_and_marble_fragments"
+  ],
+  "photos": [
+   "ref/r14.jpg"
+  ],
+  "source": [
+   "osm (name Έπαυλη Ρετσίνα, addr Λεβίδου 13)",
+   "commons:File:Μουσείο Γουλανδρή 7886.jpg (C messier, CC BY-SA 4.0)",
+   "places.json goulandris"
+  ],
+  "confidence": "photo",
+  "notes": "Main block 2 storeys with a hip-and-gable tiled roof; the front single-storey wing projects towards Levidou. Footprint 1087 m2 includes the wings; the visible main block is ~9 bays wide."
+ },
+ "w1073120660": {
+  "name": "Kokkotas House (Οικία Κόκκοτα), Kokota street — half-timbered villa with two spired corner turrets",
+  "street": "Κόκοτα",
+  "style": "chalet_villa",
+  "levels": 2,
+  "gfH": 4.0,
+  "floorH": 3.6,
+  "heightM": 13.0,
+  "eavesM": 7.8,
+  "raisedGroundM": 0.8,
+  "roof": "hip",
+  "roofColour": "#d0673a",
+  "roofPitchDeg": 38,
+  "facade": {
+   "colour": "#f4f0e8",
+   "material": "plaster",
+   "base": "#9c8f7c",
+   "trim": "#c9562a",
+   "joints": "#6f6455",
+   "note": "ground floor of grey-brown rubble stone; upper floor white render with orange-red painted timber framing (posts, rails and St Andrew's crosses) and an orange-red band at floor level"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "wood",
+   "perFloor": false,
+   "depthM": 1.2,
+   "note": "one timber balcony with red-brown boarded balustrade over the central entrance bay"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "two_octagonal_corner_turrets_on_the_street_front_with_tall_pointed_grey_metal_spires_and_finials",
+   "half_timbered_upper_floor_orange_red_frames_X_braces",
+   "rubble_stone_ground_floor",
+   "central_projecting_bay_with_cross_gable",
+   "red_brown_louvred_shutters",
+   "small_roof_skylights_and_dormers",
+   "chimneys_with_red_caps",
+   "front_garden_with_palms_and_paved_path",
+   "driveway_along_rubble_stone_boundary_wall"
+  ],
+  "parts": [
+   {
+    "what": "turrets",
+    "at": [
+     [
+      -182.0,
+      -105.2
+     ],
+     [
+      -180.3,
+      -120.2
+     ]
+    ],
+    "diameterM": 3.2,
+    "eavesM": 8.0,
+    "spireTopM": 15.5,
+    "spireColour": "#c9ccce"
+   }
+  ],
+  "photos": [
+   "docs/research/img/arch/commons/Οικία_Κόκκοτα_3_Κηφισιά_DJI_4117.jpg",
+   "docs/research/img/arch/commons/Οικία_Κόκκοτα_3_Κηφισιά_DJI_4115.jpg"
+  ],
+  "source": [
+   "osm footprint (east side has the two round turret bumps and the central bay)",
+   "commons:File:Οικία Κόκκοτα 3, Κηφισιά DJI 4117.jpg and DJI 4115.jpg (C messier, CC BY-SA 4.0, drone); id by camera geotag on Kokota street (-153,-102) + footprint shape"
+  ],
+  "confidence": "photo",
+  "notes": "Front (turrets, entrance, garden) faces EAST onto Kokota street. Neighbours seen: white 3-storey hip-roofed blocks to the south, a house with an octagonal grey turret roof to the north."
+ },
+ "w1077110409": {
+  "name": "Perrakis House (Οικία Περράκη), Kolokotroni — SkourasMed",
+  "style": "neo_villa",
+  "styleDetail": "chalet_porch_villa",
+  "levels": 1,
+  "gfH": 4.6,
+  "floorH": 0,
+  "heightM": 10.0,
+  "eavesM": 7.0,
+  "raisedGroundM": 2.4,
+  "roof": "hip",
+  "roofColour": "#b8643f",
+  "roofPitchDeg": 30,
+  "facade": {
+   "colour": "#ebd2a8",
+   "material": "plaster",
+   "base": "#d9cfc0",
+   "trim": "#f3efe6",
+   "baseNote": "raised semi-basement in render with small windows; white corner pilasters, white window surrounds"
+  },
+  "balconies": {
+   "type": "individual",
+   "rail": "wood",
+   "perFloor": false,
+   "depthM": 2.2,
+   "note": "central recessed porch/veranda under the front gable: red-brown painted timber posts, pierced fretwork balustrade panels and lace-like brackets"
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 0,
+  "features": [
+   "central_front_gable_with_red_brown_carved_bargeboards_and_lattice_tympanum",
+   "timber_fretwork_porch_red_brown",
+   "grand_white_marble_staircase_14_steps_flaring_at_the_bottom_with_two_marble_newel_pillars",
+   "double_entrance_door_red_brown_with_glazed_iron_grilles",
+   "tall_sash_windows_red_frames_white_surrounds",
+   "finial_on_gable_apex",
+   "chimney_with_red_cap",
+   "business_sign_board_under_gable"
+  ],
+  "photos": [
+   "docs/research/img/arch/commons/Οικία_Περράκη_Κηφισσιά_0914.jpg"
+  ],
+  "source": [
+   "osm footprint (south edge has the projecting central porch + stair)",
+   "commons:File:Οικία Περράκη, Κηφισσιά 0914.jpg (C messier, CC BY-SA 4.0); id by camera geotag (284,13) looking north at the nearest footprint"
+  ],
+  "confidence": "photo",
+  "notes": "Front faces SOUTH towards Kolokotroni / the pedestrian square, ~13 m wide, symmetric: porch in the middle, one tall window each side."
+ },
+ "w262269079": {
+  "name": "National Bank of Greece, Platanos square (star-plan modern building)",
+  "style": "poly_modern",
+  "styleDetail": "modern_civic_star_plan",
+  "levels": 3,
+  "gfH": 4.5,
+  "floorH": 3.8,
+  "heightM": 14.0,
+  "roof": "flat_solar",
+  "roofColour": "#a9aaa8",
+  "facade": {
+   "colour": "#eeefec",
+   "material": "stone",
+   "base": "#d9d8d2",
+   "trim": "#ffffff",
+   "note": "white/very light grey stone or panel cladding, crisp volumes; the plan is a square with chamfered, projecting full-height bays on the corners/sides (OSM footprint is the star)"
+  },
+  "balconies": {
+   "type": "none",
+   "rail": "none",
+   "perFloor": false
+  },
+  "setbackTop": false,
+  "pilotis": false,
+  "awnings": "none",
+  "shopfronts": 1,
+  "features": [
+   "full_height_vertical_glazed_bays_with_white_mullions_between_white_solid_piers",
+   "sloped_glazed_skylight_strips_along_the_roof_edges",
+   "central_glass_pyramid_skylight_with_white_steel_frame",
+   "roof_covered_with_solar_PV_panels_in_bands",
+   "vertical_white_louvre_fins",
+   "plaza_of_beige_stone_slabs_with_planters_around",
+   "flagpoles_greek_eu"
+  ],
+  "photos": [
+   "ref/r09.jpg"
+  ],
+  "source": [
+   "osm (amenity=bank, name Εθνική Τράπεζα)",
+   "commons:File:Κηφισιά 4102.jpg (C messier, CC BY-SA 4.0, drone over Platanos square); footprint matched in the fitted overlay docs/research/img/arch/r09_platanos_footprint_overlay_CCBYSA.jpg",
+   "orthophoto: flat light roof with central pyramid"
+  ],
+  "confidence": "aerial",
+  "notes": "Seen only from above at an angle: storey count from the glazed bay height (~3 floors). Ground floor shop units per shops.json groundFloor (crêperie etc.)."
+ },
+ "w1075948790": {
+  "roof": "hip",
+  "roofColour": "#62786a",
+  "roofPitchDeg": 28,
+  "heightM": 18.8,
+  "roofDetail": "low hip roof of grey-green sheet (painted metal or patinated copper), central ridge; seen in the orthophoto",
+  "source": [
+   "osm",
+   "ortho:roof",
+   "orthophoto (Ktimatologio c.2007-2010): grey-green hip roof, misread as flat by the colour classifier; corrected by eye"
+  ],
+  "confidence": "aerial"
+ },
+ "w1076626153": {
+  "name": "Πύργος Κηφισιάς (Kifisia Tower) — corner Kassaveti / Kyriazi, Zara",
+  "roof": "hip",
+  "roofColour": "#b4683f",
+  "roofPitchDeg": 28,
+  "roofDetail": "one large hip roof of terracotta tiles over the whole block around a central rectangular glazed atrium skylight (metal frame); at the rounded NW corner facing the spawn junction a round corner tower rises above the eaves and ends in a light grey hemispherical dome",
+  "parts": [
+   {
+    "what": "corner_tower",
+    "at": [
+     104.6,
+     75.6
+    ],
+    "diameterM": 6.5,
+    "aboveEavesM": 3.5,
+    "roof": "dome",
+    "roofColour": "#d6d8d8",
+    "note": "the footprint's rounded NW corner (vertices 101.5..108.1, 72.6..78) is the tower"
+   }
+  ],
+  "features": [
+   "round_corner_tower_with_grey_dome_facing_the_junction",
+   "central_glazed_atrium_skylight",
+   "tiled_hip_roof_whole_block",
+   "ground_floor_shops_all_round"
+  ],
+  "source": [
+   "osm (name Πύργος Κηφισιάς)",
+   "orthophoto (Ktimatologio c.2007-2010): hip roof, atrium, round corner tower with dome — docs/research/img/arch/ortho_kassaveti_roofclass_REFONLY.jpg"
+  ],
+  "confidence": "aerial",
+  "notes": "Facade not yet photo-checked: storeys (4) and facade colours are class inferences. The domed corner tower is the landmark of the junction's SE corner."
+ }
+}

@@ -14,3 +14,9 @@ Build
 4. The absolute rules, enforced in code and covered by scripted tests: no blood, injury or death anywhere; weapons are holstered automatically and cannot fire inside player.interior, inside the ISA polygon or
    within 150 m of it; children, CAST characters (named people) and the homeless man are never valid targets (shots do nothing, aim-assist ignores them); weapons never appear in the school missions.
 Verify with scripted runs and screenshots (aiming, splats, NPC reactions, range, the exclusion zone, the protected characters) and report honestly.
+
+## OWNER UPDATE 2026-11-21 13:00 (OWNER_BRIEF item 16) — supersedes the paintball-only rule above
+Make realistic-looking guns: a pistol, an SMG and a rifle, modelled in detail (slide, grip texture, sights, magazine), metal/polymer PBR materials,
+held with the chars bot's aim/hold poses, real-feeling recoil, muzzle flash, shell ejection, impact sparks/dust decals on walls, realistic sounds
+(procedural WebAudio), reload. Hit NPCs: knockdown → get up → flee; no blood. Keep the ISA 150 m zone, the shop-interior auto-holster and the
+protected flag (children, CAST, homeless never targetable). Simple phone controls: aim button + fire button, auto-aim assist to nearest valid target.

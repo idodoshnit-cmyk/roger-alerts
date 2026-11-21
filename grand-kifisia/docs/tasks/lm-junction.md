@@ -1,0 +1,3 @@
+# lm-junction — the spawn junction Kassaveti / Levidou / Kyriazi
+Read docs/tasks/lm-common.md first (it is your full method). Your file: gk3/js/89a_lm_junction.js.
+Model the buildings around the player's start junction: the AB Vasilopoulos corner building (Levidou 2 / Kassaveti 8, map b30), the PAUL building (Levidou 4), the Mythos Plus building and its shopfront/terrace, and the other facades framing the junction (this is the first image the owner sees — it must be perfect). Ground-floor shops with real names, awnings, terraces, upper floors with real balcony types. Use shops.json building specs.

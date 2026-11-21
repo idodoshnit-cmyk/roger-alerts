@@ -1,0 +1,204 @@
+{
+ "about": "Web-researched evidence for individual businesses (research-census). Facts only (name, address, phone), each with the URL it came from. confidence = how sure we are the business is open there today: official store locator / company page 0.9-0.95, directory or delivery listing 0.8-0.85, dated guide 0.6-0.75. Entries without lat/lon are geocoded from 'address' on OSM house numbers by 05_merge.py and merged with the same business from other sources.",
+ "checked": "2026-11-21",
+ "entries": [
+  {
+   "name": "Starbucks",
+   "category": "cafe",
+   "address": "Κασσαβέτη 19",
+   "phone": "2108083254",
+   "confidence": 0.95,
+   "sources": [
+    "https://www.starbucks.co.uk/store-locator/42431-97953/kifissia"
+   ],
+   "note": "official store locator: 19 Kassaveti Str, Kifissia; open daily"
+  },
+  {
+   "name": "Polo Ralph Lauren",
+   "category": "clothes",
+   "address": "Κασσαβέτη 19",
+   "phone": "2108085550",
+   "confidence": 0.9,
+   "sources": [
+    "https://lhgroup.gr/retail/franchises/polo-ralph-lauren",
+    "https://elitetraveler.com/travel/destination-guides/europe/athens/the-best-shopping-in-athens"
+   ],
+   "note": "franchise operator page lists 19 Kassaveti Str., Kifisia"
+  },
+  {
+   "name": "SEPHORA",
+   "category": "cosmetics",
+   "address": "Λεβίδου 8",
+   "phone": "2110124679",
+   "confidence": 0.85,
+   "sources": [
+    "https://www.vrisko.gr/dir/sephora/attikis/"
+   ],
+   "note": "directory listing Λεβίδου 8, Κηφισιά 14562 (official locator not reachable from here)"
+  },
+  {
+   "name": "ΑΒ Βασιλόπουλος",
+   "category": "supermarket",
+   "address": "Λεβίδου 2",
+   "phone": "2106233267",
+   "confidence": 0.95,
+   "sources": [
+    "https://www.ab.gr/el/storedetails/kifisia-kassaveti",
+    "https://www.vrisko.gr/en/dir/super-markets/kifissia/"
+   ],
+   "note": "AB store page 'ΚΗΦΙΣΙΑ ΚΑΣΣΑΒΕΤΗ': Κασσαβέτη & Λεβίδου 2"
+  },
+  {
+   "name": "Paul",
+   "category": "bakery",
+   "address": "Λεβίδου 4",
+   "phone": "2108084288",
+   "confidence": 0.85,
+   "sources": [
+    "https://www.athensvoice.gr/life/geusi/themata/699770/paul-i-proti-aythentiki-boulangerie-tis-athinas/",
+    "https://wolt.com/el/grc/athens/restaurant/paul",
+    "https://restaurantguru.com/Paul-Kifisia"
+   ]
+  },
+  {
+   "name": "KFC",
+   "category": "fast_food",
+   "address": "Κηφισίας 238-240",
+   "confidence": 0.85,
+   "sources": [
+    "https://wolt.com/el/grc/athens/restaurant/kfc-kifisia"
+   ],
+   "note": "delivery page 'KFC Κηφισιά'; address from Foursquare listing Leof. Kifisias 238-240"
+  },
+  {
+   "name": "Mythos plus",
+   "category": "restaurant",
+   "address": "Κασσαβέτη 13",
+   "confidence": 0.85,
+   "sources": [
+    "https://www.vrisko.gr/details/2_4jd6cf6bad213736015k2d_b6j2_cj"
+   ],
+   "note": "grill house; directory listing Κασσαβέτη 13, Κηφισιά 14562, hidden courtyard"
+  },
+  {
+   "name": "Κωτσόβολος",
+   "category": "electronics",
+   "address": "Κυριαζή 36",
+   "confidence": 0.9,
+   "sources": [
+    "https://www.lifo.gr/node/1411963",
+    "https://www.newmoney.gr/roh/palmos-oikonomias/epixeiriseis/to-diktio-katastimaton-kotsovolos-enischiete-me-ena-neo-katastima-stin-kifisia-pics/",
+    "https://www.forin.gr/articles/article/85378/kwtsobolos-nea-katasthma-sthn-khfisia"
+   ],
+   "note": "new 3-floor store, 785 m2, opened 13 June (2025), Kyriazi 36"
+  },
+  {
+   "name": "BOSS",
+   "category": "clothes",
+   "address": "Κυριαζή 15",
+   "confidence": 0.7,
+   "sources": [
+    "https://www.elle.gr/moda/717964/i-boss-upodexetai-ton-xeimona-me-nea-dieuthunsi-stin-kifisia",
+    "https://www.queen.gr/moda/fashion-news/story/321978/h-boss-epanerxetai-me-neo-katastima-stin-kifisia"
+   ],
+   "note": "press: BOSS menswear store at a new address in Kifisia (Kyriazi 15), autumn 2026; not cross-checked on the brand locator"
+  },
+  {
+   "name": "Emporio Armani",
+   "category": "clothes",
+   "address": "Παπαδιαμάντη 4",
+   "phone": "2108013200",
+   "confidence": 0.6,
+   "sources": [
+    "https://elitetraveler.com/travel/destination-guides/europe/athens/the-best-shopping-in-athens"
+   ],
+   "note": "dated luxury guide (~2024)"
+  },
+  {
+   "name": "Tommy Hilfiger",
+   "category": "clothes",
+   "address": "Λεβίδου 16",
+   "phone": "2108084202",
+   "confidence": 0.75,
+   "sources": [
+    "https://elitetraveler.com/travel/destination-guides/europe/athens/the-best-shopping-in-athens"
+   ],
+   "note": "dated luxury guide (~2024); also Foursquare + Overture"
+  },
+  {
+   "name": "Panaidis",
+   "category": "optician",
+   "address": "Κολοκοτρώνη 2",
+   "confidence": 0.95,
+   "sources": [
+    "https://panaidis.gr/el/store_locator/kifisia/"
+   ],
+   "note": "official store locator: Κολοκοτρώνη 2 & Λεβίδου 10"
+  },
+  {
+   "name": "Papaioannou",
+   "category": "restaurant",
+   "address": "Κολοκοτρώνη 32",
+   "confidence": 0.95,
+   "sources": [
+    "https://www.papaioannou-restaurants.com/en/kifissia"
+   ],
+   "note": "seafood restaurant, own site, opened spring 2021"
+  },
+  {
+   "name": "Hydé",
+   "category": "bar",
+   "address": "Κολοκοτρώνη 5",
+   "phone": "2108085474",
+   "confidence": 0.85,
+   "sources": [
+    "https://www.tripadvisor.com/Restaurant_Review-g1026500-d12941147-Reviews-Hyde-Kifissia_Attica.html",
+    "https://www.facebook.com/HydeKifisia/"
+   ],
+   "note": "bar-restaurant, review December 2025"
+  },
+  {
+   "name": "Incrocio",
+   "category": "clothes",
+   "address": "Παπαδιαμάντη 7",
+   "confidence": 0.9,
+   "sources": [
+    "https://www.incrocio.gr/el/news/new-boutique-in-kifisia.html"
+   ],
+   "note": "own site: boutique at Παπαδιαμάντη 7 & Λεβίδου"
+  },
+  {
+   "name": "Zara",
+   "category": "clothes",
+   "address": "Κυριαζή 40",
+   "confidence": 0.95,
+   "sources": [
+    "https://www.zara.com/gr/el/stores-locator/zara-κηφισια-κυριαζη-s3131",
+    "https://www.vrisko.gr/dir/zara/attikis/"
+   ],
+   "note": "official store locator 'ZARA ΚΥΡΙΑΖΗ', Κυριαζή 40, Κηφισιά"
+  },
+  {
+   "name": "Eurobank",
+   "category": "bank",
+   "address": "Πατριάρχου Μαξίμου 2",
+   "phone": "2106288741",
+   "confidence": 0.8,
+   "sources": [
+    "https://www.vrisko.gr/en/dir/banks/kifissia/"
+   ],
+   "note": "directory: TRAPEZA EUROBANK AE, Patriarchou Maximou 2, Kifissia-Kefalari 14562"
+  },
+  {
+   "name": "Massimo Dutti",
+   "category": "clothes",
+   "address": "Κολοκοτρώνη 8",
+   "open": false,
+   "confidence": 0.6,
+   "sources": [
+    "https://www.massimodutti.com/gr/en/store-locator"
+   ],
+   "closed_note": "the brand's Greek store locator lists no Kifisia store (Attica: Ermou, The Mall Athens, Lazaraki, Golden Hall, Kolonaki, Smart Park, Sotiros Dios); the Foursquare listing is old"
+  }
+ ]
+}

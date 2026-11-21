@@ -13,7 +13,8 @@ const { MeshoptSimplifier } = require(path.resolve(__dirname, '../../models/node
 const AW = 768, AH = 512; // atlas size in pixels
 const b64 = a => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString('base64');
 const canonName = n => n.replace(/^Bip\d\d/, 'Bip01');
-const kindOf = m => /opacity/i.test(m) ? 'opacity' : /head/i.test(m) ? 'head' : /body/i.test(m) ? 'body' : 'equipment';
+// material kinds: body, head, opacity (hair / eyelash cards, alpha cut-out), glasses (alpha cut-out), equipment (anything else, opaque: belt kit, stethoscope)
+const kindOf = m => /glasses/i.test(m) ? 'glasses' : /opacity/i.test(m) ? 'opacity' : /head/i.test(m) ? 'head' : /body/i.test(m) ? 'body' : 'equipment';
 // atlas layout for the set of material kinds an avatar has: pixel rects [x,y,w,h], y from the top
 function layoutFor(kinds) {
   const L = { body: [0, 0, 512, 512] };
@@ -65,7 +66,7 @@ async function buildAvatar(file, opt = {}) {
       KIND.push(kind);
     }
     if (out) log(`  WARN ${out} vertices of ${kind} have UVs outside 0..1 (clamped)`);
-    const dst = IDX[kind === 'opacity' ? 1 : 0]; for (let k = 0; k < ix.length; k++) dst.push(base + ix[k]);
+    const dst = IDX[kind === 'opacity' || kind === 'glasses' ? 1 : 0]; for (let k = 0; k < ix.length; k++) dst.push(base + ix[k]);
   }
   const NV = P.length / 3; let ymax = -9, ymin = 9, ext = 0;
   for (let v = 0; v < NV; v++) { ymax = Math.max(ymax, P[v * 3 + 1]); ymin = Math.min(ymin, P[v * 3 + 1]); ext = Math.max(ext, Math.abs(P[v * 3]), Math.abs(P[v * 3 + 1]), Math.abs(P[v * 3 + 2])); }
