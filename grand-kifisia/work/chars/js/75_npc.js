@@ -162,7 +162,9 @@ function applySpot(n, s) { freeSpot(n); n.spot = s; s.who = n; n.x = s.x; n.z = 
   const r = hf(h.seq * 53 + Math.round(s.x * 3));
   if (s.role === 'terrace') h.play('sit_table', { seatH: s.seatH, fade: 0.01 }); else if (s.role === 'bench') { h.play('sit', { seatH: s.seatH, fade: 0.01 }); if (r < 0.55) h.setCarry('text'); }
   else if (s.role === 'chat') h.play(s.slot ? 'listen' : 'talk', { fade: 0.01 }); else if (s.role === 'window') { if (r < 0.25) h.setCarry('bag'); h.lookAt(s.lx, groundY(s.x, s.z) + 1.3, s.lz); }
-  else { if (r < 0.3) h.setCarry('text'); else if (r < 0.5) h.setCarry('phone'); else h.play('wait', { fade: 0.01 }); } }
+  else { if (r < 0.3) h.setCarry('text'); else if (r < 0.5) h.setCarry('phone'); else h.play('wait', { fade: 0.01 }); }
+  /* take the new pose right now: people behind the camera are not animated, and nobody may ever be seen in a stale pose */
+  h.root.position.set(n.x, groundY(n.x, n.z), n.z); h.update(0.05, 0, false); h.update(0.05, 0, false); n.acc = 0; }
 function assignSpots(px, pz, boot) { const cnt = {}; for (const n of STREET.pool) { if (n.spot && Math.hypot(n.spot.x - px, n.spot.z - pz) > 215 && n.state !== 'talk') { freeSpot(n); n.h.root.visible = false; } if (n.spot) cnt[n.spot.role] = (cnt[n.spot.role] || 0) + 1; }
   const free = STREET.pool.filter(n => !n.spot); if (!free.length) return; const near = STREET.spots.filter(s => !s.who && Math.hypot(s.x - px, s.z - pz) < 175 && (boot || Math.hypot(s.x - px, s.z - pz) > 38));
   near.sort((a, b) => Math.hypot(a.x - px, a.z - pz) - Math.hypot(b.x - px, b.z - pz));

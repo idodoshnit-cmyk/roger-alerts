@@ -27,6 +27,8 @@ const SETTINGS=Object.assign({q:'auto',fps:false},store.get('settings',{}));
 const QP={low:{pr:0.7,sh:0,sh2:0,shN:40,shF:0,dist:170,trees:0.45,real:4,tex:256,ntex:0,aniso:2,aa:false},
   medium:{pr:1.0,sh:1024,sh2:1024,shN:30,shF:125,dist:240,trees:0.75,real:8,tex:512,ntex:256,aniso:4,aa:true},
   high:{pr:1.4,sh:2048,sh2:2048,shN:36,shF:150,dist:320,trees:1,real:14,tex:512,ntex:512,aniso:8,aa:true}};
+/* phones render at CSS resolution (pr 1.0), where 384² layers are indistinguishable from 512² beyond ~2 m but take 44 % less GPU memory */
+const MOBILE=typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches;if(MOBILE)QP.medium.tex=384;
 let Q=QP[SETTINGS.q==='auto'?(Math.min(screen.width,screen.height)<500&&(navigator.hardwareConcurrency||4)<=4?'low':'medium'):SETTINGS.q]||QP.medium;
 const canvas=$('c');
 let renderer;
@@ -73,6 +75,9 @@ const sun2=new THREE.DirectionalLight(0xffffff,0);sun2.castShadow=true;sun2.shad
 				gkS1 = mix( 1.0, getShadow( directionalShadowMap[ 1 ], directionalLightShadows[ 1 ].shadowMapSize, directionalLightShadows[ 1 ].shadowBias, directionalLightShadows[ 1 ].shadowRadius, vDirectionalShadowCoord[ 1 ] ), 1.0 - smoothstep( 0.40, 0.49, max( gkE1.x, gkE1.y ) ) ); }
 			gkS = mix( gkS1, gkS0, gkW );
 		}
+		#ifdef GK_WORLD
+		gkSunVis = gkS;
+		#endif
 		directionalLight = directionalLights[ 0 ];
 		getDirectionalLightInfo( directionalLight, geometry, directLight );
 		directLight.color *= gkS;

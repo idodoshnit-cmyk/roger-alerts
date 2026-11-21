@@ -18,3 +18,7 @@ What to build
 Budgets: your modules together ≤ ~330k triangles and ≤ ~110 draw calls in a typical street view on medium; use instancing per 192 m cell with distance culling and LOD (see the existing TREECH system), merge static geometry into chunks.
 
 How to verify: for each priority street take street-level shots (both directions, eye height 1.7 m), a low oblique aerial and a top-down, by day and at night, and compare side by side with the reference photos in ref/ and docs/research/img/streets/; fix what differs. Walk test: script the player along Kassaveti, across Platanos square and up to the station for collisions and snagging. Run tools/verify_placement.js when it exists. Zero console errors.
+
+## OWNER UPDATE (newest): "the streets one to one, every park, the way to the school"
+Every park and green space in the play area (the Alsos, Kefalari square and grove, pocket parks, playgrounds) gets its real paths, lawns, trees, benches, fences and gates from the map and research,
+and the whole walking route to the International School of Athens (MAP.route) is built with the same care as the centre: sidewalks, crossings, walls, trees, lamps, gradients.

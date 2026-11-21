@@ -93,7 +93,7 @@ def to_img(a): return Image.fromarray((np.clip(a, 0, 1) * 255 + 0.5).astype(np.u
 # name: (polyhaven id, metres covered by one repeat, target mean sRGB or None, saturation, contrast, flatten, normal strength or None)
 PHOTO = {
     # ground
-    'asph':     ('gravel_stones',        2.0,  (.385, .38, .372), 0.45, 1.00, 0.7, 1.0),
+    'asph':     ('clean_asphalt',        2.1,  (.375, .373, .372), 0.35, 1.25, 0.7, 1.0),
     'asph2':    ('asphalt_pit_lane',     2.0,  (.31, .31, .32),   0.45, 1.00, 0.6, 1.0),
     'asphP':    ('asphalt_02',           3.0,  (.37, .37, .375),  0.7,  1.05, 0.5, 1.0),
     'pavers':   ('concrete_pavers',      1.92, (.60, .59, .565),  0.8,  1.05, 0.5, 1.0),
@@ -106,7 +106,7 @@ PHOTO = {
     'soil':     ('forest_leaves_04',     1.5,  (.47, .37, .25),   0.9,  1.00, 0.6, 1.0),
     'grass':    ('forrest_ground_01',    2.0,  (.36, .46, .21),   1.25, 1.00, 0.7, 0.8),
     'dryG':     ('withered_grass',       2.0,  (.56, .52, .34),   1.1,  1.00, 0.7, 0.8),
-    'ballast':  ('ganges_river_pebbles', 2.16, (.50, .47, .44),   0.55, 1.05, 0.6, 1.2),
+    'ballast':  ('ganges_river_pebbles', 2.16, (.47, .455, .44),  0.30, 1.10, 0.6, 1.2),
     # walls
     'plaster':  ('white_stucco',         2.0,  (.875, .865, .835),1.0,  2.6,  0.3, 1.6),
     'plasterW': ('painted_plaster_wall', 2.0,  (.87, .86, .82),   0.8,  1.25, 0.3, 1.0),
@@ -118,7 +118,7 @@ PHOTO = {
     'marbleW':  ('stone_tile_wall',      2.0,  (.86, .85, .83),   0.6,  1.10, 0.4, 1.0),
     # roofs
     'tiles':    ('ceramic_roof_01',      3.5,  (.80, .64, .52),   0.55, 1.05, 0.5, 1.0),
-    'flatroof': ('granular_concrete',    2.4,  (.70, .69, .66),   0.6,  1.20, 0.5, 0.8),
+    'flatroof': ('granular_concrete',    2.4,  (.63, .62, .59),   0.6,  1.30, 0.4, 0.8),
     # wood / metal (tint carriers: light and nearly neutral, callers multiply their own colour)
     'wood':     ('wood_planks',          1.5,  (.84, .79, .73),   0.45, 1.00, 0.4, 1.0),
     'metal':    ('green_metal_rust',     1.0,  (.80, .80, .80),   0.0,  0.60, 0.5, 0.5),

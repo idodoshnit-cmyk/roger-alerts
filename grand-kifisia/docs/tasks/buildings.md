@@ -15,3 +15,8 @@ What to build
 6. LOD and budget: buildings in MAP.focus get the full treatment near the camera and a cheaper baked version at distance (per-chunk LOD swap); context buildings stay simple. Your module ≤ ~300k triangles and ≤ ~90 draw calls in a typical street view on medium. Keep collision segments exact to the footprint and doors free.
 
 How to verify: for the spawn junction and each priority street take eye-level shots along the street in both directions, close-ups of at least 20 different shopfronts (including the five specials and three from each main street), a low oblique aerial, by day and at night, and compare with ref/ and docs/research/img/shops/; fix what differs. Check sign legibility at 844x390. Zero console errors; report triangles/draw calls.
+
+## OWNER UPDATE (newest): "every building, every corner one to one … exactly as it looks in reality"
+Generic typology is the fallback, not the goal. Wherever research has a photo-backed description of a specific building (shops.json `building`, places.json, docs/research/img), model THAT building:
+its real number of floors, facade material and colour, window rhythm, balconies, roof and corner. Start with the buildings around the spawn junction, the Starbucks building (Kassaveti 19),
+the Ralph Lauren store, the supermarkets, then street by street. Keep a table in docs/BUILDINGS_IMPL.md: building → source (photo / description / inferred) so the commander can see how much is real.

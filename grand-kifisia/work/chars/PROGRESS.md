@@ -37,3 +37,9 @@ Private copy: work/chars/gk3. Pipeline: tools/chars/. Raw downloads: work/chars/
   - Verified in game (tests/t1.js, t2.js): talk, punch → knockdown, cast talk/give, ISA guard = Security avatar. 
 - Test helpers: work/chars/tests/*.js (run with ROOT=… GK_DIR=… GK_SHOTS=… NODE_PATH=/opt/node-tools/node_modules node tX.js). Game time in SwiftShader is slow: fast-forward with sim() (call update functions in a loop), do not wait wall-clock.
 NEXT (in order): docs/CHARACTERS.md + CREDITS.md → fix chef head texture (f110_head_color_a.tga) + biz_f glasses → close-up visual QA of every role (terrace, bench, bus, chat, window, homeless scene) → start/stop/turn transition clips in runtime → more avatars (7 extra GLBs already in raw/av_glb) → dog → driver seat hook → final docs/report.
+
+## OWNER UPDATE (from the project lead — newest demand, act on it)
+- The owner again: "make characters of different people who look different" and "add the homeless man next to the Sephora". Make sure that in ANY street view no two visible people share an avatar
+  when it can be avoided (spawn by least-recently-used avatar), vary height/build per person, and that the homeless man scene is in MAIN and easy to find (anchor: MAP.key.sephora when the data agent
+  publishes it, else the Hondos center cosmetics store). A weapons bot will later add paintball markers: expose hold/aim poses if cheap, and mark children, CAST characters and the homeless man as protected
+  (a boolean on the person record) so other modules can never target them.

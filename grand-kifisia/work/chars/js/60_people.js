@@ -67,7 +67,8 @@ const WHITE3 = new THREE.Color(1, 1, 1);
 function avatarTex(a) { if (a.img) return; const img = a.img = new Image(), c = document.createElement('canvas'); c.width = 192; c.height = 128; a.texPending = true; a.texReady = false;
   const hi = a.texHi = new THREE.Texture(img); hi.flipY = false; hi.encoding = THREE.sRGBEncoding; hi.anisotropy = 4;
   const lo = a.texLo = new THREE.CanvasTexture(c); lo.flipY = false; lo.encoding = THREE.sRGBEncoding; a.tex = hi;
-  img.onload = () => { const g = c.getContext('2d'); g.clearRect(0, 0, 192, 128); g.drawImage(img, 0, 0, 192, 128); lo.needsUpdate = true; hi.needsUpdate = true; a.texPending = false; a.texReady = true; };
+  img.onload = () => { const g = c.getContext('2d'); g.clearRect(0, 0, 192, 128); g.drawImage(img, 0, 0, 192, 128); lo.needsUpdate = true; hi.needsUpdate = true; a.texPending = false; a.texReady = true;
+    for (const p of PPL.list) if (p.av === a && !p.texOK) { p.texOK = true; if (p.mesh[p.lod]) p.mesh[p.lod].visible = true; } };
   img.onerror = () => { a.texPending = false; console.warn('people: texture missing', a.texUrl); };
   img.src = a.texUrl || ('models/tex/' + a.id + '.webp'); }
 /* material of avatar a for LOD l (0 near, 1 far); tint = [topHex, bottomHex] gives a private pair */
@@ -214,7 +215,8 @@ class Person {
     const fe = def.fidEvery || [7, 18]; s.fe = fe; s.next = fe[0] * 0.3 + Math.random() * fe[1]; return s; }
   setLOD(l) { const a = this.av; if (!a || l === this.lod) return; if (l === 0) { a.nearN++; a.hiUsed = true; } else if (this.lod === 0) a.nearN--; this.lod = l;
     for (let k = 0; k < 2; k++) { if (k === l && !this.mesh[k]) { const m = new THREE.SkinnedMesh(avatarGeo(a, k), this.mats[k]); m.bindMode = 'detached'; m.bind(this.skel, PPL.ident[0]); m.castShadow = k === 0; m.receiveShadow = false; m.matrixAutoUpdate = false; this.root.add(m); this.mesh[k] = m; }
-      if (this.mesh[k]) this.mesh[k].visible = k === l && a.texReady; } this.texOK = a.texReady; }
+      if (this.mesh[k]) this.mesh[k].visible = k === l && a.texReady; } this.texOK = a.texReady;
+    if (l === 0 && this.wq) { this._fk(PPL.NB, PPL.NBODY); this._skin(PPL.NB, PPL.NBODY); } } /* fingers and face bones were not evaluated at the far LOD: pose them now, not a frame late */
   /* ---- public: actions ---- */
   play(name, opt) { const def = ACTIONS[name]; if (!this.av) { this.override = name; return this; } if (!def) { console.warn('Person.play: unknown action', name); return this; }
     const a = this.av, once = opt === true || (opt && opt.once); const st = this._activity(def); if (!st.loop) { this.override = name; return this; }
@@ -323,17 +325,17 @@ class Person {
     eulerTo(aq, 8, br * 0.8, ly * 0.12, 0);                                             // Spine2
     eulerTo(aq, 12, lp * 0.4 - post * 0.5 - br, ly * 0.32, -this.lean * 0.35);          // Neck
     eulerTo(aq, 16, lp * 0.6 - post * 0.3 - br * 0.6, ly * 0.48, -this.lean * 0.3); }   // Head
-  _fk(nb) { const lq = this.lq, wq = this.wq, wp = this.wp, rt = this.av.rt, par = PPL.par, aq = this.aq;
-    wq[0] = lq[0]; wq[1] = lq[1]; wq[2] = lq[2]; wq[3] = lq[3]; wp[0] = this.rp[0]; wp[1] = this.rp[1]; wp[2] = this.rp[2];
-    for (let i = 1; i < nb; i++) { const p = par[i] * 4, o = i * 4, ax = wq[p], ay = wq[p + 1], az = wq[p + 2], aw = wq[p + 3], bx = lq[o], by = lq[o + 1], bz = lq[o + 2], bw = lq[o + 3];
+  _fk(nb, from) { const lq = this.lq, wq = this.wq, wp = this.wp, rt = this.av.rt, par = PPL.par, aq = this.aq;
+    if (!from) { wq[0] = lq[0]; wq[1] = lq[1]; wq[2] = lq[2]; wq[3] = lq[3]; wp[0] = this.rp[0]; wp[1] = this.rp[1]; wp[2] = this.rp[2]; }
+    for (let i = from || 1; i < nb; i++) { const p = par[i] * 4, o = i * 4, ax = wq[p], ay = wq[p + 1], az = wq[p + 2], aw = wq[p + 3], bx = lq[o], by = lq[o + 1], bz = lq[o + 2], bw = lq[o + 3];
       let x = aw * bx + ax * bw + ay * bz - az * by, y = aw * by - ax * bz + ay * bw + az * bx, z = aw * bz + ax * by - ay * bx + az * bw, w = aw * bw - ax * bx - ay * by - az * bz;
       if (i >= BN.SPINE && i <= BN.HEAD) { const q = (i - BN.SPINE) * 4, cx = aq[q], cy = aq[q + 1], cz = aq[q + 2], cw = aq[q + 3]; const nx = cw * x + cx * w + cy * z - cz * y, ny = cw * y - cx * z + cy * w + cz * x, nz = cw * z + cx * y - cy * x + cz * w, nw = cw * w - cx * x - cy * y - cz * z; x = nx; y = ny; z = nz; w = nw; }
       wq[o] = x; wq[o + 1] = y; wq[o + 2] = z; wq[o + 3] = w;
       const t = i * 3; let vx = rt[t], vy = rt[t + 1], vz = rt[t + 2]; if (i >= BN.LLID && this.blink > 0) { vx -= this.blink * LID_DROP * this.av.h; vy += this.blink * LID_FWD * this.av.h; }
       const tx = 2 * (ay * vz - az * vy), ty = 2 * (az * vx - ax * vz), tz = 2 * (ax * vy - ay * vx), pp = par[i] * 3;
       wp[t] = wp[pp] + vx + aw * tx + (ay * tz - az * ty); wp[t + 1] = wp[pp + 1] + vy + aw * ty + (az * tx - ax * tz); wp[t + 2] = wp[pp + 2] + vz + aw * tz + (ax * ty - ay * tx); } }
-  _skin(nb) { const sk = this.skel, bm = sk.boneMatrices, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
-    for (let i = 0; i < nb; i++) { const o = i * 4, ax = wq[o], ay = wq[o + 1], az = wq[o + 2], aw = wq[o + 3], bx = ri[o], by = ri[o + 1], bz = ri[o + 2], bw = ri[o + 3];
+  _skin(nb, from) { const sk = this.skel, bm = sk.boneMatrices, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
+    for (let i = from || 0; i < nb; i++) { const o = i * 4, ax = wq[o], ay = wq[o + 1], az = wq[o + 2], aw = wq[o + 3], bx = ri[o], by = ri[o + 1], bz = ri[o + 2], bw = ri[o + 3];
       const x = aw * bx + ax * bw + ay * bz - az * by, y = aw * by - ax * bz + ay * bw + az * bx, z = aw * bz + ax * by - ay * bx + az * bw, w = aw * bw - ax * bx - ay * by - az * bz;
       const xx = x * x, yy = y * y, zz = z * z, xy = x * y, xz = x * z, yz = y * z, wx = w * x, wy = w * y, wz = w * z, m = i * 16, t = i * 3, px = rp[t], py = rp[t + 1], pz = rp[t + 2];
       const m0 = 1 - 2 * (yy + zz), m1 = 2 * (xy + wz), m2 = 2 * (xz - wy), m4 = 2 * (xy - wz), m5 = 1 - 2 * (xx + zz), m6 = 2 * (yz + wx), m8 = 2 * (xz + wy), m9 = 2 * (yz - wx), m10 = 1 - 2 * (xx + yy);

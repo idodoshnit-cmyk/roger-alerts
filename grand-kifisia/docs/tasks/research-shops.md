@@ -19,3 +19,9 @@ Deliverables (publish continuously — after each batch of ~10 places)
 3. docs/research/INTERIORS.md: a build-ready description of the inside of Mythos Plus (highest detail: plan with dimensions, counter, gyro spits and grill line, menu board content with prices, seating, materials, lighting, decor) and of PAUL, Starbucks, KFC and an AB Vasilopoulos supermarket of that size. The interiors agent is building these right now: publish Mythos first.
 4. docs/research/img/shops/ with the images used, and lines appended to docs/research/img/SOURCES.md (file → URL → licence/author).
 5. docs/research/GAPS_SHOPS.md: for the 25 most visible places, what the game shows now (harness screenshots at the shop's door) versus reality, with the exact change needed.
+
+## OWNER UPDATE (newest): "every building, every corner one to one — the Starbucks building, the Ralph Lauren store, every supermarket, everything exactly as it looks in reality"
+Add to the top of your priorities, each with the BUILDING (not only the shopfront): the building that houses Starbucks (Kassaveti 19), the Ralph Lauren / Polo Ralph Lauren store in Kifisia
+(find its exact address and what the building looks like), every supermarket in the play area (AB Vasilopoulos Levidou 2, Thanopoulos on Dragoumi, any Sklavenitis/My market/Masoutis/Kritikos/Bazaar),
+then every distinctive building on Kassaveti, Levidou, Kolokotroni and Kyriazi. For each give: number of floors, facade material and colour, window rhythm, balconies, roof, corner treatment,
+entrance, signage — with photo evidence and confidence — in shops.json (`building:{…}` object per entry) and places.json.

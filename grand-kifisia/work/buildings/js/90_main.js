@@ -53,13 +53,11 @@ async function boot(){try{
   ROADS=MAP.roads.map(r=>{const ps=unp(r,8);const o={ty:r[0],name:MAP.names[r[1]]||'',ow:r[2],w:r[3],surf:r[4],side:r[5],sw:r[6],focus:r[7],ps};o.cum=cumlen(ps);o.L=o.cum[o.cum.length-1];o.k0=r[8]+','+r[9];o.k1=r[r.length-2]+','+r[r.length-1];return o});
   ROADS.forEach((r,i)=>{for(const [k,end] of[[r.k0,0],[r.k1,1]]){let a=ROADNODES.get(k);if(!a)ROADNODES.set(k,a=[]);a.push({ri:i,end})}});
   SPECIAL=MAP.special;ISA.poly=unp(MAP.isa.poly);
-  await tick();setLoad(0.1,'Painting streets, walls and windows…');paintAtlas();paintChar();
-  atlasTex=new THREE.CanvasTexture(atlasC);atlasTex.encoding=THREE.sRGBEncoding;atlasTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());atlasTex.generateMipmaps=true;atlasTex.minFilter=THREE.LinearMipmapLinearFilter;
-  signTex=new THREE.CanvasTexture(signC);signTex.encoding=THREE.sRGBEncoding;signTex.anisotropy=4;
-  MAT.atlas=atlasMat(atlasTex,false);MAT.cut=atlasMat(atlasTex,true);MAT.leaf=atlasMat(atlasTex,true);MAT.leaf.customProgramCacheKey=()=>'atlasLeaf';MAT.signs=atlasMat(signTex,false);
+  await tick();setLoad(0.08,'Loading the stone, plaster and asphalt of Kifisia…');await initMaterials(p=>setLoad(0.08+0.1*p));paintChar();// mats: photo texture array + world materials (10_atlas.js)
+  signTex=new THREE.CanvasTexture(signC);signTex.encoding=THREE.sRGBEncoding;signTex.anisotropy=4;MAT.signs=atlasMat(signTex,false);
   const chT=new THREE.CanvasTexture(chC);chT.encoding=THREE.sRGBEncoding;charMat=new THREE.MeshLambertMaterial({map:chT,vertexColors:true,side:THREE.DoubleSide});
-  const pm=new THREE.PMREMGenerator(renderer);const envScene=new THREE.Scene();envScene.background=new THREE.Color(0x9fb4c8);const eg=new THREE.Mesh(new THREE.SphereGeometry(10,16,8),new THREE.MeshBasicMaterial({color:0x5a5550,side:THREE.BackSide}));eg.scale.y=0.5;eg.position.y=-5;envScene.add(eg);const env=pm.fromScene(envScene,0.04).texture;
-  carMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.38,metalness:0.25,envMap:env,envMapIntensity:0.9,side:THREE.DoubleSide});
+  updateSky(0);const env=skyEnv();// mats: reflection environment rendered from the sky (82_sky.js); useEnv(material) keeps a material's envMap in sync with the time of day
+  carMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.38,metalness:0.25,envMap:env,envMapIntensity:0.9,side:THREE.DoubleSide});useEnv(carMat);
   await tick();setLoad(0.18,'Shaping the hills of Kifisia…');buildTerrain();buildRail();buildLevelGrid();
   await tick();setLoad(0.28,'Laying asphalt, pavers and marble…');buildRoads();buildAreas();
   await tick();setLoad(0.45,`Building ${MAP.buildings.length} buildings…`);buildBuildings();

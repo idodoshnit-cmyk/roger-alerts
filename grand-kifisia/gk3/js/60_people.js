@@ -24,7 +24,7 @@ async function loadReal() {
   const [pp, an] = await Promise.all([get('models/rb_people.json'), get('models/rb_anims.json')]);
   PPL.NB = pp.skeleton.names.length; PPL.NBODY = pp.skeleton.nbody; PPL.par = Int8Array.from(pp.skeleton.parent); PPL.names = pp.skeleton.names;
   if (pp.skeleton.names[BN.RTOE] !== 'Bip01 R Toe0' || pp.skeleton.names[BN.JAW] !== 'Bip01 MJaw') throw new Error('people pack: unexpected skeleton');
-  for (const id in pp.avatars) { const a = pp.avatars[id]; a.id = id; a.geo = [null, null]; a.mat = null; a.texUrl = a.tex; a.tex = null; prepAvatar(a); PPL.av[id] = a; PPL.ids.push(id); }
+  for (const id in pp.avatars) { const a = pp.avatars[id]; a.id = id; a.geo = [null, null]; a.mat = [null, null]; a.texUrl = a.tex; a.tex = null; a.nearN = 0; a.hiIdle = 0; a.hiUsed = false; prepAvatar(a); PPL.av[id] = a; PPL.ids.push(id); }
   PPL.clips = an.clips; for (const n in an.clips) an.clips[n].name = n;
   PPL.dummy = []; for (let i = 0; i < PPL.NB; i++) PPL.dummy.push(new THREE.Bone());
   PPL.ident = PPL.dummy.map(() => new THREE.Matrix4());
@@ -62,16 +62,25 @@ function avatarGeo(a, l) { if (a.geo[l]) return a.geo[l];
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, a.h * 0.5, 0), a.h * 0.85); g.boundingBox = new THREE.Box3(new THREE.Vector3(-1, -0.3, -1), new THREE.Vector3(1, a.h + 0.3, 1));
   L.p = L.n = L.uv = L.bi = L.bw = L.ix = null; a.geo[l] = g; return g; }
 const WHITE3 = new THREE.Color(1, 1, 1);
-function avatarMat(a, tint) {
-  if (!a.tex) { a.tex = new THREE.TextureLoader().load(a.texUrl || ('models/tex/' + a.id + '.webp')); a.tex.flipY = false; a.tex.encoding = THREE.sRGBEncoding; a.tex.anisotropy = 4; }
-  if (!tint && a.mat) return a.mat;
-  const m = new THREE.MeshLambertMaterial({ map: a.tex, alphaTest: 0.42, side: THREE.DoubleSide });
+/* textures: an avatar's 768x512 atlas is fetched once.  A 192x128 copy of it dresses that avatar at the far LOD; the full atlas is on the GPU
+   only while somebody nearby wears it (updateLOD() releases it a few seconds after the last near wearer left) - ~25 MB instead of ~80 MB */
+function avatarTex(a) { if (a.img) return; const img = a.img = new Image(), c = document.createElement('canvas'); c.width = 192; c.height = 128; a.texPending = true; a.texReady = false;
+  const hi = a.texHi = new THREE.Texture(img); hi.flipY = false; hi.encoding = THREE.sRGBEncoding; hi.anisotropy = 4;
+  const lo = a.texLo = new THREE.CanvasTexture(c); lo.flipY = false; lo.encoding = THREE.sRGBEncoding; a.tex = hi;
+  img.onload = () => { const g = c.getContext('2d'); g.clearRect(0, 0, 192, 128); g.drawImage(img, 0, 0, 192, 128); lo.needsUpdate = true; hi.needsUpdate = true; a.texPending = false; a.texReady = true;
+    for (const p of PPL.list) if (p.av === a && !p.texOK) { p.texOK = true; if (p.mesh[p.lod]) p.mesh[p.lod].visible = true; } };
+  img.onerror = () => { a.texPending = false; console.warn('people: texture missing', a.texUrl); };
+  img.src = a.texUrl || ('models/tex/' + a.id + '.webp'); }
+/* material of avatar a for LOD l (0 near, 1 far); tint = [topHex, bottomHex] gives a private pair */
+function avatarMat(a, tint, l) { avatarTex(a);
+  if (!tint && a.mat[l]) return a.mat[l];
+  const m = new THREE.MeshLambertMaterial({ map: l ? a.texLo : a.texHi, alphaTest: 0.42, side: THREE.DoubleSide });
   m.userData.tintA = { value: tint && tint[0] ? new THREE.Color(tint[0]) : WHITE3 }; m.userData.tintB = { value: tint && tint[1] ? new THREE.Color(tint[1]) : WHITE3 };
   m.onBeforeCompile = sh => { sh.uniforms.tintA = m.userData.tintA; sh.uniforms.tintB = m.userData.tintB;
     sh.vertexShader = 'attribute vec2 tintW;uniform vec3 tintA;uniform vec3 tintB;varying vec3 vTint;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvTint=mix(vec3(1.0),tintA,tintW.x)*mix(vec3(1.0),tintB,tintW.y);');
     sh.fragmentShader = 'varying vec3 vTint;\n' + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb*=mix(vec3(1.0),vTint,clamp((1.0-diffuseColor.a)*2.6,0.0,1.0));'); };
   m.customProgramCacheKey = () => 'gkPerson';
-  if (!tint) a.mat = m; return m; }
+  if (!tint) a.mat[l] = m; return m; }
 
 /* ============================== MATH (flat arrays, no allocation) ============================== */
 function qmulTo(o, oi, a, ai, b, bi) { const ax = a[ai], ay = a[ai + 1], az = a[ai + 2], aw = a[ai + 3], bx = b[bi], by = b[bi + 1], bz = b[bi + 2], bw = b[bi + 3];
@@ -98,7 +107,7 @@ function clipSample(c, t, out, outR, nb) { const n = c.n; let f = t * c.f, i0, i
     if (x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1 < 0) { x1 = -x1; y1 = -y1; z1 = -z1; w1 = -w1; }
     const x = x0 + (x1 - x0) * fr, y = y0 + (y1 - y0) * fr, z = z0 + (z1 - z0) * fr, w = w0 + (w1 - w0) * fr, l = 1 / Math.sqrt(x * x + y * y + z * z + w * w), bo = b * 4; out[bo] = x * l; out[bo + 1] = y * l; out[bo + 2] = z * l; out[bo + 3] = w * l; }
   const Rr = c.R, r0 = i0 * 3, r1 = i1 * 3, s = 1 / 8192; outR[0] = (Rr[r0] + (Rr[r1] - Rr[r0]) * fr) * s; outR[1] = (Rr[r0 + 1] + (Rr[r1 + 1] - Rr[r0 + 1]) * fr) * s; outR[2] = (Rr[r0 + 2] + (Rr[r1 + 2] - Rr[r0 + 2]) * fr) * s; }
-const S_A = new Float32Array(56 * 4), S_B = new Float32Array(56 * 4), S_RA = new Float32Array(3), S_RB = new Float32Array(3), S_Q = new Float32Array(16), S_V = new Float32Array(12);
+const S_A = new Float32Array(56 * 4), S_B = new Float32Array(56 * 4), S_C = new Float32Array(56 * 4), S_RA = new Float32Array(3), S_RB = new Float32Array(3), S_RC = new Float32Array(3), S_Q = new Float32Array(16), S_V = new Float32Array(12);
 
 /* two-bone IK for a leg whose thigh is bone th (calf th+1, foot th+2, toe th+3): move the ankle to (tx,ty,tz) in character space,
    keep the knee in its animated plane and the foot in its animated orientation; rewrites world rotations/positions only */
@@ -176,35 +185,38 @@ class Person {
     if (!a) return;
     const sc = spec.scale || (spec.height && spec.height > 0.8 && spec.height < 1.2 ? spec.height : 1), bd = spec.build && spec.build > 0.8 && spec.build < 1.25 ? spec.build : 1;
     this.scale = sc; this.root.scale.set(sc * bd, sc, sc * (1 + (bd - 1) * 0.6));
-    this.tint = spec.tint || null; this.mat = avatarMat(a, this.tint);
+    this.tint = spec.tint || null; this.mats = [avatarMat(a, this.tint, 0), avatarMat(a, this.tint, 1)]; this.texOK = false;
     const NB = PPL.NB; this.lq = new Float32Array(NB * 4); this.wq = new Float32Array(NB * 4); this.wp = new Float32Array(NB * 3); this.rp = new Float32Array(3); this.snap = new Float32Array(NB * 4); this.snapR = new Float32Array(3);
     for (let i = 0; i < NB * 4; i++) this.lq[i] = a.rq[i]; this.rp.set(a.rt.subarray(0, 3));
     this.skel = new THREE.Skeleton(PPL.dummy, PPL.ident); this.skel.update = function () {};
     this.fade = 0; this.fadeDur = 0.25; this.t = h * 50; this.act = null; this.carry = null; this.prop = null; this.actProp = false;
-    this.aq = new Float32Array(5 * 4); this.lookT = null; this.lookYaw = 0; this.lookPitch = 0; this.lookW = 0; this.lean = 0; this.pitch = 0; this.lastYaw = null; this.lastSpd = 0; this.airW = 0; this.lastY = null; this.vy = 0; this.land = 0;
+    this.aq = new Float32Array(5 * 4); this.lookT = null; this.lookYaw = 0; this.lookPitch = 0; this.lookW = 0; this.lean = 0; this.pitch = 0; this.lastYaw = null; this.yawRate = 0; this.lastSpd = 0; this.airW = 0; this.lastY = null; this.vy = 0; this.land = 0;
     this.ik = true; this.pelY = 0; this.footY = [0, 0]; this.jaw = 0; this.talking = false; this.jawOpen = null; this.blink = 0; this.blinkT = 1 + h * 4; this.blinkHold = null; this.sy = null; this.landV = 0; this.wasAir = false; this.seatH = null; this.noIK = false; this.posture = spec.posture != null ? spec.posture : (a.age === 'senior' ? 0.05 : 0); this.nodT = 0;
     this.setStyle(spec);
     this.stand = this._activity(ACTIONS[spec.idle || 'idle']);
     PPL.list.push(this); this.setLOD(force ? 0 : 1); this.forceNear = !!force;
     this.update(0, 0, false);
   }
-  /* locomotion blend space of this person: [{c,v,st}] sorted by natural speed (character-space m/s) */
-  setStyle(spec) { const a = this.av, G = GAITS[a.sex], h = hf(this.seq * 131 + 7), list = [];
-    const add = n => { const c = clipFor(a.sex, n); if (!c || !c.dist) return; const k = a.hip / c.hip; list.push({ c, v: c.speed * k, st: c.dist / (c.cyc || 1) * k }); };
-    const old = a.age === 'senior', kid = a.age === 'child';
+  /* locomotion of this person: a walk family and a run family, each a list [{c, v, st}] sorted by natural speed (character-space m/s, stride m) */
+  setStyle(spec) { const a = this.av, G = GAITS[a.sex], h = hf(this.seq * 131 + 7);
+    const mk = names => { const list = []; for (const n of names) { const c = clipFor(a.sex, n); if (!c || !c.dist) continue; const k = a.hip / c.hip; list.push({ c, v: c.speed * k, st: c.dist / (c.cyc || 1) * k }); }
+      list.sort((x, y) => x.v - y.v); const out = []; for (const e of list) { if (!out.length || e.v > out[out.length - 1].v + 0.12) out.push(e); } return out; };
+    const old = a.age === 'senior';
     const walk = spec.walk || (old ? ['walk_neutral_01', 'walk_cool_01', 'walk_slow_01'][Math.floor(h * 3)] : G.walk[Math.floor(h * G.walk.length)]);
-    add(G.slow[Math.floor(hf(this.seq * 17 + 3) * G.slow.length)]); add(walk); add(G.brisk); for (const r of G.run) add(r);
-    list.sort((x, y) => x.v - y.v); const out = []; for (const e of list) { if (!out.length || e.v > out[out.length - 1].v + 0.12) out.push(e); }
-    this.gait = out; this.walkClip = clipFor(a.sex, walk); const wc = this.walkClip;
+    this.gaitW = mk([G.slow[Math.floor(hf(this.seq * 17 + 3) * G.slow.length)], walk, G.brisk]); this.gaitR = mk(G.run); this.gait = this.gaitW;
+    this.walkClip = clipFor(a.sex, walk); const wc = this.walkClip;
     this.walkSpeed = (wc ? wc.speed * a.hip / wc.hip : 1.2) * this.scale; // natural walking speed in world m/s
-    this.g = h; this.gv = 0; }
+    const wmax = this.gaitW[this.gaitW.length - 1].v, rmin = this.gaitR.length ? this.gaitR[0].v : 9;
+    this.runOn = Math.min(wmax * 1.2, rmin * 1.02); this.runOff = this.runOn * 0.88; this.runW = 0; this.runT = 0;
+    this.g = h; this.gv = 0; this.idleT = 0; this.stepSide = h < 0.5; }
   _activity(def) { const a = this.av, s = { def, loop: null, lt: 0, fid: null, ft: 0, next: 0, fids: [] }; const h = hf(this.seq * 31 + (def.c[0].length * 7));
     s.loop = clipFor(a.sex, def.c[Math.floor(h * def.c.length) % def.c.length]); if (s.loop) s.lt = h * s.loop.dur;
     if (def.fid) for (const n of def.fid) { const c = clipFor(a.sex, n); if (c) s.fids.push(c); }
     const fe = def.fidEvery || [7, 18]; s.fe = fe; s.next = fe[0] * 0.3 + Math.random() * fe[1]; return s; }
-  setLOD(l) { if (!this.av || l === this.lod) return; this.lod = l;
-    for (let k = 0; k < 2; k++) { if (k === l && !this.mesh[k]) { const m = new THREE.SkinnedMesh(avatarGeo(this.av, k), this.mat); m.bindMode = 'detached'; m.bind(this.skel, PPL.ident[0]); m.castShadow = k === 0; m.receiveShadow = false; m.matrixAutoUpdate = false; this.root.add(m); this.mesh[k] = m; }
-      if (this.mesh[k]) this.mesh[k].visible = k === l; } }
+  setLOD(l) { const a = this.av; if (!a || l === this.lod) return; if (l === 0) { a.nearN++; a.hiUsed = true; } else if (this.lod === 0) a.nearN--; this.lod = l;
+    for (let k = 0; k < 2; k++) { if (k === l && !this.mesh[k]) { const m = new THREE.SkinnedMesh(avatarGeo(a, k), this.mats[k]); m.bindMode = 'detached'; m.bind(this.skel, PPL.ident[0]); m.castShadow = k === 0; m.receiveShadow = false; m.matrixAutoUpdate = false; this.root.add(m); this.mesh[k] = m; }
+      if (this.mesh[k]) this.mesh[k].visible = k === l && a.texReady; } this.texOK = a.texReady;
+    if (l === 0 && this.wq) { this._fk(PPL.NB, PPL.NBODY); this._skin(PPL.NB, PPL.NBODY); } } /* fingers and face bones were not evaluated at the far LOD: pose them now, not a frame late */
   /* ---- public: actions ---- */
   play(name, opt) { const def = ACTIONS[name]; if (!this.av) { this.override = name; return this; } if (!def) { console.warn('Person.play: unknown action', name); return this; }
     const a = this.av, once = opt === true || (opt && opt.once); const st = this._activity(def); if (!st.loop) { this.override = name; return this; }
@@ -230,8 +242,11 @@ class Person {
   _snapshot(d) { if (!this.av) return; this.snap.set(this.lq); this.snapR.set(this.rp); this.fade = 1; this.fadeDur = Math.max(0.02, d); }
   get busy() { return !!this.act; }
   /* ---- per-frame ---- */
-  update(dt, speed, air) { if (!this.av) return; const nb = this.lod === 0 ? PPL.NB : PPL.NBODY; this.t += dt; PPL.stat.anim++; this.hurry = speed > 0.6;
-    if (this.act) this._evalAct(dt, nb); else this._evalLoco(dt, speed || 0, !!air, nb);
+  update(dt, speed, air) { if (!this.av) return; const nb = this.lod === 0 ? PPL.NB : PPL.NBODY; this.t += dt; PPL.stat.anim++; this.hurry = speed > 0.6; speed = speed || 0;
+    if (!this.texOK && this.av.texReady) { this.texOK = true; if (this.mesh[this.lod]) this.mesh[this.lod].visible = true; } /* nobody is drawn before their texture has arrived */
+    { const ry = this.root.rotation.y; let yr = 0; if (this.lastYaw != null && dt > 0) { let d = ry - this.lastYaw; d -= Math.round(d / TAU) * TAU; yr = clamp(d / dt, -6, 6); } this.lastYaw = ry; this.yawRate += (yr - this.yawRate) * Math.min(1, dt * 10); }
+    let lspeed = speed; if (speed < 0.35 && !air) { const tv = Math.min(0.55, Math.abs(this.yawRate) * 0.22) * this.scale; if (tv > 0.12 && tv > speed) lspeed = tv; }
+    if (this.act) this._evalAct(dt, nb); else this._evalLoco(dt, lspeed, !!air, nb);
     if (this.fade > 0) { this.fade -= dt / this.fadeDur; if (this.fade > 0) { const w = this.fade * this.fade * (3 - 2 * this.fade); poseBlend(this.lq, this.snap, w, nb); const r = this.rp, s = this.snapR; r[0] += (s[0] - r[0]) * w; r[1] += (s[1] - r[1]) * w; r[2] += (s[2] - r[2]) * w; } }
     this._layers(dt, speed || 0);
     if (nb > BN.JAW) this._face(dt);
@@ -268,19 +283,31 @@ class Person {
       if (this.carry && st.def.seat === 1) { const cs = this.carry; cs.lt += dt; clipSample(cs.loop, cs.lt, S_A, S_RA, nb); poseBlendMask(lq, S_A, 1, cs.mask); } return; }
     st.lt += dt; const c = st.loop; clipSample(c, Math.min(st.lt, c.dur), lq, rp, nb); const k = a.hip / c.hip; rp[0] *= k; rp[1] *= k; rp[2] *= k;
     if (st.lt >= c.dur - (st.mode === 'once' ? 0.12 : 0) && st.mode === 'once') { this._snapshot(0.3); this.act = null; this.override = null; if (this.actProp) { this.actProp = false; this.setProp(null); } } }
-  _evalLoco(dt, speed, air, nb) { const a = this.av, G = this.gait, lq = this.lq, rp = this.rp, v = speed / this.scale;
-    this.gv += (v - this.gv) * Math.min(1, dt * 12); const gv = this.gv; let wi = 0, i0 = 0, i1 = 0, w = 0, rate;
-    if (gv < G[0].v) { wi = 1 - gv / G[0].v; rate = G[0].v / G[0].st * (0.75 + 0.25 * (1 - wi)); }
-    else { let i = 0; while (i < G.length - 2 && gv > G[i + 1].v) i++; i0 = i; i1 = Math.min(G.length - 1, i + 1); w = i1 === i0 ? 0 : clamp((gv - G[i0].v) / (G[i1].v - G[i0].v), 0, 1); const st = G[i0].st + (G[i1].st - G[i0].st) * w; rate = gv / st; }
-    if (wi < 1) { this.g = (this.g + dt * rate) % 1; const c0 = G[i0].c; let u = this.g + c0.off; u -= Math.floor(u); clipSample(c0, u * c0.n / c0.f, lq, rp, nb); let k = a.hip / c0.hip; rp[0] *= k; rp[1] *= k; rp[2] *= k;
-      if (w > 0.001) { const c1 = G[i1].c; u = this.g + c1.off; u -= Math.floor(u); clipSample(c1, u * c1.n / c1.f, S_A, S_RA, nb); poseBlend(lq, S_A, w, nb); k = a.hip / c1.hip; rp[0] += (S_RA[0] * k - rp[0]) * w; rp[1] += (S_RA[1] * k - rp[1]) * w; rp[2] += (S_RA[2] * k - rp[2]) * w; } }
+  /* one gait family at ground speed v and the shared phase this.g -> pose in out/outR; returns the cadence (cycles/s) that keeps the feet from sliding */
+  _gait(G, v, out, outR, nb) { const a = this.av, n = G.length; let i0 = 0, i1 = 0, w = 0;
+    if (n > 1) { let i = 0; while (i < n - 2 && v > G[i + 1].v) i++; i0 = i; i1 = i + 1; w = clamp((v - G[i0].v) / (G[i1].v - G[i0].v), 0, 1); }
+    const c0 = G[i0].c; let u = this.g + c0.off; u -= Math.floor(u); clipSample(c0, u * c0.n / c0.f, out, outR, nb); let k = a.hip / c0.hip; outR[0] *= k; outR[1] *= k; outR[2] *= k;
+    if (w > 0.001) { const c1 = G[i1].c; u = this.g + c1.off; u -= Math.floor(u); clipSample(c1, u * c1.n / c1.f, S_C, S_RC, nb); poseBlend(out, S_C, w, nb); k = a.hip / c1.hip; outR[0] += (S_RC[0] * k - outR[0]) * w; outR[1] += (S_RC[1] * k - outR[1]) * w; outR[2] += (S_RC[2] * k - outR[2]) * w; }
+    const st = G[i0].st + (G[i1].st - G[i0].st) * w, nat = (G[i0].v / G[i0].st) * (1 - w) + (G[i1].v / G[i1].st) * w; return clamp(v / st, nat * 0.62, nat * 1.32); }
+  _evalLoco(dt, speed, air, nb) { const a = this.av, GW = this.gaitW, GR = this.gaitR, lq = this.lq, rp = this.rp, v = speed / this.scale;
+    this.gv += (v - this.gv) * Math.min(1, dt * 12); if (v === 0 && this.gv < 0.03) this.gv = 0; const gv = this.gv, v0 = GW[0].v;
+    /* walk <-> run is a short timed cross-fade with hysteresis (never a speed-proportional mix of a walk and a run) */
+    if (GR.length) { if (gv > this.runOn) this.runT = 1; else if (gv < this.runOff) this.runT = 0; } this.runW += (this.runT - this.runW) * Math.min(1, dt * 7); if (Math.abs(this.runT - this.runW) < 0.004) this.runW = this.runT;
+    const rw = this.runW * this.runW * (3 - 2 * this.runW), wi = this.runT ? 0 : (gv < v0 ? 1 - gv / v0 : 0);
+    if (wi < 1) { if (this.idleT > 0.3) this.g = (this.stepSide = !this.stepSide) ? 0.96 : 0.46; /* first step: a foot lifts from beside the other one */ this.idleT = 0;
+      let rate = 0;
+      if (rw < 0.999) rate = this._gait(GW, gv, lq, rp, nb) * (1 - rw);
+      if (rw > 0.001) { if (rw >= 0.999) rate = this._gait(GR, gv, lq, rp, nb); else { rate += this._gait(GR, gv, S_A, S_RA, nb) * rw; poseBlend(lq, S_A, rw, nb); rp[0] += (S_RA[0] - rp[0]) * rw; rp[1] += (S_RA[1] - rp[1]) * rw; rp[2] += (S_RA[2] - rp[2]) * rw; } }
+      let ng = this.g + dt * rate;
+      if (wi > 0.3 && v < gv - 0.02) { const lim = Math.ceil(this.g * 2 - 1e-6) / 2; if (ng > lim) ng = lim; } /* coming to a halt: the swinging foot arrives beside the other and stays */
+      this.g = ng - Math.floor(ng); } else this.idleT += dt;
     if (wi > 0) { const ws = wi >= 1 ? 1 : wi * wi * (3 - 2 * wi); if (wi >= 1) this._evalActivity(this.carry || this.stand, dt, nb, lq, rp); else { this._evalActivity(this.carry || this.stand, dt, nb, S_A, S_RA); poseBlend(lq, S_A, ws, nb); rp[0] += (S_RA[0] - rp[0]) * ws; rp[1] += (S_RA[1] - rp[1]) * ws; rp[2] += (S_RA[2] - rp[2]) * ws; } }
     if (this.carry && wi < 1) { const cs = this.carry; cs.lt += dt * (wi > 0 ? 0 : 1); clipSample(cs.loop, cs.lt, S_A, S_RA, nb); poseBlendMask(lq, S_A, 1, cs.mask); }
     const at = air ? 1 : 0; this.airW += (at - this.airW) * Math.min(1, dt * (air ? 14 : 9));
     if (this.airW > 0.01) { const up = clipGet('hk_air_up'), dn = clipGet('hk_air_down'); if (up && dn) { clipSample(up, 0, S_A, S_RA, nb); clipSample(dn, 0, S_B, S_RB, nb); const f = clamp(0.5 - this.vy * 0.18, 0, 1); poseBlend(S_A, S_B, f, nb); poseBlend(lq, S_A, this.airW, nb); const k = a.hip / up.hip, y = (S_RA[1] + (S_RB[1] - S_RA[1]) * f) * k; rp[1] += (y - rp[1]) * this.airW; } } }
   /* additive layers in character space: posture, breathing, lean into turns / acceleration, head look-at */
   _layers(dt, speed) { const aq = this.aq, r = this.root, def = this.act ? this.act.def : null;
-    let yawRate = 0; if (this.lastYaw != null && dt > 0) { let d = r.rotation.y - this.lastYaw; d -= Math.round(d / TAU) * TAU; yawRate = clamp(d / dt, -6, 6); } this.lastYaw = r.rotation.y;
+    const yawRate = this.yawRate;
     const acc = dt > 0 ? clamp((speed - this.lastSpd) / dt, -12, 12) : 0; this.lastSpd = speed;
     if (dt > 0 && this.lastY != null) this.vy += ((r.position.y - this.lastY) / dt - this.vy) * Math.min(1, dt * 20); this.lastY = r.position.y;
     const flat = def && (def.flat || def.seat); const k = Math.min(1, dt * 6);
@@ -298,17 +325,17 @@ class Person {
     eulerTo(aq, 8, br * 0.8, ly * 0.12, 0);                                             // Spine2
     eulerTo(aq, 12, lp * 0.4 - post * 0.5 - br, ly * 0.32, -this.lean * 0.35);          // Neck
     eulerTo(aq, 16, lp * 0.6 - post * 0.3 - br * 0.6, ly * 0.48, -this.lean * 0.3); }   // Head
-  _fk(nb) { const lq = this.lq, wq = this.wq, wp = this.wp, rt = this.av.rt, par = PPL.par, aq = this.aq;
-    wq[0] = lq[0]; wq[1] = lq[1]; wq[2] = lq[2]; wq[3] = lq[3]; wp[0] = this.rp[0]; wp[1] = this.rp[1]; wp[2] = this.rp[2];
-    for (let i = 1; i < nb; i++) { const p = par[i] * 4, o = i * 4, ax = wq[p], ay = wq[p + 1], az = wq[p + 2], aw = wq[p + 3], bx = lq[o], by = lq[o + 1], bz = lq[o + 2], bw = lq[o + 3];
+  _fk(nb, from) { const lq = this.lq, wq = this.wq, wp = this.wp, rt = this.av.rt, par = PPL.par, aq = this.aq;
+    if (!from) { wq[0] = lq[0]; wq[1] = lq[1]; wq[2] = lq[2]; wq[3] = lq[3]; wp[0] = this.rp[0]; wp[1] = this.rp[1]; wp[2] = this.rp[2]; }
+    for (let i = from || 1; i < nb; i++) { const p = par[i] * 4, o = i * 4, ax = wq[p], ay = wq[p + 1], az = wq[p + 2], aw = wq[p + 3], bx = lq[o], by = lq[o + 1], bz = lq[o + 2], bw = lq[o + 3];
       let x = aw * bx + ax * bw + ay * bz - az * by, y = aw * by - ax * bz + ay * bw + az * bx, z = aw * bz + ax * by - ay * bx + az * bw, w = aw * bw - ax * bx - ay * by - az * bz;
       if (i >= BN.SPINE && i <= BN.HEAD) { const q = (i - BN.SPINE) * 4, cx = aq[q], cy = aq[q + 1], cz = aq[q + 2], cw = aq[q + 3]; const nx = cw * x + cx * w + cy * z - cz * y, ny = cw * y - cx * z + cy * w + cz * x, nz = cw * z + cx * y - cy * x + cz * w, nw = cw * w - cx * x - cy * y - cz * z; x = nx; y = ny; z = nz; w = nw; }
       wq[o] = x; wq[o + 1] = y; wq[o + 2] = z; wq[o + 3] = w;
       const t = i * 3; let vx = rt[t], vy = rt[t + 1], vz = rt[t + 2]; if (i >= BN.LLID && this.blink > 0) { vx -= this.blink * LID_DROP * this.av.h; vy += this.blink * LID_FWD * this.av.h; }
       const tx = 2 * (ay * vz - az * vy), ty = 2 * (az * vx - ax * vz), tz = 2 * (ax * vy - ay * vx), pp = par[i] * 3;
       wp[t] = wp[pp] + vx + aw * tx + (ay * tz - az * ty); wp[t + 1] = wp[pp + 1] + vy + aw * ty + (az * tx - ax * tz); wp[t + 2] = wp[pp + 2] + vz + aw * tz + (ax * ty - ay * tx); } }
-  _skin(nb) { const sk = this.skel, bm = sk.boneMatrices, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
-    for (let i = 0; i < nb; i++) { const o = i * 4, ax = wq[o], ay = wq[o + 1], az = wq[o + 2], aw = wq[o + 3], bx = ri[o], by = ri[o + 1], bz = ri[o + 2], bw = ri[o + 3];
+  _skin(nb, from) { const sk = this.skel, bm = sk.boneMatrices, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
+    for (let i = from || 0; i < nb; i++) { const o = i * 4, ax = wq[o], ay = wq[o + 1], az = wq[o + 2], aw = wq[o + 3], bx = ri[o], by = ri[o + 1], bz = ri[o + 2], bw = ri[o + 3];
       const x = aw * bx + ax * bw + ay * bz - az * by, y = aw * by - ax * bz + ay * bw + az * bx, z = aw * bz + ax * by - ay * bx + az * bw, w = aw * bw - ax * bx - ay * by - az * bz;
       const xx = x * x, yy = y * y, zz = z * z, xy = x * y, xz = x * z, yz = y * z, wx = w * x, wy = w * y, wz = w * z, m = i * 16, t = i * 3, px = rp[t], py = rp[t + 1], pz = rp[t + 2];
       const m0 = 1 - 2 * (yy + zz), m1 = 2 * (xy + wz), m2 = 2 * (xz - wy), m4 = 2 * (xy - wz), m5 = 1 - 2 * (xx + zz), m6 = 2 * (yz + wx), m8 = 2 * (xz + wy), m9 = 2 * (yz - wx), m10 = 1 - 2 * (xx + yy);
@@ -317,7 +344,7 @@ class Person {
     if (sk.boneTexture) sk.boneTexture.needsUpdate = true; }
   /* world position of a bone (after update) */
   bonePos(i, out) { const r = this.root, s = Math.sin(r.rotation.y), c = Math.cos(r.rotation.y), x = this.wp[i * 3] * r.scale.x, y = this.wp[i * 3 + 1] * r.scale.y, z = this.wp[i * 3 + 2] * r.scale.z; out = out || new THREE.Vector3(); return out.set(r.position.x + x * c + z * s, r.position.y + y, r.position.z - x * s + z * c); }
-  dispose() { scene.remove(this.root); const i = PPL.list.indexOf(this); if (i >= 0) PPL.list.splice(i, 1); if (this.skel) this.skel.dispose(); if (this.tint && this.mat) this.mat.dispose(); }
+  dispose() { scene.remove(this.root); const i = PPL.list.indexOf(this); if (i >= 0) PPL.list.splice(i, 1); if (this.skel) this.skel.dispose(); if (this.av && this.lod === 0) this.av.nearN--; if (this.tint && this.mats) { this.mats[0].dispose(); this.mats[1].dispose(); } }
 }
 const Ped = Person, RealHuman = Person;
 
@@ -332,4 +359,5 @@ function randomLook() { const id = pickAvatar(null), a = PPL.av[id]; return { av
 function updateLOD() { if (!PPL.ready) return; const cx = camera.position.x, cz = camera.position.z, list = []; let far = 0;
   for (const p of PPL.list) { if (!p.av) continue; const r = p.root; if (!r.visible) continue; p.dist = Math.hypot(r.position.x - cx, r.position.z - cz); if (p.forceNear) { p.setLOD(0); continue; } list.push(p); }
   list.sort((a, b) => a.dist - b.dist); let n = 0; for (const p of list) { const want = n < Q.real && p.dist < (p.lod === 0 ? 34 : 28); if (want) n++; else far++; p.setLOD(want ? 0 : 1); }
-  PPL.stat.near = n; PPL.stat.far = far; }
+  PPL.stat.near = n; PPL.stat.far = far;
+  for (let i = 0; i < PPL.ids.length; i++) { const a = PPL.av[PPL.ids[i]]; if (a.hiUsed && a.nearN <= 0) { if (++a.hiIdle > 16) { a.texHi.dispose(); a.hiUsed = false; a.hiIdle = 0; } } else a.hiIdle = 0; } }

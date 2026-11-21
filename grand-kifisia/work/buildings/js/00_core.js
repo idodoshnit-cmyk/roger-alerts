@@ -20,30 +20,81 @@ function greeklish(s){if(!s)return'';const a=s.normalize('NFD').replace(/[̀-ͯ]
 const isGreek=s=>/[Ͱ-Ͽ]/.test(s||'');
 
 /* ============================== RENDERER ============================== */
+/* Quality presets. pr: max pixel ratio, sh: sun shadow map size (0 = no shadows), shN: half-width (m) of the near shadow box, sh2/shF: map size and half-width of the far
+   shadow cascade (0 = single cascade), dist: view distance (m), trees: garden tree density, real: realistic characters,
+   tex: material layer size, ntex: normal-map layer size (0 = no normal mapping), aniso: anisotropic filtering, aa: multisampling (also SETTINGS.aa=false). */
+const SETTINGS=Object.assign({q:'auto',fps:false},store.get('settings',{}));
+const QP={low:{pr:0.7,sh:0,sh2:0,shN:40,shF:0,dist:170,trees:0.45,real:4,tex:256,ntex:0,aniso:2,aa:false},
+  medium:{pr:1.0,sh:1024,sh2:1024,shN:30,shF:125,dist:240,trees:0.75,real:8,tex:512,ntex:256,aniso:4,aa:true},
+  high:{pr:1.4,sh:2048,sh2:2048,shN:36,shF:150,dist:320,trees:1,real:14,tex:512,ntex:512,aniso:8,aa:true}};
+let Q=QP[SETTINGS.q==='auto'?(Math.min(screen.width,screen.height)<500&&(navigator.hardwareConcurrency||4)<=4?'low':'medium'):SETTINGS.q]||QP.medium;
 const canvas=$('c');
 let renderer;
-try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance',stencil:false});}
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:Q.aa&&SETTINGS.aa!==false,powerPreference:'high-performance',stencil:false});}
 catch(e){$('loadTxt').textContent='This device could not start 3D graphics (WebGL).';throw e}
 const GL2=renderer.capabilities.isWebGL2;
+if(!GL2)$('loadTxt').textContent='This browser has no WebGL 2, which the game needs. Please update your browser or try another device.';
 renderer.outputEncoding=THREE.sRGBEncoding;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.82;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.6;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(60,1,0.3,900);
-scene.fog=new THREE.Fog(0xb8c8d6,70,420);
-const hemi=new THREE.HemisphereLight(0xcfe3ff,0x6b6150,0.55);scene.add(hemi);
-const amb=new THREE.AmbientLight(0xffffff,0.12);scene.add(amb);
-const sun=new THREE.DirectionalLight(0xfff0d8,1.1);sun.castShadow=true;scene.add(sun);scene.add(sun.target);
-const sky=new THREE.Sky();sky.scale.setScalar(4500);scene.add(sky);
-const skyU=sky.material.uniforms;skyU.turbidity.value=2.2;skyU.rayleigh.value=1.6;skyU.mieCoefficient.value=0.004;skyU.mieDirectionalG.value=0.82;
-const U={night:{value:0}};
-const SETTINGS=Object.assign({q:'auto',fps:false},store.get('settings',{}));
-const QP={low:{pr:0.7,sh:0,dist:170,trees:0.45,real:4},medium:{pr:1.0,sh:1024,dist:240,trees:0.75,real:8},high:{pr:1.4,sh:2048,dist:320,trees:1,real:14}};
-let Q=QP[SETTINGS.q==='auto'?(Math.min(screen.width,screen.height)<500&&(navigator.hardwareConcurrency||4)<=4?'low':'medium'):SETTINGS.q];
+scene.fog=new THREE.Fog(0xb8c8d6,70,420);// colour and range are driven by 82_sky.js / applyQuality()
+const hemi=new THREE.HemisphereLight(0x8fbaff,0x80756a,0.95);scene.add(hemi);
+const amb=new THREE.AmbientLight(0xffffff,0.07);scene.add(amb);
+const sun=new THREE.DirectionalLight(0xfff0d8,2.7);sun.castShadow=true;scene.add(sun);scene.add(sun.target);
+/* Second shadow cascade of the SAME sun: a wide, coarse box that is refreshed every few frames (82_sky.js). Its intensity stays 0 — the patched light loop below
+   applies the sun's light exactly once and blends the two shadow maps. Do not add other shadow-casting DirectionalLights to the scene. */
+const sun2=new THREE.DirectionalLight(0xffffff,0);sun2.castShadow=true;sun2.shadow.autoUpdate=false;scene.add(sun2);scene.add(sun2.target);
+/* Shader patches shared by EVERY lit material (world, people, cars, interiors), applied before any material is compiled:
+   1. soft shadows with 3×3 taps and smooth (quadratic) weights instead of three's 4×4 taps: 9 texture reads per pixel instead of 16;
+   2. two shadow cascades for one sun, cross-faded at the edge of the near box, and faded out at the edge of the far box. */
+(function(){const C=THREE.ShaderChunk;let s=C.shadowmap_pars_fragment;const a=s.indexOf('#elif defined( SHADOWMAP_TYPE_PCF_SOFT )'),b=s.indexOf('#elif defined( SHADOWMAP_TYPE_VSM )');
+  if(a>0&&b>a)C.shadowmap_pars_fragment=s.slice(0,a)+`#elif defined( SHADOWMAP_TYPE_PCF_SOFT )
+			vec2 gkTs = vec2( 1.0 ) / shadowMapSize; vec2 gkT = shadowCoord.xy * shadowMapSize; vec2 gkC = floor( gkT ); vec2 gkG = gkT - gkC; vec2 gkU = ( gkC + 0.5 ) * gkTs;
+			vec3 gkWx = vec3( 0.5 * ( 1.0 - gkG.x ) * ( 1.0 - gkG.x ), 0.5 + gkG.x * ( 1.0 - gkG.x ), 0.5 * gkG.x * gkG.x );
+			vec3 gkWy = vec3( 0.5 * ( 1.0 - gkG.y ) * ( 1.0 - gkG.y ), 0.5 + gkG.y * ( 1.0 - gkG.y ), 0.5 * gkG.y * gkG.y );
+			shadow = gkWy.x * ( gkWx.x * texture2DCompare( shadowMap, gkU + vec2( - gkTs.x, - gkTs.y ), shadowCoord.z ) + gkWx.y * texture2DCompare( shadowMap, gkU + vec2( 0.0, - gkTs.y ), shadowCoord.z ) + gkWx.z * texture2DCompare( shadowMap, gkU + vec2( gkTs.x, - gkTs.y ), shadowCoord.z ) )
+				+ gkWy.y * ( gkWx.x * texture2DCompare( shadowMap, gkU + vec2( - gkTs.x, 0.0 ), shadowCoord.z ) + gkWx.y * texture2DCompare( shadowMap, gkU, shadowCoord.z ) + gkWx.z * texture2DCompare( shadowMap, gkU + vec2( gkTs.x, 0.0 ), shadowCoord.z ) )
+				+ gkWy.z * ( gkWx.x * texture2DCompare( shadowMap, gkU + vec2( - gkTs.x, gkTs.y ), shadowCoord.z ) + gkWx.y * texture2DCompare( shadowMap, gkU + vec2( 0.0, gkTs.y ), shadowCoord.z ) + gkWx.z * texture2DCompare( shadowMap, gkU + vec2( gkTs.x, gkTs.y ), shadowCoord.z ) );
+		`+s.slice(b);else console.warn('shadow filter patch not applied');
+  s=C.lights_fragment_begin;const i0=s.indexOf('DirectionalLight directionalLight;'),i1=s.indexOf('#pragma unroll_loop_end',i0);
+  if(i0>0&&i1>i0){const head=i0+'DirectionalLight directionalLight;'.length,end=i1+'#pragma unroll_loop_end'.length;
+    C.lights_fragment_begin=s.slice(0,head)+`
+	#if defined( USE_SHADOWMAP ) && NUM_DIR_LIGHT_SHADOWS == 2
+	{
+		vec3 gkC0 = vDirectionalShadowCoord[ 0 ].xyz / vDirectionalShadowCoord[ 0 ].w; vec2 gkE0 = abs( gkC0.xy - 0.5 );
+		float gkW = ( gkC0.z > 1.0 ) ? 0.0 : 1.0 - smoothstep( 0.42, 0.49, max( gkE0.x, gkE0.y ) );
+		float gkS = 1.0;
+		if ( receiveShadow ) {
+			float gkS0 = 1.0, gkS1 = 1.0;
+			if ( gkW > 0.0 ) gkS0 = getShadow( directionalShadowMap[ 0 ], directionalLightShadows[ 0 ].shadowMapSize, directionalLightShadows[ 0 ].shadowBias, directionalLightShadows[ 0 ].shadowRadius, vDirectionalShadowCoord[ 0 ] );
+			if ( gkW < 1.0 ) { vec3 gkC1 = vDirectionalShadowCoord[ 1 ].xyz / vDirectionalShadowCoord[ 1 ].w; vec2 gkE1 = abs( gkC1.xy - 0.5 );
+				gkS1 = mix( 1.0, getShadow( directionalShadowMap[ 1 ], directionalLightShadows[ 1 ].shadowMapSize, directionalLightShadows[ 1 ].shadowBias, directionalLightShadows[ 1 ].shadowRadius, vDirectionalShadowCoord[ 1 ] ), 1.0 - smoothstep( 0.40, 0.49, max( gkE1.x, gkE1.y ) ) ); }
+			gkS = mix( gkS1, gkS0, gkW );
+		}
+		directionalLight = directionalLights[ 0 ];
+		getDirectionalLightInfo( directionalLight, geometry, directLight );
+		directLight.color *= gkS;
+		RE_Direct( directLight, geometry, material, reflectedLight );
+	}
+	#pragma unroll_loop_start
+	for ( int i = 2; i < NUM_DIR_LIGHTS; i ++ ) {
+		directionalLight = directionalLights[ i ];
+		getDirectionalLightInfo( directionalLight, geometry, directLight );
+		RE_Direct( directLight, geometry, material, reflectedLight );
+	}
+	#pragma unroll_loop_end
+	#else`+s.slice(head,end)+`
+	#endif`+s.slice(end)}else console.warn('shadow cascade patch not applied')})();
+/* uniforms shared by the world material and the sky (10_atlas.js, 82_sky.js) */
+const U={night:{value:0},time:{value:0},noiseL:{value:0},lamp:{value:null},lampR:{value:new THREE.Vector4(0,0,1,1)},lampH:{value:new THREE.Vector2(0,1)},lampC:{value:new THREE.Color(0,0,0)},shopC:{value:new THREE.Color(0,0,0)},
+  skyZ:{value:new THREE.Color(0.1,0.2,0.5)},skyH:{value:new THREE.Color(0.5,0.6,0.8)},skyG:{value:new THREE.Color(0.1,0.1,0.1)},fogSun:{value:new THREE.Vector4(1,1,1,0)},sunXZ:{value:new THREE.Vector2(1,0)}};
 let pixelRatio=Math.min(window.devicePixelRatio||1,Q.pr);
-function applyQuality(){renderer.setPixelRatio(pixelRatio);sun.castShadow=Q.sh>0;if(Q.sh){sun.shadow.mapSize.set(Q.sh,Q.sh);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}
-  const s=sun.shadow.camera;s.left=-55;s.right=55;s.top=55;s.bottom=-55;s.near=1;s.far=400;s.updateProjectionMatrix();sun.shadow.bias=-0.0012;sun.shadow.normalBias=0.12;
-  camera.far=Q.dist*1.35;scene.fog.far=Q.dist*1.3;scene.fog.near=Q.dist*0.5;camera.updateProjectionMatrix();resize()}
+function applyQuality(){renderer.setPixelRatio(pixelRatio);const on=Q.sh>0;sun.castShadow=on;sun2.visible=on&&Q.sh2>0;
+  for(const [l,size,half] of [[sun,Q.sh,Q.shN||55],[sun2,Q.sh2||0,Q.shF||125]]){if(!size)continue;l.shadow.mapSize.set(size,size);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null}
+    const s=l.shadow.camera,texel=2*half/size;s.left=-half;s.right=half;s.top=half;s.bottom=-half;s.near=1;s.far=420;s.updateProjectionMatrix();l.shadow.bias=-0.00004-texel*0.0004;l.shadow.normalBias=texel*1.1;l.shadow.needsUpdate=true}
+  camera.far=Q.dist*1.35;scene.fog.far=Q.dist-8;scene.fog.near=Q.dist*0.6;camera.updateProjectionMatrix();resize();if(typeof texQuality==='function')texQuality()}
 function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);
 

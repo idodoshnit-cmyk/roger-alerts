@@ -90,7 +90,7 @@ const facadeBg=(g,S)=>{pBg(g,'plaster',S,null,0.8);pWeather(g,S)};
 (function(){
   const P=(name,rep,o)=>defTile(name,null,Object.assign({photo:name,rep,nrm:name},o));
   /* --- photographic ground --- (rep = caller UV unit in metres / real size of the photo; see docs/MATERIALS.md) */
-  P('asph',3,{spec:.045,shin:22,macro:.5,nrmK:.7});P('asph2',2.5,{spec:.045,shin:20,macro:.5,nrmK:.7});P('asphP',2,{spec:.04,shin:18,macro:.4,nrmK:.8});
+  P('asph',2.857,{spec:.045,shin:22,macro:.5,nrmK:.9});P('asph2',2.5,{spec:.045,shin:20,macro:.5,nrmK:.7});P('asphP',2,{spec:.04,shin:18,macro:.4,nrmK:.8});
   P('pavers',1.15,{spec:.03,shin:14,macro:.4});P('brick',1,{spec:.03,shin:14,macro:.4});P('marble',1.25,{spec:.05,shin:46,refl:.05,macro:.3});
   P('slabs',1.6,{spec:.03,shin:14,macro:.4});P('platf',1.1,{spec:.03,shin:16,macro:.35});P('gravel',1.1,{spec:.02,shin:8,macro:.4});P('parkG',1.2,{spec:.02,shin:8,macro:.45});
   P('soil',2.5,{spec:.02,shin:6,macro:.5});P('grass',2,{spec:.02,shin:6,macro:.6});P('dryG',3,{spec:.02,shin:6,macro:.6});P('ballast',1.5,{spec:.03,shin:10,macro:.35});
@@ -181,13 +181,13 @@ const lutData=new Float32Array(4*256*4),lutTex=new THREE.DataTexture(lutData,4,2
 function writeLut(){for(let id=0;id<256;id++){const d=TILE[id],o=id*16;if(!d){lutData.fill(0,o,o+16);lutData[o+1]=lutData[o+2]=1;lutData[o+3]=-1;continue}
     const nd=d.nrm&&T[d.nrm]!==undefined?TILE[T[d.nrm]]:null;let ru=d.rep[0],rv=d.rep[1];
     if(d.metric){const b=TILE[T[d.alias]],m=b&&b.photo&&TEX.man&&TEX.man.meta[b.photo]?TEX.man.meta[b.photo].m:2;ru=rv=1/(m||2)}
-    lutData.set([d.layer<0?0:d.layer,ru,rv,nd&&nd.nlayer>=0?nd.nlayer:-1, d.nrmRep,d.nrmK,d.spec,d.shin, d.refl,d.glass,d.glassDark,d.glowK, d.macro,d.transl,d.flow,0],o)}
+    lutData.set([d.layer<0?0:d.layer,ru,rv,nd&&nd.nlayer>=0?nd.nlayer:-1, d.nrmRep,d.nrmK,d.spec,d.shin, d.refl,d.glass,d.glassDark,d.glowK, d.macro,d.transl,d.flow,d.cut?1:0],o)}
   lutTex.needsUpdate=true;if(T.noise!==undefined&&TILE[T.noise])U.noiseL.value=Math.max(0,TILE[T.noise].layer)}
 function loadImg(url){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('could not load '+url));im.src=url})}
 const _cv=(s,rf)=>{const c=document.createElement('canvas');c.width=c.height=s;return[c,c.getContext('2d',{willReadFrequently:!!rf})]};
 let _texBusy=null,_painters=null;
 function glBindArr(gl,t){renderer.state.bindTexture(gl.TEXTURE_2D_ARRAY,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,gl.NONE)}
-function glNewArr(gl,fmt,size,layers,aniso){const t=gl.createTexture();glBindArr(gl,t);gl.texStorage3D(gl.TEXTURE_2D_ARRAY,Math.round(Math.log2(size))+1,fmt,size,size,layers);
+function glNewArr(gl,fmt,size,layers,aniso){const t=gl.createTexture();glBindArr(gl,t);gl.texStorage3D(gl.TEXTURE_2D_ARRAY,Math.floor(Math.log2(size))+1,fmt,size,size,layers);
   gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_WRAP_T,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D_ARRAY,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   const ext=renderer.extensions.get('EXT_texture_filter_anisotropic');if(ext&&aniso>1)gl.texParameterf(gl.TEXTURE_2D_ARRAY,ext.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(aniso,renderer.capabilities.getMaxAnisotropy()));return t}
 /* paint one procedural tile into RGBA bytes (bottom row first, as GL wants it) */
@@ -260,12 +260,12 @@ function paintAtlas(){/* kept for old callers: the atlas is now built by initMat
 /* ============================== WORLD MATERIAL ============================== */
 const GK_VPARS=`
 attribute vec4 aRect;attribute float aGlow;uniform highp sampler2D uLut;uniform float uTime;
-varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec3 vP3;varying vec3 vWp;`;
+varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec4 vP3;varying vec3 vWp;`;
 const GK_VMAIN=`
 {int gkId=int(aRect.x*255.0+0.5);
  vec4 gk0=texelFetch(uLut,ivec2(0,gkId),0),gk1=texelFetch(uLut,ivec2(1,gkId),0),gk2=texelFetch(uLut,ivec2(2,gkId),0),gk3=texelFetch(uLut,ivec2(3,gkId),0);
  vTuv=vec4(uv*gk0.yz+gk3.z*uTime*vec2(0.031,0.017),aGlow,gk0.x);
- vP1=vec4(gk0.w,gk1.x,gk1.y,gk3.x);vP2=vec4(gk1.z,gk1.w,gk2.x,gk2.y);vP3=vec3(gk2.z,gk2.w,gk3.y);
+ vP1=vec4(gk0.w,gk1.x,gk1.y,gk3.x);vP2=vec4(gk1.z,gk1.w,gk2.x,gk2.y);vP3=vec4(gk2.z,gk2.w,gk3.y,gk3.w);
  vec4 gkW=vec4(transformed,1.0);
  #ifdef USE_INSTANCING
  gkW=instanceMatrix*gkW;
@@ -278,14 +278,15 @@ uniform mediump sampler2DArray uNrm;
 #endif
 uniform sampler2D uLamp;uniform vec4 uLampR;uniform vec2 uLampH;uniform vec3 uLampC;uniform vec3 uShopC;
 uniform float uNight;uniform float uNoiseL;uniform float uHaze;uniform vec3 uSkyZ;uniform vec3 uSkyH;uniform vec3 uSkyG;uniform vec4 uFogSun;uniform vec2 uSunXZ;
-varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec3 vP3;varying vec3 vWp;`;
+varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec4 vP3;varying vec3 vWp;
+float gkSunVis=1.0;`;
 const GK_FMAP=`
 vec4 texel=texture(uArr,vec3(vTuv.xy,floor(vTuv.w+0.5)));
 #ifdef GK_CUT
  vec2 gkS=vec2(textureSize(uArr,0).xy);vec2 gkDx=dFdx(vTuv.xy)*gkS,gkDy=dFdy(vTuv.xy)*gkS;
  float gkLod=max(0.0,0.5*log2(max(dot(gkDx,gkDx),dot(gkDy,gkDy))+1e-8));
- if(texel.a*(1.0+0.25*gkLod)<0.5)discard;
  float gm=0.0;
+ if(vP3.w>0.5){if(texel.a*(1.0+0.25*gkLod)<0.5)discard;}else gm=clamp((1.0-texel.a)*2.0,0.0,1.0);   // only tiles registered with cut:true are cut out; others keep their glass mask
 #else
  float gm=clamp((1.0-texel.a)*2.0,0.0,1.0);
 #endif
@@ -320,7 +321,7 @@ const GK_FEXTRA=`
  reflectedLight.indirectDiffuse+=(uLampC*gkL.r+uShopC*gkL.g)*((1.0-smoothstep(3.0,9.5,gkH))*(0.5+0.5*gkNy)*uNight)*material.diffuseColor;
  #ifdef GK_LEAF
   #if NUM_DIR_LIGHTS > 0
-  reflectedLight.directDiffuse+=directionalLights[0].color*material.diffuseColor*(RECIPROCAL_PI*vP3.z*saturate(dot(-normal,directionalLights[0].direction)*0.8+0.2));
+  reflectedLight.directDiffuse+=directionalLights[0].color*material.diffuseColor*(gkSunVis*RECIPROCAL_PI*vP3.z*saturate(dot(-normal,directionalLights[0].direction)*0.8+0.2));
   #endif
  #endif
 }`;
@@ -333,7 +334,7 @@ const GK_FFOG=`
 function gkUniforms(sh){sh.uniforms.uLut={value:lutTex};sh.uniforms.uArr={value:arrTex};sh.uniforms.uNrm={value:nrmTex};sh.uniforms.uTime=U.time;sh.uniforms.uNight=U.night;sh.uniforms.uNoiseL=U.noiseL;
   sh.uniforms.uLamp=U.lamp;sh.uniforms.uLampR=U.lampR;sh.uniforms.uLampH=U.lampH;sh.uniforms.uLampC=U.lampC;sh.uniforms.uShopC=U.shopC;sh.uniforms.uSkyZ=U.skyZ;sh.uniforms.uSkyH=U.skyH;sh.uniforms.uSkyG=U.skyG;sh.uniforms.uFogSun=U.fogSun;sh.uniforms.uSunXZ=U.sunXZ;sh.uniforms.uHaze=U.haze}
 /* worldMat({cut, leaf}) — the shared world material. cut: alpha cut-out, double sided. leaf: foliage cards (normals not flipped, translucent). */
-function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';
+function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={GK_WORLD:''};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';
   m.onBeforeCompile=sh=>{gkUniforms(sh);
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>'+GK_VPARS).replace('#include <project_vertex>','#include <project_vertex>'+GK_VMAIN);
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>'+GK_FPARS).replace('#include <map_fragment>',GK_FMAP).replace('#include <specularmap_fragment>','float specularStrength=1.0;')

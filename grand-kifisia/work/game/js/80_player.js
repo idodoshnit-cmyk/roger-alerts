@@ -25,7 +25,7 @@ const player={x:0,z:0,y:0,vy:0,yaw:0,spd:0,car:null,health:100,money:SAVE.money,
   vx:0,vz:0,mv:0,step:0,ball:false,frozen:false,blocked:0};
 let ph;
 const input={jx:0,jy:0,sprint:false,brake:false,gas:false,rev:false,looking:false};const keys={};
-let camYaw=0,camPitch=0.2,lastDrag=0,camDist=4.4,camShake=0;
+let camYaw=0,camPitch=0.2,lastDrag=0,camDist=4.4,camShake=0,camBoomMax=1e9;// camBoomMax: temporary upper limit of the boom (dialogue close-ups)
 /* other modules may push fn(dt) here from their boot-time init: called once per simulated frame while the game runs */
 const FRAME_HOOKS=[];
 const PMOVE={R:0.3,WALK:1.6,RUN:4.4,SPRINT:6.5,GRAV:19.6,JUMP:5.2,SUB:0.12};
@@ -124,7 +124,7 @@ function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
     if(idle>1.6&&!input.looking&&mv>0.9&&!player.frozen){const d=wrapA(player.yaw-camYaw),ad=Math.abs(d);/* ease behind the direction of travel — but not while the player runs towards the camera */
       const w=(1-sstep((ad-2.0)/0.8))*clamp(mv/PMOVE.RUN,0,1.3);camYaw+=d*(1-Math.exp(-dt*1.15*w));
       camPitch+=(0.2-camPitch)*(1-Math.exp(-dt*0.5*w))}
-    want=indoor?Math.min(camDist,2.9):camDist;fovT=indoor?64:(player.spd>PMOVE.RUN+0.6?66:60);const la=indoor?0.08:0.2;lax=player.vx*la;laz=player.vz*la;if(player.air)stY=0.3}
+    want=Math.min(indoor?Math.min(camDist,2.9):camDist,camBoomMax);fovT=indoor?64:(player.spd>PMOVE.RUN+0.6?66:60);const la=indoor?0.08:0.2;lax=player.vx*la;laz=player.vz*la;if(player.air)stY=0.3}
   CAMS.x=sdamp(CAMS.x,tx,CAMS.vx,stXZ,dt);CAMS.vx=_sdV;CAMS.z=sdamp(CAMS.z,tz,CAMS.vz,stXZ,dt);CAMS.vz=_sdV;CAMS.y=sdamp(CAMS.y,ty,CAMS.vy,stY,dt);CAMS.vy=_sdV;
   CAMS.ax=sdamp(CAMS.ax,lax,CAMS.avx,0.4,dt);CAMS.avx=_sdV;CAMS.az=sdamp(CAMS.az,laz,CAMS.avz,0.4,dt);CAMS.avz=_sdV;
   const cp=Math.cos(camPitch),sp_=Math.sin(camPitch),sy=Math.sin(camYaw),cy=Math.cos(camYaw),rx=-cy,rz=sy;
@@ -148,5 +148,5 @@ function updateCamera(dt){if(freeCam){freeCam(dt);CAMS.ok=false;return}
   if(!c&&ph&&player.busy<=0){const hide=d<0.8;if(hide||CAMS.hide)ph.root.visible=!hide;CAMS.hide=hide}}
 /* cut-scene helper: run fn(t,dt) as the camera for `secs` seconds (t = 0..1), then return to the chase camera; resolves when done or skipped */
 let cutSkip=null;
-function camCut(secs,fn,opt){return new Promise(res=>{let t=0;const o=opt||{};const end=()=>{if(freeCam!==f)return;freeCam=null;cutSkip=null;CAMS.ok=false;if(typeof cinema==='function'&&!o.keepBars)cinema(false);res()};
-  const f=dt=>{t+=dt/secs;fn(Math.min(1,t),dt);if(t>=1)end()};freeCam=f;cutSkip=o.noSkip?null:end;if(typeof cinema==='function'&&!o.noBars)cinema(true,o.title,o.sub)})}
+function camCut(secs,fn,opt){return new Promise(res=>{let t=0;const o=opt||{};const end=skipped=>{if(freeCam!==f)return;freeCam=null;cutSkip=null;CAMS.ok=false;document.body.classList.remove('skippable');if(typeof cinema==='function'&&!o.keepBars)cinema(false);res(skipped===true)};
+  const f=dt=>{t+=dt/secs;fn(Math.min(1,t),dt);if(t>=1)end(false)};freeCam=f;cutSkip=o.noSkip?null:()=>end(true);document.body.classList.toggle('skippable',!o.noSkip);if(typeof cinema==='function'&&!o.noBars)cinema(true,o.title,o.sub)})}
