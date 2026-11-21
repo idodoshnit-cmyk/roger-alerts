@@ -37,7 +37,7 @@ function instanced(geo,mat,list,cast){if(!list.length)return null;const im=new T
   list.forEach((p,i)=>{q.setFromAxisAngle(Y,p[3]||0);pv.set(p[0],p[1],p[2]);sv.setScalar(p[4]||1);m.compose(pv,q,sv);im.setMatrixAt(i,m)});im.castShadow=!!cast;im.receiveShadow=false;im.frustumCulled=false;scene.add(im);return im}
 
 /* ---------- the models ---------- */
-const PCOL={iron:hexc('#17181a'),ironL:hexc('#1c3328'),ironG:hexc('#1f3a2c'),gold:hexc('#c9a227'),pole:hexc('#9a968c'),galv:hexc('#9aa0a5'),glow:hexc('#fff1cf'),yellow:hexc('#e8b417'),wood:hexc('#9a6a3e'),binG:hexc('#3a3e40'),binB:hexc('#1f5fae'),dkgrey:hexc('#3d4247')};
+const PCOL={iron:hexc('#17181a'),ironL:hexc('#1c3328'),ironG:hexc('#1f3a2c'),gold:hexc('#c9a227'),pole:hexc('#9a968c'),galv:hexc('#9aa0a5'),glow:hexc('#fff1cf'),yellow:hexc('#e8b417'),wood:hexc('#9a6a3e'),binG:hexc('#3a4a44'),binB:hexc('#1f5fae'),dkgrey:hexc('#3d4247')};
 function propGeo(kind,far){const g=new GB(),M=RECT[T.metal],ML=RECT[T.metalL],W=RECT[T.white],G=PCOL.ironG;let I=PCOL.iron;
   if(kind==='lamp0'){// kifisia_lantern (streets.json styles): dark-green cast-iron post, 4-sided tapered lantern, 4.0 m
     I=PCOL.ironL;
@@ -77,6 +77,19 @@ function propGeo(kind,far){const g=new GB(),M=RECT[T.metal],ML=RECT[T.metalL],W=
     lathe(g,[[0.16,0],[0.16,0.08],[0.12,0.12],[0.1,0.6],[0.065,0.7],[0.05,3.35],[0.07,3.38],[0,3.4]],10,C,M,0);
     for(let k=0;k<3;k++){const a=k/3*TAU+0.5,c=Math.cos(a),sn=Math.sin(a);rod(g,[0,2.85,0],[c*0.3,3.0,sn*0.3],0.04,C,M,0);rod(g,[c*0.3,3.0,sn*0.3],[c*0.45,2.98,sn*0.45],0.04,C,M,0);ball(g,c*0.45,3.17,sn*0.45,0.2,PCOL.glow,W,1,1)}
     ball(g,0,3.6,0,0.2,PCOL.glow,W,1,1);return g.build()}
+  if(kind==='lampD'){// kifisia_double_globe (Kyriazi, kots02): dark-green cast-iron post ~4 m, scroll cross-arm 0.8 m carrying two opal globes Ø 0.40 + finial
+    if(far){g.cyl(0,0,0,0.15,0.06,3.5,5,G,M,false);g.box(0,3.5,0,0.8,0.06,0.06,0,G,M);for(const sx of[-0.4,0.4])ball(g,sx,3.78,0,0.2,PCOL.glow,W,1,0);return g.build()}
+    lathe(g,[[0.2,0],[0.2,0.09],[0.17,0.13],[0.155,0.16],[0.155,0.55],[0.175,0.58],[0.175,0.63],[0.11,0.7],[0.085,0.85],[0.075,0.9],[0.065,1.5],[0.082,1.54],[0.082,1.6],[0.06,1.64],[0.052,3.4],[0.072,3.44],[0.072,3.5],[0.045,3.53],[0.03,3.7],[0.045,3.74],[0,3.78]],12,G,M,0);
+    for(let k=0;k<8;k++){const a=k/8*TAU;g.box(Math.cos(a)*0.158,0.355,Math.sin(a)*0.158,0.03,0.36,0.03,-a,G,M)}
+    ball(g,0,3.82,0,0.045,G,M,0,0);
+    for(const sd of[-1,1]){// straight arm + S-scroll underneath + globe holder cup
+      rod(g,[0,3.47,0],[sd*0.4,3.47,0],0.04,G,M,0);let pv=[sd*0.05,3.12,0];for(let k=1;k<=8;k++){const t=k/8,q=[sd*(0.05+0.31*t),3.12+0.33*t+Math.sin(t*TAU)*0.045,0];rod(g,pv,q,0.025,G,M,0);pv=q}
+      lathe(g,[[0.03,3.47],[0.07,3.53],[0.09,3.58]],8,G,M,0,sd*0.4,0);ball(g,sd*0.4,3.77,0,0.2,PCOL.glow,W,1,1)}
+    return g.build()}
+  if(kind==='bollardY'){// baluster_green_yellow (Kassaveti shop block, mythos01): cast-iron baluster 0.70 m, flared foot, tapering body, yellow band 0.12 m below the top, acorn finial, very dark green
+    const Y=hexc('#d6b21c'),D=hexc('#1d3a2c');if(far){g.cyl(0,0,0,0.1,0.055,0.5,5,D,M,false);g.cyl(0,0.5,0,0.058,0.058,0.07,5,Y,W,false);g.cyl(0,0.57,0,0.05,0.02,0.13,5,D,M,true);return g.build()}
+    lathe(g,[[0.11,0],[0.11,0.03],[0.09,0.055],[0.075,0.1],[0.08,0.13],[0.068,0.16],[0.056,0.5]],10,D,M,0);lathe(g,[[0.056,0.5],[0.06,0.505],[0.06,0.57],[0.056,0.575]],10,Y,W,0);
+    lathe(g,[[0.056,0.575],[0.044,0.59],[0.05,0.605],[0.035,0.615],[0.05,0.635],[0.052,0.655],[0.04,0.68],[0.015,0.695],[0,0.7]],10,D,M,0);return g.build()}
   if(kind==='bench'){// wooden slats on black cast-iron ends; sitter faces +z, seat 0.46 m
     const wd=PCOL.wood,WD=RECT[T.wood];
     if(far){g.box(0,0.45,0,1.8,0.06,0.42,0,wd,WD);g.box(0,0.72,-0.24,1.8,0.34,0.05,-0.0,wd,WD);for(const sx of[-0.82,0.82])g.box(sx,0.3,-0.02,0.07,0.6,0.5,0,I,M);return g.build()}
@@ -92,7 +105,7 @@ function propGeo(kind,far){const g=new GB(),M=RECT[T.metal],ML=RECT[T.metalL],W=
   if(kind==='bin'||kind==='recycle'){// 1100 l four-wheel container: 1.37 × 1.07 m, 1.31 m to the lid
     const c=kind==='bin'?PCOL.binG:PCOL.binB,lid=kind==='bin'?shade(PCOL.binG,0.8):hexc('#e8b417');
     if(far){sqfrust(g,0,0,0.2,1.2,0.62,0.68,c,ML,0,0,1,0.47,0.53);return g.build()}
-    sqfrust(g,0,0,0.2,1.2,0.62,0.685,c,ML,0,0,2,0.46,0.53);sqfrust(g,0,0,1.2,1.31,0.69,0.69,lid,ML,0,0,1,0.55,0.55);
+    sqfrust(g,0,0,0.2,1.2,0.62,0.685,c,ML,0,0,2,0.46,0.53);sqfrust(g,0,0,1.2,1.25,0.7,0.7,lid,ML,0,0,1,0.55,0.55);for(let k=0;k<6;k++){const a0=k/6*Math.PI,a1=(k+1)/6*Math.PI,z0=-Math.cos(a0)*0.55,z1=-Math.cos(a1)*0.55,y0=1.25+Math.sin(a0)*0.09,y1=1.25+Math.sin(a1)*0.09;oquad(g,[-0.7,y0,z0],[0.7,y0,z0],[0.7,y1,z1],[-0.7,y1,z1],0,1.0,0,lid,ML,0)}for(const sx of[-0.7,0.7])g.box(sx,1.29,0,0.02,0.08,1.08,0,lid,ML);
     g.box(0,1.12,0.565,1.1,0.05,0.08,0,shade(c,0.7),ML);for(const sx of[-0.5,0.5])for(const sz of[-0.35,0.35]){g.box(sx,0.16,sz,0.08,0.08,0.08,0,I,M);g.cyl(sx,0.02,sz,0.085,0.085,0.06,8,hexc('#151515'),M,true)}
     return g.build()}
   if(kind==='signal'){// grey pole, black head with back plate and visors (lenses are a separate instanced mesh)
@@ -128,18 +141,21 @@ function updatePropLOD(cx,cz,force){if(!force&&Math.abs(cx-_plodX)<4&&Math.abs(c
 
 /* ---------- street-spec lookups ---------- */
 function streetAt(x,z,maxd){if(typeof roadProj!=='function')return null;const q=roadProj(x,z,maxd||14,r=>r.ty<=6&&r.name);return q?q.r.name:null}
-function specOf(x,z,d){const nm=streetAt(x,z,d);return nm&&typeof streetSpec==='function'?streetSpec(nm):null}
-function bollardStyle(x,z){const sp=specOf(x,z,12),st=sp&&sp.bollards&&sp.bollards.style;if(st)return /ball/i.test(st)?'bollardB':/cone/i.test(st)?'bollardC':'bollard';return'bollard'}
+function specOf(x,z,d){const nm=streetAt(x,z,d);return nm&&typeof streetSpecAt==='function'?streetSpecAt(nm,x,z):(nm&&typeof streetSpec==='function'?streetSpec(nm):null)}
+function bollardStyle(x,z){const sp=specOf(x,z,12),st=sp&&sp.bollards&&sp.bollards.style;if(st)return /baluster/i.test(st)?'bollardY':/ball/i.test(st)?'bollardB':/cone/i.test(st)?'bollardC':'bollard';return'bollard'}
 /* lamp model of the street a lamp stands on, from streets.json lamps.style (styles catalogue: kifisia_globe, kifisia_lantern(_double), avenue_mast, pole_arm, globe_cluster) */
-const LAMPSTYLE={kifisia_globe:'lamp1',kifisia_lantern:'lamp0',kifisia_lantern_double:'lamp0',avenue_mast:'lamp2',pole_arm:'lampP',globe_cluster:'lampC'};
-function lampStyle(x,z,mapStyle){const sp=specOf(x,z,16),st=sp&&sp.lamps&&sp.lamps.style;return LAMPSTYLE[st]||('lamp'+(mapStyle|0))}
+const LAMPSTYLE={kifisia_double_globe:'lampD',kifisia_globe:'lamp1',kifisia_lantern:'lamp0',kifisia_lantern_double:'lamp0',avenue_mast:'lamp2',pole_arm:'lampP',globe_cluster:'lampC'};
+let _parks=null;function inPark(x,z){if(!_parks){_parks=[];(MAP.areas||[]).forEach((a,i)=>{if(a[0]==='park'){const r=unp(a[1][0]);let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const p of r){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);z0=Math.min(z0,p[1]);z1=Math.max(z1,p[1])}_parks.push({r,b:[x0,z0,x1,z1]})}})}
+  for(const p of _parks)if(x>=p.b[0]&&x<=p.b[2]&&z>=p.b[1]&&z<=p.b[3]&&pip(p.r,x,z))return true;return false}
+function lampStyle(x,z,mapStyle){if(inPark(x,z))return'lampC';// parks and groves: globe_cluster posts (research: Kefalari r04, Agora r06; Alsos inferred)
+  const sp=specOf(x,z,16),st=sp&&sp.lamps&&sp.lamps.style;return LAMPSTYLE[st]||('lamp'+(mapStyle|0))}
 /* nearest walkable line (any road, footway or path) → {x,z} of the closest point */
 function nearestWay(x,z,maxd){let best=null,bd=maxd||25;for(const r of ROADS){const ps=r.ps;for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];if(Math.min(a[0],b[0])>x+bd||Math.max(a[0],b[0])<x-bd||Math.min(a[1],b[1])>z+bd||Math.max(a[1],b[1])<z-bd)continue;
   const dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz||1,u=clamp(((x-a[0])*dx+(z-a[1])*dz)/L2,0,1),qx=a[0]+dx*u,qz=a[1]+dz*u,d=Math.hypot(x-qx,z-qz)-(r.w||2)/2;if(d<bd){bd=d;best={x:qx,z:qz,r,tx:dx/Math.sqrt(L2),tz:dz/Math.sqrt(L2),d}}}}return best}
 
 let lensMesh=null,poolMesh=null;const LENS=[];
 function buildLightPools(){/* street-lamp light now comes from the night light map of 82_sky.js (addLight / MAP.lamps); kept as a no-op for old callers */}
-function buildProps(){const L={lamp0:[],lamp1:[],lamp2:[],lampP:[],lampC:[],bollard:[],bollardB:[],bollardC:[],bench:[],basket:[],bin:[],recycle:[],signal:[],stopsign:[],scooter:[]};
+function buildProps(){const L={lamp0:[],lamp1:[],lamp2:[],lampP:[],lampC:[],lampD:[],bollard:[],bollardY:[],bollardB:[],bollardC:[],bench:[],basket:[],bin:[],recycle:[],signal:[],stopsign:[],scooter:[]};
   for(const l of MAP.lamps){const x=l[0]/10,z=l[1]/10,k=lampStyle(x,z,l[2]);let yaw=hf(l[0]+l[1])*TAU;
     if(k==='lamp2'||k==='lampP'){if((l[2]|0)===2)yaw=l[3]+(l[4]>0?Math.PI:0);else{const q=typeof roadProj==='function'?roadProj(x,z,20,r=>r.ty<=5):null;if(q)yaw=Math.atan2(q.qx-x,q.qz-z)}yaw-=Math.PI/2}
     L[k].push([x,k==='lampP'?terr(x,z):groundY(x,z),z,yaw]);addBoxC(x,z,k==='lampP'?0.17:0.15,'p');placed('lamp',x,z,k,'map.lamps')}
@@ -163,6 +179,7 @@ function buildProps(){const L={lamp0:[],lamp1:[],lamp2:[],lampP:[],lampC:[],boll
     const yaw=Math.atan2(-dx*sd,-dz*sd);L.signal.push([px,groundY(px,pz),pz,yaw]);LENS.push({x:px,z:pz,y:groundY(px,pz)+3.25,yaw,ang,group:null});addBoxC(px,pz,0.12,'p')}}
   for(const s of MAP.props.stop){const x=s[0]/10,z=s[1]/10,ang=s[2],w=s[3];const px=x-Math.sin(ang)*(w/2+0.8),pz=z+Math.cos(ang)*(w/2+0.8);const nx=-Math.cos(ang),nz=-Math.sin(ang);L.stopsign.push([px,groundY(px,pz),pz,Math.atan2(nx,nz)]);
     const ch=chunkAt(px,pz);signAt(ch,px+nx*0.052,groundY(px,pz)+2.2,pz+nz*0.052,nx,nz,0.56,0.56,null,0,stopSlot());addBoxC(px,pz,0.06,'p');placed('stop_sign',x,z,'','map.props.stop')}
+  overheadCables(L.lampP);
   for(const k in L)if(L[k].length)propPool(k,L[k],k.startsWith('lamp')||k==='signal'||k==='bench');
   if(typeof ROOFI!=='undefined'){propPool('solar',ROOFI.solar.map(p=>[p[0],p[1],p[2],p[3]]),false);propPool('ac',ROOFI.ac.map(p=>[p[0],p[1],p[2],p[3]]),false)}
   updatePropLOD(MAP.key.spawn?MAP.key.spawn[0]:0,MAP.key.spawn?MAP.key.spawn[1]:0,true);
@@ -302,3 +319,12 @@ function buildPlaceElements(){if(typeof placeEl!=='function')return;const M=RECT
       rdecal(r,(s0+s1)/2-1.6,(s0+s1)/2+1.6,Math.min(t0,t1)+0.3,Math.max(t0,t1)-0.3,T.sdecal,YELLOW_P,PAINT_LIFT,sdCell(SDC.taxi),true)}
     const p=roadPoint(r,s1-1,sd*(hw+0.5)),ch=chunkAt(p[0],p[2]),y=groundY(p[0],p[2]),nx=Math.sin(p[3]),nz=Math.cos(p[3]);ch.o.cyl(p[0],y,p[2],0.04,0.04,2.8,8,PCOL.galv,ML,true);ch.o.box(p[0],y+2.45,p[2],0.62,0.42,0.03,p[3],hexc('#1d4f9a'),W);
     const sl=taxiSlot();if(sl){signAt(ch,p[0]+nx*0.02,y+2.45,p[2]+nz*0.02,nx,nz,0.58,0.38,null,1,sl);signAt(ch,p[0]-nx*0.02,y+2.45,p[2]-nz*0.02,-nx,-nz,0.58,0.38,null,1,sl)}addBoxC(p[0],p[2],0.06,'p')}}
+
+/* overhead electricity/telephone cables between neighbouring pole_arm poles (residential streets, research: r16, r19): two sagging lines per span */
+function overheadCables(poles){if(!poles||poles.length<2)return;const done=new Set(),col=hexc('#1a1a1a'),rc=RECT[T.metal];const grid=new Map(),key=(x,z)=>Math.floor(x/50)+','+Math.floor(z/50);
+  poles.forEach((p,i)=>{const k=key(p[0],p[2]);let a=grid.get(k);if(!a)grid.set(k,a=[]);a.push(i)});
+  poles.forEach((p,i)=>{if(!inFocus(p[0],p[2])&&!inPlay(p[0],p[2]))return;const gx=Math.floor(p[0]/50),gz=Math.floor(p[2]/50);const near=[];
+    for(let ix=gx-1;ix<=gx+1;ix++)for(let iz=gz-1;iz<=gz+1;iz++)for(const j of grid.get(ix+','+iz)||[]){if(j===i)continue;const q=poles[j],d=Math.hypot(q[0]-p[0],q[2]-p[2]);if(d>12&&d<48)near.push([d,j])}
+    near.sort((a,b)=>a[0]-b[0]);for(const [d,j] of near.slice(0,2)){const k=i<j?i+'_'+j:j+'_'+i;if(done.has(k))continue;const q=poles[j];
+      const sa=streetAt(p[0],p[2],14),sb=streetAt(q[0],q[2],14);if(!sa||sa!==sb)continue;done.add(k);const ch=chunkAt((p[0]+q[0])/2,(p[2]+q[2])/2).o;
+      for(const [h,o] of[[8.2,0.35],[8.45,-0.35]]){const ux=-(q[2]-p[2])/d,uz=(q[0]-p[0])/d;let prev=null;const n=6;for(let s2=0;s2<=n;s2++){const t=s2/n,x=p[0]+(q[0]-p[0])*t+ux*o,z=p[2]+(q[2]-p[2])*t+uz*o,y=lerp(p[1],q[1],t)+h-Math.sin(t*Math.PI)*d*0.018;const c=[x,y,z];if(prev)rod(ch,prev,c,0.018,col,rc,0);prev=c}}}})}

@@ -1,0 +1,7 @@
+[{"name":"stats","eval":"JSON.stringify({park:PARKLM.stats,lm:LM.built})"},
+{"name":"spawn","at":"spawn"},
+{"name":"kBasin","cam":[660,2.2,-228,676,0.5,-242],"wait":7000},
+{"name":"kEye","cam":[690,1.7,-268,668,2.5,-245],"wait":4000},
+{"name":"kTop","cam":[682,150,-236,682,0,-238],"wait":5000},
+{"name":"aEyeW","cam":[-206.2,1.7,-19.2,-182,1.2,-12.7],"wait":7000},
+{"name":"aOver","cam":[-215,35,55,-185,0,-10],"wait":4000}]

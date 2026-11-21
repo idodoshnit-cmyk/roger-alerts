@@ -10,3 +10,10 @@
   stairs/gallery/terrace/court are walkable (double collision segs 0.75 m either side of each level change); garden trees removed from court.
 ## Next
 - check v2 render (run2.log, shots v2_*) -> integrate (tools/integrate.sh lm-kfc js/89d_lm_kfc.js) -> match_1 image -> iterate.
+- 17:50 RESUMED. v2 render checked (shots/v2_*: no errors, stairs/kiosk/gallery/court OK). v2 INTEGRATED into main (js/89d_lm_kfc.js).
+  Next: verify main boots (run3 on main), match_1 image, then iterate v3.
+- 17:55 v3 edits in work copy (backup of integrated v2: work/lm-kfc/v2_integrated.js): brighter restaurant-glass texture (was reading as dark
+  bookshelves), light-grey gallery mullions, chairs with legs + cushions, tan steps, and a faithful KIOSK (white booth, blue band, white
+  canopy + hood with ad screens) that REPLACES the generic MAP.props.kiosk prop nearest the stair foot (splice before buildProps; INTER kiosk kept).
+  Waiting for run3 (main boot check) then run v3 (views v3.json).
+- 18:15 main3 check: main boots with v2, no errors, all 5 LMs built. v3 run started (run4.log).

@@ -47,3 +47,23 @@ Image "right" = the park's long axis, bearing 15° south of east (matches the OS
   planting there are inferred in the same style (marked `src: inferred` in the layout).
 - Lamps, bench model, café look, tank position: inferred as stated above.
 - The perimeter wall + railing stays as built by 40_walls ('park'); the kiosks on the edges are built by 50_props.
+
+# Landmark: Άλσος Κεφαλαρίου / Πλατεία Κεφαλαρίου (Kefalari grove) — lm-park (js/89f_lm_park.js section 10, LM id `kefalari`)
+## Sources
+- OSM way 119884594 (outline, 13,040 m²) and everything inside it, extracted by `tools/lm/park/extract2.py` → `tools/lm/park/kef_osm.json`:
+  6 gravel footways (lit=yes), basin (natural=water, w374724984), concrete footbridge (w1078561016), 14 wooden benches with backrest, 4 litter baskets,
+  marble drinking fountain «ΔΗΜΟΣ ΑΘΗΝΑΙΩΝ 1872» (n10599184466), statue of Pavlos Melas by Natalia Mela (n at 664.7,-191.5), busts of K. Tsatsos
+  (Th. Papagiannis) and K. Aktenas (N. Pavlopoulos), chapel (w1078561018), kiosk, abandoned kiosk, service building, church Metamorfosi Sotiros, recycling bells.
+- Photo ref/r04.jpg (Commons «Άλσος Κεφαλαρίου 8587.JPG», C. Messier, CC BY-SA 4.0): tall Atlas cedars and Aleppo pines, some deciduous trees, lawns,
+  agave + red/green shrub beds at the walk junctions, irregular stones lining the unkerbed beige earth walks, globe-cluster lamps, wooden benches.
+## Built (generator `tools/lm/park/kef_layout.py ROOT JSFILE`, embedded as KEF_LAYOUT)
+| element | source | exact / inferred |
+|---|---|---|
+| outline, walks (3.6 m, beige), basin ring, footbridge | OSM | exact geometry (walk width inferred from photo) |
+| 14 benches, 4 baskets, 3 recycling bells | OSM nodes | exact positions; benches turned to face the nearest walk, pushed to the walk edge when the node sits on the walk |
+| fountain 1872, statue, 2 busts | OSM nodes | exact positions; shapes stylised (no photo of them in ref/) |
+| chapel | OSM way | exact footprint; look inferred (white walls, tiled roof, bell-cote) |
+| 81 trees (cedar 33, Aleppo pine 28, holm oak 13, plane 7) | photo r04 species mix | positions INFERRED (OSM maps no trees here; Poisson disc in the lawns) |
+| 8 agave/shrub beds, ~535 edge stones, 13 lamps | photo r04 | positions inferred (beds at the walk junctions, lamps every ~22 m along the lit walks) |
+| church, kiosk, service building, 4-storey building NE | generic 30_buildings | not modelled here |
+Generic content suppressed inside the polygon: park + water areas, garden trees, footway strips, map benches/baskets/lamps, MAP.seats benches.

@@ -109,18 +109,19 @@ const hasInterior=k=>typeof INTERIORS!=='undefined'&&INTERIORS&&!!INTERIORS[k];
 function interactions(){useTarget=null;if(!running)return;const p=player;if(player.car||DLG.open||player.busy>0||player.frozen||HUDS.cine){showUse(null);return}const near=(x,z,r)=>Math.hypot(x-p.x,z-p.z)<r;
   if(!shopsReady)initShops();const opts=_opts;opts.length=0;
   /* mission step first */
-  if(mission&&mission.step&&!mission.over){const s=mission.step,m=mission;if(s.type==='interact'){const a=s.at(m);if(a&&near(a.x,a.z,s.r||2.6))opts.push({label:typeof s.label==='function'?s.label(m):s.label,fn:()=>{if(s.use&&s.use(m)===false)return;if(mission===m&&m.step===s)missionNext()}})}
+  if(mission&&mission.step&&!mission.over){const s=mission.step,m=mission;if(s.type==='interact'){const a=s.at(m);if(a&&near(a.x,a.z,s.r||2.6))opts.push({d:-1,label:typeof s.label==='function'?s.label(m):s.label,fn:()=>{if(s.use&&s.use(m)===false)return;if(mission===m&&m.step===s)missionNext()}})}
     if(s.opts)s.opts(m,opts,near)}
   /* inside a walk-in interior: order at the counter (works for any INTERIORS entry with a menu, or a key of SHOPS) */
-  if(player.interior){const k=player.interior;if(hasInterior(k)&&shopDesc(k)){const I=INTERIORS[k],c=I.counter||I.till||I.order,cx=c?(c.x!==undefined?c.x:c[0]):null,cz=c?(c.z!==undefined?c.z:c[1]):null;if(cx==null||near(cx,cz,2.6))opts.push({label:'Order at the counter',fn:()=>openShop(k),low:cx==null})}}
+  if(player.interior){const k=player.interior;if(hasInterior(k)&&shopDesc(k)){const I=INTERIORS[k],c=I.counter||I.till||I.order,cx=c?(c.x!==undefined?c.x:c[0]):null,cz=c?(c.z!==undefined?c.z:c[1]):null;if(cx==null||near(cx,cz,2.6))opts.push({label:'Order at the counter',fn:()=>openShop(k),low:cx==null,d:cx==null?9:Math.hypot(cx-p.x,cz-p.z)})}}
   /* the five famous shops without an interior: order at the door */
   else for(const k of['mythos','starbucks','kfc','super','paul']){const s=SPECIAL[k];if(!s||hasInterior(k))continue;if(near(s.door[0],s.door[1],3.2))opts.push({label:{mythos:'Order at Mythos Plus',starbucks:'Order at Starbucks',kfc:'Order at KFC',super:'Shop at AB',paul:'Order at PAUL'}[k],fn:()=>openShop(k)})}
   /* generic registry: any module may INTER.push({x,z,r?,label,fn,when?}) — entries without fn are street kiosks */
-  for(let i=0;i<INTER.length;i++){const it=INTER[i];if(!near(it.x,it.z,it.r||2.2))continue;if(it.when&&!it.when())continue;if(it.fn)opts.push({label:typeof it.label==='function'?it.label():it.label,fn:it.fn});else opts.push({label:'Buy at the periptero',fn:()=>openShop('kiosk')})}
+  for(let i=0;i<INTER.length;i++){const it=INTER[i];if(!near(it.x,it.z,it.r||2.2))continue;if(it.when&&!it.when())continue;if(it.fn)opts.push({label:typeof it.label==='function'?it.label():it.label,fn:it.fn,d:Math.hypot(it.x-p.x,it.z-p.z)});else opts.push({label:'Buy at the periptero',fn:()=>openShop('kiosk')})}
   if(!mission&&TRAIN.state==='dwell'&&!opts.length&&lvl(p.x,p.z)>0.4){for(const c of TRAIN.cars){if(Math.hypot(c.position.x-p.x,c.position.z-p.z)<9.5){opts.push({label:'Ride Line 1',fn:()=>{const M=MISSIONS.find(m=>m.id==='train');if(M)missionOffer(M)}});break}}}
   if(!player.ball){const np=nearestPerson(2.3);if(np&&!np.noTalk)opts.push({label:np.useLabel||('Talk'+(np.name?' to '+np.name:'')),fn:()=>talkTo(np),low:true})}
   if(GEV.interactions)gameEvent('interactions',{opts,near});/* other modules add contextual actions here: onGame('interactions',d=>d.opts.push({label,fn,low?})) */
-  let best=null;for(const o of opts)if(!o.low){best=o;break}useTarget=best||opts[0]||null;showUse(useTarget)}
+  /* the mission step wins; otherwise the nearest thing (a door right beside a counter offers Leave, not Order); talk is the fallback */
+  let best=null,bd=1e9;for(const o of opts)if(!o.low){const d=o.d===undefined?1:o.d;if(d<bd){bd=d;best=o}}useTarget=best||opts[0]||null;showUse(useTarget)}
 function showUse(t){const b=$('bUse');const lbl=t?t.label:null;if(HUDS.last.use===lbl)return;HUDS.last.use=lbl;if(!t){b.hidden=true;return}b.hidden=false;$('useTxt').textContent=t.label;b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
 function use(){if(DLG.open){dlgPick(0);return}if(useTarget){HUDS.uses++;const t=useTarget;gameEvent('use',{label:t.label});if(typeof uiSound==='function')uiSound('click');t.fn()}}
 

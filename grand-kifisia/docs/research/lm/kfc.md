@@ -41,3 +41,11 @@ Street-level details below that the drone photo does not show are marked **infer
 ## Iteration log
 - v1 (2026-11-21): full model from the drone photo — wing with loggia, KFC corner sign + shopfronts + door (special.kfc/MAP.key.kfc moved onto the real KFC door),
   south block with avenue colonnade + café terrace, forecourt paving, pavilion with red awnings, planters, collision.
+- v2 (integrated 2026-11-21 17:50): re-read of the photo — the forecourt is SUNKEN ~1.75 m below the avenue pavement; KFC is on the UPPER (gallery)
+  level at the avenue end. Built: upper flight pavement -> gallery (13 steps) beside the kiosk, lower flight pavement -> court (11 steps), rough-stone
+  retaining wall along the avenue, pavilion with WHITE retractable awnings and a red floor, court cut out of the terrain mesh, walkable levels
+  (stairs / gallery / KFC terrace) through the shared LVL grid. Main boots with no errors.
+- v3 (from crops c1/c3/c4 of 4102): gallery shop windows were reading as dark bookshelves -> bright warm restaurant interiors with pendant lights,
+  bar and diners, light aluminium mullions; chairs with legs and pink/cream cushions (photo); steps in warm tan stone (photo: brown/tan, not grey);
+  the **kiosk** in front of the stairs is the real modern type (white booth, blue band, white canopy with blue edge, white hood with ad screens,
+  drinks fridge + freezer) — it replaces the generic yellow kiosk prop at the same spot (the generic one does not match the photo).

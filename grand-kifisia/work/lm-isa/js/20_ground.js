@@ -31,6 +31,12 @@ function buildLevelGrid(){const [bx0,bz0,bx1,bz1]=BOUNDS;lvW=Math.ceil(bx1-bx0);
 const STREETS={};
 const CORE_STREETS=['Κασσαβέτη','Κολοκοτρώνη','Λεβίδου','Κυριαζή','Παναγίτσας','Αργυροπούλου','Γεωργίου Δροσίνη','Αγίων Θεοδώρων','Κηφισίας','Δηληγιάννη','Εμμανουήλ Μπενάκη','Χαριλάου Τρικούπη'];
 const SWMAT={red_brick:'brick',grey_pavers:'pavers',marble:'marble',slabs:'slabs',asphalt:'asph2'};
+/* gk3/data/streets.json is fetched at script load (it is small and arrives long before buildRoads runs); buildRoads applies it if it is there */
+let STREETS_JSON=null;try{fetch('data/streets.json').then(r=>r.ok?r.json():null).then(j=>{STREETS_JSON=j}).catch(()=>{})}catch(e){}
+/* gk3/data/places.json (research): landmarks and their elements with game coordinates; read by 45_trees.js / 50_props.js through placeEl() */
+let PLACES_JSON=null;try{fetch('data/places.json').then(r=>r.ok?r.json():null).then(j=>{PLACES_JSON=j}).catch(()=>{})}catch(e){}
+/* all research elements whose 'what' matches re (and that have x,z), optionally only of one place key */
+function placeEl(re,key){const out=[];if(!PLACES_JSON||!PLACES_JSON.places)return out;for(const p of PLACES_JSON.places){if(key&&p.key!==key)continue;for(const e of p.elements||[])if(e&&typeof e.x==='number'&&typeof e.z==='number'&&re.test(e.what||''))out.push(Object.assign({place:p.key},e))}return out}
 function loadStreetSpecs(j){if(!j||!j.streets)return;for(const s of j.streets){if(!s||!s.name)continue;const o=STREETS[s.name]=STREETS[s.name]||{};o.data=s;if(s.sidewalk&&SWMAT[s.sidewalk.material])o.sidewalk=SWMAT[s.sidewalk.material];
   if(s.parking)o.parking=s.parking;if(s.lanes)o.lanes=s.lanes;if(s.trees)o.trees=s.trees;if(s.lamps)o.lamps=s.lamps;if(s.bollards)o.bollards=s.bollards}}
 function streetSpec(name){let o=STREETS[name];if(!o)o=STREETS[name]={};if(o.core===undefined)o.core=CORE_STREETS.indexOf(name)>=0;return o}
@@ -92,12 +98,15 @@ function roadTopology(){const VH=new Map(),key=p=>Math.round(p[0]*10)+','+Math.r
   for(const r of ROADS){if(r.ty>5)continue;r.ps.forEach((p,vi)=>{const a=VH.get(key(p));let deg=0,ohw=0;for(let k=0;k<a.length;k+=2){const q=ROADS[a[k]],qv=a[k+1];deg+=(qv===0||qv===q.ps.length-1)?1:2;if(q!==r)ohw=Math.max(ohw,q.w/2)}
     if(deg>=3)r.jn.push({s:r.cum[vi],hw:ohw||r.w/2})})}}
 
-function buildRoads(){roadTopology();RIDX=new Map();
+/* block-paved carriageways seen in the research photos (streets.json styles.paving): Kolokotroni red-brown concrete blocks (r17/r18), Levidou pale grey blocks flush with the walkways (r19) */
+const CARRIAGEWAY={'Κολοκοτρώνη':{col:'#c29a88'},'Λεβίδου':{col:'#e2ddd6'}};
+function buildRoads(){if(STREETS_JSON&&!STREETS_JSON._applied){loadStreetSpecs(STREETS_JSON);STREETS_JSON._applied=1}roadTopology();RIDX=new Map();
   const SURF_T=[TM.asph,TM.pavers,TM.brick,TM.slabs,TM.gravel];
   for(const r of ROADS){if(r.side<0&&r.ty===7)continue;if(r.ty===9&&buildStairs(r))continue;const w=r.w,hw=w/2;const ps=resample(r.ps,3.5);if(ps.length<2)continue;
+    const cw=CARRIAGEWAY[r.name];if(cw&&r.ty<=5){r.surf=1;r.cwCol=hexc(cw.col)}
     let tile=r.ty<=5?SURF_T[r.surf]:(r.ty===8?TM.gravel:(r.surf===4?TM.parkG:(r.ty===6?(r.surf===1?TM.pavers:TM.marble):TM.slabs)));
     if(r.ty>=3&&r.ty<=5&&r.surf===0&&hf(r.name.length*31+(r.name.charCodeAt(1)||7))<0.4)tile=TM.asphP;// some side streets have older, lighter asphalt
-    const yo=ROAD_OFF[r.ty]+(r.surf===1?0.004:0),col=C1,n=ps.length,cs=cumlen(ps),N=[];
+    const yo=ROAD_OFF[r.ty]+(r.surf===1?0.004:0),col=r.cwCol||C1,n=ps.length,cs=cumlen(ps),N=[];
     for(let i=0;i<n;i++){const a=ps[Math.max(0,i-1)],b=ps[Math.min(n-1,i+1)];let dx=b[0]-a[0],dz=b[1]-a[1];const l=Math.hypot(dx,dz)||1;N.push([-dz/l,dx/l])}
     const ns=r.ty<=6?Math.max(1,Math.ceil(w/3.6)):1,lat=[];for(let j=0;j<=ns;j++)lat.push(-hw+w*j/ns);const H=new Float32Array(n*(ns+1)),X=new Float32Array(n*(ns+1)),Z=new Float32Array(n*(ns+1));
     for(let i=0;i<n;i++)for(let j=0;j<=ns;j++){const k=i*(ns+1)+j,x=ps[i][0]+N[i][0]*lat[j],z=ps[i][1]+N[i][1]*lat[j];X[k]=x;Z[k]=z;H[k]=terr(x,z)+yo}
@@ -108,6 +117,7 @@ function buildRoads(){roadTopology();RIDX=new Map();
     // round joints at the ends (fill junction wedges)
     if(r.ty<=6)for(const p of [ps[0],ps[n-1]]){const ch=chunkAt(p[0],p[1]).o;const seg=12;for(let k=0;k<seg;k++){const a0=k/seg*TAU,a1=(k+1)/seg*TAU;const A=[p[0]+Math.cos(a0)*hw,p[1]+Math.sin(a0)*hw],B=[p[0]+Math.cos(a1)*hw,p[1]+Math.sin(a1)*hw];const Y=q=>terr(q[0],q[1])+yo-0.002;
       ch.tri([p[0],Y(p),p[1]],[B[0],Y(B),B[1]],[A[0],Y(A),A[1]],[p[0],p[1]],[B[0],B[1]],[A[0],A[1]],col,rc,0,true)}}}
+  if(MAP.fillets)for(const f of MAP.fillets){const ring=unp(f);if(ring.length<3)continue;if(polyArea(ring)<0)ring.reverse();groundPoly([ring],0.043,TM.asph,1,C1,4)}
   markRoads();
   // sidewalks (real shapes, rounded corners) raised 16 cm; one material per street
   MAP.sidewalks.forEach((sw,i)=>{const rings=sw.map(r=>unp(r));if(!rings[0]||rings[0].length<3)return;let cx=0,cz=0;for(const p of rings[0]){cx+=p[0];cz+=p[1]}cx/=rings[0].length;cz/=rings[0].length;

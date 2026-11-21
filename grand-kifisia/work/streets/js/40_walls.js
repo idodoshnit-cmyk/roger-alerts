@@ -8,7 +8,7 @@ defTile('bougain',(g,S)=>{let sd=7;const r=()=>{sd=(sd*16807)%2147483647;return 
 },{cut:true,spec:.02,shin:10,transl:.5});
 /* ---------- garden walls, railings, hedges ---------- */
 function simplifyLine(ps,maxLen){if(ps.length<3)return ps;const o=[ps[0]];let a=ps[0];for(let i=1;i<ps.length-1;i++){const b=ps[i],c=ps[i+1];const a1=Math.atan2(b[1]-a[1],b[0]-a[0]),a2=Math.atan2(c[1]-b[1],c[0]-b[0]);if(Math.abs(wrapA(a1-a2))>0.06||Math.hypot(c[0]-a[0],c[1]-a[1])>maxLen){o.push(b);a=b}}o.push(ps[ps.length-1]);return o}
-function buildWalls(){buildGates();buildParkHedges();for(const w of MAP.walls){const st=w[0];const ps=simplifyLine(unp(w[1]),9);for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(L<0.2)continue;
+function buildWalls(){buildGates();buildParkHedges();try{buildVerges()}catch(e){console.warn('verges',e)}for(const w of MAP.walls){const st=w[0];const ps=simplifyLine(unp(w[1]),9);for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];const dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(L<0.2)continue;
   if(st!=='park'&&inShopZone((a[0]+b[0])/2,(a[1]+b[1])/2,10))continue;
   let nx=-dz/L,nz=dx/L;const mx=(a[0]+b[0])/2,mz=(a[1]+b[1])/2;if(lvl(mx+nx*1.2,mz+nz*1.2)<0.05&&lvl(mx-nx*1.2,mz-nz*1.2)>0.05){nx=-nx;nz=-nz}// n points to the street
   const ch=chunkAt(mx,mz);const ya=terr(a[0],a[1]),yb=terr(b[0],b[1]);const hv=hf(Math.floor(a[0]*7+a[1]*13));
@@ -75,3 +75,28 @@ function buildParkHedges(){if(typeof LM!=='undefined'&&LM.list&&LM.list.some(l=>
       if(s1-s0<1.5)continue;const A=[a[0]+ux*s0+nx*off*sd,a[1]+uz*s0+nz*off*sd],B=[a[0]+ux*s1+nx*off*sd,a[1]+uz*s1+nz*off*sd],ch=chunkAt(A[0],A[1]).o,ya=terr(A[0],A[1]),yb=terr(B[0],B[1]),h=0.65,w=0.25;
       for(const k of[-1,1])ch.wall(A[0]+nx*w*k,A[1]+nz*w*k,B[0]+nx*w*k,B[1]+nz*w*k,ya-0.05,yb-0.05,ya+h,yb+h,nx*k,nz*k,0,(s1-s0)/1.5,0,h/1.5,hexc('#cfe0b0'),RECT[T.hedge],0);
       ch.hq([A[0]-nx*w,ya+h,A[1]-nz*w],[B[0]-nx*w,yb+h,B[1]-nz*w],[B[0]+nx*w,yb+h,B[1]+nz*w],[A[0]+nx*w,ya+h,A[1]+nz*w],[0,0],[(s1-s0)/1.5,0],[(s1-s0)/1.5,0.33],[0,0.33],hexc('#d8e8b8'),RECT[T.hedge],0);addSeg(A[0],A[1],B[0],B[1],'w')}}}}
+
+/* planted verges of the villa avenues (streets.json Othonos crossSection, photo r15): east of Kifisias Ave a 1.4 m earth verge with shrubs behind the kerb on the
+   SOUTH side, fenced from the road by a low dark-green lattice railing (styles.railings.green_lattice_low: 0.8 m, posts with pointed caps every 2 m, diamond mesh);
+   a narrower verge with shrubs on the north side in front of the 1.8 m footway. Openings at junctions, crossings, driveways and gates. */
+const VERGES={'Όθωνος':{x0:-12,south:{w:1.4,rail:true},north:{w:0.8,rail:false}}};
+function buildVerges(){if(typeof roadPoint!=='function')return;const sty=(typeof STREETS_JSON!=='undefined'&&STREETS_JSON&&STREETS_JSON.styles&&STREETS_JSON.styles.railings&&STREETS_JSON.styles.railings.green_lattice_low)||{};
+  const RC=hexc(/^#[0-9a-f]{6}$/i.test(sty.colour||'')?sty.colour:'#1f3a2c'),RH=sty.heightM||0.8,MR=RECT[T.metal],soil=hexc('#8a7a62');let H=7771;const rnd=()=>{H=(H*16807)%2147483647;return H/2147483647};
+  const blocked=(x,z,d)=>{for(const w of MAP.driveways||[])if(Math.hypot(w[0]/10-x,w[1]/10-z)<d+(w[3]||3)/2)return true;for(const g of (MAP.props&&MAP.props.gate)||[])if(Math.hypot(g[0]/10-x,g[1]/10-z)<d+(g[4]||2)/2)return true;return false};
+  let n=0;for(const r of ROADS){const V=VERGES[r.name];if(!V||!r.fr||r.ty>5||(r.sw||0)<1.6)continue;const hw=r.w/2,L=r.fr.L;
+    for(let s=1;s<L-1;s+=2){const c=roadPoint(r,s,0),c2=roadPoint(r,s+2,0);if(c[0]<V.x0||c2[0]<V.x0)continue;if(!jclear(r,s+1,4)||!xclear(r,s+1,3))continue;
+      for(const sd of[-1,1]){const kp=roadPoint(r,s+1,sd*(hw+1));const south=kp[2]>c[2];const cfg=south?V.south:V.north;if(!cfg)continue;const vw=Math.min(cfg.w,r.sw-0.5);if(vw<0.5)continue;
+        const t0=sd*(hw+0.2),t1=sd*(hw+0.2+vw),tm=(t0+t1)/2,m=roadPoint(r,s+1,tm);if(blocked(m[0],m[2],1.2))continue;if(lvl(m[0],m[2])<0.05)continue;// must be on the raised footway
+        gdecal(m[0],m[2],m[3],2.0,vw,T.soil,soil,0.012);
+        const ch=chunkAt(m[0],m[2]).o;
+        // shrub clumps (box/pittosporum/lantana look): 1–2 squashed spheres with the hedge photo texture, kept off tree trunks and lamp posts
+        const k=1+(rnd()<0.6?1:0);for(let i=0;i<k;i++){const ss=s+0.4+rnd()*1.2,tt=tm+(rnd()-0.5)*(vw-0.5)*0.6,p=roadPoint(r,ss,tt);if(typeof collide==='function'&&collide({x:p[0],z:p[2]},0.45,null))continue;
+          const rad=0.32+rnd()*0.3,y=groundY(p[0],p[2]);ball(ch,p[0],y+rad*0.55,p[2],rad,shade(hexc('#7c9a52'),0.75+rnd()*0.35),RECT[T.hedge],0,1,0.85+rnd()*0.4)}
+        if(cfg.rail){const a=roadPoint(r,s,sd*(hw+0.32)),b=roadPoint(r,s+2,sd*(hw+0.32)),ya=groundY(a[0],a[2]),yb=groundY(b[0],b[2]);
+          ch.box(a[0],ya+RH/2,a[2],0.05,RH,0.05,a[3],RC,MR);sqfrust(ch,a[0],a[2],ya+RH,ya+RH+0.09,0.07,0.0,RC,MR,0,a[3],0);
+          rod(ch,[a[0],ya+RH-0.05,a[2]],[b[0],yb+RH-0.05,b[2]],0.035,RC,MR,0);rod(ch,[a[0],ya+0.1,a[2]],[b[0],yb+0.1,b[2]],0.035,RC,MR,0);
+          chunkAt(a[0],a[2]).cut.wall(a[0],a[2],b[0],b[2],ya+0.1,yb+0.1,ya+RH-0.05,yb+RH-0.05,0,0,0,2/0.9,0,1,RC,RECT[T.fence],0);
+          chunkAt(a[0],a[2]).cut.wall(b[0],b[2],a[0],a[2],yb+0.1,ya+0.1,yb+RH-0.05,ya+RH-0.05,0,0,0,2/0.9,0,1,RC,RECT[T.fence],0);
+          addSeg(a[0],a[2],b[0],b[2],'f')}
+        n++}}}
+  if(n)placed('verge',-0,-235,'Othonos planted verges ('+n+' × 2 m)','streets.json Othonos crossSection + styles.railings.green_lattice_low');return n}

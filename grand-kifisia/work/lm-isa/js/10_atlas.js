@@ -100,7 +100,7 @@ const facadeBg=(g,S)=>{pBg(g,'plaster',S,null,0.8);pWeather(g,S)};
   /* --- photographic walls and roofs --- */
   P('plaster',1.5,{spec:.02,shin:8,macro:.3,nrmK:.9});P('plasterW',1.5,{spec:.02,shin:8,macro:.3});P('plasterC',1,{spec:.02,shin:8,macro:.3});
   P('concrete',2,{spec:.03,shin:12,macro:.3});P('ashlar',1.25,{spec:.03,shin:10,macro:.25});P('rubble',1.25,{spec:.03,shin:10,macro:.25});P('brickw',2,{spec:.03,shin:10,macro:.25});
-  P('marbleW',1.5,{spec:.05,shin:50,refl:.04,macro:.2});P('tiles',.8,{spec:.035,shin:16,macro:.4});P('flatroof',1.67,{spec:.02,shin:8,macro:.5});
+  P('marbleW',1.5,{spec:.05,shin:50,refl:.04,macro:.2});P('karystos',1,{spec:.04,shin:24,macro:.3});P('timber',1,{spec:.04,shin:20,macro:.15});P('tiles',.8,{spec:.035,shin:16,macro:.4});P('flatroof',1.67,{spec:.02,shin:8,macro:.5});
   /* --- wood, metal (light tint carriers: callers multiply their own colour), bark, foliage --- */
   P('wood',.67,{spec:.03,shin:14});P('metal',1,{spec:.12,shin:36,refl:.03,nrmK:.5});P('metalL',1,{spec:.2,shin:42,refl:.06,nrmK:.5});P('canopy',[2,1],{spec:.08,shin:30});P('shutterM',1,{spec:.1,shin:30});
   P('bark',[1.6667,1.5],{spec:.015,shin:6});P('barkPine',[.8333,.8],{spec:.015,shin:6});P('barkDark',[1.6667,1.5],{spec:.015,shin:6});P('barkPalm',[.8333,1],{spec:.015,shin:6});

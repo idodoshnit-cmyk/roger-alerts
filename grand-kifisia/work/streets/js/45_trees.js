@@ -44,12 +44,12 @@ function growSkeleton(P,seed){const R=trng(seed),B=[];const lean=tilt([0,1,0],P.
   let cx=0,cy=0,cz=0,cn=0,ymin=1e9,ymax=-1e9;for(const b of B)for(const t of b.tips){cx+=t[0];cy+=t[1];cz+=t[2];cn++;ymin=Math.min(ymin,t[1]);ymax=Math.max(ymax,t[1])}
   return{B,crown:[cx/cn,cy/cn,cz/cn,Math.max(1,(ymax-ymin)/2)],R}}
 /* emit a skeleton at a LOD: 0 near (all tubes, normal cards), 1 mid (trunk + limbs, ½ clusters, bigger cards), 2 far (trunk only, ¼ clusters, big cards) */
-function emitSkeleton(S,P,lod,wood,leaf){const R=trng(77+lod*13),bark=RECT[T[P.bark]||T.bark],lt=RECT[T[P.leaf]||T.leaves],bc=hexc(P.barkC),lc=hexc(P.leafC);const maxL=lod===0?9:lod===1?0:-1;
-  for(const b of S.B){if(b.lvl>maxL)continue;const sides=b.lvl<0?(lod===0?8:lod===1?5:4):b.lvl===0?(lod===0?6:4):b.lvl===1?4:3;const rads=lod===0?b.rads:b.rads.map(r=>r*1.1);tube(wood,b.pts,rads,sides,bc,bark,P.barkRep||[1.2,1.4])}
+function emitSkeleton(S,P,lod,wood,leaf){const R=trng(77+lod*13),bark=RECT[T[P.bark]||T.bark],lt=RECT[T[P.leaf]||T.leaves],bc=hexc(P.barkC),bc2=P.barkC2?hexc(P.barkC2):bc,lc=hexc(P.leafC);const maxL=lod===0?9:lod===1?0:-1;
+  for(const b of S.B){if(b.lvl>maxL)continue;const sides=b.lvl<0?(lod===0?8:lod===1?5:4):b.lvl===0?(lod===0?6:4):b.lvl===1?4:3;const rads=lod===0?b.rads:b.rads.map(r=>r*1.1);tube(wood,b.pts,rads,sides,b.lvl<0?bc:bc2,bark,P.barkRep||[1.2,1.4])}
   const [cn,cr,cs]=P.cl;let k=0;const step=lod===0?1:lod===1?2:4,grow=lod===0?1:lod===1?1.5:2.1;
   for(const b of S.B)for(const t of b.tips){if((k++)%step)continue;const n=lod===2?Math.max(3,cn-1):cn;for(let i=0;i<n;i++){const o=[t[0]+(R()-0.5)*2*cr*grow*0.8,t[1]+(R()-0.3)*cr*grow*0.9,t[2]+(R()-0.5)*2*cr*grow*0.8];leafCard(leaf,o,cs*grow*(0.75+0.5*R()),R,S.crown,lc,lt,P.uvK||2,P.flat)}}}
 const TSPEC={
-  plane:{trunkH:3.6,trunkR:0.36,lean:0.08,trunkSegs:3,limbs:[4,30,6.2],limbSegs:4,levels:[[3,36,0.58,0.62],[2,40,0.55,0.6]],wob:0.32,photo:0.22,droop:0.12,cl:[11,1.4,2.2],bark:'bark',barkC:'#c8bfa8',leaf:'leaves',leafC:'#7ea456',barkRep:[1.1,1.3]},
+  plane:{trunkH:3.6,trunkR:0.36,lean:0.08,trunkSegs:3,limbs:[4,30,6.2],limbSegs:4,levels:[[3,36,0.58,0.62],[2,40,0.55,0.6]],wob:0.32,photo:0.22,droop:0.12,cl:[11,1.4,2.2],bark:'bark',barkC:'#a39a86',barkC2:'#d3ccb8',leaf:'leaves',leafC:'#7ea456',barkRep:[1.1,1.3]},
   pine:{trunkH:8.2,trunkR:0.3,lean:0.2,trunkSegs:5,limbs:[5,62,4.0],limbSegs:3,levels:[[3,42,0.6,0.6]],wob:0.35,photo:0.16,droop:0.0,cl:[15,1.5,3.0],bark:'barkPine',barkC:'#7d6d60',leaf:'leafPine',leafC:'#6f9150',flat:true,barkRep:[1.0,1.0]},
   olive:{trunkH:1.5,trunkR:0.24,lean:0.3,trunkSegs:3,limbs:[4,40,2.3],limbSegs:3,levels:[[3,42,0.6,0.6]],wob:0.55,photo:0.12,droop:0.1,cl:[7,0.75,1.3],bark:'barkDark',barkC:'#8d877a',leaf:'leafOlive',leafC:'#a3b088',uvK:1.5}};
 function branchingTree(kind,variant){const P=TSPEC[kind],S=growSkeleton(P,kind.length*1009+variant*7919+17),out=[];

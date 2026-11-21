@@ -105,7 +105,7 @@ function strangerNpc(){if(STRANGER.n)return STRANGER.n;let n=typeof castNpc==='f
   if(!n){/* fallback when the characters module has no such cast member: a man sitting against the wall beside the cosmetics store */
     const P=poiNamed(/sephora/i)||poiNamed(/hondos/i),K=MAP.key.sephora;let x=K?K[0]:268,z=K?K[1]:-1,yaw=0;if(P&&!K){x=P.x-P.nz*2.6-P.nx*0.25;z=P.z+P.nx*2.6-P.nz*0.25;yaw=Math.atan2(P.nx,P.nz)}
     let h;try{h=new Ped({av:'m05',tint:['#8d8a80','#6f6a62'],posture:0.1},true)}catch(e){h=new Ped(randomLook(),true)}h.root.position.set(x,groundY(x,z),z);h.root.rotation.y=yaw;try{h.play('sit_ground')}catch(e){}
-    n={h,x,z,yaw,state:'still',static:'sit_ground',name:'Mr. Lefteris',lines:STRANGER.lines,timer:0,panic:0,helped:{}};NPCS.push(n)}
+    n={h,x,z,yaw,state:'still',static:'sit_ground',fixed:true,name:'Mr. Lefteris',lines:STRANGER.lines,timer:0,panic:0,helped:{}};NPCS.push(n)}
   n.dialog=strangerTalk;n.noPunch=true;n.useLabel='Talk to '+(n.name||'Mr. Lefteris');STRANGER.n=n;return n}
 function strangerGive(what){const r=typeof castGive==='function'&&castNpc('homeless')?castGive('homeless',what):null;return r&&r.line?r.line:(what==='food'?'For me? …Thank you. I will remember this, my friend.':'God bless you, paidi mou. Truly.')}
 function strangerTalk(p){const name=p.name||'Mr. Lefteris',m=mission&&mission.id==='stranger'?mission:null,o={npc:p};
@@ -233,3 +233,26 @@ MISSIONS.push({id:'valet',title:'Kefalari Valet',icon:'V',sub:'Kassaveti → Kef
   timeFail:'Too slow. Mrs. Alexiou lost her table — and you lost the job.',
   bonus:m=>m.data.cond>=0.95?[25,'Not a scratch']:m.data.cond<0.6?[-Math.round((0.6-m.data.cond)*60),'Repairs']:null,
   after:['Mrs. Alexiou','You drive better than my husband. Do not tell him I said so.']});
+
+/* ============================== ISA IB STUDENTS (OWNER_BRIEF item 13) ==============================
+   Three fictional students with a floating "ISA IB Student" tag who only ever talk about how hard the IB is.
+   The characters module may provide them (any NPC with tag 'ISA IB Student'); if none exists when the game starts, they are spawned here. */
+const IB_LINES=['IB is destroying me. Three IAs due Friday.','Extended Essay, TOK essay, CAS hours... I haven’t slept since September.','HL Math AA. Don’t ask.',
+  'I have a TOK presentation tomorrow and I still don’t know what knowledge is.','Predicted grades come out next week. Pray for me.','CAS reflection number fourteen: I am reflecting on how tired I am.',
+  'My IA word count is 2,203. The limit is 2,200. I’m in crisis.','People say IB prepares you for university. University is a vacation compared to this.',
+  'Paper 2 is in nine days. I’ve started crying in advance.','If you see my Extended Essay supervisor, I’m not here.'];
+const IB_REPLIES=['You’ve got this.','Hang in there.','Tell me more.'];
+function ibStudents(){const isIB=t=>/IB Student/i.test(t||'');
+  /* the characters module (75_npc.js) spawns its own from models/cast.json (cast.label) — then this fallback does nothing */
+  if(typeof PPL!=='undefined'&&PPL.cast&&(PPL.cast.characters||[]).some(c=>isIB(c.label)||isIB(c.tag)))return 0;
+  if(NPCS.some(n=>isIB(n.tag)||(n.cast&&(isIB(n.cast.label)||isIB(n.cast.tag)))))return 0;let k=0;
+  const spot=(where)=>{try{
+    if(where==='isa'&&MAP.isa){const g=MAP.isa.gate,c=ISA.poly?ISA.poly.reduce((s,p)=>[s[0]+p[0]/ISA.poly.length,s[1]+p[1]/ISA.poly.length],[0,0]):g;const q=paveNear(g[0]+(g[0]-c[0])*0.02,g[1]+(g[1]-c[1])*0.02,2.5,8,true);return{x:q.x,z:q.z,yaw:Math.atan2(c[0]-q.x,c[1]-q.z)+2.6}}
+    if(where==='starbucks'&&SPECIAL.starbucks){const s=SPECIAL.starbucks,q=paveNear(s.door[0]+s.nx*4.6+s.nz*3.8,s.door[1]+s.nz*4.6-s.nx*3.8,0,5);return{x:q.x,z:q.z,yaw:Math.atan2(s.nx,s.nz)-0.7}}
+    if(where==='station'){const q=platformSpot(),m=STATION.mid;return{x:q.x,z:q.z,yaw:m?m[2]:0}}}catch(e){}return null};
+  for(const [where,av,act,tint] of[['isa','m10','wait',['#2f3e57','#3b3b40']],['starbucks','f12','text',['#7d5ba6',null]],['station','f03','phone',['#3d6b5a','#2b2f3a']]]){const p=spot(where);if(!p)continue;
+    let h;try{h=new Ped({av,tint,scale:0.97,seed:31+k},true)}catch(e){try{h=new Ped(randomLook(),true)}catch(e2){continue}}
+    h.root.position.set(p.x,groundY(p.x,p.z),p.z);h.root.rotation.y=p.yaw;try{h.play(act)}catch(e){}
+    NPCS.push({h,x:p.x,z:p.z,yaw:p.yaw,state:'still',static:act,fixed:true,name:'IB student',tag:'ISA IB Student',domTag:true,lines:IB_LINES,replies:IB_REPLIES,linesOnly:true,noPunch:true,timer:0,panic:0,ib:where});k++}
+  return k}
+onGame('start',()=>{try{ibStudents()}catch(e){console.warn('IB students',e)}});

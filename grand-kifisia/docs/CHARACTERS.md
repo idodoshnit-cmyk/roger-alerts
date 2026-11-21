@@ -59,12 +59,24 @@ Hand-keyed for this game (unisex): `punch` (alternates right/left), `shoot` (bas
 `eat` (pita in both hands), `drive` (seated, hands on a steering wheel), `sit_ground` (against a wall, one knee up), `give`, `pickup`,
 `flinch` (startled by a paint hit: recoil, a hand to the spot, a step back), `cower` (crouched, arms over the head), `hands_up` (also the paintball "I'm out" signal).
 
-### Paintball markers (for the weapons module; the game's weapons are non-lethal toys)
-`aim_pistol`, `hold_pistol` (low ready), `aim_rifle` (rifle-style marker at the shoulder), `hold_rifle` (across the body). Each puts a toy-coloured marker prop
-(`marker_p` / `marker_r`) in the right hand. Use them as a **carry** so the legs keep walking/running underneath: `ph.setCarry('aim_pistol')` … `ph.setCarry(null)`;
-while standing the full-body clip (with stance) plays. Aim up/down with `ph.aimPitch = -0.3` (up) … `0.4` (down); aim left/right by turning `root.rotation.y`.
-The marker's barrel is the hand's +x axis: `ph.handWorld('R', pos, quat)` then `new THREE.Vector3(1,0,0).applyQuaternion(quat)` = fire direction
-(muzzle ≈ pos + dir × 0.2 m for the pistol, × 0.5 m for the rifle). To use your own weapon mesh instead: `ph.setProp(null)` after `setCarry`, then attach yours at `handWorld` each frame.
+### Guns: hold, aim, fire, reload (for the weapons module — owner item 16; gameplay stays non-lethal)
+Carries (upper body only, the legs keep walking/running underneath; full-body stance when standing): `aim_pistol` (two-handed, eye line), `hold_pistol` (low ready),
+`aim_rifle` (stock at the shoulder, cheek on the stock), `hold_rifle` (across the body). `ph.setCarry('aim_pistol')` … `ph.setCarry(null)`.
+Each puts a realistic matte-black prop in the right hand (`'pistol'` / `'rifle'`; old names `marker_p` / `marker_r` still work).
+`ph.setCarry('aim_rifle', { noProp: true })` = pose only, when you draw your own gun mesh at `handWorld` each frame.
+Aim up/down with `ph.aimPitch = -0.3` (up) … `0.4` (down); left/right by turning `root.rotation.y`.
+The barrel is the hand's +x axis: `ph.handWorld('R', pos, quat)` then `new THREE.Vector3(1,0,0).applyQuaternion(quat)` = fire direction
+(muzzle ≈ pos + dir × 0.2 m for the pistol, × 0.68 m for the rifle).
+
+One-shot **gestures** layered over the upper body of whatever the person is doing (aim carry, walking, standing) — they return the duration in seconds:
+| call | what |
+|---|---|
+| `ph.fire()` | recoil matching the carry (`fire_pistol`: 0.33 s muzzle flip + wrists, `fire_rifle`: 0.32 s shoulder kick). Call once per shot; a new call restarts it (fine for full-auto). |
+| `ph.reload()` | `reload_pistol` 1.9 s (gun into the work space, eyes on it, left hand to the belt pouch, magazine in, slap, rack the slide, back on target); `reload_rifle` 2.5 s (rifle canted, old magazine out to the vest, new one rocked in, charging handle, back to the shoulder). A magazine prop appears in the left hand while it is out. Clip meta: `ready` = time the gun is back on target (1.6 / 2.25 s). |
+| `ph.gesture(name, {speed, mask, fadeIn, fadeOut})` | any ACTIONS key or clip as an upper-body one-shot (e.g. `'wave'`, `'shrug'`), `speed` 1.5 = a fast reload |
+| `ph.gesturing` / `ph.stopGesture()` | name of the running gesture or null / cancel it |
+`fire_pistol`, `fire_rifle`, `reload_pistol`, `reload_rifle` are also ACTIONS, so `play()` works for a standing NPC.
+Pose sheets: work/chars/shots/s6/fi_p.png, rl_p.png, rl_r*.png (tool: `node tools/chars/gest.js jobs.json`).
 Looping actions mix in random fidgets (look around, scratch head, yawn, touch hair, shift weight…) on their own.
 
 Sitting: place `root` on the floor/ground directly below the hips, facing the way the person faces, and pass the seat height:

@@ -35,3 +35,8 @@ See docs/OWNER_BRIEF.md item 9. A new research bot (research-census) is building
   30_buildings.js hooks: bldLoad fetches data/buildings_spec.json; cells have far GB/farM (shown beyond bldNearD, hidden when near meshes show); applyBuildingSpecs calls archApplyAll(); buildBuildings dispatches archHeights/buildShellP when B.P.
   Copy index.html has 32_facades.js tag (MAIN still needs it at integration). LM bots own: junction 8 bldgs (lm-junction), b425/b426, b305/b290? (lm-kfc), ISA b752.
   test script: scripts/bshot2.js (views by cls/bld). views4.json.
+- [~13:20] lazy near facades (FAC: 32 m cells built on demand; scripts/lazy_patch.py applied to 32_facades.js). v4 run failed: no browser slot (40 min). Process cut off.
+## [resume 4 17:50] synced copy from main (20 files), re-added 32 tag in copy index.html. Running v4 test, then integrate M2 (30,31,32 + MAIN index.html 32 tag).
+- [18:30] dbg2: copy boots fine (ready 62 s, 0 errors, 1.47 M scene tris total / 200 calls at title view). v4 failure was page.click timeout under machine load -> bshot2 now clicks via evaluate.
+- Test snapshots: scripts/snap.sh <name> -> work/buildings/snap/<name> (js+index copied, rest symlinked) so I can keep editing while a run waits for a slot.
+- [18:50] layoutEdges rewritten: POI bays keep their real centre+width, overlaps split at the middle, BLD.moved logs deviations (bshot2 prints moved count). partTiled(): partly_tiled_roof -> small tiled penthouse (roofPartColour). Both untested (v4 queued on snap/v4 which has the layout change but NOT partTiled).

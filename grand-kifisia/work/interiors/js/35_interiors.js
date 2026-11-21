@@ -35,6 +35,13 @@ const IN={X0:3400,Z0:3400,alive:null,busy:false,ret:null,U:{arr:{value:null},nrm
    packed by work/interiors/tools/build_tex.py. Only the layers an interior uses are uploaded; runtime-painted layers (labels, food, fabrics…) join the same array. */
 const TX={man:null,manP:null,where:null};
 function loadManifest(){if(!TX.manP)TX.manP=fetch('interiors/manifest.json').then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{TX.man=m;TX.where={};if(m)m.colour.forEach((sh,si)=>sh.l.forEach((n,i)=>TX.where[n]=[si,i]));return m});return TX.manP}
+function ensureMeans(){if(!TX.meanP)TX.meanP=loadManifest().then(m=>m?layerMeans(m):null);return TX.meanP}
+/* mean linear colour of every photo layer (so a tint can be given as the ABSOLUTE surface colour: MA(name) divides the tint by the layer mean) */
+TX.mean={};
+function layerMeans(m){const lin=v=>{v/=255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)};
+  return Promise.all(m.colour.map((sh,si)=>loadImg('interiors/'+sh.f).then(im=>{if(!im)return;const c=document.createElement('canvas'),C=32;c.width=c.height=C*4;const g=c.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(im,0,0,C*4,C*4);
+    const d=g.getImageData(0,0,C*4,C*4).data;sh.l.forEach((n,i)=>{const cx=(i%4)*C,cy=Math.floor(i/4)*C;let r=0,gg=0,b=0;for(let y=0;y<C;y++)for(let x=0;x<C;x++){const o=((cy+y)*C*4+cx+x)*4;r+=lin(d[o]);gg+=lin(d[o+1]);b+=lin(d[o+2])}const k=C*C;TX.mean[n]=[r/k,gg/k,b/k]})}))).catch(e=>console.warn('layer means',e))}
+function absInv(t){if(t.iv)return t.iv;const q=TX.mean[t.l];if(!q)return null;t.iv=[Math.min(4,1/Math.max(q[0],0.02)),Math.min(4,1/Math.max(q[1],0.02)),Math.min(4,1/Math.max(q[2],0.02))];return t.iv}
 function loadImg(url){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=url})}
 const PAINT={};/* name -> {fn(ctx,S), gloss:0..1, bump?:fn(ctx,S) grey height} : runtime-painted layers */
 const FALLBACK={fl:'#b9a488',tile:'#e6e3dc',wood:'#8a6238',oak:'#c39a62',walnut:'#6e4a2c',plaster:'#e2e0db',brick:'#9a5a44',marble:'#e6e4df',steel:'#b9bcc0',leather:'#6b3f22',ceil:'#e6e5e1',carpet:'#b0b0b0'};
@@ -44,6 +51,8 @@ function layReset(){LAY.names=[];LAY.ix={};LAY.stamp++;layId('flat')}
 /* material tile: {l: layer name, m: metres per repeat}; cached */
 const _mt={};
 function M(name,m){const k=name+(m?'@'+m:'');let t=_mt[k];if(!t){const meta=TX.man&&TX.man.meta[name];t=_mt[k]={l:name,m:m||(meta?meta.m:1)}}return t}
+/* same, but the tint is the absolute colour of the surface (divided by the photo layer's mean colour) */
+function MA(name,m){const k='A:'+name+(m?'@'+m:'');let t=_mt[k];if(!t){const meta=TX.man&&TX.man.meta[name];t=_mt[k]={l:name,m:m||(meta?meta.m:1),abs:true}}return t}
 /* sub-cell i of an n x n sheet layer (labels, food…): stretched once over a face */
 const _sub={};
 function SUB(name,n,i,ins){const k=name+n+'_'+i;let s=_sub[k];if(!s){const cs=1/n,cx=i%n,cy=Math.floor(i/n)%n,e=ins==null?0.006:ins;s=_sub[k]={l:name,m:1,rc:[cx*cs+e,1-(cy+1)*cs+e,cs-2*e,cs-2*e]}}return s}
@@ -110,7 +119,7 @@ class IB{constructor(){this.p=[];this.n=[];this.u=[];this.c=[];this.l=[];this.g=
   at(x,y,z){const m=this.m;return[m[0]*x+m[1]*y+m[2]*z+m[9],m[3]*x+m[4]*y+m[5]*z+m[10],m[6]*x+m[7]*y+m[8]*z+m[11]]}
   v(x,y,z,nx,ny,nz,u,w,c,t,gl){const m=this.m;this.p.push(m[0]*x+m[1]*y+m[2]*z+m[9],m[3]*x+m[4]*y+m[5]*z+m[10],m[6]*x+m[7]*y+m[8]*z+m[11]);this.n.push(m[0]*nx+m[1]*ny+m[2]*nz,m[3]*nx+m[4]*ny+m[5]*nz,m[6]*nx+m[7]*ny+m[8]*nz);
     if(t.st!==LAY.stamp){t.li=layId(t.l);t.st=LAY.stamp}const rc=t.rc;if(rc){u=rc[0]+u*rc[2];w=rc[1]+w*rc[3]}
-    this.u.push(u,w);this.c.push(c[0],c[1],c[2]);this.l.push(t.li);this.g.push(gl||0);return this.vc++}
+    this.u.push(u,w);const iv=t.abs?absInv(t):null;if(iv)this.c.push(c[0]*iv[0],c[1]*iv[1],c[2]*iv[2]);else this.c.push(c[0],c[1],c[2]);this.l.push(t.li);this.g.push(gl||0);return this.vc++}
   /* flat quad, counter-clockwise seen from the front */
   quad(a,b,c,d,ua,ub,uc,ud,col,t,gl){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=d[0]-a[0],vy=d[1]-a[1],vz=d[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;
     const o=this.v(a[0],a[1],a[2],nx,ny,nz,ua[0],ua[1],col,t,gl);this.v(b[0],b[1],b[2],nx,ny,nz,ub[0],ub[1],col,t,gl);this.v(c[0],c[1],c[2],nx,ny,nz,uc[0],uc[1],col,t,gl);this.v(d[0],d[1],d[2],nx,ny,nz,ud[0],ud[1],col,t,gl);this.i.push(o,o+1,o+2,o,o+2,o+3);return this}
@@ -259,6 +268,8 @@ PAINT.rug={gloss:0.02,fn(g,S){const c=S/2,r=RNG(33);const sch=[['#7a2e2e','#d9c7
    X.segs (collision, local), X.pools (baked light pools), X.pl (real point lights), X.ppl (people), X.use (interactions). */
 let X=null;
 const t_=n=>M(n),FLAT=M('flat'),GLOSS=M('gloss'),SEMI=M('semi'),EMIT=M('emit');
+/* material from a name: '@name' = the tint is the absolute surface colour (MA), a tile object passes through */
+function TM(n){return typeof n==='object'?n:(n&&n[0]==='@'?MA(n.slice(1)):M(n))}
 function seg(ax,az,bx,bz,kind){X.segs.push([ax,az,bx,bz,kind||'p'])}
 /* rectangle collision around a footprint centred at cx,cz (sx along local x before rotation ry) */
 function colBox(cx,cz,sx,sz,ry,kind){const c=Math.cos(ry||0),s=Math.sin(ry||0),P=[[-sx/2,-sz/2],[sx/2,-sz/2],[sx/2,sz/2],[-sx/2,sz/2]].map(([x,z])=>[cx+x*c+z*s,cz-x*s+z*c]);for(let i=0;i<4;i++){const a=P[i],b=P[(i+1)%4];seg(a[0],a[1],b[0],b[1],kind)}}
@@ -286,15 +297,15 @@ function picture(x,y,z,w,h,ry,paint,frameHex){const fr=0.035;X.L.push(x,y,z,ry||
    o:{x0,x1,d,h, floor:[tile,hex], wall:[tile,hex], wains:{h,tile,hex}?, ceil:[tile,hex], door:{x,w,h}, win:[[x0,x1,y0,y1],...] (front wall), skirt:hex,
       side windows: winL/winR [[z0,z1,y0,y1]]} — walls are collision kind 'b' (the camera stops at them) */
 function room(o){const {x0,x1,d,h}=o,L=X.L,fl=o.floor||['fl_stone','#ffffff'],wl=o.wall||['plaster','#f2efe8'],ce=o.ceil||['ceiling','#f4f2ee'];X.box={x0,x1,z0:-d,z1:0,h};
-  L.grid(x0,-d,x1,0,0,0.35,hx(fl[1]),M(fl[0]),{rot:o.floorRot});
-  L.grid(x0,-d,x1,0,h,1.6,hx(ce[1]),M(ce[0]),{up:-1});
+  L.grid(x0,-d,x1,0,0,0.35,hx(fl[1]),TM(fl[0]),{rot:o.floorRot});
+  L.grid(x0,-d,x1,0,h,1.6,hx(ce[1]),TM(ce[0]),{up:-1});
   const door=o.door||{x:0,w:1.9,h:2.25};const fh=[[x1-(door.x+door.w/2),x1-(door.x-door.w/2),-0.01,door.h]];for(const w of(o.win||[]))fh.push([x1-w[1],x1-w[0],w[2],w[3]]);
   /* back wall (holesB in metres from x0), left wall runs z=0 -> -d (s=-z), right wall -d -> 0 (s=z+d), front wall x1 -> x0 (s=x1-x) */
   const W=[[x0,-d,x1,-d,o.holesB||[]],[x0,0,x0,-d,(o.winL||[]).map(q=>[-q[1],-q[0],q[2],q[3]])],[x1,-d,x1,0,(o.winR||[]).map(q=>[q[0]+d,q[1]+d,q[2],q[3]])],[x1,0,x0,0,fh]];
-  for(const [ax,az,bx,bz,holes] of W){const wa=o.wains;if(wa){L.wall(ax,az,bx,bz,0,wa.h,hx(wa.hex),M(wa.tile),{holes,ys:[0.12,0.5]});L.wall(ax,az,bx,bz,wa.h,h,hx(wl[1]),M(wl[0]),{holes,ys:[1.7,2.4]});
+  for(const [ax,az,bx,bz,holes] of W){const wa=o.wains;if(wa){L.wall(ax,az,bx,bz,0,wa.h,hx(wa.hex),TM(wa.tile),{holes,ys:[0.12,0.5]});L.wall(ax,az,bx,bz,wa.h,h,hx(wl[1]),TM(wl[0]),{holes,ys:[1.7,2.4]});
       if(wa.rail!==false){const dx=bx-ax,dz=bz-az,Ln=Math.hypot(dx,dz),ux=dx/Ln,uz=dz/Ln,nx=-uz,nz=ux;let s0=0;const cuts=holes.filter(q=>q[2]<wa.h+0.04).map(q=>[q[0],q[1]]).sort((a,b)=>a[0]-b[0]);cuts.push([Ln,Ln]);
         for(const c of cuts){if(c[0]-s0>0.05){const m=(s0+c[0])/2;L.box(ax+ux*m+nx*0.012,wa.h-0.02,az+uz*m+nz*0.012,c[0]-s0,0.045,0.025,hx(wa.railHex||'#6b4a2e'),M('wood_dark'),{ry:Math.atan2(ux,uz)+PI/2})}s0=Math.max(s0,c[1])}}}
-    else L.wall(ax,az,bx,bz,0,h,hx(wl[1]),M(wl[0]),{holes});
+    else L.wall(ax,az,bx,bz,0,h,hx(wl[1]),TM(wl[0]),{holes});
     seg(ax,az,bx,bz,'b');
     if(o.skirt!==false){const dx=bx-ax,dz=bz-az,Ln=Math.hypot(dx,dz),ux=dx/Ln,uz=dz/Ln,nx=-uz,nz=ux;let s0=0;const cuts=holes.filter(q=>q[2]<0.1).map(q=>[q[0],q[1]]).sort((a,b)=>a[0]-b[0]);cuts.push([Ln,Ln]);
       for(const c of cuts){if(c[0]-s0>0.05){const m=(s0+c[0])/2;L.box(ax+ux*m+nx*0.008,0,az+uz*m+nz*0.008,c[0]-s0,0.09,0.016,hx(o.skirt||'#3a3633'),SEMI,{ry:Math.atan2(ux,uz)+PI/2,f:'zt'})}s0=Math.max(s0,c[1])}}}
@@ -350,7 +361,7 @@ function chair(x,z,yaw,o){o=o||{};const L=X.L,st=o.style||'wood',fc=hx(o.frame||
   else{for(const s of[-1,1])L.box(s*hx2,sh-0.02,-0.2,lg,bh,lg,fc,ft);L.box(0,by+bh-0.1,-0.205,sw-0.03,st==='bistro'?0.18:0.1,0.025,st==='bistro'?hx('#e6dcc3'):fc,st==='bistro'?M('cane'):ft);if(st!=='metal')L.box(0,by+0.1,-0.205,sw-0.04,0.05,0.02,fc,ft)}
   L.pop();if(!o.nocol)colBox(x,z,0.4,0.4,yaw);X.seats.push({x,z,yaw,h:sh})}
 /* built-in banquette centred at x,z, length len along local x after ry; the seat faces +z (back against a wall at local z = -d/2) */
-function banquette(x,z,len,ry,o){o=o||{};const L=X.L,dep=o.d||0.55;L.push(x,0,z,ry||0);L.box(0,0,0,len,0.37,dep,hx(o.base||'#a8736a'),M(o.baseT||'tile_kitkat'),{f:'zXxt'});
+function banquette(x,z,len,ry,o){o=o||{};const L=X.L,dep=o.d||0.55;L.push(x,0,z,ry||0);L.box(0,0,0,len,0.37,dep,hx(o.base||'#a8736a'),TM(o.baseT||'tile_kitkat'),{f:'zXxt'});
   L.box(0,0.37,0.02,len,0.09,dep-0.04,hx(o.seat||'#5c6044'),M('fabric'));L.box(0,0.46,-dep/2+0.06,len,0.5,0.12,hx(o.back||o.seat||'#5c6044'),M('fabric'));
   const cs=o.cushions;if(cs){const n=Math.max(1,Math.floor(len/0.5));for(let i=0;i<n;i++){const xx=-len/2+(i+0.5)*(len/n);L.push(xx,0.47,-dep/2+0.2,0,-0.22);L.box(0,0,0,0.42,0.42,0.12,hx(cs[i%cs.length]),M('fabric'));L.pop()}}
   L.pop();colBox(x,z,len,dep,ry||0);const c=Math.cos(ry||0),s2=Math.sin(ry||0);for(let t=-len/2+0.4;t<=len/2-0.3;t+=0.75)X.seats.push({x:x+t*c+0.08*s2,z:z-t*s2+0.08*c,yaw:ry||0,h:0.46,ban:true})}
@@ -362,9 +373,9 @@ function armchair(x,z,yaw,o){o=o||{};const L=X.L,c=hx(o.hex||'#6b3f22'),t=M(o.ti
 /* ---------- COUNTERS, CASES, SHELVES ---------- */
 /* counter body: centre x,z, length along local x after ry, the customer side is +z (after ry). o:{h,d,front:[tile,hex],top:[tile,hex],kick} */
 function counter(x,z,len,ry,o){o=o||{};const L=X.L,h=o.h||1.05,d=o.d||0.65,fr=o.front||['wood_dark','#ffffff'],tp=o.top||['marble','#ffffff'];L.push(x,0,z,ry||0);
-  L.box(0,0,0.03,len-0.02,0.1,d-0.12,hx('#151515'),SEMI,{f:'zxX'});L.box(0,0.1,0,len,h-0.14,d,hx(fr[1]),M(fr[0]),{f:'zxXZ',rot:o.rot});
-  L.box(0,h-0.04,0.02,len+0.06,0.04,d+0.08,hx(tp[1]),M(tp[0]),{f:'xXzZt',fit:o.topFit});
-  if(o.ledge){L.box(0,h,d/2-0.08,len,0.25,0.03,hx(tp[1]),M(tp[0]));L.box(0,h+0.25,d/2-0.12,len+0.04,0.03,0.22,hx(tp[1]),M(tp[0]))}
+  L.box(0,0,0.03,len-0.02,0.1,d-0.12,hx('#151515'),SEMI,{f:'zxX'});L.box(0,0.1,0,len,h-0.14,d,hx(fr[1]),TM(fr[0]),{f:'zxXZ',rot:o.rot});
+  L.box(0,h-0.04,0.02,len+0.06,0.04,d+0.08,hx(tp[1]),TM(tp[0]),{f:'xXzZt',fit:o.topFit});
+  if(o.ledge){L.box(0,h,d/2-0.08,len,0.25,0.03,hx(tp[1]),TM(tp[0]));L.box(0,h+0.25,d/2-0.12,len+0.04,0.03,0.22,hx(tp[1]),TM(tp[0]))}
   L.pop();colBox(x,z,len+0.06,d+0.08,ry||0)}
 /* refrigerated display case with curved glass. fill(L, i, x, y, z) draws goods on shelf i at local positions */
 function displayCase(x,z,len,ry,o){o=o||{};const L=X.L,h=o.h||1.25,d=o.d||0.8,base=hx(o.base||'#1f1f22');L.push(x,0,z,ry||0);
@@ -496,7 +507,7 @@ function bake(ib,box,pools,amb){const P=ib.p,N=ib.n,C=ib.c,G=ib.g,n=ib.vc,a=amb|
 function newCtx(def){return{def,L:new IB(),B:new IB(),G:new IB(),bd:new IBoard(2048,def.boardH||1024),segs:[],pools:[],pl:[],ppl:[],use:[],seats:[],box:null,anim:[],extra:[]}}
 /* build the cell of def; resolves to the live record */
 async function buildCell(def){materials();layReset();const ctx=X=newCtx(def);const r=RNG(def.seed||strHash(def.key));
-  await loadManifest();
+  await loadManifest();await ensureMeans();
   (def.build||TPL[def.tpl]&&TPL[def.tpl].build||TPL.generic.build)(def,r);
   if(!ctx.box)room({x0:-2.5,x1:2.5,d:6,h:3.2,door:{x:0,w:1.8,h:2.2}});
   const t0=performance.now();bake(ctx.L,ctx.box,ctx.pools,def.amb);
@@ -895,7 +906,38 @@ function device(x,y,z,r){const L=X.L;L.push(x,y,z,r.r(-0.3,0.3),-PI/2+0.3);L.box
    Two rooms in a row: the grill hall (x -4.6..+1.9, z 0..-13; open kitchen on the LEFT behind an L-shaped beige finger-tile counter, terracotta
    brick floor, ochre tiled vault at the street end, two gyro spits in the street window) and the "garden in" courtyard hall (x -4.9..+4.6,
    z -13.2..-27; timber posts and beams, cream fabric roof, pine floor, pink-tile banquettes, marble tables). */
-function wallQ(ax,az,bx,bz,y0,y1,tile,hex,holes,kind){X.L.wall(ax,az,bx,bz,y0,y1,hx(hex),M(tile),{holes:holes||[]});if(kind!==false)seg(ax,az,bx,bz,kind||'b')}
+/* ---- Mythos surfaces painted at runtime, in their real colours (use with WH): photos mythos_02/03/18 (grill hall), 07/09/10 (garden in) ---- */
+/* terracotta clay brick pavers 20 x 10 cm, running bond, matt; repeat 0.8 m (4 x 8 bricks) */
+PAINT.pavers={gloss:0.14,fn(g,S){const r=RNG(41),nx=4,ny=8,w=S/nx,h=S/ny,j=Math.max(2,S/180);g.fillStyle='#6f4a37';g.fillRect(0,0,S,S);
+  const pal=['#b5785a','#a86d50','#ad6f4e','#9c6248','#b8806a','#a5674a','#c08566','#97604a'];
+  for(let y=0;y<ny;y++)for(let x=-1;x<nx;x++){const ox=(y%2)*w/2,bx=x*w+ox+j/2,by=y*h+j/2;g.fillStyle=r.p(pal);g.fillRect(bx,by,w-j,h-j);if(bx<0){g.fillRect(bx+S,by,w-j,h-j)}
+    for(let k=0;k<26;k++){g.fillStyle=r()<0.5?`rgba(60,30,15,${0.12*r()})`:`rgba(255,220,190,${0.10*r()})`;const s=1+r()*5;g.fillRect(bx+r()*(w-j-s),by+r()*(h-j-s),s,s)}
+    const gr=g.createLinearGradient(0,by,0,by+h-j);gr.addColorStop(0,'rgba(255,230,210,.10)');gr.addColorStop(1,'rgba(40,20,10,.14)');g.fillStyle=gr;g.fillRect(bx,by,w-j,h-j)}
+  pnoise(g,S,1600,0.05,42)},
+  gmap(g,S){g.fillStyle='rgb(128,128,20)';g.fillRect(0,0,S,S);const nx=4,ny=8,w=S/nx,h=S/ny,j=Math.max(2,S/180);g.fillStyle='rgb(128,128,40)';for(let y=0;y<ny;y++)for(let x=-1;x<=nx;x++)g.fillRect(x*w+(y%2)*w/2+j/2,y*h+j/2,w-j,h-j)}};
+/* knotty pine boards 14 cm, vertical, honey; repeat 1.12 m (8 boards) */
+PAINT.pine={gloss:0.22,fn(g,S){const r=RNG(57),n=8,w=S/n;const pal=['#c98d52','#bf8248','#cf9558','#b97d45','#c4884e','#d49c62'];
+  for(let i=0;i<n;i++){const x=i*w;g.fillStyle=r.p(pal);g.fillRect(x,0,w,S);for(let k=0;k<70;k++){const gx=x+r()*w;g.strokeStyle=r()<0.6?`rgba(120,62,24,${0.05+0.12*r()})`:`rgba(255,226,170,${0.08*r()})`;g.lineWidth=0.6+r()*1.6;g.beginPath();g.moveTo(gx,0);
+      g.bezierCurveTo(gx+r.r(-4,4),S*0.33,gx+r.r(-4,4),S*0.66,gx+r.r(-3,3),S);g.stroke()}
+    for(let k=0;k<(r()<0.3?1:0);k++){const kx=x+w*r.r(0.3,0.7),ky=r()*S,kr=r.r(5,9);const kg=g.createRadialGradient(kx,ky,0,kx,ky,kr*2.4);kg.addColorStop(0,'rgba(80,38,14,.95)');kg.addColorStop(0.4,'rgba(110,55,22,.55)');kg.addColorStop(1,'rgba(110,55,22,0)');
+      g.fillStyle=kg;g.beginPath();g.ellipse(kx,ky,kr*1.6,kr*2.6,0,0,TAU2);g.fill()}
+    g.fillStyle='rgba(55,26,10,.9)';g.fillRect(x,0,Math.max(3,S/170),S);g.fillStyle='rgba(255,230,190,.3)';g.fillRect(x+Math.max(3,S/170),0,2,S)}}};
+/* cement-plaster / concrete-effect panels, pale grey-green with rusty stains, joint every 1.2 m (= one repeat) */
+PAINT.concrete={gloss:0.08,fn(g,S){const r=RNG(63);g.fillStyle='#b8b3a8';g.fillRect(0,0,S,S);
+  for(let k=0;k<70;k++){const x=r()*S,y=r()*S,R=r.r(20,90),c=r.p(['150,152,140','198,194,182','170,164,150','140,146,136']);const gr=g.createRadialGradient(x,y,0,x,y,R);gr.addColorStop(0,`rgba(${c},.35)`);gr.addColorStop(1,`rgba(${c},0)`);g.fillStyle=gr;g.fillRect(x-R,y-R,R*2,R*2);
+    if(x+R>S)g.fillRect(x-R-S,y-R,R*2,R*2)}
+  for(let k=0;k<6;k++){const x=r()*S,y=r()*S*0.8,R=r.r(14,36);const gr=g.createRadialGradient(x,y,0,x,y,R);gr.addColorStop(0,'rgba(140,90,52,.18)');gr.addColorStop(1,'rgba(140,82,40,0)');g.fillStyle=gr;g.fillRect(x-R,y-R,R*2,R*2);
+    g.fillStyle='rgba(130,74,36,.10)';for(let q=0;q<5;q++)g.fillRect(x+r.r(-R/2,R/2),y,1.5+r()*2,r.r(30,160))}
+  pnoise(g,S,2500,0.06,64);g.fillStyle='rgba(70,66,60,.75)';g.fillRect(0,0,Math.max(2,S/200),S);g.fillRect(0,0,S,Math.max(2,S/200))}};
+/* glazed vertical tiles 7.5 x 30 cm in straight stacks (white base, tint it); repeat 0.6 m (8 x 2) */
+PAINT.tilev={gloss:0.62,fn(g,S){const r=RNG(71),nx=8,ny=2,w=S/nx,h=S/ny,j=Math.max(2,S/220);g.fillStyle='#bdb7b0';g.fillRect(0,0,S,S);
+  for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const v=232+Math.round(r.r(-14,10));g.fillStyle=`rgb(${v},${v-2},${v-4})`;g.fillRect(x*w+j/2,y*h+j/2,w-j,h-j);
+    const gr=g.createLinearGradient(x*w,0,x*w+w,0);gr.addColorStop(0,'rgba(255,255,255,.18)');gr.addColorStop(0.5,'rgba(255,255,255,0)');gr.addColorStop(1,'rgba(0,0,0,.08)');g.fillStyle=gr;g.fillRect(x*w+j/2,y*h+j/2,w-j,h-j)}pnoise(g,S,500,0.03,72)},
+  gmap(g,S){const nx=8,ny=2,w=S/nx,h=S/ny,j=Math.max(2,S/220);g.fillStyle='rgb(128,128,30)';g.fillRect(0,0,S,S);g.fillStyle='rgb(128,128,175)';for(let y=0;y<ny;y++)for(let x=0;x<nx;x++)g.fillRect(x*w+j/2,y*h+j/2,w-j,h-j)}};
+/* black diamond-mesh panel behind the neon */
+PAINT.pineh={gloss:0.22,fn(g,S){g.translate(S,0);g.rotate(Math.PI/2);PAINT.pine.fn(g,S)}};
+PAINT.mesh={gloss:0.3,fn(g,S){g.fillStyle='#2a2622';g.fillRect(0,0,S,S);g.strokeStyle='#0c0c0c';g.lineWidth=S/40;const n=8,c=S/n;for(let i=-n;i<=2*n;i++){g.beginPath();g.moveTo(i*c,0);g.lineTo(i*c+S,S);g.stroke();g.beginPath();g.moveTo(i*c,0);g.lineTo(i*c-S,S);g.stroke()}}};
+function wallQ(ax,az,bx,bz,y0,y1,tile,hex,holes,kind){X.L.wall(ax,az,bx,bz,y0,y1,hx(hex),TM(tile),{holes:holes||[]});if(kind!==false)seg(ax,az,bx,bz,kind||'b')}
 const MY={x0:-4.6,x1:1.9,d1:13,gx0:-4.9,gx1:4.6,gz0:-13.2,gz1:-27,h1:4.2,vault:4.0,crown:4.7,h2:3.7};
 const MYTHOS_MENU=[['Pork gyro pita',4.5,'gyro'],['Chicken gyro pita',4.5,'gyro'],['Pork souvlaki pita',4.5,'gyro'],['Chicken souvlaki pita',4.5,'gyro'],['Kebab pita',4.5,'gyro'],['Veal pita',4.9,'gyro'],
   ['Gyro tortilla (double filling)',7.0,'gyro'],['Pork skewer (with small pita)',3.2,'gyro'],['Chicken thigh skewer',3.2,'gyro'],['Gyro plate, pork or chicken',11.9,'gyro'],['Souvlaki plate, 3 skewers',11.9,'gyro'],
@@ -906,10 +948,9 @@ function vaultY(x){const c=(MY.x0+MY.x1)/2,hw=(MY.x1-MY.x0)/2,u=cl((x-c)/hw,-1,1
 function mythosBuild(def,r){const L=X.L,B=X.B;const {x0,x1,d1,gx0,gx1,gz0,gz1,h1,h2}=MY;
   X.box={x0:gx0,x1:gx1,z0:gz1,z1:0,h:h1};
   /* ---------------- GRILL HALL: floor, walls ---------------- */
-  L.grid(x0,-d1,x1,0,0,0.4,hx('#b8775a'),M('fl_terracotta'),{rot:true});
-  /* right wall: white-painted brick */wallQ(x1,-d1,x1,0,0,h1,'brick_paint','#efece6');
-  /* left wall: beige vertical finger tiles to 2.1 m, concrete-effect panels above */X.L.wall(x0,0,x0,-d1,0,2.1,hx('#dcbd8f'),M('tile_kitkat',1.0),{});seg(x0,0,x0,-d1,'b');wallQ(x0,0,x0,-d1,2.1,h1,'plaster','#bdb8ad',null,false);
-  for(let z=-1.2;z>-d1;z-=1.2)L.box(x0+0.004,2.1,z,0.008,h1-2.1,0.012,hx('#8f8a80'),FLAT,{f:'x'});
+  L.grid(x0,-d1,x1,0,0,0.4,WH,M('pavers',0.8),{rot:true});
+  /* right wall: white-painted brick */wallQ(x1,-d1,x1,0,0,h1,'@brick_paint','#ebe8e2');
+  /* left wall: beige vertical finger tiles to 2.1 m, concrete-effect panels above */X.L.wall(x0,0,x0,-d1,0,2.1,hx('#dcbd8f'),M('tile_kitkat',1.0),{});seg(x0,0,x0,-d1,'b');X.L.wall(x0,0,x0,-d1,2.1,h1,WH,M('concrete',1.2),{});
   /* front wall (street): screen + double door + fanlight */
   const scr=[-4.3,-0.95],dW=1.9;wallQ(x1,0,x0,0,0,2.95,'plaster','#c27a55',[[x1-scr[1],x1-scr[0],0.05,2.9],[x1-0.95,x1+0.95,-0.01,2.9]]);
   /* the fanlight: glass up to the vault, black radial bars */streetView(x0,x1,-0.2,MY.crown,1.6,def.seed);
@@ -918,13 +959,15 @@ function mythosBuild(def,r){const L=X.L,B=X.B;const {x0,x1,d1,gx0,gx1,gz0,gz1,h1
   /* arch ring (orange terracotta brick tile) seen from inside as the vault's front edge */for(let i=0;i<24;i++){const xa=x0+(x1-x0)*i/24,xb=x0+(x1-x0)*(i+1)/24;L.quad([xa,vaultY(xa),-0.0],[xb,vaultY(xb),-0.0],[xb,vaultY(xb),-0.25],[xa,vaultY(xa),-0.25],[0,0],[0.3,0],[0.3,0.1],[0,0.1],hx('#a8521f'),M('brick'))}
   frontage({door:{x:0,w:dW,h:2.25},win:[[scr[0],scr[1],0.05,2.9]],frame:'#141416',bars:{w:1.15,y:[1.05,2.25]},seed:def.seed,mat:'#1b1b1b'});
   L.box(0,2.25,-0.02,dW,0.05,0.06,hx('#141416'),SEMI);X.G.face([0.95,2.3,0.02],[-0.95,2.3,0.02],[-0.95,2.9,0.02],[0.95,2.9,0.02],hx('#d6e6ea'),FLAT);
-  /* ---------------- ceiling: ochre tiled barrel vault (first 4 m), timber boards beyond ---------------- */
-  const vz=-4.0,NV=20;for(let i=0;i<NV;i++){const xa=x0+(x1-x0)*i/NV,xb=x0+(x1-x0)*(i+1)/NV,ya=vaultY(xa),yb=vaultY(xb);L.quad([xa,ya,0],[xa,ya,vz],[xb,yb,vz],[xb,yb,0],[xa/0.6,0],[xa/0.6,vz/0.6],[xb/0.6,vz/0.6],[xb/0.6,0],hx('#d29c2c'),M('tile_subway'))}
-  /* tympanum closing the vault at z=-4 down to the timber ceiling */for(let i=0;i<NV;i++){const xa=x0+(x1-x0)*i/NV,xb=x0+(x1-x0)*(i+1)/NV;L.quad([xb,h1,vz],[xa,h1,vz],[xa,vaultY(xa),vz],[xb,vaultY(xb),vz],[0,0],[1,0],[1,0.2],[0,0.2],hx('#bdb8ad'),M('plaster'))}
-  /* side walls under the vault spring */wallQ(x1,-4,x1,0,h1,MY.vault,'brick_paint','#efece6',null,false);
-  L.grid(x0,-d1,x1,vz,h1,1.2,hx('#c08e5e'),M('fl_plank'),{up:-1,rot:true});
-  /* exposed black ducts + lighting track with wood-bodied spots along the aisle */L.tube([x0+0.9,h1-0.35,-4.2],[x0+0.9,h1-0.35,-d1+0.2],0.16,10,hx('#1a1a1c'),SEMI);L.tube([x1-0.6,h1-0.25,-4.2],[x1-0.6,h1-0.25,-d1+0.2],0.09,8,hx('#1a1a1c'),SEMI);
-  L.box(0.45,h1-0.05,-6.5,0.04,0.04,13.0,hx('#151515'),SEMI,{f:'xXb'});for(let k=0;k<12;k++){const z=-0.6-k*0.62*1.6;if(z<-d1+0.4)break;L.cyl(0.45,h1-0.32,z,0.045,0.045,0.24,10,hx('#a8784a'),M('oak'));L.cyl(0.45,h1-0.322,z,0.035,0.035,0.004,10,hx('#fff2d0'),EMIT,{gl:1,capB:true});pool(0.4,1.2,z,'#ffcf8a',0.32,2.2)}
+  /* ---------------- ceiling: ochre-yellow glazed tile barrel vault over the WHOLE hall (photos 02, 05, 18: it meets the pine end wall above the neon) ---------------- */
+  const NV=22,NZ=20;for(let i=0;i<NV;i++)for(let k=0;k<NZ;k++){const xa=x0+(x1-x0)*i/NV,xb=x0+(x1-x0)*(i+1)/NV,ya=vaultY(xa),yb=vaultY(xb),za=-d1*k/NZ,zb=-d1*(k+1)/NZ;
+    const sa=(x0+(x1-x0)*i/NV)/0.6,sb=(x0+(x1-x0)*(i+1)/NV)/0.6;L.quad([xa,ya,za],[xa,ya,zb],[xb,yb,zb],[xb,yb,za],[za/0.6,sa],[zb/0.6,sa],[zb/0.6,sb],[za/0.6,sb],hx('#d8a238'),M('tile_subway'))}
+  /* the end wall closes the vault (pine boards up to the curve) */for(let i=0;i<NV;i++){const xa=x0+(x1-x0)*i/NV,xb=x0+(x1-x0)*(i+1)/NV;L.quad([xa,h1,-d1+0.001],[xb,h1,-d1+0.001],[xb,vaultY(xb),-d1+0.001],[xa,vaultY(xa),-d1+0.001],[xa/1.12,h1/1.12],[xb/1.12,h1/1.12],[xb/1.12,vaultY(xb)/1.12],[xa/1.12,vaultY(xa)/1.12],WH,M('pineh',1.12))}
+  /* black lighting track along the aisle under the crown with ~16 wood-bodied cylinder spots (photo 18) */
+  const tx=0.2;for(let k=0;k<NZ;k++){const za=-0.3-k*0.62,zb=za-0.62;if(zb<-d1+0.3)break;L.box(tx,vaultY(tx)-0.06,(za+zb)/2,0.045,0.04,0.64,hx('#151515'),SEMI,{f:'xXb'})}
+  for(let k=0;k<17;k++){const z=-0.6-k*0.72;if(z<-d1+0.4)break;const y=vaultY(tx)-0.06;L.cyl(tx,y-0.24,z,0.045,0.045,0.24,10,hx('#a8784a'),M('oak'));L.cyl(tx,y-0.242,z,0.035,0.035,0.004,10,hx('#fff2d0'),EMIT,{gl:1,capB:true});
+    pool(tx-0.3,0.9,z,'#ffcf8a',0.30,2.0);pool(tx,y-0.4,z,'#ffd27a',0.22,1.3)}
+  /* warm wash on the yellow vault (it glows in every photo) */for(let z=-1;z>-d1;z-=2.2)pool(-0.9,3.0,z,'#ffcf7a',0.45,2.6);
   /* ---------------- the L-shaped counter: beige finger tiles, cream stone top ---------------- */
   const cf=['tile_kitkat','#dcbd8f'],ct=['marble','#f1ebde'];
   counter((x0-1.6)/2,-1.1,-1.6-x0,0,{h:1.10,d:0.7,front:cf,top:ct});/* front leg (customer side faces the street glass) */
@@ -966,43 +1009,45 @@ function mythosBuild(def,r){const L=X.L,B=X.B;const {x0,x1,d1,gx0,gx1,gz0,gz1,h1
   menuSheet(x0+0.03,3.25,-7.9,0.75,1.6,PI/2,'ΟΡΕΚΤΙΚΑ · ΣΑΛΑΤΕΣ',[['ΤΖΑΤΖΙΚΙ',4.9],['ΤΥΡΟΚΑΥΤΕΡΗ',4.9],['ΦΕΤΑ ΛΑΔΟΡΙΓΑΝΗ',4.9],['ΦΡΕΣΚΕΣ ΠΑΤΑΤΕΣ',4.9],['ΨΗΤΟ ΤΑΛΑΓΑΝΙ',6.9],['ΕΛΛΗΝΙΚΗ',9.9],['ΚΑΙΣΑΡΑ',11.9],['ΝΤΑΚΟΣ',9.9],['ΑΝΑΨΥΚΤΙΚΑ 330ml',2.0],['ΑΥΡΑ ΝΕΡΟ 500ml',0.5],['ΑΛΦΑ · HEINEKEN',2.5]],{ac:'#9a5a1e'});
   /* fairy lights next to the big emblem */for(let k=0;k<26;k++){const z=-3.4-k*0.08,y=4.0-Math.sin(k*0.5)*0.15-k*0.01;L.ball(x0+0.05,y,z,0.012,0.012,0.012,4,3,hx('#ffd27a'),EMIT,{gl:1})}
   /* ---------------- end of the aisle: timber portal + yellow neon "garden in" ---------------- */
-  const pr=[-0.7,1.5];wallQ(x0,-d1,x1,-d1,0,h1,'panels','#c58a50',[[pr[0]-x0,pr[1]-x0,0,2.3]]);L.box((pr[0]+pr[1])/2,2.3,-d1,pr[1]-pr[0]+0.2,0.18,0.25,hx('#a87548'),M('oak'));for(const x of pr)L.box(x+(x<0?-0.08:0.08),0,-d1,0.16,2.3,0.25,hx('#a87548'),M('oak'));
-  L.box(0.4,2.55,-d1+0.03,1.9,0.7,0.03,hx('#151515'),M('grille'),{f:'z'});
+  const pr=[-0.7,1.5];wallQ(x0,-d1,x1,-d1,0,h1,'pineh','#ffffff',[[pr[0]-x0,pr[1]-x0,0,2.3]]);L.box((pr[0]+pr[1])/2,2.3,-d1,pr[1]-pr[0]+0.2,0.18,0.25,hx('#a87548'),M('oak'));for(const x of pr)L.box(x+(x<0?-0.08:0.08),0,-d1,0.16,2.3,0.25,hx('#a87548'),M('oak'));
+  L.box(0.4,2.55,-d1+0.03,1.9,0.75,0.03,WH,M('mesh',0.25),{f:'z'});
   const neon=boardTile(760,280,(g,W,H)=>{g.clearRect(0,0,W,H);g.font=`italic 400 ${H*0.62}px ${F_SCRIPT}`;g.textAlign='center';g.textBaseline='middle';g.shadowColor='#ffb21a';g.shadowBlur=H*0.12;g.lineWidth=H*0.05;g.strokeStyle='#ffe65a';g.strokeText('garden in',W/2,H*0.52);g.shadowBlur=H*0.05;g.fillStyle='#fff6b0';g.fillText('garden in',W/2,H*0.52)});
   B.panel(0.4,2.92,-d1+0.06,1.6,0.6,WH,neon,{gl:0});pool(0.4,2.6,-d1+0.8,'#ffd84a',0.75,2.8);
-  for(let k=0;k<34;k++){const a=k/34*TAU2,ex=0.4+Math.cos(a)*1.05,ey=2.92+Math.sin(a)*0.45;L.ball(ex,ey,-d1+0.07,0.06+r()*0.04,0.04,0.04,5,3,hx(k%5===0?'#7a1f2b':'#3f6b2a'),M('fabric'))}
+  /* artificial ivy + burgundy leaves wreathing the panel (photo 05) */for(let k=0;k<90;k++){const a=k/90*TAU2+r()*0.05,rr=1.0+r.r(-0.08,0.12),ex=0.4+Math.cos(a)*rr,ey=2.88+Math.sin(a)*(0.47+r.r(-0.05,0.07));L.ball(ex,ey,-d1+0.07+r()*0.05,0.05+r()*0.05,0.035+r()*0.03,0.03,5,3,hx(r()<0.16?'#6e1c2a':r.p(['#3f6b2a','#4d7a30','#33582a','#5a8a3a'])),M('fabric'))}
   L.ball(-0.1,2.12,-d1+0.06,0.05,0.04,0.05,8,4,hx('#f4f4f4'),GLOSS,{p0:PI/2});L.ball(0.9,2.12,-d1+0.06,0.05,0.04,0.05,8,4,hx('#f4f4f4'),GLOSS,{p0:PI/2});
   /* ---------------- GARDEN IN: the courtyard hall ---------------- */
-  L.grid(gx0,gz1,gx1,gz0,0,0.4,hx('#a8764a'),M('fl_plank'));
-  /* connection floor under the portal */L.box((pr[0]+pr[1])/2,0,(gz0-d1)/2,pr[1]-pr[0],0.004,gz0+d1,hx('#a8764a'),M('fl_plank'),{f:'t'});seg(pr[0],-d1,pr[0],gz0,'b');seg(pr[1],-d1,pr[1],gz0,'b');
-  /* south wall of the hall (behind the grill hall), with the portal */wallQ(gx0,gz0,gx1,gz0,0,h2,'tile_subway','#efedea',[[pr[0]-gx0,pr[1]-gx0,0,2.3]],'b');
-  L.wall(gx0,gz0+0.01,gx1,gz0+0.01,0,1.45,hx('#ad7a70'),M('tile_kitkat'),{holes:[[pr[0]-gx0,pr[1]-gx0,0,2.3]]});
-  /* pine-clad section with the corten ring "M" */L.box(3.1,0,gz0-0.04,2.5,h2,0.04,hx('#c08a52'),M('panels'),{f:'Z'});emblemS(3.1,2.2,gz0-0.07,0.6);
-  /* west wall: dusty-pink tile dado + white brick-format tile above */wallQ(gx0,gz0,gx0,gz1,0,1.45,'tile_kitkat','#ad7a70');wallQ(gx0,gz0,gx0,gz1,1.45,h2,'tile_subway','#e0ddd8',null,false);
+  L.grid(gx0,gz1,gx1,gz0,0,0.4,hx('#a8744a'),MA('fl_wood'));
+  /* connection floor under the portal */L.box((pr[0]+pr[1])/2,0,(gz0-d1)/2,pr[1]-pr[0],0.004,gz0+d1,hx('#a5703f'),MA('fl_wood'),{f:'t'});seg(pr[0],-d1,pr[0],gz0,'b');seg(pr[1],-d1,pr[1],gz0,'b');
+  /* south wall of the hall (behind the grill hall), with the portal */wallQ(gx1,gz0,gx0,gz0,0,h2,'tile_white','#efeeeb',[[gx1-pr[1],gx1-pr[0],0,2.3]],'b');
+  L.wall(gx1,gz0-0.01,gx0,gz0-0.01,0,1.45,hx('#a9786c'),M('tilev'),{holes:[[gx1-pr[1],gx1-pr[0],0,2.3]]});
+  /* pine-clad section with the corten ring "M" */L.box(3.1,0,gz0-0.04,2.5,h2,0.04,WH,M('pine',1.12),{f:'Z'});emblemS(3.1,2.2,gz0-0.07,0.6);
+  /* west wall: dusty-pink tile dado + white brick-format tile above */wallQ(gx0,gz0,gx0,gz1,0,1.45,'tilev','#a9786c');wallQ(gx0,gz0,gx0,gz1,1.45,h2,'tile_white','#efeeeb',null,false);
   /* north + east: full-height black-framed glazing, transom at 2.4 */
   const glazeWall=(ax,az,bx,bz)=>{const dx=bx-ax,dz=bz-az,Ln=Math.hypot(dx,dz),ux=dx/Ln,uz=dz/Ln,nx=-uz,nz=ux,ry=Math.atan2(nx,nz);seg(ax,az,bx,bz,'b');
     /* daylight beyond */const sw=boardTile(Math.round(Ln*60),Math.round(h2*60),(g,W,H)=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#eef3f6');gr.addColorStop(0.6,'#e9eee4');gr.addColorStop(1,'#9aa58a');g.fillStyle=gr;g.fillRect(0,0,W,H);const rr=RNG(Math.round(Ln*10));
       for(let k=0;k<9;k++){const tx=rr()*W,ty=H*rr.r(0.2,0.5);const t2=g.createRadialGradient(tx,ty,2,tx,ty,H*0.35);t2.addColorStop(0,'rgba(70,100,55,.8)');t2.addColorStop(1,'rgba(70,100,55,0)');g.fillStyle=t2;g.fillRect(tx-H*0.4,ty-H*0.4,H*0.8,H*0.8)}
       if(Math.abs(nz)>0.5){g.fillStyle='#f4f1ea';g.fillRect(W*0.1,H*0.35,W*0.26,H*0.18);g.fillStyle='#7a1f2b';g.font=`italic 700 ${H*0.09}px ${F_SCRIPT}`;g.textAlign='center';g.fillText('Βάρσος 1892',W*0.23,H*0.47)}});
-    B.face([bx-nx*1.4,0,bz-nz*1.4],[ax-nx*1.4,0,az-nz*1.4],[ax-nx*1.4,h2,az-nz*1.4],[bx-nx*1.4,h2,bz-nz*1.4],WH,sw,{gl:1});
-    X.G.face([ax,0,az],[bx,0,bz],[bx,h2,bz],[ax,h2,az],hx('#d8e8ec'),FLAT,{ds:true});
-    const n=Math.round(Ln/1.1);for(let i=0;i<=n;i++){const t=i/n*Ln;L.box(ax+ux*t,0,az+uz*t,0.05,h2,0.07,hx('#141416'),SEMI,{ry})}for(const y of[0,2.4,h2-0.06])L.box((ax+bx)/2,y,(az+bz)/2,Ln,0.06,0.07,hx('#141416'),SEMI,{ry:ry+PI/2})};
+    /* n points OUT of the hall for these walls: the daylight panel stands 1.4 m outside the glass */B.face([bx+nx*1.4,0,bz+nz*1.4],[ax+nx*1.4,0,az+nz*1.4],[ax+nx*1.4,h2,az+nz*1.4],[bx+nx*1.4,h2,bz+nz*1.4],WH,sw,{gl:1});
+    const gt=3.05;X.G.face([ax,0,az],[bx,0,bz],[bx,gt,bz],[ax,gt,az],hx('#d8e8ec'),FLAT,{ds:true});
+    /* salmon plaster band above the glazing (photo 08) */X.L.wall(bx-nx*0.05,bz-nz*0.05,ax-nx*0.05,az-nz*0.05,gt,h2,hx('#c27a55'),MA('plaster'),{});
+    const n=Math.round(Ln/1.1);for(let i=0;i<=n;i++){const t=i/n*Ln;L.box(ax+ux*t,0,az+uz*t,0.05,gt,0.07,hx('#141416'),SEMI,{ry})}for(const y of[0,2.4,gt-0.06])L.box((ax+bx)/2,y,(az+bz)/2,Ln,0.06,0.07,hx('#141416'),SEMI,{ry})};
   glazeWall(gx1,gz1,gx0,gz1);glazeWall(gx1,gz0,gx1,gz1);
+  /* the second entrance (to the lane, photo 06): glazed double door in the north glazing with long brushed-steel pulls */const nd=-0.3;for(const s of[-1,1])L.tube([nd+s*0.12,0.25,gz1+0.07],[nd+s*0.12,2.05,gz1+0.07],0.02,8,hx('#c8ccd0'),M('steel'));L.box(nd,0.002,gz1+0.6,1.5,0.012,0.9,hx('#1b1b1b'),M('rubber'),{f:'t'});
   /* timber structure: posts on a 3.4 m grid, beams, knee braces, cream fabric roof in soft waves, disc lamps under the beams */
-  const pc=hx('#b07a4a'),pt=M('oak');const bxs=[gx0+0.1,gx0+3.25,gx0+6.4,gx1-0.1],bzs=[gz0-0.1,gz0-3.5,gz0-6.9,gz0-10.3,gz1+0.1];
-  for(const z of bzs){L.box((gx0+gx1)/2,h2-0.25,z,gx1-gx0,0.25,0.2,pc,pt);for(let x=gx0+0.6;x<gx1-0.3;x+=1.1){L.cyl(x,h2-0.27,z,0.15,0.15,0.02,14,hx('#f4f2ee'),SEMI,{capB:true});L.ball(x,h2-0.32,z,0.04,0.045,0.04,8,5,hx('#ffe2b0'),EMIT,{gl:1})}}
-  for(const x of bxs)L.box(x,h2-0.25,(gz0+gz1)/2,0.2,0.25,gz0-gz1,pc,pt);
-  for(const x of[gx0+3.25,gx0+6.4])for(const z of[gz0-3.5,gz0-6.9,gz0-10.3]){L.box(x,0,z,0.2,h2-0.25,0.2,pc,pt);colBox(x,z,0.24,0.24,0);for(const s of[-1,1])L.tube([x,h2-0.9,z],[x,h2-0.3,z+s*0.6],0.05,4,pc,pt)}
+  const pc=hx('#c39467'),pt=MA('oak');const bxs=[gx0+0.1,gx0+3.25,gx0+6.4,gx1-0.1],bzs=[gz0-0.1,gz0-3.5,gz0-6.9,gz0-10.3,gz1+0.1];
+  for(const z of bzs){L.box((gx0+gx1)/2,h2-0.25,z,gx1-gx0,0.25,0.2,pc,pt,{f:'xXzZb'});for(let x=gx0+0.6;x<gx1-0.3;x+=1.1){L.cyl(x,h2-0.27,z,0.15,0.15,0.02,14,hx('#f4f2ee'),SEMI,{capB:true});L.ball(x,h2-0.32,z,0.04,0.045,0.04,8,5,hx('#ffe2b0'),EMIT,{gl:1})}}
+  for(const x of bxs)L.box(x,h2-0.25,(gz0+gz1)/2,0.2,0.25,gz0-gz1,pc,pt,{f:'xXzZb'});
+  for(const x of[gx0+3.25,gx0+6.4])for(const z of[gz0-3.5,gz0-6.9,gz0-10.3]){L.box(x,0,z,0.2,h2-0.25,0.2,pc,pt);colBox(x,z,0.24,0.24,0);for(const s of[-1,1]){/* knee braces 10 x 10 cm at 45 degrees, both ways */L.push(x,h2-0.62,z+s*0.3,0,s*PI/4);L.box(0,-0.42,0,0.1,0.84,0.1,pc,pt,{f:'xXzZb'});L.pop();L.push(x+s*0.3,h2-0.62,z,0,0,-s*PI/4);L.box(0,-0.42,0,0.1,0.84,0.1,pc,pt,{f:'xXzZb'});L.pop()}}
   for(let i=0;i<bzs.length-1;i++){const za=bzs[i],zb=bzs[i+1],n=4;for(let k=0;k<n;k++){const z0=za+(zb-za)*k/n,z1=za+(zb-za)*(k+1)/n,s0=Math.sin(k/n*PI)*0.12,s1=Math.sin((k+1)/n*PI)*0.12;
-      L.quad([gx0,h2-0.25-s1,z1],[gx1,h2-0.25-s1,z1],[gx1,h2-0.25-s0,z0],[gx0,h2-0.25-s0,z0],[0,z1/0.5],[(gx1-gx0)/0.5,z1/0.5],[(gx1-gx0)/0.5,z0/0.5],[0,z0/0.5],hx('#e6d9c2'),M('fabric'))}}
+      L.quad([gx0,h2-0.25-s1,z1],[gx1,h2-0.25-s1,z1],[gx1,h2-0.25-s0,z0],[gx0,h2-0.25-s0,z0],[0,z1/0.5],[(gx1-gx0)/0.5,z1/0.5],[(gx1-gx0)/0.5,z0/0.5],[0,z0/0.5],hx('#e2d4bc'),MA('fabric'))}}
   L.grid(gx0,gz1,gx1,gz0,h2,2,hx('#2a2420'),FLAT,{up:-1});
   for(let z=gz0-1.7;z>gz1;z-=3.4)pool(0,2.6,z,'#ffd7a0',0.55,4.5);for(let z=gz0-1.7;z>gz1;z-=3.4)pool(-3,2.6,z,'#ffd7a0',0.45,3.8);
   /* wall lights + sepia photographs of old Kifisia on the west wall */
   for(let z=gz0-1.6;z>gz1+0.8;z-=3.0){L.cyl(gx0+0.03,2.6,z,0.125,0.125,0.04,14,hx('#f3ead8'),EMIT,{gl:0.8});pool(gx0+0.4,2.4,z,'#ffd9a8',0.3,1.6)}
   const photos=[['amaxa',gz0-3.2],['villa',gz0-6.6],['platanos',gz0-10.0]];for(const [k,z] of photos)picture(gx0+0.025,2.2,z,1.3,0.65,PI/2,(g,W,H)=>sepia(g,W,H,k),'#8a6a44');
   /* ---------------- furniture ---------------- */
-  banquette(gx0+0.3,(gz0+gz1)/2,Math.abs(gz1-gz0)-0.6,PI/2,{base:'#ad7a70',seat:'#5c6044',back:'#5c6044',cushions:['#b48c86','#cfc6b0','#5c6044']});
-  banquette((gx0+1.6)/2-0.2,gz1+0.3,3.0,0,{base:'#ad7a70',seat:'#5c6044',back:'#5c6044',cushions:['#cfc6b0','#b48c86','#5c6044']});
+  banquette(gx0+0.3,(gz0+gz1)/2,Math.abs(gz1-gz0)-0.6,PI/2,{base:'#ad7a70',seat:'#5c6044',back:'#5c6044',cushions:['#b48c86','#cfc6b0','#5c6044'],baseT:'tilev'});
+  banquette((gx0+1.6)/2-0.2,gz1+0.3,3.0,0,{base:'#ad7a70',seat:'#5c6044',back:'#5c6044',cushions:['#cfc6b0','#b48c86','#5c6044'],baseT:'tilev'});
   /* bamboo in troughs along the glazing */for(let x=gx0+3.0;x<gx1-0.6;x+=1.3)bamboo(x,gz1+0.35);for(let z=gz0-1.4;z>gz1+1;z-=1.3)bamboo(gx1-0.35,z);
   const tbl=(x,z,big,wood)=>table(x,z,{w:big?1.2:0.7,d:0.7,top:wood?M('walnut'):M('marble'),topHex:'#ffffff',base:'#18181a',lay:2,plateRim:'#c9962e'});
   /* two-tops along the banquette, four-tops in the middle */const seats=[];
@@ -1054,9 +1099,9 @@ function shell(P,o){const [dx,dw]=P.door,win=o.win||winsFor(P,dx,dw,o.wy0==null?
   frontage({door:{x:dx,w:dw,h:o.dh||2.3},win,frame:o.frame||'#1c1c1e',bars:o.bars,seed:o.seed});return win}
 /* ---------------- STARBUCKS ---------------- */
 TPL.sbux={plan:()=>pl(6.4,13.8,3.0,-1.2,1.6,[0.75,-4.0]),build(def,r){const P=def.local,L=X.L;
-  shell(P,{floor:['fl_plank','#7a5a44'],wall:['panels','#ffffff'],wains:{h:1.2,tile:'brick',hex:'#c88a70',rail:false},ceil:['oak','#e8d8c8'],frame:'#2a2018',seed:def.seed});
-  L.wall(P.x0,-P.D+0.01,P.x1,-P.D+0.01,0,P.h,hx('#a86a50'),M('brick'),{});/* back wall brick */
-  for(let z=-0.5;z>-P.D;z-=0.7)L.box(0,P.h-0.16,z,P.W,0.16,0.1,hx('#6a4a36'),M('wood_dark'),{f:'zZb'});/* exposed joists */
+  /* research §2.3: dark-oiled oak boards, old red brick to 1.2 m, stained timber boarding above, exposed joists */shell(P,{floor:['@fl_wood','#6e4e37'],wall:['pine','#a88664'],wains:{h:1.2,tile:'@brick',hex:'#94553a',rail:false},ceil:['@oak','#b8946e'],frame:'#2a2018',seed:def.seed});
+  L.wall(P.x0,-P.D+0.01,P.x1,-P.D+0.01,0,P.h,hx('#94553a'),MA('brick'),{});/* back wall brick */
+  for(let z=-0.5;z>-P.D;z-=0.7)L.box(0,P.h-0.16,z,P.W,0.16,0.1,hx('#5a4030'),MA('wood_dark'),{f:'zZb'});/* exposed joists */
   /* bar: front counter (vertical dark slats, dark stone top), vitrine at the till, back counter with 2 espresso machines */
   const cx=1.55;counter(cx,-3.95,0.9,-PI/2,{h:1.05,d:0.75,front:['slats','#4a3426'],top:['marble','#3a3a3a']});displayCase(cx,-5.15,1.4,-PI/2,{h:1.3,d:0.75,shelves:3,base:'#3a2a1d',baseT:'wood_dark',fill:pastryFill(r)});
   counter(cx,-8.15,4.6,-PI/2,{h:1.05,d:0.75,front:['slats','#4a3426'],top:['marble','#3a3a3a']});seg(cx-0.375,-10.45,P.x1,-10.45);seg(cx,-3.5,cx,-3.0);
@@ -1074,7 +1119,8 @@ TPL.sbux={plan:()=>pl(6.4,13.8,3.0,-1.2,1.6,[0.75,-4.0]),build(def,r){const P=de
   for(const [x,z] of[[-2.3,-3.6],[-0.7,-4.6],[-2.3,-6.0],[-0.7,-7.2]]){table(x,z,{w:0.6,round:true,top:M('wood_table'),base:'#1b1b1b',lay:1});chair(x,z+0.55,PI,{style:'wood',frame:'#3a2a1d',seat:'#3a2a1d',wood:'wood_dark'});chair(x,z-0.55,0,{style:'wood',frame:'#3a2a1d',seat:'#3a2a1d',wood:'wood_dark'})}
   table(-1.3,-1.6,{w:2.4,d:0.9,legs:4,top:M('wood_table'),base:'#1b1b1b',lay:1});for(const s of[-1,1])for(let k=-1;k<=1;k++)chair(-1.3+k*0.75,-1.6+s*0.7,s>0?PI:0,{style:'wood',frame:'#3a2a1d',seat:'#3a2a1d',wood:'wood_dark'});
   armchair(-2.5,-8.2,PI*0.6,{hex:'#5a3420'});armchair(-1.0,-8.6,-PI*0.6,{hex:'#5a3420'});plant(P.x1-0.45,-1.2,{h:1.3,pot:'#2b2b2b'});
-  for(let z=-3;z>-8;z-=2.5){L.cyl(P.x0+0.03,2.1,z,0.09,0.09,0.03,10,hx('#ffe2b0'),EMIT,{gl:0.8});pool(P.x0+0.4,1.9,z,'#ffcf96',0.35,1.8)}
+  for(let z=-3;z>-8;z-=2.5){L.cyl(P.x0+0.03,2.1,z,0.09,0.09,0.03,10,hx('#ffe2b0'),EMIT,{gl:0.8});pool(P.x0+0.4,1.9,z,'#ffcf96',0.45,2.2)}
+  /* warm downlight pools over the seating (the dark timber room needs them) */for(const [x,z] of[[-1.5,-1.6],[-1.5,-4.1],[-1.5,-6.6],[-1.8,-8.4],[0.3,-11.5]]){L.cyl(x,P.h-0.17,z,0.06,0.06,0.01,10,hx('#fff0d0'),EMIT,{gl:1,capB:true});pool(x,P.h-0.6,z,'#ffd7a0',0.6,3.2)}
   plight(0,2.7,-3,'#ffcf96',0.6,8);plight(0.5,2.7,-8,'#ffcf96',0.55,8);
   const ap=['#1e6b57','#1b1b1b'];person({av:'f05',tint:ap},2.3,-4.0,-PI/2,'idle',null);X.ppl[X.ppl.length-1].look=true;person({av:'m09',tint:ap},2.3,-7.2,-PI/2,'idle',null);
   person(customer(r),-0.7,-5.15,0,'sit_table',{seatH:0.45});person(customer(r),-2.3,-6.55,0,'sit_table',{seatH:0.45});person(customer(r),cx-0.95,-4.3,PI/2,'phone',null)}};

@@ -10,7 +10,7 @@
    · reactions (knockdown, panic, wanted level, police) · shop · range · paintball match mission. */
 
 /* ============================== DEFINITIONS ============================== */
-const PAINT=[0xff2f92,0xffe21f,0x3be36f,0x2aa9ff,0xff7b1c,0xb05cff];
+const W_PAINT=[0xff2f92,0xffe21f,0x3be36f,0x2aa9ff,0xff7b1c,0xb05cff];
 const WDEF={
   fists:{id:'fists',name:'Fists',key:'Digit1'},
   /* hitscan firearms (look real; no blood — hits knock people down). rate = rounds/s, recoil = camera kick (rad), range = m */
@@ -89,54 +89,103 @@ function wSnd(k,d){const ac=wAud();if(!ac)return;const t=ac.currentTime,a=d==nul
 
 /* ============================== MESHES ============================== */
 /* merge simple parts into one vertex-coloured BufferGeometry (no BufferGeometryUtils in the page) */
-function wMerge(parts){let n=0;const gs=parts.map(p=>{let g=p.g.index?p.g.toNonIndexed():p.g.clone();if(p.m)g.applyMatrix4(p.m);n+=g.attributes.position.count;return[g,new THREE.Color(p.c)]});
-  const pos=new Float32Array(n*3),nor=new Float32Array(n*3),col=new Float32Array(n*3);let o=0;for(const[g,c]of gs){const P=g.attributes.position.array,N=g.attributes.normal.array;pos.set(P,o*3);nor.set(N,o*3);for(let i=0;i<g.attributes.position.count;i++){col[(o+i)*3]=c.r;col[(o+i)*3+1]=c.g;col[(o+i)*3+2]=c.b}o+=g.attributes.position.count;g.dispose()}
-  const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.BufferAttribute(pos,3));G.setAttribute('normal',new THREE.BufferAttribute(nor,3));G.setAttribute('color',new THREE.BufferAttribute(col,3));return G}
-const _wm=new THREE.Matrix4(),_wq=new THREE.Quaternion(),_wv=new THREE.Vector3(),_wv2=new THREE.Vector3(),_wv3=new THREE.Vector3(),_ws=new THREE.Vector3(1,1,1),_we=new THREE.Euler();
-function wBox(sx,sy,sz,x,y,z,c,ry){_we.set(0,ry||0,0);return{g:new THREE.BoxGeometry(sx,sy,sz),m:new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(_we),new THREE.Vector3(1,1,1)),c}}
+function wMerge(parts){let n=0;const gs=parts.map(p=>{let g=p.g.index?p.g.toNonIndexed():p.g.clone();if(p.m)g.applyMatrix4(p.m);n+=g.attributes.position.count;return[g,new THREE.Color(p.c),p.uvs||1]});
+  const pos=new Float32Array(n*3),nor=new Float32Array(n*3),col=new Float32Array(n*3),uv=new Float32Array(n*2);let o=0;
+  for(const[g,c,us]of gs){const cnt=g.attributes.position.count;pos.set(g.attributes.position.array,o*3);nor.set(g.attributes.normal.array,o*3);const U=g.attributes.uv;
+    if(U)for(let i=0;i<cnt;i++){uv[(o+i)*2]=U.array[i*2]*us;uv[(o+i)*2+1]=U.array[i*2+1]*us}
+    for(let i=0;i<cnt;i++){col[(o+i)*3]=c.r;col[(o+i)*3+1]=c.g;col[(o+i)*3+2]=c.b}o+=cnt;g.dispose()}
+  const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.BufferAttribute(pos,3));G.setAttribute('normal',new THREE.BufferAttribute(nor,3));G.setAttribute('color',new THREE.BufferAttribute(col,3));G.setAttribute('uv',new THREE.BufferAttribute(uv,2));return G}
+const _Wm=new THREE.Matrix4(),_Wq=new THREE.Quaternion(),_Wv=new THREE.Vector3(),_Wv2=new THREE.Vector3(),_Wv3=new THREE.Vector3(),_Ws=new THREE.Vector3(1,1,1),_We=new THREE.Euler();
+function wBox(sx,sy,sz,x,y,z,c,ry){_We.set(0,ry||0,0);return{g:new THREE.BoxGeometry(sx,sy,sz),m:new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(_We),new THREE.Vector3(1,1,1)),c,uvs:0.2}}
 function wCylX(r,len,x0,y,z,c,seg){const g=new THREE.CylinderGeometry(r,r,len,seg||12);g.rotateZ(-Math.PI/2);return{g,m:new THREE.Matrix4().makeTranslation(x0+len/2,y,z),c}}
+function wCylY(r,len,x,y,z,c,seg){const g=new THREE.CylinderGeometry(r,r,len,seg||12);return{g,m:new THREE.Matrix4().makeTranslation(x,y,z),c}}
 function wSph(sx,sy,sz,x,y,z,c){const g=new THREE.SphereGeometry(1,14,10);g.scale(sx,sy,sz);return{g,m:new THREE.Matrix4().makeTranslation(x,y,z),c}}
-/* hand space (docs/CHARACTERS.md): +x along the fingers = barrel, +z towards the thumb = top of the gun, y = thickness */
-/* ---------- realistic-looking firearms (hand space: +x barrel, +z top of the gun, y = thickness; the grip sits at the origin) ---------- */
-function wStipple(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');const im=g.createImageData(64,64);for(let i=0;i<im.data.length;i+=4){const v=110+Math.random()*90;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255}g.putImageData(im,0,0);
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);return t}
+/* a side profile (points [x along the barrel, z up], metres) extruded across the gun's thickness th, centred on y = yc, with rounded (bevelled) edges */
+function wExt(pts,holes,th,yc,c,bev){const V=p=>new THREE.Vector2(p[0],p[1]);const s=new THREE.Shape(pts.map(V));for(const h of holes||[])s.holes.push(new THREE.Path(h.map(V)));
+  const b=bev==null?0.0014:bev,d=Math.max(0.0008,th-2*b);const g=new THREE.ExtrudeGeometry(s,{depth:d,bevelEnabled:b>0,bevelThickness:b,bevelSize:b*0.8,bevelSegments:2,curveSegments:6});
+  g.rotateX(Math.PI/2);g.translate(0,(yc||0)+d/2,0);return{g,c,uvs:7}}
+/* points along an arc around (cx,cz): radius r from angle a0 to a1 */
+function wArc(cx,cz,r,a0,a1,n){const o=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;o.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r])}return o}
+/* a grip front strap from p0 (top) to p1 (bottom) with k finger grooves bulging forward by amp */
+function wGrooves(p0,p1,k,amp){const o=[],dx=p1[0]-p0[0],dz=p1[1]-p0[1],L=Math.hypot(dx,dz),nx=-dz/L,nz=dx/L;const sg=nx>0?1:-1;const N=k*4;
+  for(let i=0;i<=N;i++){const t=i/N,b=Math.pow(Math.sin(t*k*Math.PI),2)*amp*sg*(t>0.08&&t<0.95?1:0);o.push([p0[0]+dx*t+nx*b,p0[1]+dz*t+nz*b])}return o}
+/* ---------- realistic-looking firearms (hand space: +x barrel, +z top of the gun, y = thickness (−y = right side); the grip sits at the origin) ----------
+   Each gun = side profiles extruded with rounded edges (slide, frame, grip, trigger guard, magazine, stock) + turned parts (barrel, muzzle device, optic),
+   two PBR materials: steel / nitride (metal) and stippled polymer (bump-mapped). */
 function wGunMesh(id){const metal=[],poly=[],clear=[];let muz,port;const M=(p)=>metal.push(p),P=(p)=>poly.push(p);
-  if(id==='pistol'){/* polymer-frame 9 mm service pistol, 186 mm long */
-    M(wBox(0.186,0.026,0.031,0.062,0,0.077,0x1c1e21));/* slide */for(let i=0;i<7;i++)M(wBox(0.003,0.0275,0.022,-0.02+i*0.0065,0,0.079,0x0d0e10));/* rear serrations */
-    M(wBox(0.006,0.004,0.006,0.148,0,0.095,0x0d0e10));M(wBox(0.008,0.02,0.006,-0.024,0,0.095,0x0d0e10));M(wBox(0.002,0.006,0.002,-0.024,0,0.099,0xe8e8e0));/* sights + rear dot */
-    M(wBox(0.03,0.0262,0.012,0.04,0,0.083,0x4a4d52));/* ejection port */M(wCylX(0.0068,0.012,0.149,0,0.075,0x0a0a0a,10));/* muzzle bore */
-    P(wBox(0.16,0.028,0.022,0.06,0,0.052,0x24272b));/* frame */P(wBox(0.04,0.024,0.006,0.115,0,0.04,0x24272b));/* accessory rail */
-    P(wBox(0.05,0.008,0.004,0.04,0,0.02,0x24272b));P(wBox(0.004,0.008,0.03,0.064,0,0.035,0x24272b));/* trigger guard */M(wBox(0.004,0.006,0.016,0.032,0,0.033,0x111214));/* trigger */
-    P(wBox(0.05,0.03,0.112,-0.004,0,-0.012,0x2a2d31,0.3));/* grip */P(wBox(0.054,0.032,0.01,-0.02,0,-0.068,0x18191b,0.3));/* magazine floor plate */P(wBox(0.012,0.031,0.03,0.016,0,0.03,0x2a2d31));
-    muz=[0.156,0,0.075];port=[0.04,-0.016,0.09]}
-  else if(id==='smg'){/* compact 9 mm submachine gun with a folding stock */
-    M(wBox(0.3,0.048,0.052,0.08,0,0.06,0x1d1f22));/* receiver */M(wCylX(0.022,0.12,0.23,0,0.06,0x26282b,14));/* barrel shroud */for(let i=0;i<5;i++)M(wBox(0.012,0.046,0.006,0.25+i*0.02,0,0.084,0x111214));
-    M(wCylX(0.0085,0.05,0.35,0,0.06,0x141516,10));M(wCylX(0.0055,0.006,0.398,0,0.06,0x050505,8));/* barrel + bore */
-    M(wBox(0.03,0.02,0.02,0.3,0,0.096,0x111214));M(wCylX(0.012,0.02,-0.03,0,0.098,0x111214,12));/* front post + rear drum sight */
-    M(wBox(0.05,0.05,0.008,0.06,0,0.087,0x34373b));/* cocking tube top */
-    P(wBox(0.036,0.034,0.115,0.0,0,-0.01,0x26292d,0.28));/* grip */P(wBox(0.05,0.008,0.006,0.035,0,0.022,0x26292d));
-    { const g=new THREE.BoxGeometry(0.034,0.028,0.17);const m=new THREE.Matrix4().compose(new THREE.Vector3(0.12,0,-0.03),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,-0.22,0)),new THREE.Vector3(1,1,1));M({g,m,c:0x15171a})}/* curved magazine */
-    P(wBox(0.07,0.04,0.045,0.22,0,0.02,0x26292d));/* handguard */
-    M(wCylX(0.006,0.2,-0.22,0.016,0.06,0x2a2c2f,8));M(wCylX(0.006,0.2,-0.22,-0.016,0.06,0x2a2c2f,8));P(wBox(0.02,0.05,0.09,-0.225,0,0.045,0x1b1d20));/* stock rods + butt */
-    muz=[0.4,0,0.06];port=[0.12,-0.025,0.07]}
-  else if(id==='rifle'){/* 5.56 mm carbine with a red-dot sight */
-    M(wBox(0.26,0.046,0.05,0.08,0,0.07,0x26292c));/* upper receiver */M(wBox(0.2,0.026,0.012,0.08,0,0.1,0x1b1d20));for(let i=0;i<14;i++)M(wBox(0.006,0.028,0.004,-0.01+i*0.014,0,0.107,0x0f1011));/* top rail */
-    P(wBox(0.19,0.044,0.05,0.06,0,0.026,0x2b2e32));/* lower receiver */P(wBox(0.04,0.032,0.115,-0.005,0,-0.025,0x202326,0.32));/* grip */
-    { const g=new THREE.BoxGeometry(0.06,0.026,0.19);const m=new THREE.Matrix4().compose(new THREE.Vector3(0.115,0,-0.055),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,-0.18,0)),new THREE.Vector3(1,1,1));M({g,m,c:0x3a3b34})}/* curved magazine */
-    { const g=new THREE.CylinderGeometry(0.03,0.03,0.29,8);g.rotateZ(-Math.PI/2);P({g,m:new THREE.Matrix4().makeTranslation(0.355,0,0.068),c:0x23262a})}/* octagonal handguard */for(let i=0;i<6;i++)P(wBox(0.022,0.062,0.008,0.24+i*0.045,0,0.07,0x16181a));
-    M(wCylX(0.0095,0.13,0.5,0,0.068,0x141516,10));M(wCylX(0.013,0.045,0.6,0,0.068,0x0e0f10,8));M(wCylX(0.0055,0.006,0.643,0,0.068,0x050505,8));/* barrel + flash hider + bore */
-    M(wCylX(0.017,0.06,0.04,0,0.135,0x15171a,16));M(wBox(0.03,0.03,0.022,0.07,0,0.115,0x15171a));/* red-dot optic + mount */M(wCylX(0.0145,0.002,0.1,0,0.135,0x7a2a2a,16));
-    M(wCylX(0.016,0.18,-0.24,0,0.065,0x1b1d20,12));/* buffer tube */P(wBox(0.16,0.04,0.085,-0.2,0,0.045,0x202326));P(wBox(0.02,0.042,0.11,-0.285,0,0.04,0x111214));/* stock + butt pad */
-    P(wBox(0.05,0.008,0.006,0.03,0,0.0,0x2b2e32));M(wBox(0.004,0.006,0.016,0.03,0,0.008,0x111214));/* trigger guard + trigger */
-    muz=[0.648,0,0.068];port=[0.09,-0.025,0.075]}
+  if(id==='pistol'){/* polymer-frame 9 mm service pistol, 186 mm long, 128 mm high */
+    const S=0x1b1c1e,F=0x232528,D=0x0c0d0e;
+    M(wExt([[-0.031,0.0625],[0.155,0.0625],[0.155,0.0835],[0.1495,0.0905],[-0.0255,0.0905],[-0.031,0.085]],null,0.0255,0,S,0.0012));/* slide */
+    for(let i=0;i<8;i++)M(wBox(0.0022,0.0262,0.019,-0.026+i*0.0052,0,0.0745,D));for(let i=0;i<4;i++)M(wBox(0.0022,0.0262,0.017,0.122+i*0.0052,0,0.0745,D));/* rear + front cocking serrations */
+    M(wBox(0.035,0.0125,0.0095,0.046,-0.0069,0.0843,0x34322e));/* ejection port: the barrel hood shows through (right side) */M(wBox(0.033,0.0126,0.001,0.046,-0.0069,0.0905,D));
+    M(wBox(0.006,0.0035,0.0065,0.147,0,0.0935,D));M(wBox(0.0022,0.0018,0.0022,0.1445,0,0.0955,0xf1efe6));/* front sight + dot */
+    M(wBox(0.008,0.006,0.0075,-0.021,0.0062,0.094,D));M(wBox(0.008,0.006,0.0075,-0.021,-0.0062,0.094,D));M(wBox(0.002,0.0015,0.002,-0.0172,0.0062,0.0955,0xf1efe6));M(wBox(0.002,0.0015,0.002,-0.0172,-0.0062,0.0955,0xf1efe6));/* rear sight (notch) + dots */
+    M(wCylX(0.0072,0.0018,0.155,0,0.0765,0x2a2b2d,14));M(wCylX(0.0046,0.0024,0.1555,0,0.0765,0x020202,12));/* barrel crown + bore */
+    /* frame with grip, beavertail and trigger guard (one polymer profile) */
+    const fr=[[0.150,0.0628],[0.150,0.047],[0.086,0.047],[0.077,0.041],[0.0725,0.028],[0.068,0.017],[0.060,0.0115],[0.026,0.0115],[0.015,0.0135]]
+      .concat(wGrooves([0.012,0.012],[-0.0117,-0.052],3,0.0024)).concat([[-0.0147,-0.0545],[-0.062,-0.0375],[-0.0625,-0.033]])
+      .concat([[-0.060,-0.025],[-0.050,0.005],[-0.041,0.034],[-0.046,0.044],[-0.047,0.051],[-0.041,0.0565],[-0.031,0.0628]]);
+    P(wExt(fr,[[[0.0645,0.041],[0.0645,0.025],[0.059,0.0175],[0.027,0.0175],[0.0205,0.024],[0.0205,0.041]]],0.0285,0,F,0.0016));
+    for(let i=0;i<3;i++)P(wBox(0.0045,0.031,0.0035,0.103+i*0.014,0,0.0468,0x161719));/* accessory rail slots */
+    M(wBox(0.004,0.006,0.017,0.036,0,0.031,0x111213,0.18));M(wBox(0.0025,0.004,0.008,0.0385,0,0.0225,0x111213,-0.3));/* trigger + safety blade */
+    M(wBox(0.012,0.0015,0.004,0.052,0.0144,0.058,D));M(wBox(0.006,0.0015,0.006,0.072,0.0144,0.051,D));M(wBox(0.006,0.0034,0.006,0.007,-0.0148,0.036,0x151618));/* slide stop, takedown lever, mag release */
+    P(wBox(0.054,0.0325,0.0075,-0.0367,0,-0.0498,0x151618,0.36));/* magazine floor plate */
+    muz=[0.157,0,0.0765];port=[0.046,-0.014,0.088]}
+  else if(id==='smg'){/* compact 9 mm submachine gun: round receiver tube, polymer trigger group, curved magazine, ring front sight, retractable stock */
+    const R=0x1e2023,K=0x222428,D=0x0d0e0f;
+    M(wCylX(0.0265,0.33,-0.07,0,0.066,R,20));M(wExt([[-0.07,0.052],[0.26,0.052],[0.26,0.04],[-0.07,0.04]],null,0.04,0,R,0.002));/* receiver tube + flat flanks */
+    M(wBox(0.07,0.0135,0.012,0.1,-0.02,0.07,0x0b0b0c));/* ejection port */
+    M(wCylX(0.0085,0.026,0.19,0.024,0.083,0x2a2c2f,10));M(wBox(0.006,0.014,0.016,0.207,0.031,0.083,0x1a1b1c));/* cocking tube + handle */
+    M(wCylX(0.0095,0.09,0.26,0,0.066,0x16171a,12));M(wCylX(0.0125,0.022,0.33,0,0.066,0x141517,14));M(wCylX(0.0058,0.003,0.3505,0,0.066,0x020202,10));/* barrel, muzzle nut, bore */
+    {const g=new THREE.TorusGeometry(0.0125,0.0032,8,20);g.rotateY(Math.PI/2);M({g,m:new THREE.Matrix4().makeTranslation(0.252,0,0.104),c:D})}M(wBox(0.012,0.006,0.018,0.252,0,0.088,D));M(wBox(0.002,0.0018,0.009,0.252,0,0.101,D));/* ring front sight */
+    M(wCylY(0.0105,0.026,-0.045,0,0.099,D,14));M(wBox(0.02,0.016,0.012,-0.045,0,0.088,D));/* rear drum sight */
+    /* polymer trigger group with pistol grip and guard */
+    P(wExt([[-0.05,0.042],[0.098,0.042],[0.098,0.026],[0.088,0.018],[0.078,0.0],[0.07,-0.0085],[0.03,-0.0085],[0.022,-0.004]].concat(wGrooves([0.018,-0.006],[0.0,-0.108],3,0.0028)).concat([[-0.002,-0.112],[-0.042,-0.104],[-0.044,-0.098],[-0.030,-0.03],[-0.026,0.004],[-0.05,0.022]]),
+      [[[0.070,0.024],[0.0705,0.006],[0.0625,-0.0025],[0.034,-0.0025],[0.0275,0.004],[0.0275,0.024]]],0.036,0,K,0.0022));
+    M(wBox(0.004,0.006,0.018,0.042,0,0.012,0x111213,0.2));M(wBox(0.01,0.0035,0.006,-0.03,0.0195,0.03,0x2b2d30));/* trigger, selector */
+    /* curved magazine (curves forward) */
+    {const C=[0.5195,0.045],Ro=0.416,Ri=0.384;const a0=Math.PI,a1=Math.PI+0.42;const out=wArc(C[0],C[1],Ro,a0,a1,10),inn=wArc(C[0],C[1],Ri,a1,a0,10);M(wExt(out.concat(inn),null,0.022,0,0x141517,0.0016))}
+    /* tropical handguard */P(wExt([[0.165,0.05],[0.262,0.05],[0.262,0.044],[0.252,0.03],[0.185,0.027],[0.168,0.036]],null,0.052,0,K,0.005));
+    /* retractable stock: two rods + butt plate */M(wCylX(0.0055,0.2,-0.25,0.017,0.064,0x2a2c2f,8));M(wCylX(0.0055,0.2,-0.25,-0.017,0.064,0x2a2c2f,8));
+    P(wExt([[-0.262,0.085],[-0.244,0.085],[-0.244,0.03],[-0.25,0.0],[-0.262,0.0]],null,0.05,0,0x1b1d20,0.004));
+    muz=[0.354,0,0.066];port=[0.1,-0.026,0.072]}
+  else if(id==='rifle'){/* 5.56 mm carbine: flat-top upper, free-float handguard, curved polymer magazine, collapsible stock, red-dot sight; tan furniture */
+    const UP=0x242629,LO=0x26282b,TAN=0x8b7558,D=0x0e0f10;
+    M(wExt([[-0.062,0.05],[0.215,0.05],[0.215,0.088],[-0.062,0.088]],null,0.03,0,UP,0.0018));/* upper receiver */
+    M(wCylX(0.009,0.03,0.165,-0.017,0.073,0x1b1c1e,10));/* forward assist */M(wBox(0.058,0.0012,0.022,0.09,-0.0156,0.066,0x16171a));/* dust cover */
+    for(let i=0;i<20;i++)M(wBox(0.0055,0.024,0.0045,-0.055+i*0.0132,0,0.0918,0x121314));M(wBox(0.27,0.016,0.006,0.075,0,0.0895,0x17181a));/* picatinny rail */
+    M(wBox(0.022,0.034,0.006,-0.07,0,0.084,0x18191b));/* charging handle */
+    M(wExt([[-0.062,0.05],[0.15,0.05],[0.152,0.0],[0.147,-0.013],[0.09,-0.013],[0.086,0.012],[0.02,0.012],[0.012,0.018],[-0.034,0.022],[-0.062,0.034]],null,0.024,0,LO,0.0016));/* lower receiver + magwell */
+    M(wExt([[0.088,0.013],[0.088,-0.006],[0.082,-0.012],[0.02,-0.012],[0.02,0.013],[0.026,0.013],[0.026,-0.006],[0.078,-0.006],[0.082,-0.002],[0.082,0.013]],null,0.014,0,LO,0.0012));/* trigger guard */
+    M(wBox(0.004,0.006,0.016,0.044,0,0.004,0x111213,0.15));M(wBox(0.012,0.004,0.005,0.0,0.014,0.032,0x111213));M(wBox(0.006,0.004,0.006,0.081,-0.0135,0.028,0x111213));/* trigger, safety, mag release */
+    P(wExt([[0.028,0.013]].concat(wGrooves([0.024,0.004],[-0.012,-0.084],2,0.003)).concat([[-0.015,-0.09],[-0.048,-0.084],[-0.05,-0.078],[-0.026,0.004],[-0.024,0.013]]),null,0.03,0,TAN,0.0028));/* pistol grip */
+    {const C=[0.718,-0.004],Ro=0.630,Ri=0.570;const out=wArc(C[0],C[1],Ro,Math.PI,Math.PI+0.31,10),inn=wArc(C[0],C[1],Ri,Math.PI+0.31,Math.PI,10);P(wExt(out.concat(inn),null,0.023,0,TAN,0.0018));
+      const e=[C[0]-Math.cos(0.315)*0.6,C[1]-Math.sin(0.315)*0.6];P(wBox(0.068,0.028,0.012,e[0],0,e[1]-0.004,0x1d1e20,-0.31))}/* curved magazine + base plate */
+    {const g=new THREE.CylinderGeometry(0.031,0.031,0.29,8);g.rotateZ(-Math.PI/2);g.rotateX(Math.PI/8);M({g,m:new THREE.Matrix4().makeTranslation(0.36,0,0.068),c:0x202225})}/* free-float handguard (octagonal) */
+    for(let i=0;i<5;i++)for(const s of[1,-1])M(wBox(0.03,0.0016,0.007,0.25+i*0.05,s*0.0287,0.062,0x08090a));/* M-LOK slots */
+    for(let i=0;i<14;i++)M(wBox(0.0055,0.022,0.0045,0.225+i*0.0132,0,0.1018,0x121314));M(wBox(0.19,0.014,0.006,0.31,0,0.0995,0x17181a));/* handguard top rail */
+    M(wCylX(0.0095,0.065,0.505,0,0.068,0x141516,12));/* barrel */
+    M(wCylX(0.0115,0.05,0.565,0,0.068,0x0e0f10,12));for(let i=0;i<3;i++)M(wBox(0.03,0.0236,0.002,0.595,0,0.062+i*0.006,0x060606));M(wCylX(0.0055,0.003,0.6135,0,0.068,0x020202,10));/* flash hider (slotted) + bore */
+    M(wCylX(0.016,0.18,-0.24,0,0.07,0x1b1d20,14));/* buffer tube */
+    P(wExt([[-0.11,0.092],[-0.29,0.088],[-0.305,0.083],[-0.305,-0.032],[-0.288,-0.032],[-0.255,-0.002],[-0.17,0.042],[-0.11,0.05]],[[[-0.25,0.035],[-0.19,0.05],[-0.24,0.06]]],0.042,0,TAN,0.004));/* collapsible stock */
+    P(wBox(0.012,0.044,0.124,-0.3,0,0.028,0x18191b));/* butt pad */
+    /* red-dot sight on a riser */M(wBox(0.03,0.026,0.016,0.06,0,0.1015,0x15171a));M(wCylX(0.0175,0.062,0.03,0,0.128,0x15171a,18));M(wCylX(0.02,0.006,0.088,0,0.128,0x101112,18));
+    M(wBox(0.012,0.012,0.012,0.06,-0.019,0.128,0x15171a));M(wBox(0.012,0.012,0.012,0.06,0,0.147,0x15171a));/* adjustment turrets */
+    clear.push(wCylX(0.0155,0.002,0.091,0,0.128,0x4a1818,18));
+    muz=[0.617,0,0.068];port=[0.09,-0.025,0.072]}
   else if(id==='paint'){poly.push(wBox(0.26,0.042,0.07,0.05,0,0.045,0x23272c),wBox(0.18,0.044,0.016,0.06,0,0.02,0x2aa9ff),wBox(0.042,0.032,0.1,0.0,0,-0.03,0x16181c,0.15),wBox(0.035,0.03,0.08,0.15,0,-0.015,0x16181c),
       wCylX(0.014,0.29,0.18,0,0.055,0x30353b),wCylX(0.0155,0.02,0.47,0,0.055,0xff6a00),wCylX(0.036,0.22,-0.3,0,0.02,0x1f6fd1,14),wCylX(0.02,0.06,-0.08,0,0.02,0x9aa3ad),wCylX(0.012,0.05,-0.02,0,0.09,0x23272c));
     clear.push(wSph(0.085,0.065,0.07,0.0,0,0.15,0xffd21f));muz=[0.49,0,0.055];port=null}
   const grp=new THREE.Group();
-  if(metal.length){const mm=new THREE.Mesh(wMerge(metal),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.32,metalness:0.85}));mm.castShadow=true;grp.add(mm);if(typeof useEnv==='function')try{useEnv(mm.material);mm.material.envMapIntensity=1.1}catch(e){}}
-  if(poly.length){const pm=new THREE.Mesh(wMerge(poly),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.68,metalness:0.05,bumpMap:WPN.stip,bumpScale:0.6}));pm.castShadow=true;grp.add(pm)}
-  if(clear.length){const cm=new THREE.Mesh(wMerge(clear),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.15,metalness:0,transparent:true,opacity:0.78,depthWrite:false}));grp.add(cm)}
+  if(metal.length){const mm=new THREE.Mesh(wMerge(metal),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.36,metalness:0.8,bumpMap:WPN.brush,bumpScale:0.012}));mm.castShadow=true;grp.add(mm);if(typeof useEnv==='function')try{useEnv(mm.material);mm.material.envMapIntensity=1.2}catch(e){}}
+  if(poly.length){const pm=new THREE.Mesh(wMerge(poly),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.72,metalness:0.04,bumpMap:WPN.stip,bumpScale:0.05}));pm.castShadow=true;grp.add(pm);if(typeof useEnv==='function')try{useEnv(pm.material);pm.material.envMapIntensity=0.6}catch(e){}}
+  if(clear.length){const cm=new THREE.Mesh(wMerge(clear),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.1,metalness:0.3,transparent:true,opacity:0.8,depthWrite:false}));grp.add(cm)}
   grp.userData.muz=new THREE.Vector3(muz[0],muz[1],muz[2]);grp.userData.port=port?new THREE.Vector3(port[0],port[1],port[2]):null;grp.visible=false;scene.add(grp);return grp}
+
+function wStipple(){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');const im=g.createImageData(64,64);for(let i=0;i<im.data.length;i+=4){const v=110+Math.random()*90;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255}g.putImageData(im,0,0);
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);return t}
+function wBrush(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');g.fillStyle='#808080';g.fillRect(0,0,128,128);for(let i=0;i<900;i++){const v=100+Math.random()*60|0;g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(Math.random()*128,Math.random()*128,6+Math.random()*30,1)}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);return t}
 
 /* splat atlas: 2×2 cells of 256 px — three paint splats with spikes and satellite droplets, one soft water splash; white + alpha (instance colour tints it) */
 function wSplatTex(){const S=512,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');let seed=11;const r=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
@@ -161,21 +210,21 @@ function wInitMeshes(){WPN.tex=wSplatTex();WPN.dec=wDecalMesh(360,WPN.tex,false)
   /* paintballs (17.3 mm, drawn motion-blurred along the velocity), water drops, spray droplets */
   WPN.ballIM=wBallMesh(96,1,new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}));WPN.dropIM=wBallMesh(160,1,new THREE.MeshBasicMaterial({color:0xcfe8ff,transparent:true,opacity:0.55,depthWrite:false}));
   WPN.sprIM=wBallMesh(240,1,new THREE.MeshBasicMaterial({color:0xffffff}));
-  WPN.stip=wStipple();for(const id of['pistol','smg','rifle','paint'])WPN.gun[id]=wGunMesh(id);wFxInit()}
+  WPN.stip=wStipple();WPN.brush=wBrush();for(const id of['pistol','smg','rifle','paint'])WPN.gun[id]=wGunMesh(id);wFxInit()}
 
 /* ============================== DECALS ============================== */
-const _wc=new THREE.Color(),_wn=new THREE.Vector3(),_wu=new THREE.Vector3(),_wb=new THREE.Vector3(),_wbm=new THREE.Matrix4(),_wp=new THREE.Vector3();
+const _Wc=new THREE.Color(),_Wn=new THREE.Vector3(),_Wu=new THREE.Vector3(),_Wb=new THREE.Vector3(),_Wbm=new THREE.Matrix4(),_Wp=new THREE.Vector3();
 /* orientation: z = surface normal, x = the direction the ball was travelling along the surface (splats stretch at grazing angles) */
-function wDecalMatrix(out,px,py,pz,nx,ny,nz,vx,vy,vz,size,spin,stretch){_wn.set(nx,ny,nz).normalize();_wu.set(vx,vy,vz);_wu.addScaledVector(_wn,-_wu.dot(_wn));
-  if(_wu.lengthSq()<1e-6){_wu.set(Math.abs(_wn.y)<0.9?0:1,Math.abs(_wn.y)<0.9?1:0,0);_wu.addScaledVector(_wn,-_wu.dot(_wn))}_wu.normalize();if(spin){_wu.applyAxisAngle(_wn,spin)}_wb.crossVectors(_wn,_wu);
-  _wbm.makeBasis(_wu,_wb,_wn);_wq.setFromRotationMatrix(_wbm);_wv.set(px+nx*0.004,py+ny*0.004,pz+nz*0.004);_ws.set(size*stretch,size,1);out.compose(_wv,_wq,_ws);_ws.set(1,1,1);return out}
+function wDecalMatrix(out,px,py,pz,nx,ny,nz,vx,vy,vz,size,spin,stretch){_Wn.set(nx,ny,nz).normalize();_Wu.set(vx,vy,vz);_Wu.addScaledVector(_Wn,-_Wu.dot(_Wn));
+  if(_Wu.lengthSq()<1e-6){_Wu.set(Math.abs(_Wn.y)<0.9?0:1,Math.abs(_Wn.y)<0.9?1:0,0);_Wu.addScaledVector(_Wn,-_Wu.dot(_Wn))}_Wu.normalize();if(spin){_Wu.applyAxisAngle(_Wn,spin)}_Wb.crossVectors(_Wn,_Wu);
+  _Wbm.makeBasis(_Wu,_Wb,_Wn);_Wq.setFromRotationMatrix(_Wbm);_Wv.set(px+nx*0.004,py+ny*0.004,pz+nz*0.004);_Ws.set(size*stretch,size,1);out.compose(_Wv,_Wq,_Ws);_Ws.set(1,1,1);return out}
 function wAddDecal(D,rec){const i=D.next;D.next=(D.next+1)%D.cap;if(D.n<D.cap)D.n++;D.im.count=D.n;D.rec[i]=rec;const cell=rec.water?3:Math.floor(Math.random()*3);D.ofs.setXY(i,(cell%2)*0.5,(cell>>1)*0.5);D.ofs.needsUpdate=true;
-  _wc.setHex(rec.col);if(rec.water)_wc.setRGB(0.25,0.27,0.3);D.im.setColorAt(i,_wc);D.im.instanceColor.needsUpdate=true;wDecalSet(D,i,rec);return i}
+  _Wc.setHex(rec.col);if(rec.water)_Wc.setRGB(0.25,0.27,0.3);D.im.setColorAt(i,_Wc);D.im.instanceColor.needsUpdate=true;wDecalSet(D,i,rec);return i}
 function wDecalSet(D,i,rec){let px=rec.x,py=rec.y,pz=rec.z,nx=rec.nx,ny=rec.ny,nz=rec.nz,vx=rec.vx,vy=rec.vy,vz=rec.vz;
   if(rec.car){const c=rec.car,co=Math.cos(c.yaw),si=Math.sin(c.yaw);px=c.x+co*rec.lx+si*rec.lz;pz=c.z-si*rec.lx+co*rec.lz;py=(c.y||0)+rec.ly;nx=co*rec.nlx+si*rec.nlz;nz=-si*rec.nlx+co*rec.nlz;ny=rec.nly;
     const vx0=vx;vx=co*vx0+si*vz;vz=-si*vx0+co*vz;rec.cx=c.x;rec.cz=c.z;rec.cyaw=c.yaw}
   let s=rec.size;if(rec.water&&rec.life!=null)s*=clamp(rec.life/rec.life0*1.6,0,1);
-  wDecalMatrix(_wm,px,py,pz,nx,ny,nz,vx,vy,vz,s,rec.spin,rec.stretch);D.im.setMatrixAt(i,_wm);D.im.instanceMatrix.needsUpdate=true}
+  wDecalMatrix(_Wm,px,py,pz,nx,ny,nz,vx,vy,vz,s,rec.spin,rec.stretch);D.im.setMatrixAt(i,_Wm);D.im.instanceMatrix.needsUpdate=true}
 function wDecalsTick(dt){/* paint on cars follows the car; water dries */
   const D=WPN.dec;for(let i=0;i<D.n;i++){const r=D.rec[i];if(r&&r.car&&(r.car.x!==r.cx||r.car.z!==r.cz||r.car.yaw!==r.cyaw))wDecalSet(D,i,r)}
   const W=WPN.wet;for(let i=0;i<W.n;i++){const r=W.rec[i];if(!r||r.life<=0)continue;r.life-=dt;if(r.car||((r.life*4|0)!==((r.life+dt)*4|0)))wDecalSet(W,i,r)}}
@@ -183,17 +232,17 @@ function wDecalsTick(dt){/* paint on cars follows the car; water dries */
 /* paint on people: follows a bone of the skeleton (bonePos) — removed when the person despawns or after 2 minutes */
 const W_BONES=typeof BN!=='undefined'?[BN.SPINE1,BN.SPINE2,BN.PELVIS,BN.LUP,BN.RUP,BN.LFORE,BN.RFORE,BN.LTHIGH,BN.RTHIGH,BN.LCALF,BN.RCALF]:[];
 function wBodySplat(n,px,py,pz,vx,vy,vz,col){const h=n.h;if(!h||!h.root)return;const r=h.root,yaw=r.rotation.y,co=Math.cos(yaw),si=Math.sin(yaw);let bone=-1,bd=1e9,bx=r.position.x,by=r.position.y+1.2,bz=r.position.z;
-  if(typeof h.bonePos==='function'&&h.wp)for(const b of W_BONES){h.bonePos(b,_wp);const d=_wp.distanceToSquared(_wv.set(px,py,pz));if(d<bd){bd=d;bone=b;bx=_wp.x;by=_wp.y;bz=_wp.z}}
+  if(typeof h.bonePos==='function'&&h.wp)for(const b of W_BONES){h.bonePos(b,_Wp);const d=_Wp.distanceToSquared(_Wv.set(px,py,pz));if(d<bd){bd=d;bone=b;bx=_Wp.x;by=_Wp.y;bz=_Wp.z}}
   /* offset and normal in the root's frame (inverse yaw) */
   let ox=px-bx,oy=py-by,oz=pz-bz;let nx=-vx,nz=-vz;const nl=Math.hypot(nx,nz)||1;nx/=nl;nz/=nl;ox+=nx*0.03;oz+=nz*0.03;
   const lx=ox*co-oz*si,lz=ox*si+oz*co,nlx=nx*co-nz*si,nlz=nx*si+nz*co;
   wAddDecal(WPN.body,{n,bone,lx,ly:oy,lz,nlx,nly:0,nlz,x:px,y:py,z:pz,nx,ny:0,nz,vx:0,vy:1,vz:0,size:0.36+Math.random()*0.1,spin:Math.random()*TAU,stretch:1,col,t:0})}
 function wBodyTick(dt){const D=WPN.body;let any=false;for(let i=0;i<D.n;i++){const r=D.rec[i];if(!r||r.dead)continue;r.t+=dt;const h=r.n.h;
     const gone=!h||!h.root||!h.root.parent||r.t>120;
-    if(gone||!h.root.visible){if(gone)r.dead=true;_wm.makeScale(0,0,0);D.im.setMatrixAt(i,_wm);any=true;continue}
-    const rt=h.root,co=Math.cos(rt.rotation.y),si=Math.sin(rt.rotation.y);let bx=rt.position.x,by=rt.position.y+1.2,bz=rt.position.z;if(r.bone>=0&&typeof h.bonePos==='function'){h.bonePos(r.bone,_wp);bx=_wp.x;by=_wp.y;bz=_wp.z}
+    if(gone||!h.root.visible){if(gone)r.dead=true;_Wm.makeScale(0,0,0);D.im.setMatrixAt(i,_Wm);any=true;continue}
+    const rt=h.root,co=Math.cos(rt.rotation.y),si=Math.sin(rt.rotation.y);let bx=rt.position.x,by=rt.position.y+1.2,bz=rt.position.z;if(r.bone>=0&&typeof h.bonePos==='function'){h.bonePos(r.bone,_Wp);bx=_Wp.x;by=_Wp.y;bz=_Wp.z}
     const px=bx+co*r.lx+si*r.lz,pz=bz-si*r.lx+co*r.lz,py=by+r.ly,nx=co*r.nlx+si*r.nlz,nz=-si*r.nlx+co*r.nlz;
-    wDecalMatrix(_wm,px,py,pz,nx,0,nz,0,1,0,r.size,r.spin,1);D.im.setMatrixAt(i,_wm);any=true}
+    wDecalMatrix(_Wm,px,py,pz,nx,0,nz,0,1,0,r.size,r.spin,1);D.im.setMatrixAt(i,_Wm);any=true}
   if(any)D.im.instanceMatrix.needsUpdate=true}
 
 /* ============================== PROJECTILES ============================== */
@@ -243,9 +292,9 @@ function wBallsTick(dt){if(!WB.length&&!WS.length)return;const people=WB.length?
   for(let i=WS.length-1;i>=0;i--){const s=WS[i];s.life-=dt;s.vy-=9.81*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;if(s.life<=0||s.y<groundY(s.x,s.z)-0.02)WS.splice(i,1)}}
 function wBallsDraw(){let nb=0,nd=0;const BI=WPN.ballIM,DI=WPN.dropIM,SI=WPN.sprIM;
   for(const b of WB){const v=Math.hypot(b.vx,b.vy,b.vz)||1;/* motion blur: stretch the sphere along the velocity over ~1/120 s */
-    const len=Math.max(b.water?0.03:0.0087,Math.min(b.water?0.25:0.6,v/120)),r=b.water?0.022:0.0087*1.6;_wv.set(b.vx/v,b.vy/v,b.vz/v);_wq.setFromUnitVectors(_wv2.set(0,0,1),_wv);_ws.set(r,r,len*0.5);
-    _wm.compose(_wv3.set(b.x-_wv.x*len*0.5,b.y-_wv.y*len*0.5,b.z-_wv.z*len*0.5),_wq,_ws);if(b.water){if(nd<160){DI.setMatrixAt(nd,_wm);nd++}}else{BI.setMatrixAt(nb,_wm);_wc.setHex(b.col);BI.setColorAt(nb,_wc);nb++}}
-  _ws.set(1,1,1);let ns=0;for(const s of WS){_ws.set(s.r,s.r,s.r);_wm.compose(_wv.set(s.x,s.y,s.z),_wq.identity(),_ws);SI.setMatrixAt(ns,_wm);_wc.setHex(s.col);SI.setColorAt(ns,_wc);ns++}_ws.set(1,1,1);
+    const len=Math.max(b.water?0.03:0.0087,Math.min(b.water?0.25:0.6,v/120)),r=b.water?0.022:0.0087*1.6;_Wv.set(b.vx/v,b.vy/v,b.vz/v);_Wq.setFromUnitVectors(_Wv2.set(0,0,1),_Wv);_Ws.set(r,r,len*0.5);
+    _Wm.compose(_Wv3.set(b.x-_Wv.x*len*0.5,b.y-_Wv.y*len*0.5,b.z-_Wv.z*len*0.5),_Wq,_Ws);if(b.water){if(nd<160){DI.setMatrixAt(nd,_Wm);nd++}}else{BI.setMatrixAt(nb,_Wm);_Wc.setHex(b.col);BI.setColorAt(nb,_Wc);nb++}}
+  _Ws.set(1,1,1);let ns=0;for(const s of WS){_Ws.set(s.r,s.r,s.r);_Wm.compose(_Wv.set(s.x,s.y,s.z),_Wq.identity(),_Ws);SI.setMatrixAt(ns,_Wm);_Wc.setHex(s.col);SI.setColorAt(ns,_Wc);ns++}_Ws.set(1,1,1);
   BI.count=nb;DI.count=Math.min(nd,160);SI.count=ns;if(nb){BI.instanceMatrix.needsUpdate=true;BI.instanceColor.needsUpdate=true}if(nd)DI.instanceMatrix.needsUpdate=true;if(ns){SI.instanceMatrix.needsUpdate=true;SI.instanceColor.needsUpdate=true}}
 
 /* a ball lands */
@@ -286,18 +335,18 @@ function wFxInit(){WPN.flash=new THREE.Sprite(new THREE.SpriteMaterial({map:wFla
 function wPuff(x,y,z,col,size){const sp=WPN.puffs[WPN.puffI=(WPN.puffI+1)%WPN.puffs.length];sp.position.set(x,y,z);sp.material.color.setHex(col);sp.material.opacity=0.85;sp.material.rotation=Math.random()*TAU;sp.visible=true;sp.userData={t:0,s:size||0.35,vy:0.35};sp.scale.setScalar(0.05)}
 function wSparks(x,y,z,nx,ny,nz,n){for(let i=0;i<n;i++){if(WSK.length>=118)WSK.shift();let rx=Math.random()*2-1,ry=Math.random()*2-1,rz=Math.random()*2-1;const rl=Math.hypot(rx,ry,rz)||1;const s=3+Math.random()*5;
     WSK.push({x,y,z,vx:(nx*0.8+rx/rl)*s,vy:(ny*0.8+ry/rl)*s+1,vz:(nz*0.8+rz/rl)*s,life:0.12+Math.random()*0.2})}}
-function wEject(D){const g=WPN.gun[D.id];if(!g||!g.visible||!g.userData.port)return;_wv.copy(g.userData.port).applyMatrix4(g.matrixWorld);const yaw=player.yaw,rx=-Math.cos(yaw),rz=Math.sin(yaw),fx=Math.sin(yaw),fz=Math.cos(yaw);const e=D.eject||2.5;
-  if(WCS.length>=79)WCS.shift();WCS.push({x:_wv.x,y:_wv.y,z:_wv.z,vx:rx*e*(0.8+Math.random()*0.4)-fx*0.6,vy:1.6+Math.random()*1.2,vz:rz*e*(0.8+Math.random()*0.4)-fz*0.6,ax:Math.random()*TAU,ay:Math.random()*TAU,sx:(Math.random()-0.5)*40,sy:(Math.random()-0.5)*40,life:9,b:0,r:D.casing[0],l:D.casing[1]})}
+function wEject(D){const g=WPN.gun[D.id];if(!g||!g.visible||!g.userData.port)return;_Wv.copy(g.userData.port).applyMatrix4(g.matrixWorld);const yaw=player.yaw,rx=-Math.cos(yaw),rz=Math.sin(yaw),fx=Math.sin(yaw),fz=Math.cos(yaw);const e=D.eject||2.5;
+  if(WCS.length>=79)WCS.shift();WCS.push({x:_Wv.x,y:_Wv.y,z:_Wv.z,vx:rx*e*(0.8+Math.random()*0.4)-fx*0.6,vy:1.6+Math.random()*1.2,vz:rz*e*(0.8+Math.random()*0.4)-fz*0.6,ax:Math.random()*TAU,ay:Math.random()*TAU,sx:(Math.random()-0.5)*40,sy:(Math.random()-0.5)*40,life:9,b:0,r:D.casing[0],l:D.casing[1]})}
 function wFxTick(dt){/* flash */if(WPN.flashT>0){WPN.flashT-=dt;if(WPN.flashT<=0){WPN.flash.visible=false;WPN.flash2.visible=false}}
   for(let i=WTR.length-1;i>=0;i--){const t=WTR[i];t.d+=dt*t.v;if(t.d>=t.L)WTR.splice(i,1)}
   for(let i=WSK.length-1;i>=0;i--){const s=WSK[i];s.life-=dt;s.vy-=9.81*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;if(s.life<=0)WSK.splice(i,1)}
   for(let i=WCS.length-1;i>=0;i--){const c=WCS[i];c.life-=dt;if(c.life<=0){WCS.splice(i,1);continue}if(c.b>=3)continue;c.vy-=9.81*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.z+=c.vz*dt;c.ax+=c.sx*dt;c.ay+=c.sy*dt;
     const gy=groundY(c.x,c.z)+c.r;if(c.y<gy){c.y=gy;c.b++;c.vy=-c.vy*0.32;c.vx*=0.45;c.vz*=0.45;c.sx*=0.4;c.sy*=0.4;if(c.b===1)wSnd('casing',Math.hypot(c.x-camera.position.x,c.z-camera.position.z));if(c.b>=3){c.ax=Math.PI/2;c.vy=0}}}
   for(const sp of WPN.puffs){if(!sp.visible)continue;const u=sp.userData;u.t+=dt;const k=u.t/0.9;if(k>=1){sp.visible=false;continue}sp.scale.setScalar(0.05+u.s*Math.sqrt(k)*1.6);sp.material.opacity=0.85*(1-k);sp.position.y+=u.vy*dt}
-  /* draw */let n=0;const TI=WPN.trIM;for(const t of WTR){const a=Math.max(0,t.d-2.2),b=Math.min(t.L,t.d);if(b<=a)continue;const len=b-a;_wv.set(t.dx,t.dy,t.dz);_wq.setFromUnitVectors(_wv2.set(0,0,1),_wv);_ws.set(0.011,0.011,len*0.5);
-    _wm.compose(_wv3.set(t.x+t.dx*(a+len/2),t.y+t.dy*(a+len/2),t.z+t.dz*(a+len/2)),_wq,_ws);TI.setMatrixAt(n++,_wm)}TI.count=n;if(n)TI.instanceMatrix.needsUpdate=true;
-  n=0;const SK=WPN.skIM;for(const s of WSK){_ws.set(0.006,0.006,0.03);const l=Math.hypot(s.vx,s.vy,s.vz)||1;_wv.set(s.vx/l,s.vy/l,s.vz/l);_wq.setFromUnitVectors(_wv2.set(0,0,1),_wv);_wm.compose(_wv3.set(s.x,s.y,s.z),_wq,_ws);SK.setMatrixAt(n++,_wm)}SK.count=n;if(n)SK.instanceMatrix.needsUpdate=true;
-  n=0;const CI=WPN.csIM;for(const c of WCS){_we.set(c.ax,c.ay,0);_wq.setFromEuler(_we);_ws.set(c.r,c.r,c.l);_wm.compose(_wv3.set(c.x,c.y,c.z),_wq,_ws);CI.setMatrixAt(n++,_wm)}CI.count=n;if(n)CI.instanceMatrix.needsUpdate=true;_ws.set(1,1,1)}
+  /* draw */let n=0;const TI=WPN.trIM;for(const t of WTR){const a=Math.max(0,t.d-2.2),b=Math.min(t.L,t.d);if(b<=a)continue;const len=b-a;_Wv.set(t.dx,t.dy,t.dz);_Wq.setFromUnitVectors(_Wv2.set(0,0,1),_Wv);_Ws.set(0.011,0.011,len*0.5);
+    _Wm.compose(_Wv3.set(t.x+t.dx*(a+len/2),t.y+t.dy*(a+len/2),t.z+t.dz*(a+len/2)),_Wq,_Ws);TI.setMatrixAt(n++,_Wm)}TI.count=n;if(n)TI.instanceMatrix.needsUpdate=true;
+  n=0;const SK=WPN.skIM;for(const s of WSK){_Ws.set(0.006,0.006,0.03);const l=Math.hypot(s.vx,s.vy,s.vz)||1;_Wv.set(s.vx/l,s.vy/l,s.vz/l);_Wq.setFromUnitVectors(_Wv2.set(0,0,1),_Wv);_Wm.compose(_Wv3.set(s.x,s.y,s.z),_Wq,_Ws);SK.setMatrixAt(n++,_Wm)}SK.count=n;if(n)SK.instanceMatrix.needsUpdate=true;
+  n=0;const CI=WPN.csIM;for(const c of WCS){_We.set(c.ax,c.ay,0);_Wq.setFromEuler(_We);_Ws.set(c.r,c.r,c.l);_Wm.compose(_Wv3.set(c.x,c.y,c.z),_Wq,_Ws);CI.setMatrixAt(n++,_Wm)}CI.count=n;if(n)CI.instanceMatrix.needsUpdate=true;_Ws.set(1,1,1)}
 
 /* ---------- a hitscan shot: march the ray in 1.5 m steps against people, cars, walls and the ground ---------- */
 function wShot(D,M,dir){const L=D.range;const people=wPeople();let hit=null,hp=null;const st=1.5,n=Math.ceil(L/st);const fake={team:'p',vx:dir.x,vy:dir.y,vz:dir.z};
@@ -333,8 +382,8 @@ const WBUB=[];
 function wBubble(n,text,secs){const box=$('wBub');if(!box)return;let o=WBUB.find(b=>b.n===n);if(!o){if(WBUB.length>=3){const x=WBUB.shift();x.el.remove()}const el=document.createElement('div');el.className='wbub';box.appendChild(el);o={n,el,t:0};WBUB.push(o)}
   o.el.textContent=text;o.t=secs||2.4;o.el.classList.add('on')}
 function wBubTick(dt){for(let i=WBUB.length-1;i>=0;i--){const o=WBUB[i];o.t-=dt;const h=o.n.h;if(o.t<=0||!h||!h.root||!h.root.visible||player.interior){o.el.remove();WBUB.splice(i,1);continue}
-    _wv.set(h.root.position.x,h.root.position.y+2.05*(h.root.scale.y||1),h.root.position.z);_wv.project(camera);const vis=_wv.z<1&&Math.abs(_wv.x)<1.1&&Math.abs(_wv.y)<1.1;o.el.style.display=vis?'':'none';
-    if(vis){o.el.style.transform=`translate(${((_wv.x+1)/2*innerWidth).toFixed(0)}px,${((1-_wv.y)/2*innerHeight).toFixed(0)}px) translate(-50%,-100%)`;o.el.style.opacity=Math.min(1,o.t*2)}}}
+    _Wv.set(h.root.position.x,h.root.position.y+2.05*(h.root.scale.y||1),h.root.position.z);_Wv.project(camera);const vis=_Wv.z<1&&Math.abs(_Wv.x)<1.1&&Math.abs(_Wv.y)<1.1;o.el.style.display=vis?'':'none';
+    if(vis){o.el.style.transform=`translate(${((_Wv.x+1)/2*innerWidth).toFixed(0)}px,${((1-_Wv.y)/2*innerHeight).toFixed(0)}px) translate(-50%,-100%)`;o.el.style.opacity=Math.min(1,o.t*2)}}}
 /* a bystander is hit by paint or water: never hurt — they flinch, complain, laugh or hurry off, and wear the paint */
 function wHitPerson(n,b,px,py,pz){if(wProtected(n))return;
   if(n.wTeam){wBotHit(n,b,px,py,pz);return}
@@ -384,15 +433,15 @@ function wSelect(id,quiet){if(!WDEF[id]||!WPN.owned[id])return false;if(WPN.loan
 function wCycle(dir){const own=WORDER.filter(k=>WPN.owned[k]);if(own.length<2){if(own.length<=1)wOnce('nogun',4,()=>wToast('No weapons yet — Fun Ocean Outdoors on Kifisias Ave (no. 228) sells them.','info'));return}let i=own.indexOf(WPN.cur);i=(i+(dir||1)+own.length)%own.length;wSelect(own[i])}
 function wReload(){const D=wDef(),A=wAmmo();if(D.id==='fists'||!A||WPN.reload>0)return;if(A.mag>=D.mag)return;if(A.res===0){wOnce('noammo',3,()=>wToast('Out of ammunition — Fun Ocean Outdoors (Kifisias 228) sells boxes.','info'));return}WPN.reload=D.reload;wSnd(D.speed?'reload':'mag')}
 /* where the muzzle is: the marker in the right hand (chars' handWorld), or a plain shoulder / hip position on older character builds */
-const _whp=new THREE.Vector3(),_whq=new THREE.Quaternion(),_wfb=new THREE.Quaternion(),_wbasis=new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0));
-function wPlaceGun(gun,aim,dt){if(!ph||!ph.root)return false;let ok=false;if(typeof ph.handWorld==='function'&&ph.handWorld('R',_whp,_whq)){gun.position.copy(_whp);gun.quaternion.copy(_whq);ok=true}
+const _Whp=new THREE.Vector3(),_Whq=new THREE.Quaternion(),_Wfb=new THREE.Quaternion(),_Wbasis=new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0));
+function wPlaceGun(gun,aim,dt){if(!ph||!ph.root)return false;let ok=false;if(typeof ph.handWorld==='function'&&ph.handWorld('R',_Whp,_Whq)){gun.position.copy(_Whp);gun.quaternion.copy(_Whq);ok=true}
   if(!ok){const r=ph.root,yaw=r.rotation.y,co=Math.cos(yaw),si=Math.sin(yaw);const lx=aim?-0.17:-0.21,ly=aim?1.36:0.98,lz=aim?0.4:0.22;gun.position.set(r.position.x+co*lx+si*lz,r.position.y+ly,r.position.z-si*lx+co*lz);
-    _wfb.setFromRotationMatrix(_wbasis);_we.set(aim?(ph.aimPitch||0):0.55,yaw,0,'YXZ');_wq.setFromEuler(_we);gun.quaternion.copy(_wq).multiply(_wfb)}
+    _Wfb.setFromRotationMatrix(_Wbasis);_We.set(aim?(ph.aimPitch||0):0.55,yaw,0,'YXZ');_Wq.setFromEuler(_We);gun.quaternion.copy(_Wq).multiply(_Wfb)}
   gun.updateMatrixWorld(true);return true}
 function wMuzzle(out){const D=wDef();const g=WPN.gun[D.id];if(g&&g.visible){out.copy(g.userData.muz).applyMatrix4(g.matrixWorld);return out}const r=ph.root;return out.set(r.position.x+Math.sin(player.yaw)*0.5-Math.cos(player.yaw)*0.17,r.position.y+1.38,r.position.z+Math.cos(player.yaw)*0.5+Math.sin(player.yaw)*0.17)}
-let _wCarry=null;
+let _WCarry=null;
 function wPose(armed,aim){if(!ph)return;const D=wDef();let want=null;if(armed&&typeof ACTIONS!=='undefined'){const k=(aim?'aim_':'hold_')+(D.pose||'pistol');if(ACTIONS[k])want=k}
-  if(want!==_wCarry){_wCarry=want;if(typeof ph.setCarry==='function'){ph.setCarry(want);if(want&&typeof ph.setProp==='function')ph.setProp(null)}}
+  if(want!==_WCarry){_WCarry=want;if(typeof ph.setCarry==='function'){ph.setCarry(want);if(want&&typeof ph.setProp==='function')ph.setProp(null)}}
   if('aimPitch' in ph||armed)ph.aimPitch=aim?WPN.pitch:0}
 /* what is under the reticle: the best valid target for aim-assist, and whether a protected person is in the line of fire */
 function wScanTarget(){const ray=aimRay();const o=ray.o,d=ray.d;const D=wDef();let best=null,bs=1e9,prot=null,pt=1e9;const touch=typeof inputMode!=='undefined'&&inputMode==='touch';const cone=touch?0.075:0.03;
@@ -403,7 +452,10 @@ function wScanTarget(){const ray=aimRay();const o=ray.o,d=ray.d;const D=wDef();l
   /* a wall between the camera and the person hides them */
   const wallT=(()=>{const L=D.range+5;const w=wRay(o.x,o.z,o.x+d.x*L,o.z+d.z*L,'b');return w?w.t*L:1e9})();
   if(best&&best.t>wallT)best=null;if(prot&&pt>wallT)prot=null;if(prot&&best&&best.t<pt-1)prot=null;/* a valid target in front of a protected person is fine (the ball stops at the first) */
-  WPN.target=best;WPN.prot=prot;return best}
+  WPN.target=best;WPN.prot=prot;
+  /* a person with a gun pointed at them notices it (hands up / backs away — npcReact 'aimed') */
+  if(best&&!best.n.wTeam&&best.t<35&&(!best.n.wAimed||WPN.simT-best.n.wAimed>2.5)){best.n.wAimed=WPN.simT;if(typeof npcReact==='function')npcReact(best.n,'aimed',player.x,player.z);else if(!best.n.static)best.n.panic=Math.max(best.n.panic||0,3)}
+  return best}
 function wAssist(dt){const t=WPN.target;if(!t||WPN.prot)return;if(!(typeof inputMode!=='undefined'&&inputMode==='touch'))return;const ray=aimRay(),o=ray.o,d=ray.d;
   const want=Math.atan2(t.x-o.x,t.z-o.z),cur=Math.atan2(d.x,d.z),dy=wrapA(want-cur);const wantP=Math.atan2(t.y-o.y,Math.hypot(t.x-o.x,t.z-o.z)),curP=Math.asin(clamp(d.y,-1,1));
   const k=1-Math.exp(-(WPN.fireDown?7:4)*dt);camYaw+=dy*k;camPitch=clamp(camPitch-(wantP-curP)*k,typeof PITCH_MIN!=='undefined'?PITCH_MIN:-0.6,typeof PITCH_MAX!=='undefined'?PITCH_MAX:1.2)}
@@ -417,11 +469,11 @@ function wFire(){const D=wDef(),A=wAmmo();if(WPN.reload>0||!A)return;if(WPN.prot
   if(D.speed){const hx=T.x-M.x,hz=T.z-M.z,hd=Math.hypot(hx,hz)||1e-3;const th=wLob(hd,T.y-M.y,D.speed,D.drag);dx=hx/hd*Math.cos(th);dz=hz/hd*Math.cos(th);dy=Math.sin(th)}/* paint: lob solved for gravity + drag */
   else{dx=T.x-M.x;dy=T.y-M.y;dz=T.z-M.z;const l=Math.hypot(dx,dy,dz)||1;dx/=l;dy/=l;dz/=l}
   const moving=Math.min(1,player.spd/2.6),sp=D.spread*(1+moving*1.4+WPN.bloom)*(WPN.still>0.6?0.6:1);const a=Math.random()*TAU,r=sp*Math.sqrt(-2*Math.log(Math.max(1e-6,Math.random())))*0.7;
-  _wv.set(dx,dy,dz).normalize();_wu.set(-_wv.z,0,_wv.x).normalize();_wb.crossVectors(_wu,_wv);_wv.addScaledVector(_wu,Math.cos(a)*r).addScaledVector(_wb,Math.sin(a)*r).normalize();
+  _Wv.set(dx,dy,dz).normalize();_Wu.set(-_Wv.z,0,_Wv.x).normalize();_Wb.crossVectors(_Wu,_Wv);_Wv.addScaledVector(_Wu,Math.cos(a)*r).addScaledVector(_Wb,Math.sin(a)*r).normalize();
   WPN.bloom=Math.min(1.5,WPN.bloom+(D.auto?0.1:0.22));const kick=D.recoil*(0.75+Math.random()*0.5);camPitch-=kick;WPN.kickBack=(WPN.kickBack||0)+kick*0.65;camYaw+=(Math.random()-0.5)*D.recoil*0.5;camShake=Math.max(camShake,D.kick*0.3);
   WPN.shots++;if(typeof STATS!=='undefined')STATS.shots=(STATS.shots||0)+1;
-  if(D.speed){const col=WPN.loan&&WPN.loan.col!=null?WPN.loan.col:PAINT[WPN.col%PAINT.length];wSpawnBall(M.x,M.y,M.z,_wv.x*D.speed,_wv.y*D.speed,_wv.z*D.speed,{col,drag:D.drag,team:'p',size:D.splat});wSnd('rifle',0);wStartle(M.x+_wv.x*6,M.z+_wv.z*6,6,null)}
-  else{const dir=_wv.clone();wShot(D,M,dir);wSnd(D.snd,0);
+  if(D.speed){const col=WPN.loan&&WPN.loan.col!=null?WPN.loan.col:W_PAINT[WPN.col%W_PAINT.length];wSpawnBall(M.x,M.y,M.z,_Wv.x*D.speed,_Wv.y*D.speed,_Wv.z*D.speed,{col,drag:D.drag,team:'p',size:D.splat});wSnd('rifle',0);wStartle(M.x+_Wv.x*6,M.z+_Wv.z*6,6,null)}
+  else{const dir=_Wv.clone();wShot(D,M,dir);wSnd(D.snd,0);
     /* muzzle flash: two crossed billboards for one frame or two */const f=WPN.flash,f2=WPN.flash2;f.position.set(M.x+dir.x*0.05,M.y+dir.y*0.05,M.z+dir.z*0.05);f.scale.setScalar(D.flash*(0.8+Math.random()*0.45));f.material.rotation=Math.random()*TAU;f.visible=true;
     f2.position.set(M.x+dir.x*(0.08+D.flash*0.25),M.y+dir.y*(0.08+D.flash*0.25),M.z+dir.z*(0.08+D.flash*0.25));f2.scale.setScalar(D.flash*0.55);f2.material.rotation=Math.random()*TAU;f2.visible=true;WPN.flashT=0.045;
     wEject(D);if(!wInZone(player.x,player.z)){wPanic(player.x,player.z);wHeat(7)}}
@@ -500,10 +552,10 @@ body.cine #wRet,body.cine #wMis,body.dlgOpen #wPad{display:none!important}
 function wWheel(on){WPN.wheel=!!on;const wh=$('wWheel');if(!wh)return;if(on){const pos=['n','e','s','w'];
     wh.innerHTML=`<div class="ring">${WORDER.map((id,i)=>{const A=WPN.ammo[id],D=WDEF[id];const am=!WPN.owned[id]?(D.price?money2(D.price):''):id!=='fists'?(A.res<0?'∞':A.mag+' / '+A.res):'';return`<button type="button" class="${pos[i]}${WPN.cur===id?' cur':''}${WPN.owned[id]?'':' lock'}" data-w="${id}">${wIcon(id,44)}<span>${D.name}</span><small>${am}</small></button>`}).join('')}
       <div class="mid">WEAPONS<small>Never near the school, never indoors.</small></div></div>`}wh.hidden=!on}
-let _wHudK='';
+let _WHudK='';
 function wHud(force){const D=wDef(),A=wAmmo();const any=Object.keys(WPN.owned).length>1||!!WPN.loan;document.body.classList.toggle('armed',wArmed()&&!WPN.holster||!!WPN.loan&&!WPN.holster);
-  if(!any){if(_wHudK!=='none'&&typeof hudWeapon==='function'){hudWeapon(null);_wHudK='none'}return}
-  const am=D.id==='fists'?'':WPN.reload>0?'RELOAD':A.res<0?Math.round(A.mag/D.mag*100)+'%':A.mag+' / '+A.res;const k=D.id+am+(WPN.holster||'');if(k===_wHudK&&!force)return;_wHudK=k;
+  if(!any){if(_WHudK!=='none'&&typeof hudWeapon==='function'){hudWeapon(null);_WHudK='none'}return}
+  const am=D.id==='fists'?'':WPN.reload>0?'RELOAD':A.res<0?Math.round(A.mag/D.mag*100)+'%':A.mag+' / '+A.res;const k=D.id+am+(WPN.holster||'');if(k===_WHudK&&!force)return;_WHudK=k;
   if(typeof hudWeapon==='function'){hudWeapon(D.name,am);const s=$('wslot');if(s){s.classList.toggle('hol',!!WPN.holster&&D.id!=='fists');s.classList.toggle('rel',WPN.reload>0);let ic=s.querySelector('svg');const html=wIcon(D.id,30);if(!ic||s.dataset.ic!==D.id){if(ic)ic.remove();s.insertAdjacentHTML('afterbegin',html);s.dataset.ic=D.id}}}
   const f=$('wFire');if(f&&f.dataset.ic!==D.id){f.dataset.ic=D.id;f.innerHTML=wIcon(D.id==='fists'?'pistol':D.id,34)}}
 function wRetTick(){const el=$('wRet');if(!el)return;const no=!!WPN.prot,tg=!no&&!!WPN.target;if(el._no!==no){el._no=no;el.classList.toggle('no',no);$('wRetL').textContent=no?'Not a target':''}if(el._tg!==tg){el._tg=tg;el.classList.toggle('tgt',tg)}
@@ -555,7 +607,7 @@ function wShopsInit(){const I=typeof INTERIORS!=='undefined'?INTERIORS:null;
   /* first walk past the toy shop: a hint */
   if(typeof INTER!=='undefined')FRAME_HOOKS.push(()=>{if(WPN.hinted||!W_SHOPS[0].door||Object.keys(WPN.owned).length>1)return;const d=W_SHOPS[0].door;if(Math.hypot(player.x-d[0],player.z-d[1])<9&&!player.car){WPN.hinted=true;wToast('Fun Ocean Outdoors sells pistols, SMGs and rifles — practise at the shooting range in the Alsos.','info')}})}
 
-/* ============================== PAINT RANGE (Alsos) ==============================
+/* ============================== W_PAINT RANGE (Alsos) ==============================
    A pop-up range stall in the Alsos clearing: €5 for 60 s with a loaner rifle and unlimited paint. Pop-up targets (5 / 10 points, centre ring) and two sliders (15).
    Prize: €1 per 10 points (max €30). Events: gameEvent('rangeStart'), gameEvent('rangeEnd',{score,prize,best}). API: WRANGE.start(), WRANGE.on, WRANGE.score. */
 const WRANGE={built:false,on:false,score:0,t:0,targets:[],grp:null,best:0,
@@ -667,7 +719,7 @@ function wSpawnBots(o){o.bots=[];const look=(i)=>{let s=null;try{s=typeof random
 function wBotBase(team,k){const s=team==='blue'?-1:1;return wZP(s*11.4,(k%3-1)*2.6)}
 function wBotRespawn(o,b,first){const k=o.bots?o.bots.indexOf(b):b.i;const[x,z]=wBotBase(b.wTeam,b.i);b.x=x;b.z=z;const A=wZoneAxes();b.yaw=Math.atan2(A.ux*(b.wTeam==='blue'?1:-1),A.uz*(b.wTeam==='blue'?1:-1));b.state='adv';b.t=0;b.cover=null;b.crouch=false;
   if(b.h.stop)b.h.stop();if(b.h.setCarry){const k2=typeof ACTIONS!=='undefined'&&ACTIONS.hold_rifle?'hold_rifle':null;b.h.setCarry(k2)}
-  /* clear the paint on this bot */const D=WPN.body;if(D)for(let i=0;i<D.n;i++){const r=D.rec[i];if(r&&r.n===b){r.dead=true;_wm.makeScale(0,0,0);D.im.setMatrixAt(i,_wm);D.im.instanceMatrix.needsUpdate=true}}}
+  /* clear the paint on this bot */const D=WPN.body;if(D)for(let i=0;i<D.n;i++){const r=D.rec[i];if(r&&r.n===b){r.dead=true;_Wm.makeScale(0,0,0);D.im.setMatrixAt(i,_Wm);D.im.instanceMatrix.needsUpdate=true}}}
 function wBotHit(b,ball,px,py,pz){const o=WPN.match;if(!o||b.state==='out'||ball.team===b.wTeam)return;wSnd('splat',Math.hypot(px-camera.position.x,pz-camera.position.z));wBodySplat(b,px,py,pz,ball.vx,ball.vy,ball.vz,ball.col);wSpray(px,py,pz,-ball.vx/90,0.3,-ball.vz/90,ball.col,6,1.6);
   b.state='out';b.out=10;b.crouch=false;if(b.h.stop)b.h.stop();if(b.h.setCarry)b.h.setCarry(null);if(typeof ACTIONS!=='undefined'&&ACTIONS.hands_up&&b.h.play)b.h.play('hands_up');
   if(ball.team==='p'||ball.team==='blue'){o.blue++;if(ball.team==='p'){WPN.hits++;wHitMarker();o.mine=(o.mine||0)+1}}else o.orange++;
@@ -690,8 +742,8 @@ function wMatchTick(dt){const o=WPN.match;if(!o||!o.live)return;const A=wZoneAxe
     else if(b.state==='cover'){if(b.t>b.wait){b.state='peek';b.t=0;b.crouch=false;if(b.h.stop)b.h.stop();if(b.h.setCarry&&typeof ACTIONS!=='undefined'&&ACTIONS.aim_rifle){b.h.setCarry('aim_rifle')}b.peekT=1.4+Math.random()*1.6;b.target=null;b.aimErr=0.09+Math.random()*0.06}}
     else if(b.state==='peek'){const gy=groundY(b.x,b.z);let best=null,bd=1e9;for(const e of enemies){const d=Math.hypot(e.x-b.x,e.z-b.z);if(d>30)continue;if(!wLOS(b.x,gy+1.45,b.z,e.x,e.y+(e.crouch?0.7:1.2),e.z))continue;if(d<bd){bd=d;best=e}}
       if(best){b.yaw=b.yaw+wrapA(Math.atan2(best.x-b.x,best.z-b.z)-b.yaw)*(1-Math.exp(-9*dt));b.aimErr=Math.max(0.03,b.aimErr-dt*0.05);b.shootT-=dt;
-        if(b.shootT<=0&&b.t>0.45){b.shootT=0.16+Math.random()*0.22;const sx=b.x+Math.sin(b.yaw)*0.5,sz=b.z+Math.cos(b.yaw)*0.5,sy=gy+1.38,ty=best.y+(best.crouch?0.75:1.15);const sp=82;let dx,dy,dz;{const hx=best.x-sx,hz=best.z-sz,hd=Math.hypot(hx,hz)||1e-3;const th=wLob(hd,ty-sy,sp,0.011);dx=hx/hd*Math.cos(th);dz=hz/hd*Math.cos(th);dy=Math.sin(th)}const e=b.aimErr,a1=(Math.random()-0.5)*2*e,a2=(Math.random()-0.5)*1.4*e;_wv.set(dx,dy,dz);_wu.set(-dz,0,dx).normalize();_wv.addScaledVector(_wu,a1);_wv.y+=a2;_wv.normalize();
-          wSpawnBall(sx,sy,sz,_wv.x*sp,_wv.y*sp,_wv.z*sp,{col:b.wTeam==='blue'?0x2aa9ff:0xff7b1c,team:b.wTeam,drag:0.011,size:0.2});wSnd('rifle',Math.hypot(sx-camera.position.x,sz-camera.position.z))}}
+        if(b.shootT<=0&&b.t>0.45){b.shootT=0.16+Math.random()*0.22;const sx=b.x+Math.sin(b.yaw)*0.5,sz=b.z+Math.cos(b.yaw)*0.5,sy=gy+1.38,ty=best.y+(best.crouch?0.75:1.15);const sp=82;let dx,dy,dz;{const hx=best.x-sx,hz=best.z-sz,hd=Math.hypot(hx,hz)||1e-3;const th=wLob(hd,ty-sy,sp,0.011);dx=hx/hd*Math.cos(th);dz=hz/hd*Math.cos(th);dy=Math.sin(th)}const e=b.aimErr,a1=(Math.random()-0.5)*2*e,a2=(Math.random()-0.5)*1.4*e;_Wv.set(dx,dy,dz);_Wu.set(-dz,0,dx).normalize();_Wv.addScaledVector(_Wu,a1);_Wv.y+=a2;_Wv.normalize();
+          wSpawnBall(sx,sy,sz,_Wv.x*sp,_Wv.y*sp,_Wv.z*sp,{col:b.wTeam==='blue'?0x2aa9ff:0xff7b1c,team:b.wTeam,drag:0.011,size:0.2});wSnd('rifle',Math.hypot(sx-camera.position.x,sz-camera.position.z))}}
       if(b.t>b.peekT){if(Math.random()<0.4){b.state='adv';b.cover=null;b.t=0;if(b.h.setCarry&&typeof ACTIONS!=='undefined'&&ACTIONS.hold_rifle){b.h.setCarry('hold_rifle')}}else{b.state='cover';b.t=0;b.wait=0.8+Math.random()*1.8;b.crouch=true;if(b.h.play&&typeof ACTIONS!=='undefined'&&ACTIONS.crouch)b.h.play('crouch')}}}
     if(b.state!=='out'){const p={x:b.x,z:b.z};wBunkerPush(p,0.3);b.x=p.x;b.z=p.z}
     h.aimPitch=0;h.root.position.set(b.x,groundY(b.x,b.z),b.z);h.root.rotation.y=b.yaw;h.update(dt,spd,false)}

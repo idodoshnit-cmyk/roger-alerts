@@ -1,0 +1,7 @@
+[{"name":"stats","eval":"JSON.stringify({kef:PARKLM.stats.kef,err:PARKLM.stats.kefErr||PARKLM.stats.err||null,basin:KEF_LAYOUT.stats,bridge:[groundY(672.3,-236.96)-terr(672.3,-236.96),groundY(667.2,-236.6)-terr(667.2,-236.6)]})"},
+{"name":"kBasin","cam":[660,2.2,-228,676,0.5,-242]},
+{"name":"kBridge","cam":[672,1.9,-249,672,1.0,-237]},
+{"name":"kFnt","cam":[621,1.7,-205,626,1.2,-206.7]},
+{"name":"aFnt","cam":[-176,1.7,-4,-185,1.4,-17]},
+{"name":"tank","cam":[-118,2,38,-109,3,33]},
+{"name":"kTop","cam":[682,150,-236,682,0,-238]}]

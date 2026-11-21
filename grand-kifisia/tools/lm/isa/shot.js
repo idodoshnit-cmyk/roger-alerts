@@ -6,6 +6,6 @@ const {launch}=require('../../harness.js');const fs=require('fs');
   await h.page.evaluate(()=>{const b=document.getElementById('play');b.click()});await h.page.waitForTimeout(2500);
   const pre=await h.page.evaluate(()=>{const o={};try{o.isalm=JSON.stringify({built:ISALM.built,GF:ISALM.GF,Yc:ISALM.Yc,gate:ISALM.gate,hoops:ISALM.hoops,court:ISALM.court})}catch(e){o.err=e.message}try{o.lm=LM.built}catch(e){}return o});console.log(JSON.stringify(pre));
   if(process.env.EVAL){console.log('EVAL',JSON.stringify(await h.page.evaluate(process.env.EVAL)))}
-  for(const v of views){await h.shot(prefix+'_'+v.name,v);console.log(v.name,JSON.stringify(await h.info()))}
+  const path=require('path');const SH=process.env.GK_SHOTS||'.';for(const v of views){if(v.fov||v.hide!==undefined)await h.page.evaluate(v=>{if(v.fov){camera.fov=v.fov;camera.updateProjectionMatrix()}scene.traverse(o=>{if(o.isInstancedMesh)o.visible=!v.hide})},v);await h.view(v);await h.page.screenshot({path:path.join(SH,prefix+'_'+v.name+'.png'),timeout:240000});console.log(v.name,JSON.stringify(await h.info()))}
  }catch(e){console.log('FAILED',e.message)}
  console.log('ERRORS',h.errors.slice(0,30).join('\n'));console.log('LOGS',h.logs.filter(l=>/isa|lm-|landmark/i.test(l)).slice(0,20).join('\n'));await h.close()})();

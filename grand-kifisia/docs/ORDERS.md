@@ -65,3 +65,9 @@ Try the Copernicus Land Monitoring Service "Urban Atlas Building Height 2012" (1
 Copernicus licence) and Copernicus DEM GLO-30 / any open nDSM for Attica: sample per-building height into buildings_spec.json (heightM, levels =
 round((h-gfH)/floorH)+1) with source "copernicus-ua-bh". Record licence + attribution in docs/CREDITS.md. If the download needs a login, say so in
 PROGRESS.md and continue with other sources.
+
+## 2026-11-21 (from data run, MUST DO) — lm-junction, lm-kassaveti, lm-kfc, lm-starbucks, lm-ralphlauren
+23 real shops sit on buildings you took over (b292 b293 b294 b295 b305 b388 b425 b426 b434 b435 b30) and are NOT drawn by 30_buildings.js any more:
+Nak, Everest, Desigual, Goody's, Γερμανός, Hachiko, La Pasteria, Imaginarium and others. Your module MUST draw every MAP.pois shop bay whose b is one of
+your buildings (use (b[11]&&b[11].shops)||b[8] bays: edge, t, sign text, bg, fg, kind, poiIndex, bayW) — exact position and width, real name. Check with
+tools/data/compare_runtime.py that 0 bays on your buildings are missing.

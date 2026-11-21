@@ -38,6 +38,9 @@ defTile('sbFrench',(g,S,m)=>{wood(g,S,'#5c3e2c');const fc='#4a3122';
 /* first-floor gallery bay: 1.2 m wide x 2.1 m high, two small-paned casements under a transom */
 defTile('sbGallery',(g,S,m)=>{wood(g,S,'#5c3e2c');const fc='#4a3122';panes(g,m,12,10,S-24,38,3,1,5,fc,3);
   for(const lx of[10,122]){panes(g,m,lx+8,62,100,166,2,4,5,fc,lx+5)}g.fillStyle='rgba(20,12,6,.5)';g.fillRect(118,56,4,S-60);g.fillStyle='rgba(0,0,0,.3)';g.fillRect(0,54,S,3)},GLASS);
+/* first-floor glass wall bay (2008 photo): one tall pane under a narrow transom, thin varnished frames — 1.2 m x 2.1 m */
+defTile('sbGlassWall',(g,S,m)=>{wood(g,S,'#6e4630');const fc='#583722';panes(g,m,10,8,S-20,40,2,1,4,fc,2);panes(g,m,10,58,S-20,S-68,1,1,4,fc,7);
+  g.fillStyle='rgba(0,0,0,.3)';g.fillRect(0,52,S,3)},GLASS);
 /* umbrella canvas: plain woven fabric (tint carrier: the vertex colour gives the green) */
 defTile('sbCanvas',(g,S)=>{pRect(g,0,0,S,S,'#ecebe7');g.globalAlpha=0.07;for(let i=0;i<S;i+=2){g.fillStyle=i%4?'#000':'#fff';g.fillRect(i,0,1,S);g.fillRect(0,i,S,1)}g.globalAlpha=1;
   const gr=g.createLinearGradient(0,0,S,S);gr.addColorStop(0,'rgba(255,255,255,.06)');gr.addColorStop(1,'rgba(0,0,0,.06)');g.fillStyle=gr;g.fillRect(0,0,S,S)},{spec:0.02,shin:8});
@@ -55,9 +58,12 @@ function signAtlas(){const c=document.createElement('canvas');c.width=SA.W;c.hei
   const font=(px,w)=>`${w||'bold'} ${px}px "Helvetica Neue",Helvetica,Arial,"DejaVu Sans",sans-serif`;
   const spaced=(ctx,txt,cx,cy,px,sp,fill)=>{ctx.font=font(px);ctx.fillStyle=fill;ctx.textBaseline='middle';const ws=[...txt].map(ch=>ctx.measureText(ch).width);const tot=ws.reduce((a,b)=>a+b,0)+sp*(txt.length-1);let x=cx-tot/2;
     for(let i=0;i<txt.length;i++){ctx.fillText(txt[i],x,cy);x+=ws[i]+sp}return tot};
-  // row A (y 0..64): fascia lettering, green letters on transparent (6.2 m x 0.34 m on the timber band)
-  let px=50;g.font=font(px);while(px>20&&g.measureText('STARBUCKS COFFEE').width+15*16>SA.W-20){px-=2;g.font=font(px)}
-  spaced(g,'STARBUCKS COFFEE',SA.W/2,33,px,15,'#1f6a4f');spaced(ge,'STARBUCKS COFFEE',SA.W/2,33,px,15,'#3fd08a');// green letters (photos: green by day, glowing green at night)
+  // row A (y 0..64): fascia under the eave (photos 2008 + Commons 0934 c. 2023): dark timber band, big green capitals with a pale rim; letters glow green at night
+  g.fillStyle='#2b211a';g.fillRect(0,0,SA.W,64);g.fillStyle='rgba(255,255,255,.05)';g.fillRect(0,2,SA.W,2);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,60,SA.W,4);
+  let px=54;g.font=font(px);while(px>20&&g.measureText('STARBUCKS COFFEE').width+12*16>SA.W-24){px-=2;g.font=font(px)}
+  g.lineJoin='round';for(const [ctx,lit] of [[g,0],[ge,1]]){ctx.font=font(px);ctx.textBaseline='middle';ctx.strokeStyle=lit?'#8ff0bd':'#cfdccc';ctx.lineWidth=lit?3:2.5;
+    const ws=[...'STARBUCKS COFFEE'].map(ch=>ctx.measureText(ch).width);let x=SA.W/2-(ws.reduce((p,q)=>p+q,0)+12*15)/2;for(let i=0;i<16;i++){ctx.strokeText('STARBUCKS COFFEE'[i],x,33);x+=ws[i]+12}}
+  spaced(g,'STARBUCKS COFFEE',SA.W/2,33,px,12,'#2e9a62');spaced(ge,'STARBUCKS COFFEE',SA.W/2,33,px,12,'#3fe896');
   // row B (y 64..174): lit green panel, white letters (door-bay head beam)
   for(const [ctx,lit] of [[g,0],[ge,1]]){ctx.fillStyle=lit?'#0c5a3e':'#1e6b57';ctx.fillRect(0,64,SA.W,110);ctx.strokeStyle=lit?'#9fd8bf':'#e9efe9';ctx.lineWidth=4;ctx.strokeRect(8,72,SA.W-16,94);spaced(ctx,'STARBUCKS COFFEE',SA.W/2,121,70,12,lit?'#f4fff8':'#ffffff')}
   // row C (y 174..259): umbrella valance, white on dark green (not lit)
@@ -102,7 +108,7 @@ function textQuad(A,B,C,D,uv,out){let n=nrmz(cross(sub(B,A),sub(C,A)));let P=[A,
   for(let k=0;k<4;k++){TXT.p.push(...P[k]);TXT.n.push(...n);TXT.u.push(...U[k])}TXT.i.push(o,o+1,o+2,o,o+2,o+3)}
 
 /* ---------------- colours ---------------- */
-const C={timber:hexc('#5d4130'),timberD:hexc('#46301f'),clad:hexc('#7a573f'),deck:hexc('#6e4c35'),brick:hexc('#f2e2d6'),stone:hexc('#efe6d6'),stoneW:hexc('#e6dccb'),plinth:hexc('#cfc4b0'),
+const C={timber:hexc('#6b4429'),timberD:hexc('#4b3020'),rail:hexc('#7a5236'),slab:hexc('#e4d8c2'),clad:hexc('#7a573f'),deck:hexc('#6e4c35'),brick:hexc('#f2e2d6'),stone:hexc('#efe6d6'),stoneW:hexc('#e6dccb'),plinth:hexc('#cfc4b0'),
   tile:hexc('#c8704f'),tileD:hexc('#9a4f36'),render:hexc('#ebe6dc'),iron:hexc('#1f2221'),green:hexc('#1e6b57'),greenD:hexc('#174f41'),planter:hexc('#9a5038'),trough:hexc('#d9d2c2'),chair:hexc('#4a3426'),table:hexc('#3d2c22'),leaf:hexc('#5f8a45')};
 
 /* ---------------- the build ---------------- */
@@ -172,19 +178,19 @@ function build(ctx){const t0=performance.now();let fp=ctx&&ctx.footprints&&ctx.f
     const ms=(a[0]+b[0])/2+ons*0.04,md=(a[1]+b[1])/2+ond*0.04,ls=Math.abs(ux)*(w.w+0.2)+Math.abs(ons)*0.1,ld=Math.abs(ud)*(w.w+0.2)+Math.abs(ond)*0.1;
     lbox(O,ms,md,5.55,ls,0.12,ld,C.timberD,TM.wood);lbox(O,ms,md,3.92,ls,0.08,ld,C.timberD,TM.wood,true)}
   // east gallery: continuous small-paned timber glazing on the main wall line behind the balcony
-  {const out=NE(),L=sN-sS,nb=Math.max(2,Math.round(L/1.2));vrect(O,sS,dM,sN,dM,H.deck,H.glass0,out,C.timberD,TM.wood);vrect(O,sS,dM,sN,dM,H.glass0,H.glass1,out,C1,T.sbGallery,1,nb,1);
+  {const out=NE(),L=sN-sS,nb=Math.max(2,Math.round(L/1.2));vrect(O,sS,dM,sN,dM,H.deck,H.glass0,out,C.timberD,TM.wood);vrect(O,sS,dM,sN,dM,H.glass0,H.glass1,out,C1,T.sbGlassWall,1,nb,1);
     vrect(O,sS,dM,sN,dM,H.glass1,H.wall1,out,C.timber,TM.wood);
     for(let k=0;k<=nb;k++){const s=sS+L*k/nb;lbox(O,clamp(s,sS+0.07,sN-0.07),dM+0.05,H.deck,k%nb===0?0.16:0.09,H.glass1-H.deck,0.1,C.timberD,TM.wood)}
     lbox(O,(sS+sN)/2,dM+0.06,H.glass1,L,0.08,0.14,C.timberD,TM.wood)}
   for(const [s,d] of [[sS,dW],[sN,dW]])lbox(O,s+(s===sS?0.07:-0.07),d+0.07,H.beam,0.18,H.wall1-H.beam,0.18,C.timberD,TM.wood);
 
   /* ===== balcony on the bays ===== */
-  {const d0=dM,d1=dB+0.12,yb=H.beam,yt=H.deck;lbox(O,(sS+sN)/2,(d0+d1)/2,yb,sN-sS,yt-yb,d1-d0,C.deck,TM.wood,true);
+  {const d0=dM,d1=dB+0.12,yb=H.beam,yt=H.deck;lbox(O,(sS+sN)/2,(d0+d1)/2,yb-0.24,sN-sS+0.04,yt-yb+0.24,d1-d0,C.slab,TM.plaster,true);lbox(O,(sS+sN)/2,(d0+d1)/2,yt,sN-sS-0.02,0.015,d1-d0-0.04,C.deck,TM.wood);// rendered slab edge (cream band in the 2008 photo) + timber deck
     const rd=dB+0.05,y0=yt,ys=[0.1,0.98];const sA=sS+0.06,sB=sN-0.06;
     const rail=(pa,pb)=>{// posts, rails and balusters between two local points (s,d)
       const L=Math.hypot(pb[0]-pa[0],pb[1]-pa[1]);const np=Math.max(1,Math.ceil(L/1.7));for(let k=0;k<=np;k++){const t=k/np;lbox(O,pa[0]+(pb[0]-pa[0])*t,pa[1]+(pb[1]-pa[1])*t,y0,0.1,1.06,0.1,C.timberD,TM.wood)}
       const P=(t,y)=>L3(pa[0]+(pb[0]-pa[0])*t,pa[1]+(pb[1]-pa[1])*t,y);beam(O,P(0,y0+ys[1]+0.03),P(1,y0+ys[1]+0.03),0.13,0.06,C.timberD,TM.wood);beam(O,P(0,y0+ys[0]),P(1,y0+ys[0]),0.06,0.06,C.timberD,TM.wood);
-      beam(O,P(0,y0+0.55),P(1,y0+0.55),0.04,0.05,C.timberD,TM.wood);const nbl=Math.floor(L/0.13);for(let k=1;k<nbl;k++){const t=k/nbl;beam(O,P(t,y0+ys[0]+0.03),P(t,y0+ys[1]),0.035,0.035,C.timber,TM.wood)}};
+      beam(O,P(0,y0+0.55),P(1,y0+0.55),0.04,0.05,C.timberD,TM.wood);const nbl=Math.floor(L/0.13);for(let k=1;k<nbl;k++){const t=k/nbl;beam(O,P(t,y0+ys[0]+0.03),P(t,y0+ys[1]),0.04,0.04,C.rail,TM.wood)}};
     rail([sA,rd],[sB,rd]);rail([sA,dM+0.05],[sA,rd]);rail([sB,dM+0.05],[sB,rd]);
     // diagonal brackets under the cantilevered parts (where there is no bay below)
     for(const e of E)if(e.kind==='rec'){const s=(e.s0+e.s1)/2;beam(O,L3(s,dM+0.06,2.45),L3(s,dB-0.02,H.beam-0.02),0.09,0.09,C.timberD,TM.wood)}
@@ -203,7 +209,7 @@ function build(ctx){const t0=performance.now();let fp=ctx&&ctx.footprints&&ctx.f
     // rafter tails under the soffit (east side, over the balcony)
     for(let s=sS+0.4;s<sN-0.2;s+=0.6)lbox(O,s,(dM+d1)/2,ys-0.11,0.07,0.11,d1-dM-0.05,C.timberD,TM.wood);
     // rendered chimney with a small hood
-    const sc=sS+(sN-sS)*0.6,dcc=dc+0.35;lbox(O,sc,dcc,yE+0.6,0.64,yR+1.0-(yE+0.6),0.64,C.render,TM.plaster);lbox(O,sc,dcc,yR+1.0,0.8,0.09,0.8,shade(C.render,0.92),TM.plaster,true);
+    const sc=sS+(sN-sS)*0.6,dcc=dc+0.35;lbox(O,sc,dcc,yE+0.6,0.66,yR+1.0-(yE+0.6),0.66,C.stoneW,TM.rubble);lbox(O,sc,dcc,yR+1.0,0.8,0.09,0.8,C.stone,TM.ashlar,true);
     for(const [i,j] of [[-1,-1],[1,-1],[1,1],[-1,1]])lbox(O,sc+i*0.26,dcc+j*0.26,yR+1.09,0.08,0.24,0.08,C.render,TM.plaster);
     const hA=L3(sc-0.42,dcc-0.42,yR+1.33),hB=L3(sc+0.42,dcc-0.42,yR+1.33),hC=L3(sc+0.42,dcc+0.42,yR+1.33),hD=L3(sc-0.42,dcc+0.42,yR+1.33),hR1=L3(sc-0.42,dcc,yR+1.55),hR2=L3(sc+0.42,dcc,yR+1.55);
     q4(O,hA,hB,hR2,hR1,[0,0],[0.84,0],[0.84,0.5],[0,0.5],C.tileD,TM.tiles,0,[0,1,-1]);q4(O,hC,hD,hR1,hR2,[0,0],[0.84,0],[0.84,0.5],[0,0.5],C.tileD,TM.tiles,0,[0,1,1]);
@@ -211,7 +217,7 @@ function build(ctx){const t0=performance.now();let fp=ctx&&ctx.footprints&&ctx.f
     SB.roof={yE:yF+yE,yR:yF+yR}}
 
   /* ===== lettering ===== */
-  {const sEnd=Math.min(sN-0.5,0.3),sBeg=sS+0.6,L=Math.min(6.4,sEnd-sBeg),sm=(sBeg+sEnd)/2;tquad(sm-L/2,dM+0.012,sm+L/2,dM+0.012,H.glass1+0.07,H.glass1+0.40,ruv('A'),NE());SB.fascia={s0:sm-L/2,s1:sm+L/2}}
+  {const sEnd=Math.min(sN-0.5,0.3),sBeg=sS+0.6,L=Math.min(6.4,sEnd-sBeg),sm=(sBeg+sEnd)/2;tquad(sm-L/2,dM+0.012,sm+L/2,dM+0.012,H.glass1+0.03,H.wall1+0.02,ruv('A'),NE());SB.fascia={s0:sm-L/2,s1:sm+L/2}}
   if(doorE){const e=doorE,sm=(e.s0+e.s1)/2,L=Math.min(2.9,e.L-0.1);tquad(sm-L/2,e.d+0.125,sm+L/2,e.d+0.125,H.gfTop+0.03,H.beam-0.03,ruv('B'),NE());SB.door=W2(sm,e.d);
     // lit sign also on the south gable towards Kassaveti
   }
@@ -244,6 +250,7 @@ function buildCourt(ps,E,yPave,courtLvl,doorE,H){const yP=yPave-yF;// local y of
   const tris=triangulate([clean]);let nt=0;for(const t of tris){const out=[];subdiv(t[0],t[1],t[2],2.5,out);for(let i=0;i<out.length;i+=3){let a=out[i],b=out[i+1],c=out[i+2];const cr=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(cr>0){const q=b;b=c;c=q}
       const Y=p=>terr(p[0],p[1])+courtLvl+0.025;const uv=p=>[S_(p)/2.4,D_(p)/2.4];O.tri([a[0],Y(a),a[1]],[b[0],Y(b),b[1]],[c[0],Y(c),c[1]],uv(a),uv(b),uv(c),C1,RECT[T.sbFlags],0,true);nt++}}
   SB.court={ring:clean,tris:nt,y:yPave};
+  if(typeof MAP!=='undefined'&&Array.isArray(MAP.garden_trees)){const n0=MAP.garden_trees.length;MAP.garden_trees=MAP.garden_trees.filter(t=>{const x=t[0]/10,z=t[1]/10;return !(pip(clean,x,z)||pip(ps,x,z))});SB.treesRemoved=n0-MAP.garden_trees.length}
   // the gap between the old paving level and the street: a granite edge strip along the street wall line
   const segL=(P,Q,w,h,col,tile,G)=>{const dx=Q[0]-P[0],dz=Q[1]-P[1],L=Math.hypot(dx,dz);const ry=Math.atan2(-dz,dx);const y=Math.max(terr(P[0],P[1]),terr(Q[0],Q[1]))+courtLvl;(G||O).box((P[0]+Q[0])/2,y+h/2-0.08,(P[1]+Q[1])/2,L,h+0.08,w,ry,col,RECT[tile],1)};
   // street-edge stone planter troughs with shrubs on the WEST wall segment (the photo's foreground), replacing the generic wall there
@@ -283,11 +290,11 @@ function buildCourt(ps,E,yPave,courtLvl,doorE,H){const yP=yPave-yF;// local y of
     textQuad(A,B,Cc,D,ruv('D'),NE());const A2=L3(s+0.3,d-0.18,y),B2=L3(s-0.3,d-0.18,y);q4(G,A2,B2,D,Cc,[0,0],[0.6,0],[0.6,0.95],[0,0.95],hexc('#2c2b28'),TM.wood,0,NW());
     beam(G,L3(s-0.31,d+0.19,y),L3(s-0.31,d,y+0.96),0.03,0.03,C.timber,TM.wood);beam(G,L3(s+0.31,d+0.19,y),L3(s+0.31,d,y+0.96),0.03,0.03,C.timber,TM.wood)}
   // cast-iron lantern posts (warm light at night)
-  for(const [s,d] of [[-0.35,dB+1.05],[S_(GATE[0])+0.55,D_(GATE[0])-0.45]]){const p=W2(s,d);lantern(p[0],p[1],terr(p[0],p[1])+courtLvl+0.025)}
+  for(const [s,d] of [[-4.3,dB+3.6],[S_(GATE[0])+0.55,D_(GATE[0])-0.45]])// terrace lantern (0934) + gate; the step-foot lantern is lm-ralphlauren's{const p=W2(s,d);lantern(p[0],p[1],terr(p[0],p[1])+courtLvl+0.025)}
   // litter bin by the street planters (photo)
   {const s=S_(GATE[0])+0.6,d=D_(GATE[0])-1.3,p=W2(s,d),y=terr(p[0],p[1])+courtLvl+0.025;O.cyl(p[0],y,p[1],0.22,0.24,0.9,10,hexc('#3a3d3b'),RECT[T.metal],true,0,1);addBoxC(p[0],p[1],0.24,'p')}
   // the big courtyard pine (photo: tall trunk left of the Starbucks front, crown above the roof)
-  if(typeof treeGeo==='function'&&typeof treeChunk==='function'){const p=W2(-7.95,F.dB+0.9);plantOne(p[0],p[1],'pine',1.18);addBoxC(p[0],p[1],0.38,'t');placed('tree',p[0],p[1],'pine','lm-starbucks (photo starbucks_01)')}
+  if(typeof treeGeo==='function'&&typeof treeChunk==='function'){const p=W2(-7.95,F.dB+0.9);plantOne(p[0],p[1],'pine',0.85,1.42);addBoxC(p[0],p[1],0.38,'t');placed('tree',p[0],p[1],'pine','lm-starbucks (photo starbucks_01)')}
   if(typeof SEATS!=='undefined')for(const q of seats)SEATS.push(q);SB.seats=seats.length}
 
 function chair(G,s,d,y,yawLocal){// slatted dark-timber café chair, seat 0.45 m; yawLocal: facing direction in the local frame (0 = +d)
@@ -301,7 +308,7 @@ function umbrella(s,d,y,sz,small){const h=small?2.15:2.5,yc=y+h-0.15,ya=y+h+0.35
   for(let k=0;k<4;k++){const [a0,b0]=cor[k],[a1,b1]=cor[(k+1)%4];const A=L3(s+a0,d+b0,yc),B=L3(s+a1,d+b1,yc);const mid=[(a0+a1)/2,(b0+b1)/2];const out=[mid[0]*F.tx+mid[1]*F.nx,1.5,mid[0]*F.tz+mid[1]*F.nz];
     t3(O,A,B,apex,[0,0],[1,0],[0.5,0.6],C.green,T.sbCanvas,out);t3(O,B,A,[apex[0],apex[1]-0.02,apex[2]],[0,0],[1,0],[0.5,0.6],shade(C.green,0.62),T.sbCanvas,[-out[0],-1,-out[2]]);
     // valance: canvas inside, lettering outside
-    const yv=yc-0.24,o=[out[0],0,out[2]];const A2=[A[0],yv,A[2]],B2=[B[0],yv,B[2]];q4(O,B,A,A2,B2,[0,0],[1,0],[1,0.2],[0,0.2],shade(C.green,0.7),T.sbCanvas,0,[-o[0],0,-o[2]]);
+    const yv=yF+yc-0.24,o=[out[0],0,out[2]];const A2=[A[0],yv,A[2]],B2=[B[0],yv,B[2]];q4(O,B,A,A2,B2,[0,0],[1,0],[1,0.2],[0,0.2],shade(C.green,0.7),T.sbCanvas,0,[-o[0],0,-o[2]]);
     const e=0.006,on=nrmz(o);const P=q=>[q[0]+on[0]*e,q[1],q[2]+on[2]*e];textQuad(P(A2),P(B2),P(B),P(A),ruv('C',0.04,0.96),o);
     // strut from the pole to the corner
     beam(G,L3(s,d,yc-0.55),L3(s+a0*0.96,d+b0*0.96,yc-0.01),0.025,0.025,hexc('#cfc9bd'),T.metal)}
@@ -316,8 +323,12 @@ function shrubRow(x,y,z,ux,uz,len,depth,h,seed){// clipped evergreen shrubs: dar
     for(let q=0;q<9;q++){const u=hf(seed*97+k*13+q),v=hf(seed*31+k*7+q*3),w=hf(seed*17+k*29+q*5);const th=u*TAU;const px=cx+Math.cos(th)*r*0.8*w,pz=cz+Math.sin(th)*depth*0.5*w,py=y+hh*(0.25+0.7*v);
       const sz=0.38+0.2*hf(q+k+seed),a=hf(q*7+seed+k)*TAU,ax=Math.cos(a)*sz/2,az=Math.sin(a)*sz/2,nn=nrmz([Math.cos(th),0.6,Math.sin(th)]);const c=shade(C.leaf,0.8+0.35*v);
       const o=G.v(px-ax,py-sz/2,pz-az,nn[0],nn[1],nn[2],0,0,c,RECT[T.leaves],0);G.v(px+ax,py-sz/2,pz+az,nn[0],nn[1],nn[2],1,0,c,RECT[T.leaves],0);G.v(px+ax,py+sz/2,pz+az,nn[0],nn[1],nn[2],1,1,c,RECT[T.leaves],0);G.v(px-ax,py+sz/2,pz-az,nn[0],nn[1],nn[2],0,1,c,RECT[T.leaves],0);G.i.push(o,o+1,o+2,o,o+2,o+3)}}}
-function plantOne(x,z,kind,sc){if(!TREE[kind])TREE[kind]=treeGeo(kind);const Gt=TREE[kind],c=treeChunk(x,z);const m=new THREE.Matrix4(),q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),hf(Math.floor(x*13+z*7))*TAU);
-  m.compose(new THREE.Vector3(x,terr(x,z),z),q,new THREE.Vector3(sc,sc,sc));for(const [geo,mat] of [[Gt.solid,MAT.atlas],[Gt.leaf,MAT.leaf]]){if(!geo)continue;const im=new THREE.InstancedMesh(geo,mat,1);im.setMatrixAt(0,m);im.castShadow=true;im.frustumCulled=false;c.detail.push(im);scene.add(im)}}
+function plantOne(x,z,kind,sc,sy){const G=treeGeo(kind,0),y=terr(x,z),rot=hf(Math.floor(x*13+z*7))*TAU;
+  if(!sy&&Array.isArray(G)&&typeof lodPool==='function'){const d=(typeof TREE_D!=='undefined'&&TREE_D[kind])||[60,130];// same LOD pool path as 45_trees plantTrees()
+    lodPool([[x,y,z,rot,sc,1,1]],[{geos:[[G[0].solid,MAT.atlas],[G[0].leaf,MAT.leaf]],d:d[0],cast:true},{geos:[[G[1].leaf,MAT.leaf]],d:d[1],cast:true},{geos:[[G[2].leaf,MAT.leaf]],d:0,cast:false}]);
+    if(typeof updateTreeLOD==='function')updateTreeLOD(x,z,true);return}
+  const Gt=Array.isArray(G)?G[0]:G,c=treeChunk(x,z);const m=new THREE.Matrix4(),q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),rot);
+  m.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(sc,sy||sc,sc));for(const [geo,mat] of [[Gt.solid,MAT.atlas],[Gt.leaf,MAT.leaf]]){if(!geo)continue;const im=new THREE.InstancedMesh(geo,mat,1);im.setMatrixAt(0,m);im.castShadow=true;im.frustumCulled=false;c.detail.push(im);scene.add(im)}}
 
 LM.register({id:'starbucks',at:[[156.5,61.5]],build(ctx){try{build(ctx)}catch(e){console.error('lm-starbucks build failed',e);throw e}}});
 })();

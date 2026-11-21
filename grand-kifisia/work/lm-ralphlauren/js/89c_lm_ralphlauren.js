@@ -60,6 +60,17 @@ defTile('rlRail',(g,S)=>{g.clearRect(0,0,S,S);g.fillStyle='#f3f1ec';for(let i=0;
 defTile('rlFrieze',(g,S)=>{pRect(g,0,0,S,S,'#f1eee7');for(let i=0;i<12;i++){const x=i*20;const gr=g.createLinearGradient(x+3,0,x+20,0);gr.addColorStop(0,'#b9b3a8');gr.addColorStop(.35,'#ddd8cf');gr.addColorStop(1,'#faf8f3');g.fillStyle=gr;g.fillRect(x+3,34,17,172)}
   pRect(g,0,0,S,26,'#f6f3ee');pRect(g,0,26,S,5,'#c9c3b8');pRect(g,0,212,S,28,'#f6f3ee');pRect(g,0,208,S,4,'#d2ccc1')},{spec:.03,shin:12});
 
+/* wrought-iron stair railing (cut-out, photos 2/3): one tile = 1.1 m x 0.92 m; top/bottom rails, bars, a band of figure-8 scrolls, small rings at the foot */
+defTile('rlIron',(g,S)=>{g.clearRect(0,0,S,S);g.strokeStyle='#141516';g.fillStyle='#141516';g.lineCap='round';
+  g.fillRect(0,0,S,9);g.fillRect(0,S-10,S,10);g.fillRect(0,S-44,S,5);g.fillRect(0,92,S,4);g.fillRect(0,150,S,4);
+  for(let i=0;i<=8;i++){const x=i*S/8;g.fillRect(x-2.2,0,4.4,S)}
+  g.lineWidth=3.2;for(let i=0;i<8;i++){const cx=(i+0.5)*S/8;g.beginPath();g.ellipse(cx,108,11,12,0,0,TAU);g.stroke();g.beginPath();g.ellipse(cx,136,11,12,0,0,TAU);g.stroke();
+    g.beginPath();g.arc(cx,S-27,8,0,TAU);g.stroke();g.beginPath();g.moveTo(cx-14,60);g.quadraticCurveTo(cx,40,cx+14,60);g.stroke();g.beginPath();g.moveTo(cx-14,64);g.quadraticCurveTo(cx,84,cx+14,64);g.stroke()}},{cut:true,spec:.25,shin:40});
+/* listed-monument plaque (photo 2, left of the door): white marble, engraved dark Greek capitals */
+defTile('rlPlaque',(g,S)=>{pRect(g,0,0,S,S,'#eeebe4');speck(g,300,['#e2ded6','#f6f4ef'],0.6,1.4,0.5);g.strokeStyle='#b9b3a8';g.lineWidth=5;g.strokeRect(10,10,S-20,S-20);
+  g.fillStyle='#3b3a38';g.textAlign='center';g.font='bold 22px Georgia,serif';g.fillText('ΟΙΚΙΑ',S/2,70);g.fillText('ΚΟΤΣΙΚΑ',S/2,100);g.font='18px Georgia,serif';g.fillText('1910',S/2,135);
+  g.font='12px Georgia,serif';for(let i=0;i<4;i++)g.fillRect(48,160+i*16,S-96,3)},{spec:.06,shin:30});
+
 /* ============================== geometry helpers ============================== */
 let G=null,GC=null,OX=161.5,OZ=62.8,UX=0.95281,UZ=0.30355,Y0=0;
 const P=(u,y,w)=>[OX+UX*u-UZ*w,Y0+y,OZ+UZ*u+UX*w];
@@ -218,7 +229,7 @@ function buildVilla(ctx){
     fbox(Fs,G,i0-0.04,i1+0.04,7.02,7.17,-0.26,0.0,lin('#f4f1eb'),TM.plaster,1,0,'b')}
   // ---------- side and back walls (OSM outline) ----------
   const archW=(s,y0,y1,w)=>({s0:s-w/2,s1:s+w/2,y0,y1,rise:w/2,dep:0.3,frame:'#f4f2ec',n:10,sill:true,uv:(ss,yy)=>[(ss-s+w/2)/w*0.5,(yy-y0)/1.0]});
-  const Fe=frame([Ue,0],cER);wall(Fe,0,Fe.L,YB,EM,[archW(3.0,1.95,4.75,0.95),archW(7.6,1.95,4.75,0.95),archW(3.0,6.6,8.9,0.9),archW(7.6,6.6,8.9,0.9)],{uo:0.4});
+  const Fe=frame([Ue,0],cER);wall(Fe,0,Fe.L,YB,EM,[archW(1.9,1.95,4.75,0.9),archW(5.1,1.95,4.75,0.9),archW(8.3,1.95,4.75,0.9),archW(1.9,6.6,8.9,0.85),archW(5.1,6.6,8.9,0.85),archW(8.3,6.6,8.9,0.85)],{uo:0.4});// photo 1: three tall round-arched windows per floor
   const Fst=frame(cER,cST);wall(Fst,0,Fst.L,YB,EM,[]);
   const Fea=frame(cST,cBR);wall(Fea,0,Fea.L,YB,AN+0.35,[archW(2.2,1.95,4.75,0.95),archW(5.2,1.95,4.75,0.95),archW(2.2,6.35,7.65,0.8),archW(5.2,6.35,7.65,0.8)],{uo:0.9});
   const Fb=frame(cBR,cBL);wall(Fb,0,Fb.L,YB,AN+0.35,[archW(1.9,1.95,4.6,0.9),archW(4.8,1.95,4.6,0.9),archW(7.7,1.95,4.6,0.9),archW(1.9,6.35,7.65,0.8),archW(4.8,6.35,7.65,0.8),archW(7.7,6.35,7.65,0.8)],{uo:2.1});
@@ -290,6 +301,8 @@ function buildVilla(ctx){
     fasc([u0,w0],[dl,w0],[0,0,1]);fasc([dr,w0],[u1,w0],[0,0,1]);fasc([u0,w1],[u0,w0],[-1,0,0]);fasc([u1,w1],[u0,w1],[0,0,-1]);
     const sof=(poly)=>{for(let i=1;i<poly.length-1;i++)ot(G,[poly[0][0],ye-0.28,poly[0][1]],[poly[i][0],ye-0.28,poly[i][1]],[poly[i+1][0],ye-0.28,poly[i+1][1]],[0,-1,0],SOF,TM.wood,1)};
     sof([[u0,w0],[dl,w0],[dl,0],[u0,0]]);sof([[dr,w0],[u1,w0],[u1,0],[dr,0]]);sof([[u0,0],[0,0],[0,DB],[u0,DB]]);sof([[u0,DB],[u1,DB],[u1,w1],[u0,w1]]);
+    // knee-brace brackets under the west eave (Commons 0934) and at the wing's front corner
+    for(const w of[-0.6,-3.3,-6.0,-8.7,-11.2]){const ya=ye-0.34;beam(G,[0,ya,w],[u0+0.08,ya,w],0.1,0.12,WOOD,TM.wood,1);beam(G,[-0.04,ya-0.75,w],[-0.04,ya,w],0.1,0.1,WOOD,TM.wood,1);beam(G,[-0.04,ya-0.7,w],[u0+0.14,ya-0.04,w],0.08,0.08,WOOD,TM.wood,1)}
     // the wall dormer: gable roof, bargeboards, finial, stone cheeks back to the hip
     const dy0=12.0,dyr=12.62,dhw=1.25,dwf=0.35;const dyAt=u=>dyr+0.12-Math.abs(u-dC)*((dyr-dy0)/((dorm[1]-dorm[0])/2));const dKs=(dyr-dy0)/((dorm[1]-dorm[0])/2);
     for(const sgn of[1,-1]){const ue=dC+sgn*dhw,ye2=dyr+0.12-dhw*dKs;
@@ -301,7 +314,7 @@ function buildVilla(ctx){
     beam(G,[dC,dyr+0.2,dwf-0.04],[dC,dyr+0.68,dwf-0.04],0.08,0.08,lin('#b4552f'),TM.metal,1);blob(G,dC,dyr+0.74,dwf-0.04,0.05,0.08,0.05,lin('#b4552f'),TM.metal,1,5,9);
     beam(G,[dC,dyr-0.25,dwf-0.03],[dC,dyr-0.75,dwf-0.03],0.09,0.09,WOOD,TM.wood,1);
     // chimney on the wing roof
-    fbox(F0,G,0.45,1.05,yWs(0.45,0)-0.3,13.0,-2.0,-1.4,lin('#cdb79a'),TM.plasterC,1,0,'d');fbox(F0,G,0.38,1.12,13.0,13.12,-2.07,-1.33,lin('#e9e4da'),TM.plaster,1,0,'');
+    fbox(F0,G,0.2,0.78,yWs(0.2,0)-0.3,12.95,-1.55,-0.97,lin('#ece8e0'),TM.plaster,1,0,'d');fbox(F0,G,0.13,0.85,12.95,13.07,-1.62,-0.9,lin('#f4f1eb'),TM.plaster,1,0,'');fbox(F0,G,0.3,0.68,13.07,13.25,-1.45,-1.07,lin('#b4552f'),TM.plasterC,1,0,'d');
   }
   // ---------- first-floor awnings (navy box awnings) ----------
   const awn=(u0,u1,yt,dpt,yv,txt)=>{const yb=yt-0.48,vb=yb-yv;const tv=txt?[0.02,0.38]:[0.52,0.9];
@@ -332,20 +345,23 @@ function buildVilla(ctx){
       const pts=[0,0.9,wEnd];for(let i=0;i<pts.length-1;i++){const wa=pts[i],wb=pts[i+1];
         oq(G,[ou(wa),YB,wa],[ou(wb),YB,wb],[ou(wb),yT(wb),wb],[ou(wa),yT(wa),wa],[sd,0,0],M,TM.marble,1);oq(G,[iu(wa),YB,wa],[iu(wb),YB,wb],[iu(wb),yT(wb),wb],[iu(wa),yT(wa),wa],[-sd,0,0],M,TM.marble,1);
         oq(G,[iu(wa),yT(wa),wa],[ou(wa),yT(wa),wa],[ou(wb),yT(wb),wb],[iu(wb),yT(wb),wb],[0,1,0],shade(M,1.0),TM.marble,1);
-        const mu=(w)=>(iu(w)+ou(w))/2;GC.quad(P(mu(wa),yT(wa),wa),P(mu(wb),yT(wb),wb),P(mu(wb),yT(wb)+0.92,wb),P(mu(wa),yT(wa)+0.92,wa),[0,0],[(wb-wa)/1.1,0],[(wb-wa)/1.1,0.92],[0,0.92],IRON,RECT[T.rail],0);
+        const mu=(w)=>(iu(w)+ou(w))/2;const ln=Math.hypot(wb-wa,yT(wb)-yT(wa));GC.quad(P(mu(wa),yT(wa),wa),P(mu(wb),yT(wb),wb),P(mu(wb),yT(wb)+0.92,wb),P(mu(wa),yT(wa)+0.92,wa),[0,0],[ln/1.1,0],[ln/1.1,1],[0,1],W1,RECT[T.rlIron],0);
         beam(G,[mu(wa),yT(wa)+0.95,wa],[mu(wb),yT(wb)+0.95,wb],0.05,0.05,IRON,TM.metal,1)}
       const pc=[ou(wEnd)-sd*0.15,wEnd+0.18];fbox(F0,G,Math.min(iu(wEnd),ou(wEnd))-0.05,Math.max(iu(wEnd),ou(wEnd))+0.05,YB,0.75,wEnd-0.1,wEnd+0.4,M,TM.marble,1,0,'');
       beam(G,[(iu(wEnd)+ou(wEnd))/2,0.75,wEnd+0.15],[(iu(wEnd)+ou(wEnd))/2,1.55,wEnd+0.15],0.06,0.06,IRON,TM.metal,1);blob(G,(iu(wEnd)+ou(wEnd))/2,1.6,wEnd+0.15,0.06,0.06,0.06,IRON,TM.metal,1,5,13)}
-    // curved glass canopy on black scroll brackets
-    const c0=1.15,c1=4.75,cd=1.3,cy0=5.08,cy=w=>cy0-0.34*Math.pow(w/cd,1.6);const nC=5;
-    for(let i=0;i<nC;i++){const wa=cd*i/nC,wb=cd*(i+1)/nC;oq(G,[c0,cy(wa),wa],[c1,cy(wa),wa],[c1,cy(wb),wb],[c0,cy(wb),wb],[0,1,0.3],lin('#cfd8dc'),T.glassR,1,0,[[0,wa],[2,wa],[2,wb],[0,wb]]);oq(G,[c0,cy(wa)-0.01,wa],[c1,cy(wa)-0.01,wa],[c1,cy(wb)-0.01,wb],[c0,cy(wb)-0.01,wb],[0,-1,-0.3],lin('#b8c2c6'),T.glassR,1,0,[[0,wa],[2,wa],[2,wb],[0,wb]]);
-      for(const u of[c0,c1,(c0+c1)/2])beam(G,[u,cy(wa)+0.01,wa],[u,cy(wb)+0.01,wb],0.04,0.05,IRON,TM.metal,1,false)}
-    beam(G,[c0,cy(cd),cd],[c1,cy(cd),cd],0.05,0.07,IRON,TM.metal,1);beam(G,[c0,cy0,0.02],[c1,cy0,0.02],0.05,0.06,IRON,TM.metal,1);
-    for(const u of[c0+0.05,c1-0.05]){beam(G,[u,3.95,0.02],[u,cy(cd*0.75)-0.03,cd*0.75],0.05,0.06,IRON,TM.metal,1);beam(G,[u,3.9,0.03],[u,cy0,0.03],0.05,0.05,IRON,TM.metal,1);
-      for(let k=0;k<6;k++){const a=k/6*TAU,b=(k+1)/6*TAU,r=0.16,cu=0.42,cyy=4.45;beam(G,[u,cyy+Math.sin(a)*r,cu+Math.cos(a)*r],[u,cyy+Math.sin(b)*r,cu+Math.cos(b)*r],0.03,0.03,IRON,TM.metal,1,false)}}}
+    // arched glass canopy (barrel shell, photos 2/3: front edge is a segmental arch) on black iron brackets with scrolls
+    const c0=1.15,c1=4.75,cd=1.25,um=(c0+c1)/2,hu=(c1-c0)/2,yb0=4.86,rs=0.4,dr=0.28;const cy=(u,w)=>yb0+rs*(1-Math.pow((u-um)/hu,2))-dr*Math.pow(w/cd,1.3);const nU=10,nW=4;
+    for(let i=0;i<nU;i++)for(let j=0;j<nW;j++){const ua=c0+(c1-c0)*i/nU,ub=c0+(c1-c0)*(i+1)/nU,wa=cd*j/nW,wb=cd*(j+1)/nW;
+      oq(G,[ua,cy(ua,wa),wa],[ub,cy(ub,wa),wa],[ub,cy(ub,wb),wb],[ua,cy(ua,wb),wb],[0,1,0.2],lin('#cfd8dc'),T.glassR,1,0,[[ua/2,wa],[ub/2,wa],[ub/2,wb],[ua/2,wb]]);
+      oq(G,[ua,cy(ua,wa)-0.012,wa],[ub,cy(ub,wa)-0.012,wa],[ub,cy(ub,wb)-0.012,wb],[ua,cy(ua,wb)-0.012,wb],[0,-1,-0.2],lin('#b8c2c6'),T.glassR,1,0,[[ua/2,wa],[ub/2,wa],[ub/2,wb],[ua/2,wb]])}
+    for(let i=0;i<nU;i++){const ua=c0+(c1-c0)*i/nU,ub=c0+(c1-c0)*(i+1)/nU;beam(G,[ua,cy(ua,cd),cd],[ub,cy(ub,cd),cd],0.05,0.07,IRON,TM.metal,1,false);beam(G,[ua,cy(ua,0)+0.01,0.03],[ub,cy(ub,0)+0.01,0.03],0.05,0.05,IRON,TM.metal,1,false)}
+    for(const u of[c0,c0+(c1-c0)*0.25,um,c0+(c1-c0)*0.75,c1])for(let j=0;j<nW;j++){const wa=cd*j/nW,wb=cd*(j+1)/nW;beam(G,[u,cy(u,wa)+0.01,wa],[u,cy(u,wb)+0.01,wb],0.035,0.045,IRON,TM.metal,1,false)}
+    for(const u of[c0+0.04,c1-0.04]){const ye=cy(u,0);beam(G,[u,3.3,0.03],[u,ye,0.03],0.05,0.05,IRON,TM.metal,1);beam(G,[u,3.55,0.03],[u,cy(u,cd*0.8)-0.02,cd*0.8],0.045,0.05,IRON,TM.metal,1);
+      for(let k=0;k<8;k++){const a=k/8*TAU,b=(k+1)/8*TAU,r=0.15,cu=0.4,cyy=ye-0.5;beam(G,[u,cyy+Math.sin(a)*r,cu+Math.cos(a)*r],[u,cyy+Math.sin(b)*r,cu+Math.cos(b)*r],0.03,0.03,IRON,TM.metal,1,false)}
+      blob(G,u,3.27,0.04,0.04,0.05,0.04,IRON,TM.metal,1,5,17)}}
   // ---------- small details: iron X anchors, downpipes ----------
   const xAnchor=(F,s,y)=>{for(const sg of[1,-1]){const a=FP(F,s-0.22,y-0.22*sg,0.04),b=FP(F,s+0.22,y+0.22*sg,0.04);beam(G,a,b,0.045,0.03,IRON,TM.metal,1)}};
-  xAnchor(Fw,0.5,9.8);xAnchor(Fg,gs(11.45),9.05);xAnchor(Fe,0.55,9.2);xAnchor(Fwm,Fwm.L-0.55,9.4);xAnchor(Fe,5.3,9.2);
+  xAnchor(Fw,0.5,9.8);xAnchor(Fg,gs(11.45),9.05);xAnchor(Fe,0.55,9.2);xAnchor(Fwm,Fwm.L-0.55,9.4);xAnchor(Fe,6.7,9.3);
   for(const [p,y1] of[[[UW-0.07,0.1],EM-0.05],[[Ue+0.1,-0.3],EM-0.25]]){beam(G,[p[0],YB+0.3,p[1]],[p[0],y1,p[1]],0.09,0.09,lin('#f2f0ea'),T.white,1)}
   // ---------- planters and plants in front ----------
   {const pot=(u,w,r,h)=>{const c=P(u,0,w);const g2=G;g2.cyl(c[0],Y0+YB+0.3,c[2],r*0.72,r,h-(YB+0.3),10,lin('#b5643f'),RECT[TM.plasterC],false,0,1);g2.cyl(c[0],Y0+h,c[2],r*1.08,r*1.08,0.07,10,lin('#c06e47'),RECT[TM.plasterC],true,0,1);
@@ -355,11 +371,71 @@ function buildVilla(ctx){
         GC.quad([b0[0]-wx*0.3,b0[1],b0[2]-wz*0.3],[b0[0]+wx*0.3,b0[1],b0[2]+wz*0.3],[tip[0]+wx,tip[1],tip[2]+wz],[tip[0]-wx,tip[1],tip[2]-wz],[0,0],[1,0],[1,1],[0,1],lin('#7d9c5a'),RECT[T.leafPalm!==undefined?T.leafPalm:T.leaves],0)}
       addBoxC(c[0],c[2],r*0.9,'p')};
     pot(-0.55,4.35,0.42,0.62);pot(6.05,4.35,0.42,0.62);pot(5.95,2.15,0.36,0.52);
+    {const c=P(4.42,0,0.5);G.cyl(c[0],Y0+FL,c[2],0.17,0.22,0.36,10,lin('#b5643f'),RECT[TM.plasterC],true,0,1);for(let k=0;k<3;k++)G.cyl(c[0],Y0+FL+0.36+k*0.22,c[2],0.24-k*0.06,0.03,0.5-k*0.1,8,lin(k%2?'#4f6b3a':'#5a7742'),RECT[TM.hedge!==undefined?TM.hedge:T.hedge],false,0,1.5)}// potted conifer on the landing (0934)
     // raised brick planter along the east walkway with clipped shrubs
     const Fpl={a:[Ue+0.35,-0.6],d:[0,-1],L:9};fbox(Fpl,G,0,8.6,YB,0.55,0,1.2,lin('#e0b08a'),TM.brickw,1,0,'d');fbox(Fpl,G,-0.04,8.64,0.55,0.6,-0.04,1.24,lin('#d9a37c'),TM.brickw,1,0,'d');
     for(let k=0;k<5;k++){const w=-1.3-k*1.7;blob(G,Ue+0.95,0.95+hf(k*7)*0.25,w,0.6,0.5+hf(k*3)*0.2,0.75,lin('#9fb08a'),TM.hedge||T.hedge,1.5,7,k+3)}
     {const a=P(Ue+0.35,0,-0.6),b=P(Ue+0.35,0,-9.2),c=P(Ue+1.55,0,-9.2),d=P(Ue+1.55,0,-0.6);addSeg(a[0],a[2],b[0],b[2],'p');addSeg(b[0],b[2],c[0],c[2],'p');addSeg(c[0],c[2],d[0],d[2],'p');addSeg(d[0],d[2],a[0],a[2],'p')}
 }
+  // ---------- courtyard planting by the villa (Commons 0934 + photos 1/2): brick beds with stone/timber caps, a bench bed, lantern posts, hoop rails ----------
+  {const lv=typeof lvl==='function'?Math.max(0,lvl(163.5,70.5)):0;const gyL=(u,w)=>{const p=P(u,0,w);return terr(p[0],p[2])+lv+0.025-Y0};// local paving height (= lm-starbucks courtyard formula)
+    const BR=lin('#d29a74'),CAP=lin('#e8e2d6'),TIM=lin('#8a6440'),HG=TM.hedge!==undefined?TM.hedge:T.hedge;
+    const bed=(u0,u1,w0,w1,hb,capT)=>{const th=0.2,yb=Math.min(gyL(u0,w0),gyL(u1,w1),gyL(u0,w1),gyL(u1,w0))-0.1,yt=Math.max(gyL(u0,w0),gyL(u1,w1))+hb;
+      const Fs=[{a:[u0,w1],d:[1,0],L:u1-u0},{a:[u1,w1],d:[0,-1],L:w1-w0},{a:[u0,w0],d:[0,1],L:w1-w0},{a:[u1,w0],d:[-1,0],L:u1-u0}];
+      for(const F of Fs){fbox(F,G,0,F.L,yb,yt,-th,0,BR,TM.brickw,1,0,'');fbox(F,G,-0.02,F.L+0.02,yt,yt+0.06,-th-0.03,0.03,capT?TIM:CAP,capT?TM.wood:TM.marble,1,0,'d')}
+      oq(G,[u0,yt-0.07,w0],[u1,yt-0.07,w0],[u1,yt-0.07,w1],[u0,yt-0.07,w1],[0,1,0],lin('#5e4a38'),TM.soil!==undefined?TM.soil:TM.plasterC,1.5);
+      for(const [p,q] of[[[u0,w0],[u1,w0]],[[u1,w0],[u1,w1]],[[u1,w1],[u0,w1]],[[u0,w1],[u0,w0]]]){const A=P(p[0],0,p[1]),B=P(q[0],0,q[1]);addSeg(A[0],A[2],B[0],B[2],'p')}return yt-0.07};
+    const shrub=(u,y,w,r,h,c,sd)=>blob(G,u,y+h*0.5,w,r,h*0.5,r*0.9,c,HG,1.5,8,sd);
+    const juniper=(u,w,y,r,h,sd)=>{const c=P(u,0,w);for(let k=0;k<3;k++){const rr=r*(1-k*0.18),hh=h*(0.62-k*0.08),yy=Y0+y+h*0.17*k;G.cyl(c[0]+(hf(sd+k)-0.5)*0.1,yy,c[2]+(hf(sd*3+k)-0.5)*0.1,rr,0.02,hh,9,shade(lin(k%2?'#5f7a45':'#56703f'),0.95+hf(sd+k*5)*0.1),RECT[HG],false,0,1.5)}
+      blob(G,u,y+0.35,w,r*0.95,0.45,r*0.95,lin('#5a7442'),HG,1.5,8,sd)};
+    // (1) low bed right of the bay, along the east part of the front (0934 / photo 2: clipped shrubs ~1 m, roses)
+    {const y=bed(11.0,14.6,0.25,3.3,0.42,false);shrub(11.7,y,1.1,0.55,0.95,lin('#6f8a4a'),21);shrub(12.7,y,0.9,0.6,1.05,lin('#7d9550'),23);shrub(13.8,y,1.3,0.55,0.9,lin('#748c4c'),25);shrub(12.3,y,2.5,0.5,0.8,lin('#86a05a'),27);shrub(13.7,y,2.6,0.5,1.1,lin('#6a8546'),29);
+      for(const [u,w] of[[11.6,2.6],[13.1,1.9]])for(let k=0;k<6;k++){const a=k*1.1+u;blob(G,u+Math.cos(a)*0.28,y+0.85+hf(k+u*7)*0.25,w+Math.sin(a)*0.25,0.07,0.06,0.07,lin(k%2?'#c4313b':'#d9475a'),T.white,1,5,k)}}
+    // (2) timber-capped brick bed with two tall junipers further south-east (photo 1 foreground)
+    {const y=bed(13.3,16.3,5.0,8.6,0.5,true);juniper(14.4,6.0,y,0.95,4.2,3);juniper(15.4,7.7,y,0.75,3.1,8);shrub(13.9,y,7.8,0.45,0.7,lin('#7d9550'),31)}
+    // (3) bench bed left-front of the steps (0934): brick box of clipped box shrubs, a slatted timber bench along its south face on a low brick base
+    {const u0=0.2,u1=3.9,w0=5.3,w1=6.75;const y=bed(u0,u1,w0,w1,0.5,false);for(let k=0;k<5;k++)shrub(u0+0.45+k*0.7,y,w0+0.7+(hf(k*13)-0.5)*0.2,0.5,0.75+hf(k*5)*0.2,lin(k%2?'#5f7d3e':'#6a8746'),40+k);
+      const yb=gyL((u0+u1)/2,w1+0.3);const Fn={a:[u0+0.1,w1+0.52],d:[1,0],L:u1-u0-0.2};fbox(Fn,G,0,Fn.L,yb-0.1,yb+0.36,-0.52,0,BR,TM.brickw,1,0,'');
+      for(let k=0;k<4;k++)fbox(Fn,G,-0.05,Fn.L+0.05,yb+0.36,yb+0.43,-0.5+k*0.135,-0.5+k*0.135+0.115,shade(TIM,0.92+0.08*(k%2)),TM.wood,1,0,'');
+      for(const s2 of[Fn.L-0.12,Fn.L+0.02]){fbox(Fn,G,s2,s2+0.05,yb-0.05,yb+0.43,-0.45,-0.4,IRON,TM.metal,1,0,'');fbox(Fn,G,s2,s2+0.05,yb-0.05,yb+0.43,-0.1,-0.05,IRON,TM.metal,1,0,'')}
+      {const A=P(u0+0.1,0,w1+0.52),B=P(u1-0.1,0,w1+0.52);addSeg(A[0],A[2],B[0],B[2],'p')}}
+    // (4) Victorian lantern posts at the step foot (0934 left; photo 2 right)
+    for(const [u,w] of[[-0.6,3.25],[12.75,3.75]]){const y=gyL(u,w),c=P(u,y,w);G.cyl(c[0],c[1],c[2],0.16,0.13,0.45,8,IRON,RECT[TM.metal],true,0,1);G.cyl(c[0],c[1]+0.45,c[2],0.07,0.055,2.7,8,IRON,RECT[TM.metal],false,0,1);
+      G.cyl(c[0],c[1]+3.1,c[2],0.1,0.07,0.12,8,IRON,RECT[TM.metal],true,0,1);G.cyl(c[0],c[1]+3.22,c[2],0.14,0.2,0.48,6,lin('#fff3d6'),RECT[T.white],false,1,1);G.cyl(c[0],c[1]+3.7,c[2],0.24,0.02,0.26,6,IRON,RECT[TM.metal],true,0,1);
+      blob(G,u,y+4.0,w,0.04,0.06,0.04,IRON,TM.metal,1,5,7);addBoxC(c[0],c[2],0.18,'p');if(typeof addLight==='function')addLight(c[0],c[2],7,0,0.85)}
+    // (5) black steel hoop rails (0934: in front of the bay and beside the bench bed)
+    const hoop=(ua,wa,ub,wb)=>{const ya=gyL(ua,wa),yb=gyL(ub,wb);beam(G,[ua,ya,wa],[ua,ya+0.95,wa],0.05,0.05,IRON,TM.metal,1);beam(G,[ub,yb,wb],[ub,yb+0.95,wb],0.05,0.05,IRON,TM.metal,1);beam(G,[ua,ya+0.95,wa],[ub,yb+0.95,wb],0.05,0.05,IRON,TM.metal,1)};
+    hoop(9.2,7.0,12.4,6.2);hoop(-0.6,7.3,-0.6,5.6);
+    // east passage paving (villa east wall -> b423), same flags as the courtyard where available
+    const pt=T.sbFlags!==undefined?T.sbFlags:TM.paving!==undefined?TM.paving:TM.marble;const ring=[[Ue,0],[16.93,-3.5],[19.15,-3.48],[19.45,-16.37],[14.3,-16.5],[14.32,-19.0],[cBR[0],cBR[1]],[cST[0],cST[1]],[cER[0],cER[1]]];
+    if(typeof triangulate==='function'){const tris=triangulate([ring.map(p=>[p[0],p[1]])]);const sub2=(a,b,c,d)=>{const L=Math.max(Math.hypot(a[0]-b[0],a[1]-b[1]),Math.hypot(b[0]-c[0],b[1]-c[1]),Math.hypot(c[0]-a[0],c[1]-a[1]));
+        if(d>3||L<2.6){const pa=[a[0],gyL(a[0],a[1]),a[1]],pb=[b[0],gyL(b[0],b[1]),b[1]],pc=[c[0],gyL(c[0],c[1]),c[1]];const uv=p=>[p[0]/2.4,p[2]/2.4];ot(G,pa,pb,pc,[0,1,0],lin('#ffffff'),pt,1,0,[uv(pa),uv(pb),uv(pc)]);return}
+        const m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2],ab=m(a,b),bc=m(b,c),ca=m(c,a);sub2(a,ab,ca,d+1);sub2(ab,b,bc,d+1);sub2(ca,bc,c,d+1);sub2(ab,bc,ca,d+1)};
+      for(const t of tris)sub2(t[0],t[1],t[2],0)}}
+  // ---------- monument plaque left of the door (photo 2: white marble plaque on the landing wall) ----------
+  fbox(Fw,G,0.98,1.62,2.05,2.85,0,0.04,W1,T.rlPlaque,1,0,'b');
+  // ---------- night: warm up-lights grazing the stone + LED line on the frieze (photos 2 and 3) ----------
+  if(typeof THREE!=='undefined'){const pos=[],uvs=[],cols=[];
+    const lamp=(F,s,y0,h,wd,k,t)=>{t=t||0.035;const c=[k,k*0.86,k*0.66];const q=[[s-wd/2,y0],[s+wd/2,y0],[s+wd/2,y0+h],[s-wd/2,y0+h]],uv=[[0,0],[1,0],[1,1],[0,1]];
+      for(const i of[0,1,2,0,2,3]){const p=P(...FP(F,q[i][0],q[i][1],t));pos.push(p[0],p[1],p[2]);uvs.push(uv[i][0],uv[i][1]);cols.push(c[0],c[1],c[2])}};
+    lamp(Fw,0.35,0.0,6.0,1.2,0.75);lamp(Fw,1.25,FL,4.6,1.3,0.9);lamp(Fw,4.6,FL,4.6,1.3,0.9);lamp(Fw,2.95,6.05,4.8,3.6,0.35);
+    for(const Fs of[Bl,Br]){lamp(Fs,0.32,1.75,4.2,0.9,1.0,0.1);lamp(Fs,Fs.L-0.32,1.75,4.2,0.9,1.0,0.1)}
+    lamp(Bf,0.38,1.75,4.2,1.0,1.0,0.1);lamp(Bf,Bf.L-0.38,1.75,4.2,1.0,1.0,0.1);
+    lamp(Fg,gs(5.55),0.0,9.0,1.1,0.8);lamp(Fg,gs(11.42),0.0,9.0,1.1,0.8);lamp(Fg,gs(UR),6.1,6.2,3.4,0.4);lamp(Fe,0.5,0.0,8.5,1.1,0.55);
+    const ledG=[];for(const [F,a,b,ex] of[[Fw,0,UW,0.06],[Bl,0,Bl.L,0.08],[Bf,0,Bf.L,0.08],[Br,0,Br.L,0.08],[Fg,0,gs(BAY.b0),0.06],[Fg,gs(BAY.b1),gs(Ue),0.06]])ledG.push([F,a,b,ex]);
+    const tex=(()=>{const cv=document.createElement('canvas');cv.width=64;cv.height=128;const g=cv.getContext('2d');const id=g.createImageData(64,128);
+      for(let y=0;y<128;y++)for(let x=0;x<64;x++){const v=1-y/127,hx=Math.abs(x/63-0.5)*2;const bell=Math.pow(Math.max(0,Math.cos(hx*Math.PI/2)),1.6);const fall=Math.pow(1-v,1.0)*0.25+Math.exp(-v*3.2)*0.75;const a=clamp(bell*fall*(1-Math.pow(v,6))*255,0,255);
+        const p=(y*64+x)*4;id.data[p]=id.data[p+1]=id.data[p+2]=a;id.data[p+3]=255}g.putImageData(id,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=true;return t})();
+    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+    const mat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false});
+    const mesh=new THREE.Mesh(geo,mat);mesh.visible=false;mesh.frustumCulled=true;mesh.renderOrder=3;scene.add(mesh);
+    // LED line: a lit strip under the cornice (frieze) — emissive white boxes, same night factor
+    const lp=[];for(const [F,a,b,ex] of ledG){for(const [s0,s1] of[[a-ex,b+ex]]){const q=[[s0,5.3],[s1,5.3],[s1,5.6],[s0,5.6]];for(const i of[0,1,2,0,2,3]){const p=P(...FP(F,q[i][0],q[i][1],0.075));lp.push(p[0],p[1],p[2])}}}
+    const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3));
+    const lmat=new THREE.MeshBasicMaterial({color:0xfff1d8,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,side:THREE.DoubleSide});
+    const lmesh=new THREE.Mesh(lg,lmat);lmesh.visible=false;lmesh.renderOrder=3;scene.add(lmesh);
+    RL_VILLA.night=(n)=>{mat.opacity=n*0.85;mesh.visible=n>0.02;lmat.opacity=n*0.45;lmesh.visible=n>0.02};
+    if(typeof FRAME_HOOKS!=='undefined')FRAME_HOOKS.push(()=>{const n=(typeof SKY!=='undefined'&&SKY.night)||0;if(n!==RL_VILLA._n){RL_VILLA._n=n;RL_VILLA.night(n)}})}
   // ---------- collision: real outline (with the canted bay) + stair parapets ----------
   const outline=[[0,0],[BAY.b0,0],[BAY.f0,BAY.pj],[BAY.f1,BAY.pj],[BAY.b1,0],[Ue,0],cER,cST,cBR,cBL,cWN,cWW];
   for(let i=0;i<outline.length;i++){const a=P(outline[i][0],0,outline[i][1]),b=P(outline[(i+1)%outline.length][0],0,outline[(i+1)%outline.length][1]);addSeg(a[0],a[2],b[0],b[2],'b')}

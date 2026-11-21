@@ -157,6 +157,71 @@ def('air_down', 0.1, { hips: [[0, 0, 0.02, 0]], spine: [[0, 0.16, 0, 0]], head: 
   const lowR = (t, s) => K(t, { spine: [0.03 + s, -0.08, 0], head: [0.03, 0.04, 0], handR: [-0.13, 1.0 + s * 0.2, 0.22], handL: [0.1, 1.2 + s * 0.2, 0.3], poleR: [-0.9, -0.6, -0.4], poleL: [0.9, -0.7, -0.2],
     handRr: [3.17, -2.052, -0.823], handLr: [-0.92, -1.093, 2.245], curlR: [0.8], curlL: [0.6] });
   def('hold_rifle', 3, seq([lowR(0, 0), lowR(1.5, 0.01), lowR(3, 0)]), { loop: true, fps: 10 });
+
+  /* ---------- firing and reloading (owner item 16): built on the aim poses above.  Hand orientation is keyed in character space (handRw/handLw)
+     relative to the solved aim grip, so the gun keeps pointing where the IK arms put it while it kicks / is worked on ---------- */
+  const QL = require('./lib').Q, qa = (ax, a) => { const s = Math.sin(a / 2); return [ax[0] * s, ax[1] * s, ax[2] * s, Math.cos(a / 2)]; };
+  const qdo = (...qs) => qs.reduce((a, b) => QL.norm(QL.mul(a, b)));
+  const P0 = k => { const o = {}; for (const c in k) o[c] = k[c].slice(1); return o; };
+  const solved = P => RIG.solve(P).w.wq, HR = RIG.B('R Hand'), HL = RIG.B('L Hand');
+  const fix = (q, ref) => (q[0] * ref[0] + q[1] * ref[1] + q[2] * ref[2] + q[3] * ref[3] < 0 ? q.map(v => -v) : q);
+  /* delta rotation about the character's axes: up = muzzle up (about -x), cant = roll about the barrel (+z), yaw = turn left */
+  const dq = (up, cant, yaw) => qdo(qa([0, 1, 0], yaw || 0), qa([1, 0, 0], -(up || 0)), qa([0, 0, 1], cant || 0));
+  const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  { /* pistol */
+    const A = P0(aimP(0, 0)), W = solved(A), WR = W[HR], WL = W[HL];
+    /* one key: offsets from the aim pose.  o = { r:[dx,dy,dz] right hand, l: [x,y,z] left hand ABSOLUTE (or null = stays on the grip, moving with the right),
+       up/cant/yaw: gun rotation, lk: 0..1 left hand keeps the grip orientation, sp: spine pitch add, hd: head pitch add, cl: left curl } */
+    const key = (t, o) => { const r = add3(A.handR, o.r || [0, 0, 0]), q = dq(o.up, o.cant, o.yaw), l = o.l || add3(A.handL, o.r || [0, 0, 0]);
+      return K(t, { hips: A.hips, spine: [A.spine[0] + (o.sp || 0), A.spine[1] + (o.sy || 0), 0], neck: A.neck, head: [A.head[0] + (o.hd || 0), o.hy || 0, 0],
+        handR: r, handL: l, poleR: A.poleR, poleL: o.pl || A.poleL, handRr: A.handRr, handLr: A.handLr, handRw: fix(qdo(q, WR), WR), handLw: fix(qdo(o.lq ? dq(...o.lq) : q, WL), WL), handLwk: [o.lk == null ? 1 : o.lk],
+        curlR: A.curlR, curlL: [o.cl == null ? A.curlL[0] : o.cl], footL: A.footL, footR: A.footR }); };
+    def('fire_pistol', 0.34, seq([key(0, {}), key(0.03, { r: [0, 0.028, -0.032], up: 0.34, sp: -0.035, hd: -0.02 }), key(0.07, { r: [0, 0.034, -0.026], up: 0.27, sp: -0.04, hd: -0.025 }),
+      key(0.17, { r: [0, 0.01, -0.006], up: 0.06, sp: -0.01 }), key(0.34, {})]), { fps: 60, meta: { shot: 0.0 } });
+    /* tactical reload: gun pulled into the work space (muzzle up, canted), eyes on it; left hand to the belt pouch, new magazine in, slap, rack the slide, back on target */
+    const ws = { r: [0.03, -0.2, -0.17], up: 0.42, cant: 0.55, sp: 0.06, hd: 0.3 }, gun = add3(A.handR, ws.r);
+    const L = (dx, dy, dz) => [gun[0] + dx, gun[1] + dy, gun[2] + dz];
+    def('reload_pistol', 1.9, seq([
+      key(0, {}),
+      key(0.22, Object.assign({}, ws, { l: L(0.07, -0.02, 0.04), lk: 0.6 })),
+      key(0.45, Object.assign({}, ws, { l: [0.17, 1.02, 0.12], lk: 0, cl: 0.3, pl: [1, -0.4, -0.6] })),
+      key(0.62, Object.assign({}, ws, { l: [0.16, 0.99, 0.11], lk: 0, cl: 0.85, pl: [1, -0.4, -0.6] })),
+      key(0.92, Object.assign({}, ws, { l: L(0.02, -0.14, 0.02), lk: 0, cl: 0.85 })),
+      key(1.04, Object.assign({}, ws, { l: L(0.01, -0.09, 0.01), lk: 0, cl: 0.85 })),
+      key(1.1, Object.assign({}, ws, { l: L(0.01, -0.075, 0.01), lk: 0, cl: 0.5 })),
+      key(1.25, Object.assign({}, ws, { l: L(0.0, 0.07, 0.07), lk: 0, cl: 0.6 })),
+      key(1.36, Object.assign({}, ws, { l: L(0.0, 0.07, -0.01), lk: 0, cl: 0.9 })),
+      key(1.42, Object.assign({}, ws, { l: L(0.02, 0.06, -0.02), lk: 0, cl: 0.4 })),
+      key(1.6, { r: [0, -0.06, -0.05], up: 0.1, l: null, lk: 1, hd: 0.08 }),
+      key(1.9, {})]), { fps: 30, modes: {}, meta: { mag: 0.6, magIn: 1.06, ready: 1.6 } });
+  }
+  { /* rifle */
+    const A = P0(aimR(0, 0)), W = solved(A), WR = W[HR], WL = W[HL];
+    const key = (t, o) => { const r = add3(A.handR, o.r || [0, 0, 0]), q = dq(o.up, o.cant, o.yaw), l = o.l || add3(A.handL, o.r || [0, 0, 0]);
+      return K(t, { hips: A.hips, hipsR: A.hipsR, spine: [A.spine[0] + (o.sp || 0), A.spine[1] + (o.sy || 0), 0], neck: A.neck, head: [A.head[0] + (o.hd || 0), A.head[1] + (o.hy || 0), A.head[2] * (o.hr == null ? 1 : o.hr)],
+        handR: r, handL: l, poleR: A.poleR, poleL: o.pl || A.poleL, handRr: A.handRr, handLr: A.handLr, handRw: fix(qdo(q, WR), WR), handLw: fix(qdo(q, WL), WL), handLwk: [o.lk == null ? 1 : o.lk],
+        curlR: A.curlR, curlL: [o.cl == null ? A.curlL[0] : o.cl], footL: A.footL, footR: A.footR }); };
+    def('fire_rifle', 0.32, seq([key(0, {}), key(0.035, { r: [0, 0.012, -0.045], l: add3(A.handL, [0, 0.016, -0.045]), up: 0.1, sp: -0.05, hd: -0.02 }),
+      key(0.09, { r: [0, 0.008, -0.03], l: add3(A.handL, [0, 0.01, -0.03]), up: 0.07, sp: -0.04 }), key(0.2, { r: [0, 0.002, -0.008], up: 0.015, sp: -0.01 }), key(0.32, {})]), { fps: 60, meta: { shot: 0.0 } });
+    /* magazine change: stock off the shoulder, rifle canted with the magazine towards the left hand, old magazine out, new one from the vest, rock it in, pull the charging handle */
+    const ws = { r: [0.0, -0.13, 0.07], up: -0.14, cant: 0.5, yaw: 0.14, sp: 0.07, hd: 0.28, hr: 0.3 } /* grip forward enough that the stock stays tucked under the right arm, not through the chest */, g = add3(A.handR, ws.r);
+    const M = (dx, dy, dz) => [g[0] + dx, g[1] + dy, g[2] + dz];
+    def('reload_rifle', 2.5, seq([
+      key(0, {}),
+      key(0.3, Object.assign({}, ws, { l: M(0.06, -0.06, 0.15), lk: 0.3, cl: 0.7 })),
+      key(0.5, Object.assign({}, ws, { l: M(0.06, -0.1, 0.15), lk: 0, cl: 0.9 })),
+      key(0.75, Object.assign({}, ws, { l: [0.14, 1.1, 0.2], lk: 0, cl: 0.4, pl: [1, -0.5, -0.4] })),
+      key(0.95, Object.assign({}, ws, { l: [0.15, 1.08, 0.17], lk: 0, cl: 0.9, pl: [1, -0.5, -0.4] })),
+      key(1.3, Object.assign({}, ws, { l: M(0.06, -0.15, 0.15), lk: 0, cl: 0.9 })),
+      key(1.45, Object.assign({}, ws, { l: M(0.06, -0.08, 0.15), lk: 0, cl: 0.9 })),
+      key(1.52, Object.assign({}, ws, { l: M(0.06, -0.07, 0.15), lk: 0, cl: 0.4 })),
+      key(1.75, Object.assign({}, ws, { l: M(0.0, 0.07, 0.02), lk: 0, cl: 0.5, pl: [0.6, -0.2, -0.9] })),
+      key(1.85, Object.assign({}, ws, { l: M(0.0, 0.07, 0.0), lk: 0, cl: 0.95, pl: [0.6, -0.2, -0.9] })),
+      key(1.97, Object.assign({}, ws, { l: M(0.0, 0.06, -0.09), lk: 0, cl: 0.95, pl: [0.6, -0.2, -0.9] })),
+      key(2.05, Object.assign({}, ws, { l: M(0.0, 0.06, -0.06), lk: 0, cl: 0.3 })),
+      key(2.25, { r: [0, -0.05, 0.02], up: -0.05, l: null, lk: 1, hd: 0.06 }),
+      key(2.5, {})]), { fps: 30, meta: { mag: 0.48, magIn: 1.47, ready: 2.25 } });
+  }
   void br;
 }
 

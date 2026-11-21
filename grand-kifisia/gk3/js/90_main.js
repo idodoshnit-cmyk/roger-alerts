@@ -14,8 +14,12 @@ function lookBy(dx,dy,ms){const k=0.0052*(SETTINGS.sens||1)*clamp(900/Math.max(i
   if(ms>0){const s=1000/Math.max(8,ms);LOOK.vx+=(ay*s-LOOK.vx)*0.5;LOOK.vy+=(ap*s-LOOK.vy)*0.5}}
 function joySet(t){let dx=t.clientX-JOY.cx,dy=t.clientY-JOY.cy,d=Math.hypot(dx,dy);const R=JOY.R,lim=R*1.35;
   if(d>lim){const k=(d-lim)/d;JOY.cx+=dx*k;JOY.cy+=dy*k;joyEl.style.left=JOY.cx+'px';joyEl.style.top=JOY.cy+'px';dx=t.clientX-JOY.cx;dy=t.clientY-JOY.cy;d=lim}/* the base follows a thumb that drifts away */
+  if(player.car){/* driving: one finger steers — only the sideways distance counts (wide, forgiving), the knob slides on a rail */
+    const c=clamp(dx/(R*1.15),-1,1);input.jx=c;input.jy=0;/* dead zone + response curve live in driveCar (72_driving) */
+    if(Math.abs(dy)>R*1.6){JOY.cy+=dy-Math.sign(dy)*R*1.6;joyEl.style.top=JOY.cy+'px'}
+    knob.style.transform=`translate(${(c*R).toFixed(1)}px,0)`;return}
   const c=Math.min(1,d/R),dz=0.14;let m=c<=dz?0:Math.pow((c-dz)/(1-dz),1.2);
-  if(d>1e-3){input.jx=player.car?clamp(dx/R,-1,1):dx/d*m;input.jy=player.car?0:dy/d*m}else input.jx=input.jy=0;/* in a car the stick only steers; the pedals do the rest */
+  if(d>1e-3){input.jx=dx/d*m;input.jy=dy/d*m}else input.jx=input.jy=0;
   const kd=Math.min(d,R);knob.style.transform=d>1e-3?`translate(${(dx/d*kd).toFixed(1)}px,${(dy/d*kd).toFixed(1)}px)`:''}
 function joyEnd(){JOY.id=null;input.jx=input.jy=0;joyEl.hidden=true}
 touchEl.addEventListener('touchstart',e=>{e.preventDefault();setInputMode('touch');audioOn();if(cutSkip&&HUDS.cine)return;
@@ -53,8 +57,20 @@ function bind(id,down,up){const el=$(id);let tid=null;
 bind('bCar',()=>carBtn());bind('bExit',()=>carBtn());bind('bJump',()=>jump());bind('bSprint',()=>{input.sprint=!input.sprint;JOY.idle=0},false);bind('bAct',()=>act());bind('bHorn',()=>act());
 bind('bGas',()=>input.gas=true,()=>input.gas=false);bind('bBrake',()=>input.rev=true,()=>input.rev=false);bind('bHand',()=>input.brake=true,()=>input.brake=false);
 bind('bUse',()=>use());bind('radar',()=>openMenu('map'));bind('pauseBtn',()=>openMenu());bind('skip',()=>{if(cutSkip)cutSkip()});
-function carBtn(){if(!running||player.frozen||DLG.open||player.busy>0)return;if(player.car){const c=player.car;exitCar();if(!player.car)gameEvent('exitCar',{car:c})}
-  else if(!player.interior){enterCar();if(player.car){STATS.cars++;input.sprint=false;gameEvent('enterCar',{car:player.car})}}}
+/* one tap: get into the nearest car / get out. A short dip of the screen (TF) hides the moment the character disappears into the car or
+   reappears beside it; when the car is still moving, 72_driving brakes to a stop first and the dip follows the last metres of braking. */
+const TF={v:0,t:0,el:null,next:null,hold:0};
+function tfTick(dt){if(TF.next&&TF.v>=TF.t-0.02){const f=TF.next;TF.next=null;try{f()}catch(e){console.warn(e)}TF.hold=0.06}
+  if(TF.hold>0)TF.hold-=dt;else if(!TF.next)TF.t=0;
+  if(typeof DRV!=='undefined'&&DRV.exitReq&&player.car){const v=Math.abs(player.car.vf||0);TF.t=Math.max(TF.t,clamp((3.2-v)/2,0,1)*0.6);TF.hold=0.1}
+  const k=TF.v<TF.t?1-Math.exp(-dt*22):1-Math.exp(-dt*7);TF.v+=(TF.t-TF.v)*k;if(TF.v<0.004&&TF.t===0)TF.v=0;
+  if(!TF.el&&TF.v>0){TF.el=document.createElement('div');TF.el.style.cssText='position:fixed;inset:0;z-index:18;background:#05070a;pointer-events:none;opacity:0';document.body.appendChild(TF.el)}
+  if(TF.el){const o=TF.v.toFixed(3);if(TF.el._o!==o){TF.el._o=o;TF.el.style.opacity=o}}}
+function tfDip(fn,depth){if(TF.next)return;TF.t=depth||0.62;TF.next=fn}
+function carBtn(){if(!running||player.frozen||DLG.open||player.busy>0||TF.next)return;
+  if(player.car){const c=player.car;if(Math.abs(c.vf||0)>4||typeof DRV==='undefined'){exitCar();if(!player.car)gameEvent('exitCar',{car:c});return}
+    tfDip(()=>{if(player.car!==c)return;exitCar();if(!player.car)gameEvent('exitCar',{car:c})})}
+  else if(!player.interior&&nearestCar())tfDip(()=>{if(player.car||player.interior)return;enterCar();if(player.car){STATS.cars++;input.sprint=false;gameEvent('enterCar',{car:player.car})}})}
 function jump(){if(!running||DLG.open)return;if(playerJump()&&typeof ambJump==='function')ambJump()}
 function act(){if(!running||player.frozen||DLG.open)return;
   if(player.car){sfx('horn');for(const p of NPCS)if(!p.static&&Math.hypot(p.x-player.x,p.z-player.z)<15)p.panic=3;gameEvent('horn',{});return}
@@ -63,7 +79,8 @@ function act(){if(!running||player.frozen||DLG.open)return;
   ph.play('punch',true);STATS.punches++;setTimeout(()=>{if(ph.override==='punch')ph.stop()},550);const fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
   for(const p of NPCS){if(p.static||p.state==='down')continue;const dx=p.x-player.x,dz=p.z-player.z,d=Math.hypot(dx,dz);if(d<1.5&&(dx*fx+dz*fz)>0){setTimeout(()=>{p.state='down';p.timer=4;p.panic=6;p.h.play('lie');sfx('thud');gameEvent('punch',{npc:p})},180);break}}}
 /* per-frame input upkeep: the sprint toggle lets go when the stick has been released for a moment */
-function inputTick(dt){if(input.sprint){if(Math.hypot(input.jx,input.jy)<0.3&&!keys.KeyW&&!keys.ArrowUp){JOY.idle+=dt;if(JOY.idle>0.7)input.sprint=false}else JOY.idle=0}}
+function inputTick(dt){tfTick(dt);
+  if(input.sprint){if(Math.hypot(input.jx,input.jy)<0.3&&!keys.KeyW&&!keys.ArrowUp){JOY.idle+=dt;if(JOY.idle>0.7)input.sprint=false}else JOY.idle=0}}
 
 /* ============================== MAIN LOOP ==============================
    step(dt) advances the whole simulation by dt seconds (also used by scripted tests through __gk.step); frame() adds rendering. */
@@ -80,10 +97,10 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,Math.max
   if(!DBG.manual){try{step(dt,now)}catch(e){if(errN++<8)console.error(e&&e.stack||e)}}
   if(!titleShown&&!$('play').hidden){titleShown=true;titleReady()}
   if(MENU.open&&!MENU.title&&MENU.drawn++>2)return;/* the pause menu covers the screen: stop drawing the world (saves the battery) */
-  renderer.render(scene,camera);
+  renderer.render(scene,camera);if(typeof postFX==='function')postFX();// mats: bloom + vignette (82_sky.js)
   frames++;fpsT+=dt;if(fpsT>=1){fpsV=frames/fpsT;frames=0;fpsT=0;if(SETTINGS.fps)$('fps').textContent=Math.round(fpsV)+' fps · '+pixelRatio.toFixed(2)+'x · '+renderer.info.render.calls+' draws · '+Math.round(renderer.info.render.triangles/1000)+'k tris';
     /* adaptive resolution keeps it smooth */
-    if(SETTINGS.q==='auto'&&running){const mx=Math.min(window.devicePixelRatio||1,1.5);if(fpsV<40&&pixelRatio>0.6){pixelRatio=Math.max(0.6,pixelRatio-0.1);renderer.setPixelRatio(pixelRatio);resize()}else if(fpsV>57&&pixelRatio<mx){pixelRatio=Math.min(mx,pixelRatio+0.05);renderer.setPixelRatio(pixelRatio);resize()}}}}
+    if(SETTINGS.q==='auto'&&running){const mx=Math.min(window.devicePixelRatio||1,1.5);if(fpsV<(Q.fpsLo||40)&&pixelRatio>(Q.prMin||0.6)){pixelRatio=Math.max(Q.prMin||0.6,pixelRatio-0.1);renderer.setPixelRatio(pixelRatio);resize()}else if(fpsV>57&&pixelRatio<mx){pixelRatio=Math.min(mx,pixelRatio+0.05);renderer.setPixelRatio(pixelRatio);resize()}}}}
 addEventListener('resize',()=>{radarResize();if(MENU.open&&MENU.tab==='map'){bigMapResize();bigMapDraw()}});
 
 /* loading-screen slideshow with real Kifisia photos */

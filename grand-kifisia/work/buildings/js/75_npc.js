@@ -148,28 +148,69 @@ function spawnPeople(cx, cz) { if (!PPL.ready) return;
 
 /* ---------- named characters from models/cast.json ---------- */
 function castAnchor(at) { if (!at) return null; if (Array.isArray(at)) return { x: at[0], z: at[1], yaw: at[2] || 0 };
+  /* a real seat of the street-life system: at.seat = place name (a café terrace chair in front of it), at.role = 'platform' | 'bench' | 'bus' ... (nearest to at.near or anywhere) */
+  if (at.seat || at.role) { const P = at.seat ? findPoi(at.seat) : null, near = P ? [P.x, P.z] : (at.near || null); let best = null, bd = at.seat ? 30 : 1e9;
+    for (const sp of STREET.spots) { if (sp.who || (at.seat ? sp.role !== 'terrace' : sp.role !== at.role)) continue; const d = near ? Math.hypot(sp.x - near[0], sp.z - near[1]) : 0; if (d < bd) { bd = d; best = sp; } }
+    if (best) return { x: best.x, z: best.z, yaw: best.yaw, seatH: best.seatH, spot: best, shop: P }; }
+  if (at.isaGate && MAP.isa && MAP.isa.gate) { const g = MAP.isa.gate, r0 = at.dist || 5.5; for (let a = 0; a < 24; a++) { const ang = (at.angle || 2.4) + a * 0.45, rr = r0 + a * 0.15, x = g[0] + Math.cos(ang) * rr, z = g[1] + Math.sin(ang) * rr;
+      if (!paveFree(x, z, 0.45) || (typeof ISA !== 'undefined' && ISA.poly && pip(ISA.poly, x, z))) continue; return { x, z, yaw: Math.atan2(g[0] - x, g[1] - z) + 0.9 }; } }
   if (at.poi || at.fallback) { const s = findPoi(at.poi, at.fallback, at.xz); if (s) { const side = at.side == null ? 2.3 : at.side, out = at.out == null ? 0.5 : at.out; for (const sg of [1, -1, 1.6, -1.6]) { const x = s.x + s.tx * side * sg + s.nx * out, z = s.z + s.tz * side * sg + s.nz * out; if (!collide({ x, z }, 0.3, null) || sg === -1.6) return { x, z, yaw: Math.atan2(s.nx, s.nz) + (at.turn || 0), shop: s }; } } }
   if (at.key && MAP.key[at.key]) { const k = MAP.key[at.key], o = at.offset || [0, 0]; return { x: k[0] + o[0], z: k[1] + o[1], yaw: at.yaw || 0 }; }
   if (at.xz) return { x: at.xz[0], z: at.xz[1], yaw: at.yaw || 0 }; return null; }
-function spawnCast() { for (const c of (PPL.cast && PPL.cast.characters) || []) { if (!c.id || STREET.cast[c.id]) continue; const a = castAnchor(c.at); if (!a) { console.warn('cast: no place for', c.id); continue; }
+function spawnCast() { for (const c0 of (PPL.cast && PPL.cast.characters) || []) { if (!c0.id || STREET.cast[c0.id]) continue; let a = castAnchor(c0.at), c = c0;
+    /* a wanted seat that does not exist in the data: stand at the fallback place instead (at.alt), doing c.altDoes */
+    if ((!a || ((c0.at && (c0.at.seat || c0.at.role)) && !a.spot)) && c0.at && c0.at.alt) { a = castAnchor(c0.at.alt); c = Object.assign({}, c0, { does: c0.altDoes || 'idle', props: null }); }
+    if (!a) { console.warn('cast: no place for', c0.id); continue; }
     const n = newNpc(Object.assign({}, c, { seed: 5000 + NPCS.length }), { state: 'still', static: c.does === 'walk' ? null : (c.does || 'idle'), x: a.x, z: a.z, yaw: a.yaw, fixed: true, cast: c, name: c.name, lines: c.lines || null, helped: {} });
-    n.h.root.rotation.y = a.yaw; if (c.hours) n.hours = c.hours;
-    if (c.does === 'walk') { n.state = 'walk'; n.fixed = false; placeNpc(n, a.x, a.z, 0, 60); } else if (c.does && c.does !== 'idle' && ACTIONS[c.does]) n.h.play(c.does, { seatH: c.seatH });
+    n.h.root.rotation.y = a.yaw; if (c.hours) n.hours = c.hours; if (a.spot) { a.spot.who = n; n.castSpot = a.spot; } if (c.wear) n.h.setWear(c.wear); if (c.label) n.label = castLabel(c.label, c.labelColour); if (c.only) n.dialog = castDialog;
+    if (c.does === 'walk') { n.state = 'walk'; n.fixed = false; placeNpc(n, a.x, a.z, 0, 60); } else if (c.does && c.does !== 'idle' && ACTIONS[c.does]) n.h.play(c.does, { seatH: c.seatH != null ? c.seatH : a.seatH });
     if (c.carry) n.h.setCarry(c.carry);
-    if (c.props) n.set = castProps(c.props, a); STREET.cast[c.id] = n; if (typeof placed === 'function') placed('cast', a.x, a.z, c.name || c.id, c.at && c.at.poi ? 'next to ' + (a.shop ? a.shop.name : c.at.poi) : 'cast.json'); } }
+    if (c.props) n.set = castProps(c.props, a.spot ? Object.assign({}, a, { tx: a.spot.tx, tz: a.spot.tz }) : a); STREET.cast[c.id] = n; if (typeof placed === 'function') placed('cast', a.x, a.z, c.name || c.id, c.at && c.at.poi ? 'next to ' + (a.shop ? a.shop.name : c.at.poi) : 'cast.json'); } }
 /* little still-life around a sitting character: cardboard, blanket, bag, paper cup */
 function castProps(list, a) { const g = new THREE.Group(), mat = c => new THREE.MeshLambertMaterial({ color: c }); const add = (geo, col, x, y, z, ry) => { const m = new THREE.Mesh(geo, mat(col)); m.position.set(x, y, z); m.rotation.y = ry || 0; m.castShadow = true; m.receiveShadow = true; g.add(m); return m; };
   if (list.indexOf('cardboard') >= 0) { add(new THREE.BoxGeometry(1.25, 0.018, 1.5), 0xa8845a, 0.02, 0.012, 0.42, 0.04); add(new THREE.BoxGeometry(0.7, 0.016, 0.5), 0x9a7850, -0.5, 0.03, 0.9, -0.3); }
   if (list.indexOf('blanket') >= 0) { const b = add(new THREE.BoxGeometry(0.62, 0.09, 0.42), 0x5d6b7a, 0.52, 0.06, 0.02, 0.15); b.scale.y = 1; add(new THREE.BoxGeometry(0.6, 0.05, 0.4), 0x7a4f4f, 0.52, 0.13, 0.03, 0.2); }
   if (list.indexOf('bag') >= 0) { add(new THREE.BoxGeometry(0.42, 0.34, 0.24), 0x2f3a33, -0.55, 0.17, 0.08, 0.35); add(new THREE.BoxGeometry(0.3, 0.26, 0.2), 0x6b6f76, -0.62, 0.13, 0.4, -0.2); }
   if (list.indexOf('cup') >= 0) { add(new THREE.CylinderGeometry(0.045, 0.034, 0.11, 10), 0xf3efe6, 0.18, 0.057, 1.02, 0); }
+  if (list.indexOf('laptop') >= 0) { /* open laptop on the café table in front of the sitter (table centre a.tx,a.tz; top at 0.744 m), screen towards the sitter */
+    const tx = a.tx != null ? a.tx : a.x + Math.sin(a.yaw) * 0.6, tz = a.tz != null ? a.tz : a.z + Math.cos(a.yaw) * 0.6, s = Math.sin(a.yaw), c = Math.cos(a.yaw), lx = (tx - a.x) * c - (tz - a.z) * s, lz = (tx - a.x) * s + (tz - a.z) * c, ty = groundY(tx, tz) - groundY(a.x, a.z);
+    const base = add(new THREE.BoxGeometry(0.33, 0.018, 0.23), 0xb9bcc2, lx * 0.6, ty + 0.755, lz * 0.62 - 0.02, 0); const scr = add(new THREE.BoxGeometry(0.33, 0.22, 0.012), 0x9da1a8, lx * 0.6, ty + 0.86, lz * 0.62 + 0.085, 0); scr.rotation.x = -0.32;
+    const glow = add(new THREE.PlaneGeometry(0.3, 0.19), 0xdfe9f5, lx * 0.6, ty + 0.862, lz * 0.62 + 0.077, 0); glow.rotation.y = Math.PI; glow.rotation.x = 0.32; glow.material = new THREE.MeshBasicMaterial({ color: 0xcfe0f2 }); glow.castShadow = false; }
   g.position.set(a.x, groundY(a.x, a.z) + 0.005, a.z); g.rotation.y = a.yaw; scene.add(g); return g; }
 function castNpc(id) { return STREET.cast[id] || null; }
 /* next line of a named character (85_hud_missions.js npcLine() calls this first); null for ordinary people */
-function npcSay(p) { if (!p || !p.lines || !p.lines.length) return null; p.said = (p.said || 0) + 1; p.h.talking = true; p.talkT = 4.5; return p.lines[(p.said - 1) % p.lines.length]; }
+function npcSay(p) { if (!p || !p.lines || !p.lines.length) return null; p.said = (p.said || 0) + 1; p.h.talking = true; p.talkT = 4.5;
+  if (p.cast && p.cast.linesRandom && p.lines.length > 1) { let k; do { k = Math.floor(Math.random() * p.lines.length); } while (k === p.lastLine); p.lastLine = k; return p.lines[k]; } /* random order, never the same line twice in a row */
+  return p.lines[(p.said - 1) % p.lines.length]; }
+/* single-topic conversation (cast field only: { ask, bye }): every answer comes from the character's own lines, no generic small talk (the ISA IB students only talk about IB).
+   87_missions.js talkTo() calls p.dialog(p) when it exists; say() is the HUD dialogue box. */
+function castDialog(p) { if (typeof say !== 'function') return; const o = p.cast.only || {}, name = p.name || p.cast.name || '';
+  const turn = () => { const line = npcSay(p); if (line == null) return; say(name, line, [{ t: o.ask || 'Tell me more.', f: turn }, { t: o.bye || 'Take care!', f: null }], { npc: p }); }; turn(); }
+/* floating name tag above a named character ("ISA IB Student"): always on top, fades out between 22 and 38 m, hidden indoors */
+function castLabel(text, colour) { const cv = document.createElement('canvas'), g = cv.getContext('2d'), fs = 46; g.font = '700 ' + fs + 'px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif'; const w = Math.ceil(g.measureText(text).width) + 56, hgt = 78; cv.width = w; cv.height = hgt;
+  g.font = '700 ' + fs + 'px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif'; g.fillStyle = 'rgba(12,16,24,0.72)'; const r = 22; g.beginPath(); g.moveTo(r, 0); g.arcTo(w, 0, w, hgt, r); g.arcTo(w, hgt, 0, hgt, r); g.arcTo(0, hgt, 0, 0, r); g.arcTo(0, 0, w, 0, r); g.fill();
+  g.fillStyle = colour || '#ffd34d'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, w / 2, hgt / 2 + 2); const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, depthWrite: false, transparent: true, fog: false })); sp.renderOrder = 999; const H = 0.3; sp.scale.set(H * w / hgt, H, 1); sp.userData.H = H; sp.userData.aspect = w / hgt; scene.add(sp); return sp; }
+function updateLabels() { const inside = typeof player !== 'undefined' && player && player.interior; for (const id in STREET.cast) { const n = STREET.cast[id], l = n.label; if (!l) continue;
+    const d = Math.hypot(n.x - camera.position.x, n.z - camera.position.z), vis = !inside && n.h.root.visible && d < 38; l.visible = vis; if (!vis) continue;
+    const top = n.h.root.position.y + (n.h.av ? n.h.av.h : 1.7) * n.h.root.scale.y * ((n.h.act && n.h.act.def && n.h.act.def.seat) ? 0.72 : 1) + 0.32; l.position.set(n.x, top, n.z); l.material.opacity = clamp((38 - d) / 16, 0, 1);
+    const k = Math.max(1, d / 14); l.scale.set(l.userData.H * l.userData.aspect * k, l.userData.H * k, 1); } } /* grows a little with distance so it stays readable on a phone */
 /* gameplay hook: the player gives something ('coin', 'food', ...) to a named character.  Returns { ok, line, first } and plays the reaction. */
 function castGive(id, what) { const n = STREET.cast[id]; if (!n) return { ok: false, line: '' }; what = what || 'coin'; const c = n.cast, th = (c.thanks && (c.thanks[what] || c.thanks.any)) || ['Thank you.']; const first = !n.helped[what]; n.helped[what] = (n.helped[what] || 0) + 1;
   const line = th[(n.helped[what] - 1) % th.length]; n.h.talking = true; n.talkT = 4.5; n.h.nod(); n.lookHold = 6; return { ok: true, line, first, name: n.name, count: n.helped[what] }; }
+
+/* ---------- reactions to the (non-lethal) paintball weapons and other events ----------
+   npcReact(n, what, x, z): what = 'hit' (paint hit this person), 'near' (a shot / splat / bang close by), 'aimed' (a marker is pointed at them); x,z = where it came from.
+   Protected people (isProtected(n): children, named CAST characters, the homeless man) can never be targeted: 'hit' and 'aimed' do nothing to them (returns false),
+   a nearby noise only makes them glance.  Seated people flinch only with a look; standing ones play 'flinch' and resume; walkers flinch, then hurry away. */
+function npcReact(n, what, x, z) { if (!n || !n.h || n.state === 'down' || n.state === 'getup') return false; const h = n.h; if (n.acc === undefined) initNpc(n);
+  if (isProtected(n) && what !== 'near') return false;
+  if (n.static) { n.lookHold = what === 'hit' ? 4 : 2.5; const seated = h.act && h.act.def && (h.act.def.seat || h.act.def.flat);
+    if (what === 'hit' && !seated && !n.resume) { n.resume = h.override && h.override !== 'flinch' ? h.override : null; h.play('flinch'); } if (what === 'hit') { h.talking = false; } return true; }
+  if (what === 'hit') { if (h.override) h.stop(0.05); h.play('flinch'); n.state = 'react'; n.timer = 0.95; n.reactPanic = 6; n.yaw = Math.atan2(x - n.x, z - n.z); return true; }
+  n.panic = Math.max(n.panic, what === 'near' ? 3.5 : 2.5); n.wasPanic = false; n.glance = 1.5; return true; }
+/* people a weapon may target near (x,z) within r metres: visible, standing, never protected */
+function npcTargets(x, z, r) { const out = []; for (const n of NPCS) { if (!n.h || !n.h.root.visible || n.state === 'down' || isProtected(n)) continue; if (Math.hypot(n.x - x, n.z - z) <= r) out.push(n); } return out; }
 
 /* ---------- the pool: keep the places around the player populated ---------- */
 const QUOTA = [['terrace', 9], ['chat', 4], ['bus', 3], ['window', 3], ['bench', 2], ['platform', 2], ['taxi', 2]];
@@ -195,7 +236,7 @@ function updateGroups(dt) { for (const g of STREET.groups) { const a = g.members
 
 /* ---------- per frame ---------- */
 const NPC_V = new THREE.Vector3();
-function updatePeople(dt, px, pz) { if (!PPL.ready) return; const S = STREET; S.frame++; S.t += dt; PPL.stat.anim = 0;
+function updatePeople(dt, px, pz) { if (!PPL.ready) return; const S = STREET; S.frame++; S.t += dt; PPL.stat.anim = 0; updateLabels();
   S.assignT -= dt; if (S.assignT <= 0) { S.assignT = 1.2; assignSpots(px, pz, false); } updateGroups(dt);
   camera.getWorldDirection(NPC_V); const fx = NPC_V.x, fz = NPC_V.z, cxx = camera.position.x, czz = camera.position.z; const car = player.car, carFast = car && Math.abs(car.vf) > 6, hour = typeof tod === 'number' ? tod : 12;
   const budget = Q.real >= 14 ? 14 : Q.real >= 8 ? 8 : 6; let farDone = 0; const phead = player.y + 1.62;
@@ -204,6 +245,7 @@ function updatePeople(dt, px, pz) { if (!PPL.ready) return; const S = STREET; S.
     if (p.talkT > 0) { p.talkT -= dt; if (p.talkT <= 0) h.talking = false; }
     /* ---- people who stay where they are ---- */
     if (p.static) { if (!p.fixed && !p.spot) { h.root.visible = false; continue; } const vis = d < 130; h.root.visible = vis; if (!vis) continue;
+      if (p.resume && !h.act) { h.play(p.resume); p.resume = null; } /* back to what they were doing after a flinch (npcReact) */
       if (p.talks && p.talks !== p.lastTalks) { p.lastTalks = p.talks; h.talking = true; p.talkT = 4.5; p.lookHold = 5; }
       if (p.lookHold > 0) { p.lookHold -= dt; h.lookAt(px, phead, pz); if (p.lookHold <= 0) h.lookAt(null); }
       else if (p.cast && d < 7 && !car) { h.lookAt(px, phead, pz); p.looking = true; } else if (p.looking) { p.looking = false; h.lookAt(null); }
@@ -217,6 +259,7 @@ function updatePeople(dt, px, pz) { if (!PPL.ready) return; const S = STREET; S.
         p.x += p.vx * dt; p.z += p.vz * dt; const f = Math.max(0, 1 - dt * 3.5); p.vx *= f; p.vz *= f; p.timer -= dt; if (p.timer <= 0) { p.state = 'getup'; p.timer = 2.1; h.stop(); } }
       else if (p.state === 'getup') { p.wasDown = false; p.timer -= dt; if (p.timer <= 0) { p.state = 'walk'; p.cross = null; } }
       else if (p.state === 'talk') { p.timer -= dt; const ty = Math.atan2(px - p.x, pz - p.z); p.yaw += wrapA(ty - p.yaw) * Math.min(1, dt * 6); h.lookAt(px, phead, pz); if (p.timer <= 0 || d > 6) { p.state = 'walk'; h.stop(); h.lookAt(null); } }
+      else if (p.state === 'react') { p.timer -= dt; if (p.timer <= 0) { p.state = 'walk'; p.panic = Math.max(p.panic, p.reactPanic || 3); p.wasPanic = false; } } /* npcReact(): flinch on the spot, then hurry away */
       else if (p.state === 'pause') { p.timer -= dt; if (p.timer <= 0 || p.panic > 0) { p.state = 'walk'; if (h.override) h.stop(); } }
       else { /* walk */ if (p.wasDown) p.wasDown = false;
         if (carFast && d < 13) { const cf = Math.sin(car.yaw) * dxp + Math.cos(car.yaw) * dzp; if (cf > 0 && Math.abs(-Math.cos(car.yaw) * dxp + Math.sin(car.yaw) * dzp) < 3.5) p.panic = Math.max(p.panic, 2.5); }

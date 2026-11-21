@@ -242,7 +242,10 @@ const IB_LINES=['IB is destroying me. Three IAs due Friday.','Extended Essay, TO
   'My IA word count is 2,203. The limit is 2,200. I’m in crisis.','People say IB prepares you for university. University is a vacation compared to this.',
   'Paper 2 is in nine days. I’ve started crying in advance.','If you see my Extended Essay supervisor, I’m not here.'];
 const IB_REPLIES=['You’ve got this.','Hang in there.','Tell me more.'];
-function ibStudents(){if(NPCS.some(n=>/IB Student/i.test(n.tag||(n.cast&&n.cast.tag)||'')))return 0;let k=0;
+function ibStudents(){const isIB=t=>/IB Student/i.test(t||'');
+  /* the characters module (75_npc.js) spawns its own from models/cast.json (cast.label) — then this fallback does nothing */
+  if(typeof PPL!=='undefined'&&PPL.cast&&(PPL.cast.characters||[]).some(c=>isIB(c.label)||isIB(c.tag)))return 0;
+  if(NPCS.some(n=>isIB(n.tag)||(n.cast&&(isIB(n.cast.label)||isIB(n.cast.tag)))))return 0;let k=0;
   const spot=(where)=>{try{
     if(where==='isa'&&MAP.isa){const g=MAP.isa.gate,c=ISA.poly?ISA.poly.reduce((s,p)=>[s[0]+p[0]/ISA.poly.length,s[1]+p[1]/ISA.poly.length],[0,0]):g;const q=paveNear(g[0]+(g[0]-c[0])*0.02,g[1]+(g[1]-c[1])*0.02,2.5,8,true);return{x:q.x,z:q.z,yaw:Math.atan2(c[0]-q.x,c[1]-q.z)+2.6}}
     if(where==='starbucks'&&SPECIAL.starbucks){const s=SPECIAL.starbucks,q=paveNear(s.door[0]+s.nx*4.6+s.nz*3.8,s.door[1]+s.nz*4.6-s.nx*3.8,0,5);return{x:q.x,z:q.z,yaw:Math.atan2(s.nx,s.nz)-0.7}}
@@ -250,6 +253,6 @@ function ibStudents(){if(NPCS.some(n=>/IB Student/i.test(n.tag||(n.cast&&n.cast.
   for(const [where,av,act,tint] of[['isa','m10','wait',['#2f3e57','#3b3b40']],['starbucks','f12','text',['#7d5ba6',null]],['station','f03','phone',['#3d6b5a','#2b2f3a']]]){const p=spot(where);if(!p)continue;
     let h;try{h=new Ped({av,tint,scale:0.97,seed:31+k},true)}catch(e){try{h=new Ped(randomLook(),true)}catch(e2){continue}}
     h.root.position.set(p.x,groundY(p.x,p.z),p.z);h.root.rotation.y=p.yaw;try{h.play(act)}catch(e){}
-    NPCS.push({h,x:p.x,z:p.z,yaw:p.yaw,state:'still',static:act,fixed:true,name:'IB student',tag:'ISA IB Student',lines:IB_LINES,replies:IB_REPLIES,linesOnly:true,noPunch:true,timer:0,panic:0,ib:where});k++}
+    NPCS.push({h,x:p.x,z:p.z,yaw:p.yaw,state:'still',static:act,fixed:true,name:'IB student',tag:'ISA IB Student',domTag:true,lines:IB_LINES,replies:IB_REPLIES,linesOnly:true,noPunch:true,timer:0,panic:0,ib:where});k++}
   return k}
 onGame('start',()=>{try{ibStudents()}catch(e){console.warn('IB students',e)}});

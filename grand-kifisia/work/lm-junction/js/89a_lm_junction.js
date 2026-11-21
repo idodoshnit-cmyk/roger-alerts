@@ -73,6 +73,42 @@ defTile('jGrill',(g,S,m)=>{g.fillStyle='#d9b88a';g.fillRect(0,0,S,S);const vx=S*
   g.fillStyle='#2b241c';g.fillRect(vx-14,vy-26,32,44);g.fillStyle='#ffd23a';g.font='italic bold 9px Georgia';g.textAlign='center';g.fillText('garden in',vx+2,vy-12);
   g.fillStyle='#e8701e';g.fillRect(S*0.08,S*0.4,10,30);g.fillRect(S*0.2,S*0.42,9,26);g.fillStyle='#7a3e1e';g.fillRect(S*0.08+2,S*0.43,6,24);g.fillRect(S*0.2+2,S*0.45,5,20);
   m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.1,spec:0.2,shin:80,glowK:1.7});
+// room-in-perspective helper for shop interiors: back wall, floor, ceiling with spots (vanishing point vx,vy)
+function roomPersp(g,S,wall,floor,ceil,spot){const vx=S*0.5,vy=S*0.5,bw=S*0.36,bh=S*0.3;const x0=vx-bw/2,x1=vx+bw/2,y0=vy-bh/2,y1=vy+bh/2;
+  g.fillStyle=ceil;g.beginPath();g.moveTo(0,0);g.lineTo(S,0);g.lineTo(x1,y0);g.lineTo(x0,y0);g.fill();
+  g.fillStyle=floor;g.beginPath();g.moveTo(0,S);g.lineTo(S,S);g.lineTo(x1,y1);g.lineTo(x0,y1);g.fill();
+  g.fillStyle=shadeHex(wall,0.9);g.beginPath();g.moveTo(0,0);g.lineTo(x0,y0);g.lineTo(x0,y1);g.lineTo(0,S);g.fill();g.beginPath();g.moveTo(S,0);g.lineTo(x1,y0);g.lineTo(x1,y1);g.lineTo(S,S);g.fill();
+  g.fillStyle=wall;g.fillRect(x0,y0,bw,bh);
+  g.strokeStyle='rgba(0,0,0,0.08)';g.lineWidth=1;for(let i=1;i<8;i++){const t=i/8;g.beginPath();g.moveTo(t*S,S);g.lineTo(x0+t*bw,y1);g.stroke()}
+  for(let i=0;i<4;i++){const t=(i+0.5)/4;for(let k=0;k<3;k++){const d=k/3,x=lerp(t*S,x0+t*bw,d),y=lerp(4,y0,d),r=lerp(26,8,d);const l=g.createRadialGradient(x,y,1,x,y,r);l.addColorStop(0,spot);l.addColorStop(1,'rgba(255,240,210,0)');g.fillStyle=l;g.fillRect(x-r,y-r,2*r,2*r)}}
+  return{x0,x1,y0,y1,vx,vy}}
+function shadeHex(h,k){const n=parseInt(h.slice(1),16);const r=Math.round(((n>>16)&255)*k),gg=Math.round(((n>>8)&255)*k),b=Math.round((n&255)*k);return 'rgb('+r+','+gg+','+b+')'}
+// café / restaurant / fast food: warm wood, counter with menu boards at the back, small tables and chairs, pendant lamps
+defTile('jCafe',(g,S,m)=>{const R=roomPersp(g,S,'#d9c3a0','#8a5f3c','#e8dccb','rgba(255,226,170,0.95)');
+  g.fillStyle='#2b2420';g.fillRect(R.x0+4,R.y0+6,R.x1-R.x0-8,18);g.fillStyle='#f3e7c9';for(let i=0;i<3;i++)g.fillRect(R.x0+8+i*((R.x1-R.x0-16)/3),R.y0+9,(R.x1-R.x0-16)/3-6,12);
+  g.fillStyle='#6b4a30';g.fillRect(R.x0-6,R.y1-26,R.x1-R.x0+12,26);g.fillStyle='#c9a77a';g.fillRect(R.x0-8,R.y1-28,R.x1-R.x0+16,4);
+  const tb=(x,y,sc)=>{g.fillStyle='#3b2a1e';g.fillRect(x-1.5*sc,y,3*sc,16*sc);g.fillStyle='#e9e2d4';g.beginPath();g.ellipse(x,y,13*sc,3.5*sc,0,0,TAU);g.fill();
+    g.fillStyle='#7a5434';for(const d of[-1,1]){g.fillRect(x+d*15*sc-3*sc,y-6*sc,6*sc,20*sc);g.fillRect(x+d*15*sc-5*sc,y+4*sc,10*sc,3*sc)}};
+  tb(S*0.2,S*0.72,1.6);tb(S*0.8,S*0.72,1.6);tb(S*0.33,S*0.62,1.1);tb(S*0.67,S*0.62,1.1);
+  for(let i=0;i<3;i++){const x=S*(0.25+i*0.25);g.strokeStyle='#222';g.beginPath();g.moveTo(x,0);g.lineTo(x,S*0.12);g.stroke();g.fillStyle='#1d1d1d';g.beginPath();g.moveTo(x-9,S*0.15);g.lineTo(x+9,S*0.15);g.lineTo(x+4,S*0.11);g.lineTo(x-4,S*0.11);g.fill();
+    const l=g.createRadialGradient(x,S*0.16,1,x,S*0.18,22);l.addColorStop(0,'rgba(255,214,140,1)');l.addColorStop(1,'rgba(255,214,140,0)');g.fillStyle=l;g.fillRect(x-24,S*0.12,48,40)}
+  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.1,spec:0.2,shin:80,glowK:1.7});
+// fashion / shoes / cosmetics: pale room, wall shelves with folded stacks, clothes rails, two mannequins in the window
+defTile('jFashion',(g,S,m)=>{const R=roomPersp(g,S,'#efebe4','#cfc6b8','#f6f4ef','rgba(255,250,236,1)');const cols=['#1f2a44','#8a2b2b','#d8cfc0','#3b5a3f','#111','#c9a46a','#7d6b8f','#e9e4da'];
+  for(let r=0;r<3;r++){g.fillStyle='#b9b1a4';g.fillRect(R.x0+4,R.y0+10+r*20,R.x1-R.x0-8,2);for(let i=0;i<9;i++){g.fillStyle=cols[(i*3+r)%8];g.fillRect(R.x0+7+i*9.3,R.y0+3+r*20,7,7)}}
+  for(const sd of[-1,1]){const xa=sd<0?S*0.06:S*0.94,xb=sd<0?R.x0-6:R.x1+6;g.strokeStyle='#9a9a9a';g.lineWidth=2;g.beginPath();g.moveTo(xa,S*0.36);g.lineTo(xb,R.y0+18);g.stroke();
+    for(let i=0;i<10;i++){const t=i/10,x=lerp(xa,xb,t),y=lerp(S*0.36,R.y0+18,t),h=lerp(64,22,t),w=lerp(12,4,t);g.fillStyle=cols[(i*5+(sd>0?3:0))%8];g.fillRect(x-w/2,y,w,h)}}
+  for(const x of[S*0.36,S*0.64]){g.fillStyle='#e8e0d6';g.beginPath();g.arc(x,S*0.5,7,0,TAU);g.fill();g.fillStyle=x<S/2?'#1f2a44':'#8a2b2b';g.fillRect(x-12,S*0.54,24,40);g.fillStyle='#2b2b2b';g.fillRect(x-8,S*0.66,16,36);g.fillStyle='#8f8f8f';g.fillRect(x-1,S*0.8,2,22);g.fillRect(x-10,S*0.89,20,3)}
+  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.55,glassDark:0.1,spec:0.25,shin:90,glowK:1.6});
+// phones / electronics / bank / optician: bright white, display tables with devices, wall screens, back counter
+defTile('jTech',(g,S,m)=>{const R=roomPersp(g,S,'#f4f6f8','#d9dde0','#fbfcfd','rgba(240,248,255,1)');
+  g.fillStyle='#1d2430';for(let i=0;i<3;i++)g.fillRect(R.x0+6+i*((R.x1-R.x0-12)/3),R.y0+8,(R.x1-R.x0-12)/3-5,22);g.fillStyle='#3d7bd9';for(let i=0;i<3;i++)g.fillRect(R.x0+9+i*((R.x1-R.x0-12)/3),R.y0+11,(R.x1-R.x0-12)/3-11,16);
+  const tb=(x,y,w,h)=>{g.fillStyle='#e9e5de';g.fillRect(x-w/2,y,w,h);g.fillStyle='#ffffff';g.fillRect(x-w/2-2,y-4,w+4,5);g.fillStyle='#202428';for(let i=0;i<5;i++)g.fillRect(x-w/2+4+i*(w-8)/5,y-7,(w-8)/5-4,4)};
+  tb(S*0.25,S*0.72,70,30);tb(S*0.75,S*0.72,70,30);tb(S*0.5,S*0.6,46,18);
+  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.55,glassDark:0.08,spec:0.25,shin:90,glowK:1.5});
+const CAT_TILE=k=>/cafe|restaurant|fast_food|food|ice_cream|bar|pub|bakery|confectionery|pastry|deli|frozen|chocolate|coffee|tea|wine/.test(k||'')?'jCafe'
+  :/cloth|shoe|fashion|boutique|bag|jewel|gift|toy|cosmetic|perfum|beauty|watch|lingerie|accessor|sport|interior|houseware|florist|books|stationery/.test(k||'')?'jFashion'
+  :/mobile|phone|electronic|computer|bank|optician|travel|money|insurance|hairdress|pharmacy|chemist/.test(k||'')?'jTech':'jShop';
 // brand signs (plain text in the shops' colours — no logos): AB fascia, PAUL fascia, Mythos capsule, Mythos round decal, PAUL blade
 const BR={ab:uvR(0,0,240,48),paul:uvR(0,48,240,96),myth:uvR(0,96,240,192),decal:uvR(0,192,48,240),blade:uvR(48,192,96,240),neon:uvR(96,192,240,240)};
 defTile('jBrand',(g,S,m)=>{
@@ -172,7 +208,7 @@ function awning(B,Cb,f,s0,s1,yTop,proj,drop,col,valCol){const c=H(col),y1=yTop-d
 function genericShop(f,s0,s1,gy,gfH,shop,id,cfg){const name=shop?shop[2]:'',kind=shop?shop[5]:'';const key=shop?id+'|'+name:null;const su=key?signUV(key):null;const sp=su&&su.sg.spec;
   const top=gy+3.05,w=s1-s0;const tint=H(CAT_TINT[kind]||'#fff6ea');const fr=sp&&sp.shopfront&&sp.shopfront.frameColour?H(sp.shopfront.frameColour):H(cfg.shopFrame||'#3a3b3d');
   const dpos=sp&&sp.shopfront&&sp.shopfront.door||'center';const dw=Math.min(1.1,w*0.35);const dc=dpos==='left'?s0+0.15+dw/2:dpos==='right'?s1-0.15-dw/2:(s0+s1)/2;
-  opening(O,f,s0,s1,gy+0.02,top,0.22,{glass:shop?T.jShop:T.jShop,glassCol:shop?tint:H('#9a948a'),gl:shop?1:0,frame:fr,fw:0.07,mull:Math.max(1,Math.round(w/1.8)),tr:gy+2.5,door:[dc-dw/2,dc+dw/2],rev:H(cfg.gfRev||'#e8e4dc'),revT:TM.marbleW});
+  opening(O,f,s0,s1,gy+0.02,top,0.22,{glass:shop?T[CAT_TILE(kind)]:T.jShop,glassCol:shop?tint:H('#9a948a'),gl:shop?1:0,frame:fr,fw:0.07,mull:Math.max(1,Math.round(w/1.8)),tr:gy+2.5,door:[dc-dw/2,dc+dw/2],rev:H(cfg.gfRev||'#e8e4dc'),revT:TM.marbleW});
   if(!shop){fq(O,f,s0+0.07,s1-0.07,gy+0.1,top-0.07,-0.19,H('#cfc9bc'),TM.shutterM);return}
   fascia(O,f,s0+0.02,s1-0.02,top+0.1,gy+3.95,su?su.sg.bg:shop[3],key);
   const aw=sp&&sp.awning;if(aw&&aw.type&&aw.type!=='none'&&aw.colour)awning(O,CUT,f,s0+0.05,s1-0.05,top+0.02,1.35,0.5,aw.colour);
@@ -294,24 +330,36 @@ CFG[IDS.ab]={lv:3,gfH:4.2,fh:3.0,wall:'#e3dccd',gfMat:'marble',front:[1,2,3,4],s
       return holes}
     if(e===3){abFront(f,0.3,f.L-0.3,gy,this,null);return[[0.3,f.L-0.3,gy+0.02,gy+3.15]]}
     return null}};
-CFG[IDS.nw]={lv:3,gfH:4.2,fh:3.0,wall:'#f1eee7',gfMat:'marble',front:[0,1],shopEdges:[0,1],rail:'iron',railCol:'#2c2f30',dep:1.3,setTop:1.7,shut:'#cfc8b6',frame:'#e8e6e0',awn:['#b9b2a3','#7a1f1f',null,'#2f5a3a'],solar:2,
-  off(e,k,d){if(e===0)return k===1?[-2.4,0.15,'balus']:[-2.4,0,'glass'];return d}};
+CFG[IDS.nw]={lv:3,gfH:4.2,fh:3.0,wall:'#f1eee7',gfMat:'marble',front:[0,1],shopEdges:[0,1],rail:'iron',railCol:'#2c2f30',dep:1.3,setTop:1.7,shut:'#cfc8b6',frame:'#e8e6e0',awn:['#b9b2a3','#7a1f1f',null,'#2f5a3a'],solar:0,roof:'hip',roofCol:'#c06f4c',
+  off(e,k,d){if(e===0)return k===1?[-2.4,0.15,'balus']:[-2.4,0,'glass'];return d},
+  // Kassaveti front (edge 0): the first 4.4 m is Mythos Plus's second room under the shared black awning (mythos_01: yellow-lit glazing with the round
+  // emblem, black steel frames, white brick pier); the rest is UÉ, whose dark sign shows at the right edge of that photo
+  gf(e,f,gy,gfH,id,b){if(e!==0||f.L<6)return null;const m1=4.4;mythos2(f,0.12,m1,gy);const holes=[[0.12,m1,gy+0.02,gy+3.1]];
+    const ue=shopsOf(b).find(s=>s[0]===0);if(ue){genericShop(f,m1+0.5,f.L-0.25,gy,gfH,ue,id,this);holes.push([m1+0.5,f.L-0.25,gy+0.02,gy+3.05])}
+    fq(O,f,m1,m1+0.5,gy,gy+gfH,0.04,H('#ebe6dc'),TM.brickw);sq(O,f,m1,0,0.04,gy,gy+gfH,-1,H('#ebe6dc'),TM.brickw);sq(O,f,m1+0.5,0,0.04,gy,gy+gfH,1,H('#ebe6dc'),TM.brickw);
+    return holes}};
+/* Mythos Plus second room (on b293 edge 0, under the shared awning): black steel glazing, warm yellow interior, round emblem inside the glass */
+function mythos2(f,s0,s1,gy){const BL=H('#141416');opening(O,f,s0,s1,gy+0.02,gy+3.1,0.2,{glass:T.jCafe,glassCol:H('#ffd27a'),gl:1,frame:BL,fw:0.06,mull:3,tr:gy+2.55,rev:H('#c27a55'),revT:TM.plasterW});
+  const c=(s0+s1)/2+0.3;fq(O,f,c-0.6,c+0.6,gy+1.35,gy+2.55,-0.12,C1,T.jBrand,BR.decal,1);
+  fq(O,f,s0-0.1,s1,gy+3.1,gy+4.2,0.015,H('#c27a55'),TM.plasterW);placed('lm_shop',P(f,(s0+s1)/2,0)[0],P(f,(s0+s1)/2,0)[1],'Mythos Plus (2nd room)','lm-junction')}
 CFG[IDS.myth]={keepCol:1,keepH:1,lv:2,gfH:4.6,fh:3.4,wall:'#ece4cf',gfMat:'plaster',front:[0],shopEdges:[0],rail:'balus',dep:0,frame:'#141416',shut:null,solar:2,upWall:'#efe8da',
   off(e,k,d){return e===0?[-2.5,0.15,'balus']:d},gf(e,f,gy,gfH){if(e===0){mythosFront(f,gy,gfH,this);mythosTerrace(f,gy);return 'done'}return null}};
-CFG[IDS.kost]={lv:3,gfH:3.6,fh:3.1,wall:'#f2ebdd',gfMat:'stone',front:[1],shopEdges:[1],rail:'masonry',dep:1.0,shut:'#7a5a3a',frame:'#4a3a2c',roof:'hip',solar:0};
-CFG[IDS.k9]={lv:4,gfH:4.2,fh:3.0,wall:'#f1eee7',gfMat:'marble',front:[1],shopEdges:[1],rail:'alu',dep:1.3,shut:'#d8d2c4',frame:'#3b3c3e',awn:['#c9c2b0',null,'#5a6e5a',null],solar:3};
+CFG[IDS.kost]={lv:3,gfH:3.6,fh:3.1,wall:'#f2ebdd',gfMat:'stone',front:[1],shopEdges:[1],rail:'masonry',dep:1.0,shut:'#7a5a3a',frame:'#4a3a2c',solar:0};// orthophoto: flat dark roof
+CFG[IDS.k9]={lv:3,keepLv:1,gfH:4.2,fh:3.0,wall:'#f1eee7',gfMat:'copper',// mythos_01 photo: left neighbour 2-3 storeys, rust/copper cladding on the ground floor
+  front:[1],shopEdges:[1],rail:'alu',dep:1.3,shut:'#d8d2c4',frame:'#3b3c3e',awn:['#c9c2b0',null,'#5a6e5a',null],solar:3,tileEave:2.2};// orthophoto: tiled pent strip along the Kassaveti front of the roof
 CFG[IDS.paul]={lv:2,gfH:4.4,fh:3.0,wall:'#f2ede1',gfMat:'marble',front:[3,4,5],shopEdges:[3,5],rail:'iron',railCol:'#2a2c2d',dep:1.3,setTop:1.6,shut:'#d6cfbf',frame:'#e6e4de',awn:['#d8ccb2','#3d5f8a',null,'#9a3b2a'],solar:3,
   gf(e,f,gy,gfH,id,b){if(e!==3)return null;const shops=shopsOf(b).filter(s=>s[0]===3);const U=units(f,shops,0.35,0.35);const holes=[];
     for(const u of U){if(/^paul$/i.test(u.shop[2]))paulFront(f,u.s0,u.s1,gy,this);else genericShop(f,u.s0,u.s1,gy,gfH,u.shop,id,this);holes.push([u.s0,u.s1,gy+0.02,/^paul$/i.test(u.shop[2])?gy+4.0:gy+3.05])}
     return holes}};
 CFG[IDS.ne]={lv:3,gfH:4.2,fh:3.05,wall:'#ead9b8',gfMat:'stone',front:[1,2,7,8,9],shopEdges:[2,7,9],rail:'iron',railCol:'#2a2c2d',dep:1.4,setTop:1.8,shut:'#6b5a44',frame:'#5a4a3a',shutters:'timber',awn:['#5b1f2a',null,'#d8ccb2',null],solar:2,planters:true};
-CFG[IDS.pyr]={lv:4,gfH:4.2,fh:3.0,wall:'#e9e2d0',gfMat:'marble',front:[1,2,3,4,5,6,7,8],shopEdges:[1,8],rail:'iron',railCol:'#2a2c2d',dep:1.3,setTop:1.6,shut:'#d6cfbf',frame:'#e6e4de',awn:['#d8ccb2','#3d6a4c','#c58a3a',null,'#8a8f86'],solar:4};
+CFG[IDS.pyr]={lv:4,gfH:4.2,fh:3.0,wall:'#e9e2d0',gfMat:'marble',front:[1,2,3,4,5,6,7,8],shopEdges:[1,8],rail:'iron',railCol:'#2a2c2d',dep:1.3,shut:'#d6cfbf',frame:'#e6e4de',awn:['#d8ccb2','#3d6a4c','#c58a3a',null,'#8a8f86'],solar:0,
+  roof:'atrium',roofCol:'#b4683f',tower:{c:[104.6,75.6],r:3.25,h:3.5,dome:'#d6d8d8'}};// orthophoto: one tiled hip roof round a glazed atrium + domed round corner tower
 
 /* ============================== GENERIC POLYKATOIKIA BUILDER ============================== */
 function buildBlock(fp){const b=fp.b,id=b[11]&&b[11].id,cfg=CFG[id];if(!cfg)return false;let ps=fp.ps.slice();const n=ps.length;const sg=polyArea(ps)>0?1:-1;
   const seed=(b[5]|0)+7;const front=new Set(cfg.front.filter(e=>e<n));
   // research-arch spec (data/buildings_spec.json) wins for storeys / storey heights / wall colour when it is loaded
-  const sp=BSPEC&&BSPEC[id];if(sp){if(sp.levels>=1&&sp.levels<=8)cfg.lv=sp.levels;if(sp.gfH>2.8&&sp.gfH<6&&!cfg.keepH)cfg.gfH=sp.gfH;if(sp.floorH>2.6&&sp.floorH<4)cfg.fh=sp.floorH;if(sp.facade&&/^#[0-9a-f]{6}$/i.test(sp.facade.colour||'')&&!cfg.keepCol)cfg.wall=sp.facade.colour;JN.spec=(JN.spec||0)+1}
+  const sp=BSPEC&&BSPEC[id];if(sp){if(sp.levels>=1&&sp.levels<=8&&!cfg.keepLv)cfg.lv=sp.levels;if(sp.gfH>2.8&&sp.gfH<6&&!cfg.keepH)cfg.gfH=sp.gfH;if(sp.floorH>2.6&&sp.floorH<4)cfg.fh=sp.floorH;if(sp.facade&&/^#[0-9a-f]{6}$/i.test(sp.facade.colour||'')&&!cfg.keepCol)cfg.wall=sp.facade.colour;JN.spec=(JN.spec||0)+1}
   const wallC=H(cfg.wall),upC=H(cfg.upWall||cfg.wall);
   let gmin=Infinity,gmax=-Infinity;for(const p of ps){const y=terr(p[0],p[1]);gmin=Math.min(gmin,y);gmax=Math.max(gmax,y)}
   const gy=gmax+0.17,base=gmin-0.6,lv=cfg.lv,gfH=cfg.gfH,fh=cfg.fh;(JN.gy=JN.gy||{})[id]=gmax+0.17;const yAt=k=>k===0?gy:gy+gfH+(k-1)*fh;const top=yAt(lv);
@@ -320,7 +368,7 @@ function buildBlock(fp){const b=fp.b,id=b[11]&&b[11].id,cfg=CFG[id];if(!cfg)retu
   for(let i=0;i<n;i++)if(E[i].L>0.05)addSeg(ps[i][0],ps[i][1],ps[(i+1)%n][0],ps[(i+1)%n][1],'b');
   // per floor offsets
   const off=(e,k)=>{let d=[0,0,null];if(k>0&&front.has(e)){d=[0,cfg.dep||0,cfg.rail];if(cfg.setTop&&k===lv-1)d=[-cfg.setTop,cfg.dep||0,cfg.rail]}if(cfg.off&&front.has(e)&&k>0)d=cfg.off(e,k,d);return d};
-  const gfMatT=cfg.gfMat==='marble'?TM.marbleW:cfg.gfMat==='stone'?TM.ashlar:TM.plasterW,gfMatC=cfg.gfMat==='marble'?H('#e6e2d8'):cfg.gfMat==='stone'?H('#d9c7a6'):wallC;
+  const gfMatT=cfg.gfMat==='copper'?TM.metal:cfg.gfMat==='marble'?TM.marbleW:cfg.gfMat==='stone'?TM.ashlar:TM.plasterW,gfMatC=cfg.gfMat==='copper'?H('#93573a'):cfg.gfMat==='marble'?H('#e6e2d8'):cfg.gfMat==='stone'?H('#d9c7a6'):wallC;
   const shopsBy={};for(const s of shopsOf(b))(shopsBy[s[0]]=shopsBy[s[0]]||[]).push(s);
   // ---------- ground floor ----------
   for(let i=0;i<n;i++){const f=E[i];if(f.L<0.05)continue;const isF=front.has(i);
@@ -352,9 +400,10 @@ function buildBlock(fp){const b=fp.b,id=b[11]&&b[11].id,cfg=CFG[id];if(!cfg)retu
     // floor/terrace slab where this floor steps back from the one below (roof of the lower floor)
     prevOut=W}
   // ---------- roof ----------
-  const R=prevOut;if(cfg.roof==='hip'){hipRoofP(R,top,sg)}else{polyRoof(O,R,top,H('#d6d2ca'),TM.flatroof);
+  const R=prevOut;if(cfg.roof==='hip'){hipRoofP(R,top,sg,cfg.roofCol)}else if(cfg.roof==='atrium'){atriumRoof(R,top,sg,cfg);if(cfg.tower)tower(cfg.tower,top,gy,cfg)}else{polyRoof(O,R,top,H('#d6d2ca'),TM.flatroof);
     for(let i=0;i<n;i++){const f=FR(R[i],R[(i+1)%n],sg);if(f.L<0.05)continue;fq(O,f,0,f.L,top,top+0.85,0,front.has(i)?upC:shade(upC,0.93),TM.plaster);fq(O,f,0,f.L,top,top+0.85,-0.2,shade(upC,0.85),TM.plaster,null,0,-1);
       hq(O,f,0,f.L,-0.2,0.04,top+0.85,false,MARBLE,TM.marble);fq(O,f,0,f.L,top+0.85-0.06,top+0.85,0.04,MARBLE,TM.marble)}
+    if(cfg.tileEave)for(const i of front){const f=FR(R[i],R[(i+1)%n],sg);if(f.L>2)tileEave(f,top,cfg.tileEave,cfg.roofCol)}
     roofStuff(R,top,cfg,seed)}
   // lower-floor roofs exposed by set-back floors (terraces) are covered by the slab rings above
   const v1=O.size()+CUT.size();JN.tris+=Math.round((v1-v0)/2);JN.built.push(id);return true}
@@ -378,11 +427,11 @@ function railing(f,s0,s1,y,type,cfg,d){const L=s1-s0;if(L<0.05)return;
   if(type==='balus'){const bh=0.68;bx(O,f,(s0+s1)/2,d-0.02,y,L,0.24,0.12,MARBLE,TM.marble);const v=uvR(0,0,240,120);fq(CUT,f,s0,s1,y+0.12,y+0.12+bh,d-0.02,C1,T.jBalus,[0,L/0.6,v[2],v[3]]);
     bx(O,f,(s0+s1)/2,d-0.02,y+0.12+bh,L+0.04,0.28,0.13,MARBLE,TM.marble);for(let s=s0;s<=s1+0.01;s+=Math.max(1.2,L/Math.max(1,Math.round(L/2.4))))bx(O,f,clamp(s,s0+0.13,s1-0.13),d-0.02,y,0.26,0.26,0.12+bh,MARBLE,TM.marble);return}
   const col=type==='alu'?H(cfg.railCol||'#c9cdd1'):H(cfg.railCol||'#2a2c2d');fq(CUT,f,s0,s1,y,y+1.0,d,col,type==='alu'?T.jRail:T.rail,[0,L/(type==='alu'?1.0:1.2),0,1]);bx(O,f,(s0+s1)/2,d,y+1.0,L,0.06,0.05,col,T.white)}
-function hipRoofP(ps,yb,sg){// pitched (hip) roof on the minimum-area rectangle of the outline: Kifisia red tiles, white eaves
+function hipRoofP(ps,yb,sg,rc){// pitched (hip) roof on the minimum-area rectangle of the outline: Kifisia red tiles, white eaves
   let best=null;for(let i=0;i<ps.length;i++){const a=ps[i],c=ps[(i+1)%ps.length];const L=Math.hypot(c[0]-a[0],c[1]-a[1]);if(L<0.5)continue;const ux=(c[0]-a[0])/L,uz=(c[1]-a[1])/L;let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
     for(const p of ps){const u=(p[0]-a[0])*ux+(p[1]-a[1])*uz,v=-(p[0]-a[0])*uz+(p[1]-a[1])*ux;u0=Math.min(u0,u);u1=Math.max(u1,u);v0=Math.min(v0,v);v1=Math.max(v1,v)}const A=(u1-u0)*(v1-v0);if(!best||A<best.A)best={A,a,ux,uz,u0,u1,v0,v1}}
   const {a,ux,uz,u0,u1,v0,v1}=best;const cu=(u0+u1)/2,cv=(v0+v1)/2;const cxw=a[0]+ux*cu-uz*cv,czw=a[1]+uz*cu+ux*cv;let L=u1-u0,W=v1-v0,ang=Math.atan2(uz,ux);if(W>L){const t=L;L=W;W=t;ang+=Math.PI/2}
-  hipRoof(O,[cxw,czw,L,W,ang],yb,'villa',2);for(let i=0;i<ps.length;i++){const f=FR(ps[i],ps[(i+1)%ps.length],sg);if(f.L>0.05)fq(O,f,0,f.L,yb-0.01,yb+0.02,0,MARBLE,TM.marble)}}
+  hipRoof(O,[cxw,czw,L,W,ang],yb,'villa',2,rc?{roofCol:rc}:undefined);for(let i=0;i<ps.length;i++){const f=FR(ps[i],ps[(i+1)%ps.length],sg);if(f.L>0.05)fq(O,f,0,f.L,yb-0.01,yb+0.02,0,MARBLE,TM.marble)}}
 function roofStuff(R,top,cfg,seed){let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;for(const p of R){minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);minz=Math.min(minz,p[1]);maxz=Math.max(maxz,p[1])}
   let placedN=0;for(let k=0;k<30&&placedN<(cfg.solar||0);k++){const x=lerp(minx+1.5,maxx-1.5,hf(seed*5+k*7)),z=lerp(minz+1.5,maxz-1.5,hf(seed*11+k*13));if(!pip(R,x,z))continue;placedN++;
     // solar water heater: tilted collector facing south + horizontal white tank on a frame
@@ -392,6 +441,50 @@ function roofStuff(R,top,cfg,seed){let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;for
   for(let k=0;k<20;k++){const x=lerp(minx+2,maxx-2,hf(seed*3+k)),z=lerp(minz+2,maxz-2,hf(seed*17+k));if(!pip(R,x,z)||!pip(R,x+1.3,z)||!pip(R,x-1.3,z)||!pip(R,x,z+1.3)||!pip(R,x,z-1.3))continue;
     O.box(x,top+1.25,z,2.4,2.5,2.4,0,H(cfg.upWall||cfg.wall),RECT[TM.plaster]);O.box(x,top+2.55,z,2.6,0.12,2.6,0,MARBLE,RECT[TM.marble]);O.cyl(x+0.9,top+2.6,z+0.9,0.025,0.025,2.4,4,H('#9a9ea2'),RECT[T.white],false);
     for(let j=0;j<3;j++)O.box(x+0.9,top+4.2+j*0.3,z+0.9,1.2-j*0.25,0.03,0.03,0.4,H('#9a9ea2'),RECT[T.white]);break}}
+
+/* pent strip of Kifisia red tiles over the parapet of one roof edge (seen on the orthophoto along Kassaveti 9) */
+function tileEave(f,top,dep,rc){const col=H(rc||'#b85a3a'),y0=top+0.55,y1=top+0.55+dep*0.45;
+  q3(O,V(f,0,0.45,y0),V(f,f.L,0.45,y0),V(f,f.L,-dep,y1),V(f,0,-dep,y1),[0,0],[f.L,0],[f.L,dep],[0,dep],col,TM.tiles,0,[f.nx,1,f.nz]);
+  fq(O,f,0,f.L,y0-0.12,y0,0.45,MARBLE,TM.marble);hq(O,f,0,f.L,0,0.45,y0-0.12,true,shade(MARBLE,0.8),TM.marble);
+  for(const s of[0,f.L])t3(O,V(f,s,0.45,y0),V(f,s,-dep,y1),V(f,s,-dep,y0),[0,0],[dep,0.5],[dep,0],shade(H('#efe8da'),0.9),TM.plaster,0,[f.ux*(s?1:-1),0,f.uz*(s?1:-1)])}
+/* one terracotta hip roof running round a central glazed atrium (Pyrgos Kifisias, orthophoto): eaves → ridge ring → short inner slope → glass lantern */
+function atriumRoof(R,top,sg,cfg){let P2=R.filter((p,i)=>{const n=R.length,a=R[(i-1+n)%n],c=R[(i+1)%n];return Math.hypot(p[0]-a[0],p[1]-a[1])>2.2||Math.hypot(c[0]-p[0],c[1]-p[1])>2.2});
+  const s2=polyArea(P2)>0?1:-1,n=P2.length,tp=Math.tan(28*Math.PI/180),col=H(cfg.roofCol||'#b4683f'),UP=[0,1,0];
+  const ev=0.55,rin=5.4,iin=6.6,yE=top-0.06-ev*tp,yR=top+rin*tp,yI=yR-(iin-rin)*tp;
+  const Eo=outline(P2,s2,()=>ev),Er=outline(P2,s2,()=>-rin),Ei=outline(P2,s2,()=>-iin);const Y=(p,y)=>[p[0],y,p[1]];
+  // flat lid inside the walls under the roof (keeps the inside closed when seen through the atrium glass)
+  polyRoof(O,R,top-0.02,H('#8f8a82'),TM.flatroof);
+  for(let i=0;i<n;i++){const j=(i+1)%n;const lo=Math.hypot(Eo[j][0]-Eo[i][0],Eo[j][1]-Eo[i][1]),lr=Math.hypot(Er[j][0]-Er[i][0],Er[j][1]-Er[i][1]),sl=(rin+ev)/Math.cos(28*Math.PI/180);
+    q3(O,Y(Eo[i],yE),Y(Eo[j],yE),Y(Er[j],yR),Y(Er[i],yR),[0,0],[lo,0],[(lo+lr)/2,sl],[(lo-lr)/2,sl],col,TM.tiles,0,UP);
+    const li=Math.hypot(Ei[j][0]-Ei[i][0],Ei[j][1]-Ei[i][1]),s3=(iin-rin)/Math.cos(28*Math.PI/180);
+    q3(O,Y(Er[i],yR),Y(Er[j],yR),Y(Ei[j],yI),Y(Ei[i],yI),[0,0],[lr,0],[(lr+li)/2,s3],[(lr-li)/2,s3],shade(col,0.93),TM.tiles,0,UP);
+    // white eaves fascia + soffit
+    const g=FR(Eo[i],Eo[j],s2);if(g.L>0.05){fq(O,g,0,g.L,yE-0.22,yE+0.02,0,MARBLE,TM.marble)}
+    // ridge cap
+    const rg=FR(Er[i],Er[j],s2);if(rg.L>0.05)bx(O,rg,rg.L/2,0,yR-0.05,rg.L,0.24,0.14,shade(col,0.85),TM.tiles)}
+  // soffit: one ring between the wall outline and the eaves line
+  for(let i=0;i<n;i++){const j=(i+1)%n;const a=outline(P2,s2,()=>-0.05);q3(O,Y(a[i],yE-0.2),Y(a[j],yE-0.2),Y(Eo[j],yE-0.2),Y(Eo[i],yE-0.2),[0,0],[1,0],[1,1],[0,1],shade(MARBLE,0.75),TM.plaster,0,[0,-1,0])}
+  // atrium lantern: low glass pyramid with a dark metal frame
+  const c=[Ei.reduce((s,p)=>s+p[0],0)/n,Ei.reduce((s,p)=>s+p[1],0)/n],yT=yI+1.1,GL=H('#9fb3bd'),FRM=H('#3a3d40');
+  for(let i=0;i<n;i++){const j=(i+1)%n;t3(O,Y(Ei[i],yI+0.15),Y(Ei[j],yI+0.15),[c[0],yT,c[1]],[0,0],[1,0],[0.5,1],GL,T.glassR,0,UP);
+    const g=FR(Ei[i],Ei[j],s2);if(g.L>0.05){fq(O,g,0,g.L,yI-0.1,yI+0.15,0,FRM,TM.metalL);fq(O,g,0,g.L,yI-0.1,yI+0.15,0,FRM,TM.metalL,null,0,-1)}
+  }
+  addInfo('atriumRoof',n)}
+/* round corner tower rising above the eaves, light-grey dome (Pyrgos Kifisias, orthophoto: Ø 6.5 m, 3.5 m above the eaves) */
+function tower(t,top,gy,cfg){const [cx,cz]=t.c,r=t.r,y0=top-0.3,y1=top+t.h,wall=H(cfg.wall),N=20;
+  O.cyl(cx,y0,cz,r,r,y1-y0,N,wall,RECT[TM.plaster],false,0,6);
+  O.cyl(cx,top-0.25,cz,r+0.12,r+0.12,0.28,N,MARBLE,RECT[TM.marble],false);// string course at the eaves
+  O.cyl(cx,y1-0.05,cz,r+0.28,r+0.28,0.32,N,MARBLE,RECT[TM.marble],true);// crowning cornice
+  for(let k=0;k<8;k++){const a=(k+0.5)/8*TAU,ca=Math.cos(a),sa=Math.sin(a),ang=Math.atan2(-ca,-sa);const x=cx+ca*(r+0.01),z=cz+sa*(r+0.01),yw=top+0.55;
+    O.box(x,yw+0.85,z,1.0,1.7,0.08,ang,H('#2a2d30'),RECT[T.glassR],1,hf(k*7+3)<0.4?1:0);
+    O.box(cx+ca*(r+0.06),yw+1.75,cz+sa*(r+0.06),1.2,0.14,0.14,ang,MARBLE,RECT[TM.marble]);O.box(cx+ca*(r+0.06),yw-0.06,cz+sa*(r+0.06),1.2,0.1,0.16,ang,MARBLE,RECT[TM.marble])}
+  // dome: 6 stacked frustums approximating a hemisphere (light grey metal / render), lantern finial
+  const R0=r+0.05,dc=H(t.dome||'#d6d8d8'),yb=y1+0.27,K=6;
+  for(let i=0;i<K;i++){const p0=i/K*Math.PI/2,p1=(i+1)/K*Math.PI/2;const ra=R0*Math.cos(p0),rb=Math.max(0.12,R0*Math.cos(p1)),ya=yb+R0*0.82*Math.sin(p0),yb2=yb+R0*0.82*Math.sin(p1);
+    O.cyl(cx,ya,cz,ra,rb,yb2-ya,N,shade(dc,0.9+0.1*i/K),RECT[TM.metalL],i===K-1)}
+  const yt=yb+R0*0.82;O.cyl(cx,yt-0.05,cz,0.22,0.18,0.55,8,MARBLE,RECT[TM.marble],true);O.cyl(cx,yt+0.5,cz,0.04,0.02,0.8,4,H('#7a7d80'),RECT[TM.metalL],true);
+  addInfo('tower',1)}
+const addInfo=(k,v)=>{(JN.parts=JN.parts||{})[k]=v};
 
 /* brass name plates of the offices upstairs (MAP.pois bay 'plate': doctors, architects, post office) beside their street door */
 function plates(bs){if(!Array.isArray(MAP.pois))return;const idx=new Map();bs.forEach(fp=>idx.set(MAP.buildings.indexOf(fp.b),fp));

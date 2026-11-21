@@ -90,6 +90,9 @@ function directionsTo(x,z){const r=route(player.x,player.z,x,z,'walk');const d=r
 function npcName(p){if(!p.name)p.name=(p.h&&p.h.look&&p.h.look.fem?pick(NAMES_F):pick(NAMES_M));return p.name}
 function talkTo(p){const name=npcName(p);p.talks=(p.talks||0)+1;if(p.talks===1)STATS.talked++;gameEvent('talk',{npc:p});
   if(typeof p.dialog==='function'){p.dialog(p);return}
+  /* one-topic people (e.g. the ISA IB students): p.linesOnly=true → a random line from p.lines every time, with short replies, no directions menu */
+  if(p.linesOnly&&p.lines&&p.lines.length){let i=Math.floor(Math.random()*p.lines.length);if(p.lines.length>1&&i===p.lastLine)i=(i+1)%p.lines.length;p.lastLine=i;if(p.h)p.h.talking=true;
+    const rep=p.replies||['Good luck!','Hang in there.','Tell me more.'];say(name,p.lines[i],[{t:rep[0],f:null},{t:rep[1]||'Take care.',f:null},{t:rep[2]||'Tell me more.',f:()=>talkTo(p)}],{npc:p});return}
   const night=tod<6||tod>21;const cl=typeof npcSay==='function'?npcSay(p):null;const greet=cl!=null?cl:p.lines&&p.lines.length?p.lines[(p.talks-1)%p.lines.length]:(night?GREETS_N:GREETS)[(Math.floor(Math.abs(p.x*7+p.z*3))+p.talks)%(night?GREETS_N:GREETS).length];
   const root=()=>say(name,greet,[{t:'Where can I find…?',f:ask},{t:'How is it going?',f:chat},{t:'Never mind. Yia sou!',f:null}],{npc:p});
   const chat=()=>{const L=night&&p.talks%2?SMALLTALK_N:SMALLTALK;const i=(p.talks*7+Math.floor(Math.abs(p.x*3))+(p.chat=(p.chat||0)+1))%L.length;say(name,L[i],[{t:'Where can I find…?',f:ask},{t:'Take care!',f:null}])};

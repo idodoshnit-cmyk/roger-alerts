@@ -141,7 +141,7 @@ function tabSettings(body){const S=SETTINGS;const sw=(id,on)=>`<button class="sw
    <div class="set"><label for="sSens">Look sensitivity<small id="sSensV">${(S.sens||1).toFixed(2)}×</small></label><input type="range" id="sSens" min="0.4" max="2.2" step="0.05" value="${S.sens||1}"></div>
    <div class="set"><label for="sInv">Invert vertical look</label>${sw('sInv',S.invY)}</div>
    <div class="set"><label for="sLefty">Left-handed layout<small>Stick on the right, buttons on the left.</small></label>${sw('sLefty',S.lefty)}</div>
-   <div class="set"><label for="sAuto">Auto-accelerate when driving<small>Touch: a thumb on the left side drives and steers; BRAKE stops and reverses.</small></label>${sw('sAuto',S.autoGas!==false)}</div>
+   ${typeof setAutoThrottle==='function'?`<div class="set"><label for="sAuto">Auto-throttle when driving<small>Touch: while your thumb steers on the left, the car drives itself. BRAKE stops; hold it to reverse.</small></label>${sw('sAuto',DRV.auto!==false)}</div>`:''}
    <div class="set"><label for="sHap">Vibration</label>${sw('sHap',S.haptics)}</div>
    <h4>Sound and text</h4>
    <div class="set"><label for="sVol">Volume<small id="sVolV">${Math.round((S.vol==null?0.8:S.vol)*100)}%</small></label><input type="range" id="sVol" min="0" max="1" step="0.05" value="${S.vol==null?0.8:S.vol}"></div>
@@ -155,7 +155,7 @@ function tabSettings(body){const S=SETTINGS;const sw=(id,on)=>`<button class="sw
   $('sQ').querySelectorAll('button').forEach(b=>b.onclick=()=>{setQuality(b.dataset.q);$('sQ').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
   const tog=(id,key,after)=>{$(id).onclick=()=>{S[key]=!S[key];$(id).classList.toggle('on',!!S[key]);$(id).setAttribute('aria-checked',!!S[key]);saveSettings();if(after)after(S[key]);if(typeof uiSound==='function')uiSound('click')}};
   tog('sFps','fps',v=>{$('fps').hidden=!v});tog('sInv','invY');tog('sLefty','lefty',v=>document.body.classList.toggle('lefty',v));tog('sHap','haptics',v=>{if(v&&navigator.vibrate)try{navigator.vibrate(30)}catch(e){}});
-  $('sAuto').onclick=()=>{S.autoGas=S.autoGas===false;$('sAuto').classList.toggle('on',S.autoGas);$('sAuto').setAttribute('aria-checked',S.autoGas);saveSettings();if(typeof uiSound==='function')uiSound('click')};
+  if($('sAuto'))$('sAuto').onclick=()=>{const on=setAutoThrottle(!DRV.auto);$('sAuto').classList.toggle('on',on);$('sAuto').setAttribute('aria-checked',on);if(typeof uiSound==='function')uiSound('click')};
   $('sSubs').onclick=()=>{S.subs=S.subs===false;$('sSubs').classList.toggle('on',S.subs);saveSettings()};
   $('sSens').oninput=e=>{S.sens=+e.target.value;$('sSensV').textContent=S.sens.toFixed(2)+'×'};$('sSens').onchange=saveSettings;
   $('sVol').oninput=e=>{const v=+e.target.value;if(typeof ambVolume==='function')ambVolume(v);else S.vol=v;$('sVolV').textContent=Math.round(v*100)+'%'};$('sVol').onchange=()=>{saveSettings();if(typeof uiSound==='function')uiSound('click')};

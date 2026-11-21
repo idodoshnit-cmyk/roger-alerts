@@ -148,7 +148,7 @@ let streetCache={t:'',r:null};
 function streetName(){const p=player.car||player;const n=navNearestNamed(p.x,p.z);return n?latin(n):'Kifisia'}
 function navNearestNamed(x,z,maxD){let best='',bd=maxD||30;for(const r of ROADS){if(!r.name||r.ty>6)continue;const ps=r.ps;for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];if((a[0]<x-bd&&b[0]<x-bd)||(a[0]>x+bd&&b[0]>x+bd)||(a[1]<z-bd&&b[1]<z-bd)||(a[1]>z+bd&&b[1]>z+bd))continue;const dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz||1,u=clamp(((x-a[0])*dx+(z-a[1])*dz)/L2,0,1),d=Math.hypot(x-a[0]-dx*u,z-a[1]-dz*u);if(d<bd){bd=d;best=r.name}}}return best}
 const DISTRICTS=[['Kifisia Centre','platanos',260],['Station','station',170],['Alsos','alsos',120],['Kefalari','kefalari',230],['Kolokotroni','agora',170]];
-function districtName(){const p=player.car||player;if(player.interior){const P=POIS.find(q=>q.special===player.interior);return P?P.name:'Indoors'}
+function districtName(){const p=player.car||player;if(player.interior){const I=typeof INTERIORS!=='undefined'&&INTERIORS&&INTERIORS[player.interior];if(I&&I.name)return I.name;const P=POIS.find(q=>q.special===player.interior);return P?P.name:'Indoors'}
   if(MAP.isa&&Math.hypot(p.x-MAP.isa.gate[0],p.z-MAP.isa.gate[1])<150)return'ISA · Kefalari';let best='Kifisia',bd=1e9;for(const [n,k,r] of DISTRICTS){const q=MAP.key[k];if(!q)continue;const d=Math.hypot(p.x-q[0],p.z-q[1])/r;if(d<1&&d<bd){bd=d;best=n}}return best}
 
 /* ============================== BIG MAP (pause menu) ============================== */

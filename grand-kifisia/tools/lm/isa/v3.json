@@ -1,0 +1,8 @@
+[{"name":"ref_nt","cam":[861,12,-422,882.2,12,-420],"tod":10,"fov":66,"hide":true},
+{"name":"ref","cam":[861,12,-422,882.2,12,-420],"tod":10,"fov":66,"hide":false},
+{"name":"street_nt","cam":[869,1.7,-399,882,7,-421],"tod":10,"fov":60,"hide":true},
+{"name":"gate","cam":[872.5,1.7,-404,879.5,2.2,-411.5],"tod":10,"fov":60,"hide":false},
+{"name":"court","cam":[897.5,3.5,-446,898.9,3.5,-464.6],"tod":15,"hide":false},
+{"name":"sw_air","cam":[845,45,-365,900,5,-428],"tod":12,"hide":true},
+{"name":"nw_air","cam":[858,30,-492,900,0,-440],"tod":12,"hide":true},
+{"name":"court_night","cam":[893,4,-470,897,3,-445],"tod":23.6,"hide":false}]

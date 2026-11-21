@@ -55,3 +55,11 @@ Old first draft (not used any more, kept for reference): work/interiors/old/35_i
   contactAO() (soft floor contact shadows from a 10 cm occupancy raster; floor grids 0.35-0.4 m), makeEnv() (box-projected cube-map reflections of the room,
   HDR + mips, strength = gloss channel; glass reflects too), spineWall fixed (carcass front face hid the books -> black walls), styleFor uses shops.json
   interiorTemplates (ceilingM, kelvin). Test m7 running (copy). NOT yet integrated.
+- [17:50 resume] m7 never ran (log empty). Synced copy from main (8 files), rebuilt. Browser slots are contended (runs wait 15+ min):
+  tools/snap.sh <name> makes a frozen snapshot (work/interiors/snap/<name>) so queued tests do not pick up later edits. Run m8 (realism pass: mythos, starbucks, cafe, clothes, pharmacy, books) queued.
+  NEXT: commander order 13:10 = rebuild Mythos strictly from photos mythos_01..18 + side-by-side photo|game images in docs/research/img/lm/mythos_interior/.
+  Plan for Mythos v3: yellow tile vault over the WHOLE grill hall (photo 05/18 show it at the neon end too), lighter honey-pine garden hall, cream fabric roof, many disc lamps, glazing+bamboo, brighter.
+- [19:15] Mythos v3 work in src (NOT integrated yet): MA()/TM('@name') = tint is the ABSOLUTE surface colour (divided by the photo layer's mean, computed lazily on first entry: ensureMeans());
+  runtime-painted layers pavers/pine/pineh/concrete/tilev/mesh in 70_mythos.js; yellow tile vault over the whole grill hall + pine tympanum; concrete wall above hood; garden south wall now faces INTO the garden
+  (was back-facing = invisible), honey floor/pine posts absolute colours, salmon band above glazing, north door pulls. tools/sbs.py makes photo|game pairs.
+  m9 run failed to enter (machine overloaded: load 67 s, the door prompt never appeared within 1 s) -> walk.js now polls for the prompt 20 s and falls back to enterInterior. m10 queued.

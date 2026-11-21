@@ -116,6 +116,7 @@ function interactions(){useTarget=null;if(!running)return;const p=player;if(play
   for(let i=0;i<INTER.length;i++){const it=INTER[i];if(!near(it.x,it.z,it.r||2.2))continue;if(it.when&&!it.when())continue;if(it.fn)opts.push({label:typeof it.label==='function'?it.label():it.label,fn:it.fn});else opts.push({label:'Buy at the periptero',fn:()=>openShop('kiosk')})}
   if(!mission&&TRAIN.state==='dwell'&&!opts.length&&lvl(p.x,p.z)>0.4){for(const c of TRAIN.cars){if(Math.hypot(c.position.x-p.x,c.position.z-p.z)<9.5){opts.push({label:'Ride Line 1',fn:()=>{const M=MISSIONS.find(m=>m.id==='train');if(M)missionOffer(M)}});break}}}
   if(!player.ball){const np=nearestPerson(2.3);if(np&&!np.noTalk)opts.push({label:np.useLabel||('Talk'+(np.name?' to '+np.name:'')),fn:()=>talkTo(np),low:true})}
+  if(GEV.interactions)gameEvent('interactions',{opts,near});/* other modules add contextual actions here: onGame('interactions',d=>d.opts.push({label,fn,low?})) */
   let best=null;for(const o of opts)if(!o.low){best=o;break}useTarget=best||opts[0]||null;showUse(useTarget)}
 function showUse(t){const b=$('bUse');const lbl=t?t.label:null;if(HUDS.last.use===lbl)return;HUDS.last.use=lbl;if(!t){b.hidden=true;return}b.hidden=false;$('useTxt').textContent=t.label;b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop')}
 function use(){if(DLG.open){dlgPick(0);return}if(useTarget){HUDS.uses++;const t=useTarget;gameEvent('use',{label:t.label});if(typeof uiSound==='function')uiSound('click');t.fn()}}

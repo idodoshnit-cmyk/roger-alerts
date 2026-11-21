@@ -64,3 +64,14 @@ NEXT (in order): docs/CHARACTERS.md + CREDITS.md → fix chef head texture (f110
 - Plan: sync main → check Sephora key → game test IB students + homeless → integrate → ORDERS_DONE → then QA/polish.
 - 13:50 INTEGRATED into main: 3 ISA IB Students (label, backpack, IB-only dialog via n.dialog=castDialog / cast field `only`), weapons poses + npcReact/npcTargets, homeless at the new MAP.key.sephora (east side Levidou, verified t7_home.png), setCarry(null) now removes the carry prop. Verified in game t7 (shots/s5/t7_*), no errors. castDialog itself not yet clicked in game.
   Known: ib_starbucks has no terrace seat at Starbucks → stands (fallback). m11 looks ~30: picking a younger avatar (lineup young_m.png pending).
+
+## Session 6 (restart Nov 21 17:48)
+- State on entry: main == copy for 60_people.js/rb_anims; copy has UNINTEGRATED 75_npc.js castFurniture (own bistro table for cast at a café without terrace, cast field "own") + cast.json ib_starbucks own:true. No 81_weapons.js in main yet.
+- Open orders for chars: item 16 pistol/rifle FIRE + RELOAD poses (have aim/hold); item 17 smooth player movement (blended start/stop, turn-in-place).
+- Plan: sync → test castFurniture → integrate → fire/reload clips → start/stop/turn-in-place in Person → integrate → QA (young m11, chef head) → docs.
+- 18:30 (copy only, not integrated yet) rig.js: handLw/handRw absolute hand orientation channel (+wk weight). handkeyed.js: hk_fire_pistol, hk_reload_pistol (1.9 s), hk_fire_rifle, hk_reload_rifle (2.5 s), meta mag/magIn/ready.
+  60_people.js: realistic gun props 'pistol'/'rifle' (marker_p/r aliases) + left-hand magazines mag_p/mag_r; ACTIONS fire_*/reload_*; person.gesture(name,opt) upper-body one-shot layer (+gesturing, stopGesture), person.fire()/reload(); setCarry(name,{noProp}); head leads turns (turnLook).
+  Tool: tools/chars/gest.js jobs.json (gesture strips + film, one browser). First strip shots/s6/rl_p_side.png OK. Browser queue ~15 min per run (machine load 14).
+  NEXT: check batch g1 strips → t8 game test (tests/t8.js) → integrate 60_people/75_npc/cast/rb_anims → ORDERS_DONE → docs.
+- 18:50 INTEGRATED into main: 60_people.js (gestures/fire/reload/gun props/turnLook), 75_npc.js (castFurniture), cast.json, rb_anims.json (152 clips). t8 game test on copy: no errors. ORDERS_DONE + CHARACTERS.md "Guns" updated.
+  NEXT: viewer re-check of rifle reload after moving work space forward (ws r [0,-0.13,0.07], yaw +0.14) → main boot check → QA (m11 young, crowd close-ups).

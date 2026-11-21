@@ -81,3 +81,15 @@
   height-field AO (82_sky.js HF*, world shader GK_AO/GK_AO2 in 10_atlas.js, U.hf/hfR/hfK), bloom+vignette postFX() (82_sky.js), autoQuality() step-down (skips navigator.webdriver),
   fxQuality() hook from applyQuality. Shared edits in COPY only so far: 90_main.js (postFX call after renderer.render; Q.fpsLo/Q.prMin in auto-res loop), 88_menu.js setQuality auto->autoQ().
   Must apply those 2 shared edits to MAIN by hand at integration.
+
+## Resume log (8th process, 17:50)
+- Found a2 run (14:03, no errors) of the unintegrated overhaul: a2_spawn (AO on) vs a2_spawnN (AO off) — AO subtle; a2_spawnD = AO debug view. Main unchanged since 13:52. No new orders for mats after 12:50/13:00.
+- NEXT: diff copy vs main for shared files (90_main.js changed in main 12:51, 88_menu.js), integrate the overhaul, then visual push (sky blue not white, stronger contact AO, facade normals, FXAA, trees/grass).
+- 18:05 b1 FAILED: my 13:55 edit in 82_sky.js hfTag had a // comment swallowing the rest of the line (syntax error) -> fixed (node --check OK). ALWAYS run `node --check` on edited js.
+  Synced others' work into copy (syncwork, owned: 10_atlas 82_sky tex 00_core 90_main 88_menu), merged main's 90_main.js line 18 into copy.
+  Test runs now use a SNAPSHOT (work/mats/snap/gk3) so I can keep editing gk3. Run b2 (tmp/viewsB.json: A/B lighting variant via eval on KEY) started 18:06.
+- 18:55 **INTEGRATED v7 = GRAPHICS OVERHAUL part 1** (b2 run: 8 views, no errors): 10_atlas.js (height-field AO in world shader), 82_sky.js (HF AO, bloom+vignette postFX, autoQuality step-down,
+  autoQuality() without dt returns autoQ() because game's 88_menu.js qAuto() calls it), 00_core.js block (QP ao/bloom/prMin/fpsLo, autoQ: desktop high / phone medium, ACES grade patch),
+  MAIN 90_main.js by hand (postFX after render; Q.fpsLo/Q.prMin in auto-res). 88_menu.js: NOT edited (game's qAuto handles it). Copy now = main for 90_main/88_menu.
+  A/B test of lower hemi/higher exposure: marginal -> KEY kept. Texture array is now 114 layers (others' defTiles) = 179 MB on high: CHECK medium memory.
+  main6 verification run started (tmp/viewsM.json).

@@ -30,21 +30,34 @@ function buildLevelGrid(){const [bx0,bz0,bx1,bz1]=BOUNDS;lvW=Math.ceil(bx1-bx0);
    Kifisia; loadStreetSpecs(json) overlays the researched gk3/data/streets.json (format in docs/ARCHITECTURE.md) when it has been loaded. */
 const STREETS={};
 const CORE_STREETS=['Κασσαβέτη','Κολοκοτρώνη','Λεβίδου','Κυριαζή','Παναγίτσας','Αργυροπούλου','Γεωργίου Δροσίνη','Αγίων Θεοδώρων','Κηφισίας','Δηληγιάννη','Εμμανουήλ Μπενάκη','Χαριλάου Τρικούπη'];
-const SWMAT={red_brick:'brick',grey_pavers:'pavers',marble:'marble',slabs:'slabs',asphalt:'asph2'};
+/* red_tile (research styles.paving): terracotta cement tiles 0.3 × 0.3 m in a straight grid with fine joints (Kolokotroni r17/r18, Platanos r11). One repeat = 1.2 m (4 × 4 tiles). */
+defTile('redtile',(g,S)=>{const n=4,c=S/n;let sd=3;const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};g.fillStyle='#8e5446';g.fillRect(0,0,S,S);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const v=0.9+r()*0.18;g.fillStyle=`rgb(${Math.round(166*v)},${Math.round(98*v)},${Math.round(80*v)})`;g.fillRect(i*c+1.2,j*c+1.2,c-2.4,c-2.4);
+    for(let k=0;k<70;k++){const a=0.05+r()*0.08;g.fillStyle=r()<0.5?`rgba(60,30,20,${a})`:`rgba(230,190,160,${a})`;g.fillRect(i*c+1.2+r()*(c-4),j*c+1.2+r()*(c-4),1+r()*2.5,1+r()*2.5)}}
+},{rep:1/1.2,nrm:'slabs',nrmRep:0.6,nrmK:0.6,spec:.03,shin:14,macro:.35});
+const SWMAT={red_brick:'redtile',grey_pavers:'pavers',marble:'marble',slabs:'slabs',asphalt:'asph2'};
 /* gk3/data/streets.json is fetched at script load (it is small and arrives long before buildRoads runs); buildRoads applies it if it is there */
 let STREETS_JSON=null;try{fetch('data/streets.json').then(r=>r.ok?r.json():null).then(j=>{STREETS_JSON=j}).catch(()=>{})}catch(e){}
 /* gk3/data/places.json (research): landmarks and their elements with game coordinates; read by 45_trees.js / 50_props.js through placeEl() */
 let PLACES_JSON=null;try{fetch('data/places.json').then(r=>r.ok?r.json():null).then(j=>{PLACES_JSON=j}).catch(()=>{})}catch(e){}
 /* all research elements whose 'what' matches re (and that have x,z), optionally only of one place key */
 function placeEl(re,key){const out=[];if(!PLACES_JSON||!PLACES_JSON.places)return out;for(const p of PLACES_JSON.places){if(key&&p.key!==key)continue;for(const e of p.elements||[])if(e&&typeof e.x==='number'&&typeof e.z==='number'&&re.test(e.what||''))out.push(Object.assign({place:p.key},e))}return out}
-function loadStreetSpecs(j){if(!j||!j.streets)return;for(const s of j.streets){if(!s||!s.name)continue;const o=STREETS[s.name]=STREETS[s.name]||{};o.data=s;if(s.sidewalk&&SWMAT[s.sidewalk.material])o.sidewalk=SWMAT[s.sidewalk.material];
+function loadStreetSpecs(j){if(!j||!j.streets)return;for(const s of j.streets){if(!s||!s.name)continue;const o=STREETS[s.name]=STREETS[s.name]||{};o.data=s;if(s.sidewalk&&SWMAT[s.sidewalk.material])o.sidewalk=SWMAT[s.sidewalk.material];if(s.sidewalk&&/^#[0-9a-f]{6}$/i.test(s.sidewalk.colour||''))o.swCol=s.sidewalk.colour;
   if(s.parking)o.parking=s.parking;if(s.lanes)o.lanes=s.lanes;if(s.trees)o.trees=s.trees;if(s.lamps)o.lamps=s.lamps;if(s.bollards)o.bollards=s.bollards}}
 function streetSpec(name){let o=STREETS[name];if(!o)o=STREETS[name]={};if(o.core===undefined)o.core=CORE_STREETS.indexOf(name)>=0;return o}
+/* spec at a point: a street with segments[] (streets.json, e.g. Kassaveti w/m/e) changes character along its length → the nearest segment's lampsSeg / bollardsSeg /
+   sidewalkMaterial override the street values; a segment WITHOUT lampsSeg (when siblings have one) means "not this lamp style here" → lamps null (fallback to the map style) */
+function streetSpecAt(name,x,z){const o=streetSpec(name),d=o.data;if(!d||!d.segments||d.segments.length<2)return o;let best=null,bd=1e9;
+  for(const g of d.segments){if(g.ax==null||g.bx==null)continue;const dx=g.bx-g.ax,dz=g.bz-g.az,L2=dx*dx+dz*dz||1,u=Math.max(0,Math.min(1,((x-g.ax)*dx+(z-g.az)*dz)/L2)),dd=Math.hypot(x-g.ax-dx*u,z-g.az-dz*u);if(dd<bd){bd=dd;best=g}}
+  if(!best)return o;if(!best._sp){const sp=Object.assign({},o),anyL=d.segments.some(g=>g.lampsSeg),anyB=d.segments.some(g=>g.bollardsSeg);sp.seg=best;
+    if(best.lampsSeg)sp.lamps=Object.assign({},o.lamps||{},best.lampsSeg);else if(anyL)sp.lamps=null;
+    if(best.bollardsSeg)sp.bollards=best.bollardsSeg.present===false?null:Object.assign({},o.bollards||{},best.bollardsSeg);else if(anyB)sp.bollards=null;
+    if(best.sidewalkMaterial&&SWMAT[best.sidewalkMaterial])sp.sidewalk=SWMAT[best.sidewalkMaterial];Object.defineProperty(best,'_sp',{value:sp,enumerable:false})}return best._sp}
 
 /* ============================== GROUND DECAL SHEET ==============================
    One cut-out material layer with a 4×4 sheet of ground decals (cast-iron covers, drain grate, arrow, tree grate, crack seal, zigzag, TAXI, fallen leaves …).
    sdCell(SDC.name) → [u0,v0,u1,v1] for rdecal()/gdecal(). */
-const SDC={manhole:0,cover:1,drain:2,arrow:3,grate:4,crack:5,valve:6,dis:7,zig:8,taxi:9,leaves:10,stopT:11};
+const SDC={manhole:0,cover:1,drain:2,arrow:3,grate:4,crack:5,valve:6,dis:7,zig:8,taxi:9,leaves:10,stopT:11,bike:12};
 function sdCell(i){const c=i%4,r=i>>2,m=0.014;return[c/4+m,1-(r+1)/4+m,(c+1)/4-m,1-r/4-m]}
 defTile('sdecal',(g,S)=>{const C=S/4;const cell=(i,fn)=>{g.save();g.translate((i%4)*C,(i>>2)*C);g.beginPath();g.rect(2,2,C-4,C-4);g.clip();fn(C);g.restore()};let sd=11;const rr=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
   cell(0,c=>{const m=c/2;g.fillStyle='#35373b';g.beginPath();g.arc(m,m,c*0.44,0,TAU);g.fill();g.strokeStyle='#64676c';g.lineWidth=2;g.beginPath();g.arc(m,m,c*0.37,0,TAU);g.stroke();g.fillStyle='#575a5f';
@@ -62,6 +75,8 @@ defTile('sdecal',(g,S)=>{const C=S/4;const cell=(i,fn)=>{g.save();g.translate((i
   cell(9,c=>{g.fillStyle='#efc21d';g.font='bold 15px Arial';g.textAlign='center';g.textBaseline='middle';g.save();g.translate(c/2,c/2);g.scale(1.15,3.3);g.fillText('TAXI',0,0);g.restore()});
   cell(10,c=>{const cols=['#8d6c2c','#a9863a','#6f5b2b','#b8963f','#7d7a3a','#94592b'];for(let k=0;k<46;k++){g.save();g.translate(5+rr()*(c-10),5+rr()*(c-10));g.rotate(rr()*TAU);g.fillStyle=cols[(rr()*cols.length)|0];g.beginPath();g.ellipse(0,0,1.9+rr()*1.5,1.1+rr()*0.7,0,0,TAU);g.fill();g.restore()}});
   cell(11,c=>{g.fillStyle='#f1f0ea';g.font='bold 15px Arial';g.textAlign='center';g.textBaseline='middle';g.save();g.translate(c/2,c/2);g.scale(1.1,3.3);g.fillText('STOP',0,0);g.restore()});
+  cell(12,c=>{g.translate(c/2,c/2);g.rotate(Math.PI/2);g.translate(-c/2,-c/2);g.strokeStyle='#f1f0ea';g.lineWidth=2.6;g.lineCap='round';g.lineJoin='round';const r=c*0.17,y=c*0.66,x1=c*0.27,x2=c*0.73;for(const x of[x1,x2]){g.beginPath();g.arc(x,y,r,0,TAU);g.stroke()}
+    g.beginPath();g.moveTo(x1,y);g.lineTo(c*0.44,c*0.42);g.lineTo(c*0.64,c*0.42);g.lineTo(x2,y);g.moveTo(c*0.44,c*0.42);g.lineTo(c*0.52,y);g.lineTo(c*0.64,c*0.42);g.moveTo(c*0.4,c*0.36);g.lineTo(c*0.5,c*0.36);g.moveTo(c*0.64,c*0.42);g.lineTo(c*0.62,c*0.32);g.lineTo(c*0.7,c*0.3);g.stroke()});
 },{cut:true,spec:.07,shin:26,nrm:'asph',nrmK:.4});
 
 /* ============================== ROADS ============================== */
@@ -99,7 +114,7 @@ function roadTopology(){const VH=new Map(),key=p=>Math.round(p[0]*10)+','+Math.r
     if(deg>=3)r.jn.push({s:r.cum[vi],hw:ohw||r.w/2})})}}
 
 /* block-paved carriageways seen in the research photos (streets.json styles.paving): Kolokotroni red-brown concrete blocks (r17/r18), Levidou pale grey blocks flush with the walkways (r19) */
-const CARRIAGEWAY={'Κολοκοτρώνη':{col:'#c29a88'},'Λεβίδου':{col:'#e2ddd6'}};
+const CARRIAGEWAY={'Κολοκοτρώνη':{col:'#b07a68'},'Λεβίδου':{col:'#e2ddd6'}};
 function buildRoads(){if(STREETS_JSON&&!STREETS_JSON._applied){loadStreetSpecs(STREETS_JSON);STREETS_JSON._applied=1}roadTopology();RIDX=new Map();
   const SURF_T=[TM.asph,TM.pavers,TM.brick,TM.slabs,TM.gravel];
   for(const r of ROADS){if(r.side<0&&r.ty===7)continue;if(r.ty===9&&buildStairs(r))continue;const w=r.w,hw=w/2;const ps=resample(r.ps,3.5);if(ps.length<2)continue;
@@ -118,19 +133,41 @@ function buildRoads(){if(STREETS_JSON&&!STREETS_JSON._applied){loadStreetSpecs(S
     if(r.ty<=6)for(const p of [ps[0],ps[n-1]]){const ch=chunkAt(p[0],p[1]).o;const seg=12;for(let k=0;k<seg;k++){const a0=k/seg*TAU,a1=(k+1)/seg*TAU;const A=[p[0]+Math.cos(a0)*hw,p[1]+Math.sin(a0)*hw],B=[p[0]+Math.cos(a1)*hw,p[1]+Math.sin(a1)*hw];const Y=q=>terr(q[0],q[1])+yo-0.002;
       ch.tri([p[0],Y(p),p[1]],[B[0],Y(B),B[1]],[A[0],Y(A),A[1]],[p[0],p[1]],[B[0],B[1]],[A[0],A[1]],col,rc,0,true)}}}
   if(MAP.fillets)for(const f of MAP.fillets){const ring=unp(f);if(ring.length<3)continue;if(polyArea(ring)<0)ring.reverse();groundPoly([ring],0.043,TM.asph,1,C1,4)}
-  markRoads();
+  markRoads();if(typeof cycleTracks==='function')cycleTracks();
   // sidewalks (real shapes, rounded corners) raised 16 cm; one material per street
   MAP.sidewalks.forEach((sw,i)=>{const rings=sw.map(r=>unp(r));if(!rings[0]||rings[0].length<3)return;let cx=0,cz=0;for(const p of rings[0]){cx+=p[0];cz+=p[1]}cx/=rings[0].length;cz/=rings[0].length;
-    groundPoly(rings,0.16,TM[sidewalkMat(cx,cz)],1,C1,6)});
+    {const m=sidewalkMat(cx,cz);groundPoly(rings,0.16,TM[m]!==undefined?TM[m]:T[m],1,sidewalkTint(cx,cz,m),6)}});
   // curbs: vertical face toward the road + stone top
+  // kerbs painted yellow round Platanos square (research places.json platanos_square: "kerb painted yellow")
+  let yk=null;{const i=(MAP.area_tags||[]).findIndex(t=>t&&/Πλατεία Πλατάνου/.test(t.name||''));if(i>=0){const r=unp(MAP.areas[i][1][0]);yk=[1e9,1e9,-1e9,-1e9];for(const p of r){yk[0]=Math.min(yk[0],p[0]-12);yk[1]=Math.min(yk[1],p[1]-12);yk[2]=Math.max(yk[2],p[0]+12);yk[3]=Math.max(yk[3],p[1]+12)}}}
+  const KY=hexc('#e2bf3c');
   for(const cl of MAP.curbs){const ps=resample(unp(cl),3);for(let i=0;i<ps.length-1;i++){const a=ps[i],b=ps[i+1];const dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz);if(l<0.05)continue;const nx=-dz/l,nz=dx/l;const ch=chunkAt(a[0],a[1]).o;const ya=terr(a[0],a[1]),yb=terr(b[0],b[1]);
-    ch.wall(a[0],a[1],b[0],b[1],ya+0.02,yb+0.02,ya+0.165,yb+0.165,nx,nz,0,l/1.5,0,0.12,C1,RECT[T.curb],0);
-    const ax=a[0]-nx*0.16,az=a[1]-nz*0.16,bx=b[0]-nx*0.16,bz=b[1]-nz*0.16;ch.hq([a[0],ya+0.167,a[1]],[b[0],yb+0.167,b[1]],[bx,yb+0.167,bz],[ax,ya+0.167,az],[0,0],[l/1.5,0],[l/1.5,0.12],[0,0.12],C1,RECT[T.curb],0)}}
+    const kc=yk&&a[0]>yk[0]&&a[0]<yk[2]&&a[1]>yk[1]&&a[1]<yk[3]?KY:C1;ch.wall(a[0],a[1],b[0],b[1],ya+0.02,yb+0.02,ya+0.165,yb+0.165,nx,nz,0,l/1.5,0,0.12,kc,RECT[T.curb],0);
+    const ax=a[0]-nx*0.16,az=a[1]-nz*0.16,bx=b[0]-nx*0.16,bz=b[1]-nz*0.16;ch.hq([a[0],ya+0.167,a[1]],[b[0],yb+0.167,b[1]],[bx,yb+0.167,bz],[ax,ya+0.167,az],[0,0],[l/1.5,0],[l/1.5,0.12],[0,0.12],kc,RECT[T.curb],0)}}
   curbDrains();treePits()}
 /* sidewalk material of the street nearest to a point (see STREETS / loadStreetSpecs) */
-function sidewalkMat(x,z){const q=roadProj(x,z,45,r=>r.ty<=6&&r.name);if(!q)return'slabs';const sp=streetSpec(q.r.name);if(sp.sidewalk&&TM[sp.sidewalk])return sp.sidewalk;return sp.core&&Math.hypot(x-20,z-30)<420?'pavers':'slabs'}
+/* researched sidewalk colour (streets.json sidewalk.colour, e.g. Kyriazi charcoal slabs #4a4a4c) as a vertex tint relative to the mean colour of the photo material */
+const SWBASE={slabs:'#9c9a94',pavers:'#a8998c',marble:'#cfcac6',redtile:'#b0614a',brick:'#b0614a'};
+function sidewalkTint(x,z,m){const q=roadProj(x,z,45,r=>r.ty<=6&&r.name);if(!q)return C1;const sp=streetSpecAt(q.r.name,x,z);if(!sp.swCol||!SWBASE[m])return C1;
+  const a=hexc(sp.swCol),b=hexc(SWBASE[m]);return[clamp(a[0]/b[0],0.3,1.2),clamp(a[1]/b[1],0.3,1.2),clamp(a[2]/b[2],0.3,1.2)]}
+function sidewalkMat(x,z){const q=roadProj(x,z,45,r=>r.ty<=6&&r.name);if(!q)return'slabs';const sp=streetSpecAt(q.r.name,x,z);if(sp.sidewalk&&(TM[sp.sidewalk]!==undefined||T[sp.sidewalk]!==undefined))return sp.sidewalk;return sp.core&&Math.hypot(x-20,z-30)<420?'pavers':'slabs'}
 
 /* ---------- road markings and asphalt detail, all in road coordinates ---------- */
+/* cycle tracks (streets.json cycleTrack / segments[].cycleTrack: Kassaveti west, Kolokotroni, Levidou first block, Dilighianni): a smooth dark-grey strip (styles.paving.cycle_asphalt
+   #6f6d6b) along the named side of the carriageway, a 0.25 m white concrete edge band on the traffic side and white bicycle symbols every ~40 m */
+function cycleTracks(){if(typeof STREETS==='undefined')return;const done=new Set();
+  const sideOf=(txt,dx,dz)=>{txt=String(txt||'').toLowerCase();if(/south/.test(txt))return dx>0?1:-1;if(/north/.test(txt))return dx>0?-1:1;if(/east/.test(txt))return -dz>0?1:-1;if(/west/.test(txt))return -dz>0?-1:1;return 1};
+  for(const r of ROADS){if(!r.fr||r.ty>5||!r.name)continue;const o=STREETS[r.name],d=o&&o.data;if(!d||!d.cycleTrack)continue;const ct=d.cycleTrack;if(ct.present===false)continue;
+    const f=r.fr,L=f.L;if(L<12)continue;const mid=roadPoint(r,L/2,0);let seg=null;
+    if(d.segments&&d.segments.length>1){const sp=streetSpecAt(r.name,mid[0],mid[2]);seg=sp.seg;if(seg&&!seg.cycleTrack&&seg!==d.segments[0])continue}
+    const wid=parseFloat((seg&&typeof seg.cycleTrack==='string'&&(seg.cycleTrack.match(/([0-9.]+)\s*m/)||[])[1])||ct.widthM||2.2);if(r.w<wid+3)continue;
+    const a=f.ps[0],b=f.ps[f.ps.length-1],sd=sideOf((seg&&typeof seg.cycleTrack==='string'&&seg.cycleTrack)||ct.side,b[0]-a[0],b[1]-a[1]);if(r.park&&r.park[sd])continue;
+    const hw=r.w/2,tO=sd*(hw-0.02),tI=sd*(hw-wid),tB=sd*(hw-wid-0.25);let s0=null;
+    const run=(s0,s1)=>{if(s1-s0<4)return;rdecal(r,s0,s1,Math.min(tO,tI),Math.max(tO,tI),TM.asph!==undefined?TM.asph:T.paint,hexc('#77746f'),0.012,[Math.min(tO,tI),s0,Math.max(tO,tI),s1]);
+      rdecal(r,s0,s1,Math.min(tI,tB),Math.max(tI,tB),T.paint,[0.86,0.85,0.81],0.013);
+      for(let s=s0+6;s<s1-3;s+=40){const tc=(tO+tI)/2;rdecal(r,s-0.8,s+0.8,tc-0.8,tc+0.8,T.sdecal,WHITE_P,0.015,sdCell(SDC.bike),true)}};
+    for(let s=0;s<=L+0.01;s+=1){const ok=s<L&&jclear(r,s,1.5);if(ok&&s0===null)s0=s;if(!ok&&s0!==null){run(s0,s-1);s0=null}}if(s0!==null)run(s0,L);done.add(r.name)}
+  return done}
 function markRoads(){const car=r=>r.ty<=5&&r.fr;
   // 1. project the mapped crossings, signals and stop signs onto their roads
   const XING=[];for(const c of MAP.props.crossing){const x=c[0]/10,z=c[1]/10;const q=roadProj(x,z,8,car);if(!q){placed('crossing',x,z,'','no road');continue}const r=q.r,len=r.ty<=1?4:3;let s=q.s;

@@ -73,6 +73,8 @@ function solve(P, opt = {}) {
   for (const s of ['L', 'R']) { const sg = s === 'L' ? 1 : -1;
     const hand = P['hand' + s]; if (hand) { limb(B(s + ' UpperArm'), B(s + ' Forearm'), B(s + ' Hand'), hand, P['pole' + s] || [sg * 0.6, -0.6, -0.5]); }
     const hr = P['hand' + s + 'r']; if (hr) { const b = B(s + ' Hand'); setWorld(b, Q.mul(euler(hr), w.wq[b])); w = fk(lq, rp); }
+    /* handLw/handRw: absolute hand orientation (character-space quaternion [x,y,z,w]); handLwk/handRwk [0..1] = how much of it (default 1) */
+    const hw = P['hand' + s + 'w']; if (hw) { const b = B(s + ' Hand'), k = P['hand' + s + 'wk'] ? Math.max(0, Math.min(1, P['hand' + s + 'wk'][0])) : 1; if (k > 0) { setWorld(b, Q.slerp(w.wq[b], Q.norm(hw), k)); w = fk(lq, rp); } }
     if (!P['leg' + s]) { const off = P['foot' + s] || [0, 0, 0], fb = B(s + ' Foot'); const target = add(bw.wp[fb], off); limb(B(s + ' Thigh'), B(s + ' Calf'), fb, target, P['knee' + s] || [sg * 0.12, 0, 1]);
       setWorld(fb, Q.mul(euler(P['foot' + s + 'r'] || [0, 0, 0]), bw.wq[fb])); w = fk(lq, rp); const tb = B(s + ' Toe0'); const tr = P['toe' + s]; setWorld(tb, Q.mul(euler([-(tr ? tr[0] : 0), 0, 0]), Q.mul(euler(P['foot' + s + 'r'] || [0, 0, 0]), bw.wq[tb]))); w = fk(lq, rp); }
     else { const fr = P['foot' + s + 'r']; if (fr) { const fb = B(s + ' Foot'); setWorld(fb, Q.mul(euler(fr), w.wq[fb])); w = fk(lq, rp); } }

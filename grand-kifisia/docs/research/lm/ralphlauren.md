@@ -9,6 +9,9 @@ Game file: `gk3/js/89c_lm_ralphlauren.js` (registered with `LM.register({id:'ral
   - `docs/research/img/shops/ralphlauren_01_kotsikas_house_day_CCBYSA.jpg` — Commons, C messier, CC BY-SA 4.0. Day, from the south-east: front + east side.
   - `docs/research/img/shops/ralphlauren_02_night_lhgroup_REFONLY.jpg` — LH Group, reference only. Night, straight on, current awnings.
   - `docs/research/img/shops/ralphlauren_03_night_starbucks_left_travelstyle_REFONLY.jpg` — travelstyle.gr, reference only. Night, straight on, perspective-corrected → used for all heights.
+  - `docs/research/img/arch/commons/Οικία_Κότσικα_Κηφισιά_0934.jpg` — Commons, C messier, CC BY-SA 4.0 (same day as photo 1, c. Dec 2023). Day, straight on from the SSW, slightly west: whole front, the
+    west-wing west side (bracketed eave), the courtyard planting (bench bed, lantern, hoop rails). Primary daylight reference since 18:50.
+  - Orthophoto `docs/research/img/arch/ortho_kassaveti19_REFONLY.jpg` (look only) for the site; shared ground plan with lm-starbucks: `docs/research/lm/kassaveti19_site.md`.
 - No Google imagery used.
 
 ## Plan (1:1 from OSM)
@@ -51,6 +54,14 @@ OSM outline in (u, w): front (0,0)→(11.86,0) with a bay; east (11.86,0)→(11.
 - East side (photo 1): white cornice band continues; tall round-arched windows on both floors; bracketed white eave soffit (triangular knee braces); white down-pipes;
   rear part lower (annex, flat roof with parapet). Raised brick planters with shrubs along the east walkway.
 - West and north sides: **no photo found** — modelled plausibly with the same window type as the east side (stated here honestly).
+
+## Added in v2 (2026-11-21 evening)
+- Arched (barrel) glass door canopy, front edge a segmental arch (rise 0.4 m), black ribs, iron brackets with scroll rings (photos 2/3/0934).
+- Wrought-iron stair railings: custom cut-out tile `rlIron` (bars + band of figure-8 scrolls + rings at the foot, photo 2).
+- Monument plaque left of the door (`rlPlaque`, "ΟΙΚΙΑ ΚΟΤΣΙΚΑ 1910" — the real plaque text is not legible in any photo; this is a stand-in, said honestly).
+- East side: three tall round-arched windows per floor (photo 1). West wing: knee-brace brackets under the west eave (0934). Chimney: white render with a terracotta cap at the wing's front-left (0934).
+- Night: warm ground up-lights grazing the bay piers, the door surround, the front corners and the gables + an LED line on the frieze (photos 2/3). One additive mesh + one strip mesh, faded by `SKY.night` from a `FRAME_HOOKS` entry (`RL_VILLA.night(n)` can force it).
+- Courtyard items (see kassaveti19_site.md): bench bed, two Victorian lantern posts (night lights), hoop rails, low shrub bed right of the bay, juniper bed (photo 1), east walkway paving to b423.
 
 ## Surroundings modelled with the building
 Marble steps (walkable: `groundY` is wrapped for the stair area only), side parapets + railings, glass canopy, terracotta pots with fan palms, east brick planter with clipped shrubs.

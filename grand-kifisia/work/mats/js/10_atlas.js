@@ -356,6 +356,18 @@ const GK_FPHONG=`
 #ifdef GK_AO
 gkAo=gkHFAO(vWp,normalize((vec4(normal,0.0)*viewMatrix).xyz));diffuseColor.rgb*=1.0-0.12*gkFoot;
 #endif
+#ifndef GK_CUT
+/* weathering of walls: long soft vertical rain/soot streaks and patchy grime on vertical photo surfaces (strength follows the tile's macro value; glass excluded) */
+{vec3 gkNw=(vec4(normal,0.0)*viewMatrix).xyz;float gkVt=(1.0-smoothstep(0.3,0.6,abs(gkNw.y)))*vP1.w*(1.0-gm);
+ if(gkVt>0.001){vec2 gkTw=normalize(vec2(-gkNw.z,gkNw.x)+vec2(1e-4,0.0));float gkU=dot(vWp.xz,gkTw);
+  float gkS=texture(uArr,vec3(gkU*0.23,vWp.y*0.045,uNoiseL)).r,gkS2=texture(uArr,vec3(gkU*0.71+0.37,vWp.y*0.11,uNoiseL)).g;
+  diffuseColor.rgb*=1.0-gkVt*(0.30*smoothstep(0.50,0.82,gkS)*(0.55+0.45*gkS2)+0.10*smoothstep(0.55,0.9,gkS2));}
+ /* summer lawns: sun-dried straw patches and greener damp hollows on up-facing green surfaces (grass, park ground) */
+ float gkGr=saturate((diffuseColor.g-max(diffuseColor.r,diffuseColor.b))*14.0)*smoothstep(0.65,0.92,gkNw.y);
+ if(gkGr>0.001){float gkP=texture(uArr,vec3(vWp.xz*0.027+vec2(0.31,0.17),uNoiseL)).g*0.65+texture(uArr,vec3(vWp.xz*0.11,uNoiseL)).r*0.35;
+  float gkDry=smoothstep(0.52,0.74,gkP)*gkGr;float gkL=dot(diffuseColor.rgb,vec3(0.299,0.587,0.114));
+  diffuseColor.rgb=mix(diffuseColor.rgb*(1.0-0.18*gkGr*smoothstep(0.42,0.2,gkP)),vec3(0.80,0.68,0.42)*gkL*1.55,gkDry*0.62);}}
+#endif
 BlinnPhongMaterial material;
 float gkGl=gm*vP2.w;
 material.diffuseColor=diffuseColor.rgb*(1.0-gm*vP3.x);

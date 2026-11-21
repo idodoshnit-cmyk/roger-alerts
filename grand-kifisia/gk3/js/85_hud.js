@@ -4,6 +4,8 @@
 let running=false;// true while the simulation runs (false in menus, shop sheets and on the title screen)
 let inputMode=(('ontouchstart' in window)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches))?'touch':'kb';
 function setInputMode(m){if(m===inputMode)return;inputMode=m;document.body.classList.toggle('touch',m==='touch');document.body.classList.toggle('kb',m!=='touch');HUDS.onbKey=''}
+/* apply the guessed mode at once, so a desktop never shows the touch pads and the key legend on top of each other before the first input */
+if(document.body){document.body.classList.toggle('touch',inputMode==='touch');document.body.classList.toggle('kb',inputMode!=='touch')}
 const HUDS={sub:0,ban:0,cash:null,shown:-1,tick:0,last:{},view:58,toasts:[],hurt:0,onb:null,onbT:0,onbKey:'',onbShown:0,look:0,uses:0,mapOpened:0,gauge:null,timer:null,cine:false,street:'',wptOn:false,near:[],nearT:0};
 const _hv=new THREE.Vector3();
 const money2=v=>'€'+(Math.round(v*100)/100).toFixed(2);
@@ -71,15 +73,15 @@ function hudPointer(){const el=$('wpt'),D=GPS.dest;const p=player.car||player;if
 
 /* ---------- onboarding: one small hint at a time, gone for good once done ---------- */
 const ONB=[
- {id:'move',t:'Drag the <b>left side</b> of the screen to walk. Push further to run.',k:'<b>W A S D</b> to move',done:s=>STATS.walked-s.w>7},
+ {id:'move',foot:1,t:'Drag the <b>left side</b> of the screen to walk. Push further to run.',k:'<b>W A S D</b> to move',done:s=>STATS.walked-s.w>7},
  {id:'look',t:'Drag the <b>right side</b> to look around.',k:'Hold the <b>mouse button</b> and drag to look around',done:()=>HUDS.look>1.3},
- {id:'sprint',t:'Tap <b>SPRINT</b> to go faster.',k:'Hold <b>Shift</b> to sprint · <b>Space</b> jumps',done:()=>player.spd>PMOVE.RUN+1},
- {id:'use',t:'Walk up to a person or a door — a <b>gold button</b> appears. Tap it.',k:'Walk up to a person or a door and press <b>E</b>',done:()=>HUDS.uses>0},
+ {id:'sprint',foot:1,t:'Tap <b>SPRINT</b> to go faster.',k:'Hold <b>Shift</b> to sprint · <b>Space</b> jumps',done:()=>player.spd>PMOVE.RUN+1},
+ {id:'use',foot:1,t:'Walk up to a person or a door — a <b>gold button</b> appears. Tap it.',k:'Walk up to a person or a door and press <b>E</b>',done:()=>HUDS.uses>0},
  {id:'car',t:'Stand next to any car and tap <b>CAR</b> to drive it.',k:'Stand next to any car and press <b>F</b> to drive it',done:()=>STATS.cars>0||!!player.car},
  {id:'map',t:'Tap the <b>radar</b> for the map, missions and settings.',k:'Press <b>M</b> for the map, missions and settings',done:()=>HUDS.mapOpened>0}];
 function onboardTick(dt){const f=SAVE.flags.onb||(SAVE.flags.onb={});const el=$('hint');
-  if(HUDS.cine||(typeof DLG!=='undefined'&&DLG.open)||(typeof mission!=='undefined'&&mission&&mission.quiet)){el.classList.remove('on');return}
-  if(!HUDS.onb){const next=ONB.find(o=>!f[o.id]);if(!next){el.classList.remove('on');return}HUDS.onbT+=dt;if(HUDS.onbT<1.2)return;HUDS.onb={o:next,w:STATS.walked,t:0};HUDS.onbKey=''}
+  if(HUDS.cine||(typeof DLG!=='undefined'&&DLG.open)||(typeof mission!=='undefined'&&mission&&mission.quiet)||(player.car&&HUDS.onb&&HUDS.onb.o.foot)){el.classList.remove('on');HUDS.onbKey='';return}/* walking hints wait while driving */
+  if(!HUDS.onb){const next=ONB.find(o=>!f[o.id]&&!(o.foot&&player.car));if(!next){el.classList.remove('on');return}HUDS.onbT+=dt;if(HUDS.onbT<1.2)return;HUDS.onb={o:next,w:STATS.walked,t:0};HUDS.onbKey=''}
   const cur=HUDS.onb;cur.t+=dt;const key=cur.o.id+inputMode;if(HUDS.onbKey!==key){HUDS.onbKey=key;el.innerHTML=inputMode==='touch'?cur.o.t:cur.o.k;el.classList.add('on')}
   if(cur.o.done(cur)||cur.t>40){f[cur.o.id]=1;HUDS.onb=null;HUDS.onbT=0;el.classList.remove('on');if(cur.t<=40&&typeof uiSound==='function')uiSound('ok')}}
 
@@ -94,7 +96,7 @@ function hudUpdate(dt){
   if(HUDS.cash){const c=HUDS.cash;c.t+=dt;const u=Math.min(1,c.t/c.dur),e=1-Math.pow(1-u,3);HUDS.shown=u>=1?c.to:c.from+(c.to-c.from)*e;setTxt('money',money2(HUDS.shown));c.tick-=dt;if(c.tick<=0&&u<1){c.tick=0.07;if(typeof uiSound==='function')uiSound('coin')}
     if(u>=1){HUDS.cash=null;HUDS.shown=player.money;$('money').classList.remove('up','down')}}
   if(HUDS.hurt>0){HUDS.hurt=Math.max(0,HUDS.hurt-dt*1.6);$('vign').style.boxShadow=HUDS.hurt>0.01?`inset 0 0 ${Math.round(60+HUDS.hurt*90)}px rgba(255,40,20,${(HUDS.hurt*0.55).toFixed(2)})`:''}
-  drawMinimap();hudPointer();gpsUpdate(dt);onboardTick(dt);
+  drawMinimap();hudPointer();gpsUpdate(dt);onboardTick(dt);hudTags(dt);
   HUDS.tick-=dt;if(HUDS.tick>0)return;HUDS.tick=0.2;
   HUDS.nearT-=0.2;if(HUDS.nearT<=0&&typeof MISSIONS!=='undefined'){HUDS.nearT=1;HUDS.near=missionsByDistance()}
   for(let i=0;i<XACT.length;i++){const a=XACT[i];if(!a.el)continue;const v=!a.visible||!!a.visible();if(a._v!==v){a._v=v;a.el.hidden=!v}if(v){const l=typeof a.label==='function'?a.label():a.label;if(a._l!==l){a._l=l;a.el.textContent=l}const on=!!a.active;if(a._on!==on){a._on=on;a.el.classList.toggle('on',on)}}}
@@ -102,7 +104,19 @@ function hudUpdate(dt){
   setTxt('street',player.interior?districtName():streetName());setTxt('district',player.interior?'Indoors':districtName());
   const hp=Math.round(clamp(player.health,0,100));if(HUDS.last.hp!==hp){HUDS.last.hp=hp;$('hpFill').style.width=hp+'%';$('hp').classList.toggle('low',hp<35)}
   const inCar=!!player.car;if(HUDS.last.inCar!==inCar){HUDS.last.inCar=inCar;$('btnsFoot').hidden=inCar;$('btnsCar').hidden=!inCar;document.body.classList.toggle('driving',inCar)}
-  if(!inCar){const near=!!nearestCar()&&!player.interior;if(HUDS.last.nearCar!==near){HUDS.last.nearCar=near;$('bCar').classList.toggle('dim',!near)}const sp=!!input.sprint;if(HUDS.last.sp!==sp){HUDS.last.sp=sp;$('bSprint').classList.toggle('on',sp)}
+  if(!inCar){const near=!!nearestCar()&&!player.interior;if(HUDS.last.nearCar!==near){HUDS.last.nearCar=near;$('bCar').classList.toggle('dim',!near);$('bCar').classList.toggle('ready',near)}const sp=!!input.sprint;if(HUDS.last.sp!==sp){HUDS.last.sp=sp;$('bSprint').classList.toggle('on',sp)}
     const act=player.ball?'SHOOT':'PUNCH';setTxt('bActL',act)}
   else{const v=Math.round(Math.abs(player.car.vf||0)*3.6);setTxt('speedo',v+'');}
   if(HUDS.last.spd!==inCar){HUDS.last.spd=inCar;$('speedBox').hidden=!inCar}}
+
+/* overhead name tags (DOM): NPC records with `tag` AND `domTag` (the fallback IB students of 87b; the characters module draws its own sprite tags for cast members) gets a floating label above the head, e.g. n.tag='ISA IB Student'.
+   Readable at any distance up to 34 m, fading out beyond 22 m; hidden behind the camera, indoors-vs-outdoors mismatches and in cutscenes. */
+const TAGS={list:[],t:0,pool:[],_v:new THREE.Vector3()};
+function hudTags(dt){TAGS.t-=dt;if(TAGS.t<=0){TAGS.t=1;TAGS.list=NPCS.filter(n=>n.tag&&n.domTag)}
+  let used=0;const W=innerWidth,H=innerHeight,hide=HUDS.cine||(typeof DLG!=='undefined'&&DLG.open);
+  if(!hide)for(const n of TAGS.list){const h=n.h;if(!h||!h.root.visible)continue;if(!!n.interior!==!!player.interior)continue;const d=camera.position.distanceTo(h.root.position);if(d>34)continue;
+    const v=TAGS._v.copy(h.root.position);v.y+=(n.tagH||2.08)*(h.scale||1);v.project(camera);if(v.z>1||v.x<-1.1||v.x>1.1||v.y<-1.1||v.y>1.1)continue;
+    let el=TAGS.pool[used];if(!el){el=document.createElement('div');el.className='ntag';$('hud').appendChild(el);TAGS.pool.push(el)}used++;
+    const txt=n.tag;if(el._t!==txt){el._t=txt;el.textContent=txt}const k=clamp((34-d)/12,0,1),sc=clamp(9/Math.max(d,4),0.62,1.15);
+    el.style.display='';el.style.opacity=k.toFixed(2);el.style.transform=`translate(${((v.x+1)/2*W).toFixed(1)}px,${((1-v.y)/2*H).toFixed(1)}px) translate(-50%,-100%) scale(${sc.toFixed(3)})`}
+  for(let i=used;i<TAGS.pool.length;i++)if(TAGS.pool[i].style.display!=='none')TAGS.pool[i].style.display='none'}

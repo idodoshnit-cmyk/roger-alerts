@@ -50,12 +50,20 @@ for (jx, jz) in junc:
             beds.append({'o': [[round(x, 2), round(z, 2)] for x, z in list(g.exterior.coords)[:-1]], 'agaves': max(1, int(g.area / 4))})
 bedU = unary_union([Polygon(b['o']) for b in beds]) if beds else Polygon()
 # trees (inferred): Poisson disc in the lawn, away from walks/buildings/basin
-SP = [('cedar', 0.38, 11, 15), ('aleppo', 0.30, 10, 14), ('plane', 0.12, 11, 14), ('holmoak', 0.10, 7, 9), ('cypress', 0.10, 3, 4)]
+SP = [('cedar', 0.44, 11, 15), ('aleppo', 0.32, 10, 14), ('plane', 0.13, 11, 14), ('holmoak', 0.11, 7, 9)]
+# OSM furniture and monuments (exact positions)
+N = d['nodes']
+benchesO = [(n['x'], n['z']) for n in N if n['tags'].get('amenity') == 'bench']
+basketsO = [(n['x'], n['z']) for n in N if n['tags'].get('amenity') == 'waste_basket']
+art = [n for n in N if n['tags'].get('tourism') == 'artwork']
+fnt = [n for n in N if n['tags'].get('amenity') == 'fountain'][0]
+keep_clear = [Point(b).buffer(1.6) for b in benchesO] + [Point(a['x'], a['z']).buffer(2.5) for a in art] + [Point(fnt['x'], fnt['z']).buffer(2.0)]
+keepU = unary_union(keep_clear)
 trees = []
-inner = lawn.buffer(-1.8).difference(bedU.buffer(1.0))
+inner = lawn.buffer(-1.8).difference(bedU.buffer(1.0)).difference(keepU)
 minx, minz, maxx, maxz = inner.bounds
 tries = 0
-while tries < 20000 and len(trees) < 110:
+while tries < 40000 and len(trees) < 100:
     tries += 1
     x = minx + rnd.random() * (maxx - minx); z = minz + rnd.random() * (maxz - minz)
     if not inner.contains(Point(x, z)): continue
@@ -63,6 +71,7 @@ while tries < 20000 and len(trees) < 110:
     for sp, p, d0, d1 in SP:
         acc += p
         if r <= acc: break
+    if sum(1 for t in trees if t[2] == sp) > {'cedar': 48, 'aleppo': 36, 'plane': 14, 'holmoak': 12}[sp]: continue
     dia = d0 + rnd.random() * (d1 - d0)
     ok = all(math.hypot(x - t[0], z - t[1]) > 0.42 * (dia + t[3]) for t in trees)
     if ok: trees.append([round(x, 2), round(z, 2), sp, round(dia, 1), 'inferred (photo r04 species mix)'])
@@ -89,7 +98,32 @@ for w in walks:
         if K.contains(Point(x, z)) and all(math.hypot(x - a[0], z - a[1]) > 12 for a in lamps) and not bldU.buffer(1).contains(Point(x, z)) and not basin.buffer(0.8).contains(Point(x, z)):
             lamps.append([round(x, 2), round(z, 2)])
         t += 22; side = -side
-out = {'park': [[round(x, 2), round(z, 2)] for x, z in d['park'][:-1]], 'lawn': rings(lawn), 'walks': rings(walk_poly), 'paved': rings(paved),
+def walk_dir(x, z):
+    best = None
+    for w in walks:
+        q = w.interpolate(w.project(Point(x, z)))
+        dd = math.hypot(q.x - x, q.y - z)
+        if best is None or dd < best[0]: best = (dd, q.x, q.y)
+    return best
+benches = []
+for (x, z) in benchesO:
+    dd, qx, qz = walk_dir(x, z)
+    if dd < 0.05: qx, qz = qx + 0.01, qz
+    ux, uz = (qx - x) / max(dd, 1e-3), (qz - z) / max(dd, 1e-3)   # towards the walk
+    if dd < WALKW / 2 + 0.45:   # OSM node on the walk: move it to the walk edge (bench stands on the verge, facing the walk)
+        x, z = qx - ux * (WALKW / 2 + 0.45), qz - uz * (WALKW / 2 + 0.45)
+    benches.append([round(x, 2), round(z, 2), round(math.atan2(ux, uz), 3)])
+baskets = [[round(x, 2), round(z, 2)] for x, z in basketsO]
+base = K.difference(ped)
+feat = {'fountain1872': [fnt['x'], fnt['z']], 'art': [[a['x'], a['z'], a['tags'].get('artwork_type'), a['tags'].get('name'), a['tags'].get('artist_name', '')] for a in art],
+        'kiosk': W['1078561019']['pts'][:4], 'kiosk_abandoned': W['1078567935']['pts'][:4], 'chapel': W['1078561018']['pts'][:4], 'service': W['1078561017']['pts'][:4],
+        'recycling': [[n['x'], n['z'], n['tags'].get('colour', 'blue')] for n in N if n['tags'].get('amenity') == 'recycling' and n['tags'].get('recycling_type') == 'container']}
+def rect(p):
+    a, b, c = p[0], p[1], p[2]
+    w = math.hypot(b[0] - a[0], b[1] - a[1]); dd = math.hypot(c[0] - b[0], c[1] - b[1])
+    return {'c': [round(sum(q[0] for q in p[:4]) / 4, 2), round(sum(q[1] for q in p[:4]) / 4, 2)], 'w': round(w, 2), 'd': round(dd, 2), 'ang': round(math.atan2(b[1] - a[1], b[0] - a[0]), 4)}
+for k in ('kiosk', 'kiosk_abandoned', 'chapel', 'service'): feat[k] = rect(feat[k])
+out = {'base': rings(base), 'benches': benches, 'baskets': baskets, 'feat': feat, 'park': [[round(x, 2), round(z, 2)] for x, z in d['park'][:-1]], 'lawn': rings(lawn), 'walks': rings(walk_poly), 'paved': rings(paved),
        'basin': [[round(x, 2), round(z, 2)] for x, z in list(basin.exterior.coords)[:-1]], 'bridge': [list(bridge.coords[0]), list(bridge.coords[-1])],
        'beds': beds, 'trees': trees, 'stones': stones, 'lamps': lamps}
 s = json.dumps(out, separators=(',', ':'))
@@ -99,4 +133,4 @@ js = js[:a] + '/*KEFLAYOUT*/' + s + js[b:]
 open(JS, 'w').write(js)
 json.dump(out, open(R + '/tools/lm/park/kef_layout.json', 'w'))
 from collections import Counter
-print('lawn', len(out['lawn']), 'walks', len(out['walks']), 'beds', len(beds), 'trees', len(trees), Counter(t[2] for t in trees), 'stones', len(stones), 'lamps', len(lamps), 'bytes', len(s))
+print('lawn', len(out['lawn']), 'walks', len(out['walks']), 'beds', len(beds), 'trees', len(trees), Counter(t[2] for t in trees), 'stones', len(stones), 'lamps', len(lamps), 'benches', len(benches), 'bytes', len(s))

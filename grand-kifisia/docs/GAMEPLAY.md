@@ -10,11 +10,15 @@ Files: `js/80_player.js` (save, player controller, camera, action/aim hooks), `j
 - Touch: the half of the screen on the stick side (left; right when "left-handed" is on) below the top 28 % is a floating analogue stick (dead zone 14 %, response curve ^1.2,
   the base follows a drifting thumb). Everything else is drag-to-look with inertia (flick to keep turning). Every touch is tracked by id: move + look + a button at once.
   Buttons: USE (contextual, appears with a label), Car (pulses gold when a car is within reach: one tap gets in), Punch/Shoot, Sprint (toggle; lets go when the stick is released), Jump.
-- Driving on touch (OWNER_BRIEF 15, "much simpler"): one finger. A thumb anywhere on the stick side drives — only its sideways distance steers (wide 8 % dead zone, curve ^1.25 then ^1.3,
-  the knob slides on a horizontal rail); with "Auto-accelerate" on (default) the thumb being down holds a relaxed 50 km/h (`CARX.cruise`, m/s), lifting it rolls the car to a gentle stop.
-  Big red BRAKE (100 px): hold to stop, keep holding to reverse. GAS = full throttle above the cruise speed. EXIT at speed brakes to a stop by itself and then gets out (tap again to cancel).
-  H-Brake, Horn. Keyboard driving stays manual (W gas, S brake/reverse, A/D steer, Space handbrake). The physics itself is `driveCar(dt,jx,jy)` (cars agent, 72_driving.js).
-  `CARX = {t, exit, cruise}` (80_player.js) is the controls' driving state.
+- Driving on touch (OWNER_BRIEF 15, "much simpler"): one finger. A thumb anywhere on the stick side steers — only its sideways distance counts (the knob slides on a
+  horizontal rail and follows the thumb vertically); dead zone and response curve are applied in `driveCar` (72_driving.js, cars agent). Auto-throttle (`DRV.auto`, cars agent,
+  default on; Settings → "Auto-throttle when driving" calls `setAutoThrottle(on)`): finger down = drive, lift = coast down. Big red BRAKE: hold to stop, keep holding to reverse.
+  Car / Exit: one tap; when moving, 72_driving brakes to a stop and then gets out (`DRV.exitReq`). Keyboard driving stays manual (W gas, S brake/reverse, A/D steer, Space handbrake).
+- On foot: speed follows the stick through a critically damped spring (`sdamp`, `player.spdV` = current acceleration): starts ease in, stops ease out, nothing overshoots,
+  identical at 30/60/120 Hz. From a standstill a big change of direction is a turn in place (≈10 rad/s, the legs step round in 60_people) before the character sets off;
+  while running the turn rate falls with speed and a reversal pivots first.
+- Transitions: getting into / out of a car dips the screen (`tfDip(fn, depth)` in 90_main.js, own overlay, eased per frame; the dip also follows the last metres of an
+  automatic stop-then-exit). Shops fade through black (35_interiors.js `fade`). Missions use `fadeCut(fn, ms)` (87_missions.js).
 - Keyboard: WASD/arrows move, Shift sprint, Space jump, E/Enter use, F car, J/H punch or horn, M map, Esc/P/Tab menu, C recentre the camera; mouse drag looks, wheel zooms.
   In the menu: ←/→ or Q/E switch tabs; on the map +/− zoom, WASD pan, C centre. In dialogue: 1–3 pick, E/Enter/Space first choice, Esc close.
 
@@ -29,7 +33,8 @@ Files: `js/80_player.js` (save, player controller, camera, action/aim hooks), `j
   `noWeapons`, inside or within 150 m of ISA). `hudWeapon(name, ammoText)` / `hudWeapon(null)` — weapon slot under the clock. Missions equip/holster by listening to
   `missionStart`/`missionEnd` and reading `mission.M.noWeapons`.
 - People: any NPC record may set `dialog(p)` (own dialogue), `lines` (+ `linesOnly:true` → a random line each time with `replies:[a,b,c]`), `useLabel`, `noTalk`, `noPunch`,
-  `tag:'Text'` (or `cast.tag`) → a floating gold name tag above the head (85_hud.js `hudTags`, ≤ 34 m, fades from 22 m), `tagH` head height in metres (default 2.08).
+  `tag:'Text'` + `domTag:true` → a floating gold DOM name tag above the head (85_hud.js `hudTags`, ≤ 34 m, fades from 22 m), `tagH` head height in metres (default 2.08).
+  (Cast characters from models/cast.json get their own sprite label from 75_npc.js `castLabel`; hudTags does not draw those.)
 - Feedback: `subtitle(text, secs, speaker)`, `banner(title, sub, isFail, rewardText)`, `objective(html)`, `toast(text, icon)`, `hudTimer(secs|null, warnAt)`,
   `hudGauge(label|null, 0..1, colour)`, `hudDetect(0..1|null)`, `cinema(on, title, sub)`, `addMoney(delta, label)` (animated, counts into STATS), `spend(amount, label)` → bool.
 - Camera: `camCut(secs, (t,dt,elapsed)=>{…set camera…}, {title, sub, noSkip, noBars, keepBars})` → Promise(skipped). `camShake` (add to it), `camBoomMax`.
@@ -53,15 +58,15 @@ label, use(m)→false keeps the step, needs:{shop,tag}, opts(m,opts,near), enter
 - Verified by `work/game/tests/missions.js`: every mission start → payout, plus fail → retry.
 
 ## ISA IB students (OWNER_BRIEF 13)
-If no NPC with tag "ISA IB Student" exists when the game starts (`start` event), 87b spawns three: at the ISA gate (m10, waiting), outside Starbucks on Kassaveti (f12, texting),
-on the station platform (f03, on the phone). They only talk about how hard the IB is (random line each time). The characters module can replace them by spawning its own
-NPCs with `tag:'ISA IB Student'` (then the fallback does nothing). Gap: no laptop or backpack prop exists in the character set yet.
+The characters module provides them (models/cast.json ids ib_gate / ib_starbucks / ib_platform, `label:"ISA IB Student"`, IB-only `castDialog`, see docs/CHARACTERS.md).
+87b `ibStudents()` is only a fallback: on the `start` event it spawns three tagged students (ISA gate, outside Starbucks, station platform; `linesOnly` IB lines) if and only
+if no cast character with an "ISA IB Student" label/tag exists.
 
 ## Save format and settings
 - `localStorage` via `store` (00_core.js, key prefix `gk2_`), always in try/catch. `save` = `{v:3, money, done:{id:count}, best:{id:secs}, flags:{onb:{…}}, tod, pos:[x,z,yaw],
   stats:{earned, spent, walked, driven, played, passed, failed, talked, gyros, coffees, baskets, rides, topSpeed, cars, punches, given, knocked}}`. Saved every 15 s, on pause,
   on hide and after every payout. Position is only saved on foot, outdoors, outside missions.
-- `settings` = `{q:'auto'|'low'|'medium'|'high', sens, invY, lefty, vol, fps, haptics, subs, autoGas}` (autoGas: undefined/true = on).
+- `settings` = `{q:'auto'|<any QP preset>, sens, invY, lefty, vol, fps, haptics, subs}`; 'auto' resolves through `autoQuality()` when the materials module provides it. Auto-throttle is stored by 72_driving (`gk_autogas`).
 - New game (title or SETTINGS tab) asks for an in-page confirmation, then wipes the save, respawns at the junction and plays the opening cinematic.
 
 ## Title, menu, opening

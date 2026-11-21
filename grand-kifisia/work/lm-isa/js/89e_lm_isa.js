@@ -9,7 +9,7 @@
    Interface for other modules:  ISALM = {built, GF, Yc, gate:[x,z], hoops:[{x,z,y}], court:{x,z,L,W,a}, frame:{O,E,I}}
    (GF = ground-floor/veranda level, Yc = court platform level, both absolute metres). The court platform and veranda heights are written into
    the level grid (LVL) so the player, the ball and the guard stand on them; hoops are pushed into HOOPS with isa:true for the "After Hours" mission. */
-const ISALM={built:false,GF:0,Yc:0,gate:null,hoops:[],court:null,frame:null};
+const ISALM={verts:0,built:false,GF:0,Yc:0,gate:null,hoops:[],court:null,frame:null};
 (function(){
 if(typeof LM==='undefined')return;
 
@@ -36,6 +36,11 @@ tl('isaArch',(g,S,m)=>{const ft=S*ARCH_FT,f=10;pRect(g,0,0,S,S,FR);
 tl('isaRust',(g,S)=>{pBg(g,'plaster',S,null,0.9);for(let k=0;k<4;k++){const y=k*S/4;g.fillStyle='rgba(78,70,58,.42)';g.fillRect(0,y,S,3.2);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(0,y+3.2,S,1.4)}},{needs:['plaster'],nrm:'plaster',nrmRep:1.2,spec:.02,shin:8,macro:.25});
 /* steel bar fence (cut-out, tint carrier): 1.2 m wide tile, bars every 10 cm, top/bottom rails */
 tl('isaBars',(g,S)=>{const c='#e8e8e6',d='#b4b6b4';for(let x=4;x<S;x+=20){pRect(g,x,0,6,S,c);pRect(g,x+4.5,0,1.5,S,d)}pRect(g,0,8,S,9,c);pRect(g,0,S-18,S,9,c);pRect(g,0,15,S,2,d)},{cut:true,spec:.12,shin:30});
+/* wrought-iron balcony railing (cut-out, tint carrier): one tile = 1.1 m x 1.0 m; rails, balusters, a band of rings and C-scrolls (photo) */
+tl('isaRailOrn',(g,S)=>{const c='#d8d8d8';g.strokeStyle=c;g.fillStyle=c;pRect(g,0,0,S,10,c);pRect(g,0,S-10,S,10,c);pRect(g,0,S*0.3,S,5,c);pRect(g,0,S*0.72,S,5,c);
+  for(let x=6;x<S;x+=S/8)pRect(g,x,0,4,S,c);g.lineWidth=4;
+  for(let k=0;k<4;k++){const cx=S/8+k*S/4,cy=S*0.51,r=S*0.085;g.beginPath();g.arc(cx,cy,r,0,TAU);g.stroke();
+    for(const sg of[-1,1]){g.beginPath();g.arc(cx+sg*S*0.0625,S*0.3+12,S*0.05,sg>0?Math.PI:0,sg>0?TAU:Math.PI,sg<0);g.stroke();g.beginPath();g.arc(cx+sg*S*0.0625,S*0.72-12,S*0.05,sg>0?0:Math.PI,sg>0?Math.PI:TAU,sg<0);g.stroke()}}},{cut:true,spec:.15,shin:30});
 /* dark green windscreen fabric of the court fences (one tile = 2.5 m) */
 tl('isaScreen',(g,S)=>{pRect(g,0,0,S,S,'#2d4936');g.globalAlpha=.22;for(let y=0;y<S;y+=3)pRect(g,0,y,S,1,'#18291d');for(let x=0;x<S;x+=3)pRect(g,x,0,1,S,'#466a50');g.globalAlpha=1;
   for(let x=10;x<S;x+=40){g.fillStyle='rgba(230,230,220,.55)';g.beginPath();g.arc(x,8,2.2,0,6.3);g.fill();g.beginPath();g.arc(x,S-8,2.2,0,6.3);g.fill()}pRect(g,0,0,S,4,'#1d3023');pRect(g,0,S-4,S,4,'#1d3023')},{spec:.03,shin:10});
@@ -48,9 +53,10 @@ tl('isaBoard',(g,S)=>{pRect(g,0,0,S,S,'#f5f5f3');const c='#d02a1e';pRect(g,0,0,S
   pRect(g,80,103,80,11,c);pRect(g,80,195,80,11,c);pRect(g,80,103,7,103,c);pRect(g,153,103,7,103,c)},{spec:.12,shin:60});
 
 /* ============================== small geometry helpers ============================== */
+const RT=()=>T.isaRailOrn!=null?T.isaRailOrn:T.rail;
 const hx=s=>{const n=parseInt(s.slice(1),16);return[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]};
-const COL={wall:hx('#efe8d2'),wallS:hx('#e6dec6'),trim:hx('#fbf9f3'),rust:hx('#ebe3cb'),roof:hx('#d6a58e'),iron:hx('#2b2c2e'),stone:hx('#cdbfa8'),
-  annex:hx('#ede7d6'),deck:hx('#e8e1d2'),concrete:hx('#c9c6bf'),greenSurf:hx('#3f7552'),redSurf:hx('#b04a3c'),line:[0.97,0.97,0.95],post:hx('#2f4f3b'),
+const COL={wall:hx('#efe8d2'),wallS:hx('#e6dec6'),trim:hx('#fbf9f3'),rust:hx('#ebe3cb'),roof:hx('#b48270'),iron:hx('#2b2c2e'),stone:hx('#cdbfa8'),
+  annex:hx('#ede7d6'),deck:hx('#e8e1d2'),concrete:hx('#c9c6bf'),greenSurf:hx('#356b4f'),redSurf:hx('#9a3d31'),line:[0.97,0.97,0.95],post:hx('#2f4f3b'),
   gateG:hx('#a9b0b2'),galv:hx('#b9bec2'),glass:hx('#ffffff')};
 let G,GC,GL=0;                          // opaque builder, cut-out builder, glow
 const gl=()=>GL;
@@ -101,10 +107,13 @@ function Frame(O,E,inward){const I=inward,N=[-I[0],-I[1]];const P=(u,d)=>[O[0]+E
       if(posts){const pw=0.24;const pu=[u0,u1-pw];const nm=Math.floor((u1-u0)/1.9);for(let k=1;k<nm;k++)pu.push(u0+(u1-u0-pw)*k/nm);
         for(const p of pu)F.box(p,p+pw,d0,d0+pw,y,y1,COL.trim,TM.plasterW,1);F.box(u0-0.04,u1+0.04,d0-0.04,d0+0.2,y1,y1+0.09,COL.trim,TM.plasterW,1);
         F.box(u0,u0+pw,d0,d,y,y1,COL.trim,TM.plasterW,1);F.box(u1-pw,u1,d0,d,y,y1,COL.trim,TM.plasterW,1);
-        F.rw(u0+pw,u1-pw,d0+0.12,y+0.06,y1,COL.iron,T.rail,1.1);}
-      else{F.rw(u0,u1,d0+0.03,y,y1,COL.iron,T.rail,1.1);F.rs(u0+0.03,d0,d,y,y1,-1,COL.iron,T.rail,1.1);F.rs(u1-0.03,d0,d,y,y1,1,COL.iron,T.rail,1.1);
+        F.rw(u0+pw,u1-pw,d0+0.12,y+0.06,y1,COL.iron,RT(),1.1);}
+      else{F.rw(u0,u1,d0+0.03,y,y1,COL.iron,RT(),1.1);F.rs(u0+0.03,d0,d,y,y1,-1,COL.iron,RT(),1.1);F.rs(u1-0.03,d0,d,y,y1,1,COL.iron,RT(),1.1);
         F.box(u0,u1,d0,d0+0.05,y1-0.03,y1+0.02,COL.iron,T.metal,1)}}};
   return F}
+/* globe lamp (white glass ball on a black post): post from y0, ball centre at y0+h */
+function globe(B,x,y0,z,h,r){B.cyl(x,y0,z,0.04,0.03,h-r*0.8,6,COL.iron,RECT[T.metal],false);const yc=y0+h;
+  B.cyl(x,yc-r,z,r*0.35,r,r*0.7,10,hx('#f4f1e6'),RECT[T.white],false,1);B.cyl(x,yc-r*0.3,z,r,r*0.75,r*0.7,10,hx('#f4f1e6'),RECT[T.white],false,1);B.cyl(x,yc+r*0.4,z,r*0.75,0.02,r*0.5,10,hx('#f4f1e6'),RECT[T.white],true,1)}
 /* straight segment helpers in world space */
 const segLen=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1]);
 function clipHalf(poly,f){// keep f(p) <= 0 (Sutherland-Hodgman, one half-plane)
@@ -145,7 +154,7 @@ function site(ps){if(S.ok)return S;
 
 /* ============================== the main building (LM hook) ============================== */
 function buildMain(fp){const ps=fp.ps;const s=site(ps),F=s.F,GF=s.GF,H=s.H,U0=s.U0,U1=s.U1,BD=s.BD;const P=F.P;
-  const ch=chunkAt(P(s.L/2,BD/2)[0],P(s.L/2,BD/2)[1]);G=ch.o;GC=ch.cut;
+  const ch=chunkAt(P(s.L/2,BD/2)[0],P(s.L/2,BD/2)[1]);G=ch.o;GC=ch.cut;const v0=G.size()+GC.size();
   const lowY=Math.min(s.streetMin,s.Yc)-0.4;
   /* storeys (relative to GF) */
   const FL=[0,4.4,8.1,11.8];const yG=GF,y1=GF+FL[1],y2=GF+FL[2],y3=GF+FL[3];
@@ -192,8 +201,8 @@ function buildMain(fp){const ps=fp.ps;const s=site(ps),F=s.F,GF=s.GF,H=s.H,U0=s.
     for(const c of[3.4,8,12.6]){fr.balcony(c-0.85,c+0.85,0,y1,0.5,false);fr.balcony(c-0.85,c+0.85,0,y2,0.5,false)}}
   const rearTop=GF+7.9;const rOps=[];for(let c=2;c<s.BW-1;c+=3.3)rOps.push({c,w:1.1,yb:y2+0.2,yt:y2+2.4});
   rF.fw(0,s.BW,0,rearTop,y2,COL.wallS,TM.plasterW,1);rF.band(0,s.BW,0,y2,y3,rOps,COL.wallS,TM.plasterW,1,0.25);rF.fw(0,s.BW,0,y3,H,COL.wallS,TM.plasterW,1);
-  /* ---- hipped roof of Byzantine tiles (pitch 23°), overhang 0.5 m ---- */
-  const ov=0.5,uA=U0-ov,uB=U1+ov,dA=-ov,dB=BD+ov,hw=(dB-dA)/2,dm=(dA+dB)/2,tp=Math.tan(23*Math.PI/180),Hr=H+hw*tp,cs=1/Math.cos(23*Math.PI/180);
+  /* ---- hipped roof of Byzantine tiles (pitch 18°, low as seen in the photo), overhang 0.5 m ---- */
+  const ov=0.5,uA=U0-ov,uB=U1+ov,dA=-ov,dB=BD+ov,hw=(dB-dA)/2,dm=(dA+dB)/2,tp=Math.tan(18*Math.PI/180),Hr=H+hw*tp,cs=1/Math.cos(18*Math.PI/180);
   const R=(uu,dd,yy)=>{const p=P(uu,dd);return[p[0],yy,p[1]]};const up=[0,1,0];
   Q(R(uA,dA,H),R(uB,dA,H),R(uB-hw,dm,Hr),R(uA+hw,dm,Hr),[uA,0],[uB,0],[uB-hw,hw*cs],[uA+hw,hw*cs],COL.roof,TM.tiles,up);
   Q(R(uB,dB,H),R(uA,dB,H),R(uA+hw,dm,Hr),R(uB-hw,dm,Hr),[uB,0],[uA,0],[uA+hw,hw*cs],[uB-hw,hw*cs],COL.roof,TM.tiles,up);
@@ -201,7 +210,7 @@ function buildMain(fp){const ps=fp.ps;const s=site(ps),F=s.F,GF=s.GF,H=s.H,U0=s.
   TRI(R(uB,dA,H),R(uB,dB,H),R(uB-hw,dm,Hr),[dA,0],[dB,0],[dm,hw*cs],COL.roof,TM.tiles,up);
   {const a=R(uA+hw,dm,Hr),b=R(uB-hw,dm,Hr);const mx=(a[0]+b[0])/2,mz=(a[2]+b[2])/2;G.box(mx,Hr+0.06,mz,uB-uA-2*hw,0.16,0.3,Math.atan2(-F.E[1],F.E[0]),shade(COL.roof,0.85),RECT[TM.tiles],1)}
   /* ---- north-end attic (the flat-topped "tower" over the left end bay in the photo) ---- */
-  const tH=H+1.75;F.box(U0,U0+5.1,0,6.2,H-0.3,tH,COL.wall,TM.plasterW,1);F.box(U0-0.12,U0+5.22,-0.12,6.32,tH,tH+0.22,COL.trim,TM.plasterW,1,true);
+  const tH=H+1.95;F.box(U0,U0+5.1,0,6.2,H-0.3,tH,COL.wall,TM.plasterW,1);F.box(U0-0.12,U0+5.22,-0.12,6.32,tH,tH+0.22,COL.trim,TM.plasterW,1,true);
   F.h(U0,U0+5.1,0,6.2,tH+0.221,COL.concrete,TM.flatroof,1);
   /* ---- centre: semicircular tympanum between two square pylons, raised roof behind it ---- */
   {const b0=U0+15.0,b1=U0+21.6,c=U0+cB,pw=0.85,yP=H+2.75,yS=H+1.15,yA=H+2.6,th=0.45;
@@ -242,9 +251,12 @@ function buildMain(fp){const ps=fp.ps;const s=site(ps),F=s.F,GF=s.GF,H=s.H,U0=s.
   {const vf=Frame(P(uN,dV),F.E,F.I);const lg=[];for(const wb of WIN.concat([2.55,cB,34.05]))lg.push(u(wb));for(let c=U1+2.4;c<uS-1.5;c+=3.4)lg.push(c);
     const gateU=U0+27.2;S.gateU=gateU;
     const ops=lg.filter(c=>Math.abs(c-gateU)>1.6).map(c=>({c,w:1.15,yb:GF-2.3,yt:GF-0.85}));ops.push({c:gateU,w:1.5,yb:s.street+0.05,yt:s.street+2.35});
-    vf.band(uN,uS,0,lowY,GF,ops,COL.wallS,TM.plasterW,1,0.3);vf.box(uN-0.15,uS,-0.12,0.32,GF-0.02,GF+0.12,COL.trim,TM.plasterW,1,true);
+    const RV=1.3;vf.band(uN,uS,RV,lowY,GF-0.4,ops,COL.wallS,TM.plasterW,1,0.3);vf.box(uN-0.15,uS,-0.12,RV,GF-0.4,GF+0.1,COL.trim,TM.plasterW,1,true);
+    vf.sw(uN,0,RV,lowY,GF-0.4,-1,COL.wallS,TM.plasterW,1);vf.sw(uS,0,RV,lowY,GF-0.4,1,COL.wallS,TM.plasterW,1);
     F.h(uN,uS,dV+0.05,0,GF+0.12,COL.deck,TM.marbleW,1);
     F.rw(uN,uS,dV+0.15,GF+0.12,GF+1.05,COL.iron,T.isaBars,1.2);for(let c=uN;c<=uS;c+=2.4)F.box(c-0.05,c+0.05,dV+0.1,dV+0.2,GF+0.12,GF+1.08,COL.iron,T.metal,1);
+    /* cream piers with globe lamps on the veranda railing (photo: one every ~7.5 m) */
+    for(let c=uN+3.6;c<uS-1;c+=7.4){F.box(c-0.19,c+0.19,dV+0.0,dV+0.38,GF+0.12,GF+1.12,COL.wall,TM.plasterW,1);F.box(c-0.23,c+0.23,dV-0.04,dV+0.42,GF+1.12,GF+1.2,COL.trim,TM.plasterW,1);const q=P(c,dV+0.19);globe(G,q[0],GF+1.2,q[1],1.45,0.17)}
     F.box(uN,uS,dV+0.08,dV+0.22,GF+1.02,GF+1.08,COL.iron,T.metal,1);
     /* south wing: lower-ground storey with a terrace roof at GF level */
     const swF=Frame(P(uS,dV),F.I,[-F.E[0],-F.E[1]]);const sOps=[];for(let c=2.5;c<BD-dV-1;c+=3.4)sOps.push({c,w:1.15,yb:GF-2.3,yt:GF-0.85});
@@ -265,11 +277,11 @@ function buildMain(fp){const ps=fp.ps;const s=site(ps),F=s.F,GF=s.GF,H=s.H,U0=s.
   for(let i=0;i<ps.length;i++){const a=ps[i],b=ps[(i+1)%ps.length];addSeg(a[0],a[1],b[0],b[1],'b')}
   /* the main block walls below GF inside the veranda are hidden; its north and south walls are built above */
   const c=P(U0+cB,BD/2);if(typeof placed==='function')placed('landmark',c[0],c[1],'International School of Athens (former Hotel Olympos Pallas)','osm:way/1086751869');
-  ISALM.built=true}
+  ISALM.verts=(ISALM.verts||0)+G.size()+GC.size()-v0;ISALM.built=true}
 
 /* ============================== grounds: fences, gate, courts (replaces buildISA of 40_walls.js) ============================== */
 function buildGrounds(){const poly=ISA.poly=unp(MAP.isa.poly);if(!S.ok){console.warn('lm-isa: main building not built; grounds use defaults');return false}
-  const F=S.F,P=F.P,Yc=S.Yc;const ch=chunkAt(P(-16,16)[0],P(-16,16)[1]);G=ch.o;GC=ch.cut;GL=0;
+  const F=S.F,P=F.P,Yc=S.Yc;const ch=chunkAt(P(-16,16)[0],P(-16,16)[1]);G=ch.o;GC=ch.cut;GL=0;const v0=G.size()+GC.size();
   const n=poly.length;let pcx=0,pcz=0;for(const p of poly){pcx+=p[0]/n;pcz+=p[1]/n}
   /* ---- court platform: flat terrace at Yc retained by concrete walls ---- */
   const cp=S.court;flatPoly(cp,Yc,COL.concrete,TM.concrete,1);setLevel(cp,()=>Yc);
@@ -325,10 +337,12 @@ function buildGrounds(){const poly=ISA.poly=unp(MAP.isa.poly);if(!S.ok){console.
     const hq=[q[0]+dx/l*0.5,q[1]+dz/l*0.5];G.box(hq[0],Yc+8.9,hq[1],0.7,0.12,0.45,Math.atan2(dx,dz),hx('#3a3d40'),RECT[T.metal],1);G.box(hq[0],Yc+8.4,hq[1],0.7,0.12,0.45,Math.atan2(dx,dz),hx('#3a3d40'),RECT[T.metal],1)}
   /* ---- perimeter: street fence (stone base, steel bars, cream piers, gate) along the streets; mesh + windscreen around the courts ---- */
   const gateU=S.gateU||S.U0+27.2;const gateP=P(gateU,S.fenceAt(gateU));
+  const GATES=[{p:gateP,w:3.0,main:true},{p:P(S.U0+10.6,S.fenceAt(S.U0+10.6)),w:1.7}];
   for(let i=0;i<n;i++){const a=poly[i],b=poly[(i+1)%n];const L=segLen(a,b);const e=[(b[0]-a[0])/L,(b[1]-a[1])/L];let nO=[e[1],-e[0]];const mm=[(a[0]+b[0])/2,(a[1]+b[1])/2];if((pcx-mm[0])*nO[0]+(pcz-mm[1])*nO[1]>0)nO=[-nO[0],-nO[1]];
     addSeg(a[0],a[1],b[0],b[1],'f');
     /* intervals along the edge (metres); the gate interrupts the street fence */
-    let ivs=[[0,L]];{const sg=(gateP[0]-a[0])*e[0]+(gateP[1]-a[1])*e[1],dd=Math.abs((gateP[0]-a[0])*nO[0]+(gateP[1]-a[1])*nO[1]);if(dd<0.6&&sg>2&&sg<L-2){ivs=[[0,sg-1.66],[sg+1.66,L]];buildGate(gateP,e,nO,terr(gateP[0],gateP[1]))}}
+    let ivs=[[0,L]];for(const g of GATES){const sg=(g.p[0]-a[0])*e[0]+(g.p[1]-a[1])*e[1],dd=Math.abs((g.p[0]-a[0])*nO[0]+(g.p[1]-a[1])*nO[1]);if(dd<0.6&&sg>2&&sg<L-2){const h=g.w/2+0.3;
+      const nv=[];for(const [x0,x1] of ivs){if(sg-h>x0&&sg+h<x1){nv.push([x0,sg-h],[sg+h,x1])}else nv.push([x0,x1])}ivs=nv;buildGate(g.p,e,nO,terr(g.p[0],g.p[1]),g.w,g.main)}}
     for(const [sA,sB] of ivs){const steps=Math.max(1,Math.ceil((sB-sA)/2.5));
     for(let k=0;k<steps;k++){const t0=(sA+(sB-sA)*k/steps)/L,t1=(sA+(sB-sA)*(k+1)/steps)/L;const p0=[lerp(a[0],b[0],t0),lerp(a[1],b[1],t0)],p1=[lerp(a[0],b[0],t1),lerp(a[1],b[1],t1)],pm=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2],sl=segLen(p0,p1);
       const onCourt=pip(cp,pm[0]-nO[0]*0.6,pm[1]-nO[1]*0.6);const ya=terr(p0[0],p0[1]),yb=terr(p1[0],p1[1]);
@@ -341,29 +355,35 @@ function buildGrounds(){const poly=ISA.poly=unp(MAP.isa.poly);if(!S.ok){console.
         const r0=[p0[0]-nO[0]*0.16,p0[1]-nO[1]*0.16],r1=[p1[0]-nO[0]*0.16,p1[1]-nO[1]*0.16];
         G.wall(r0[0],r0[1],r1[0],r1[1],Yc+0.25,Yc+0.25,Yc+2.45,Yc+2.45,-nO[0],-nO[1],0,sl/2.5,0,1,C1,RECT[T.isaScreen],0);G.wall(r1[0],r1[1],r0[0],r0[1],Yc+0.25,Yc+0.25,Yc+2.45,Yc+2.45,nO[0],nO[1],0,sl/2.5,0,1,shade(C1,0.85),RECT[T.isaScreen],0);
         G.cyl(q0[0],Yc+0.25,q0[1],0.035,0.035,4.0,6,COL.post,RECT[T.metal],true);G.box((q0[0]+q1[0])/2,Yc+4.2,(q0[1]+q1[1])/2,sl,0.05,0.05,Math.atan2(-e[1],e[0]),COL.post,RECT[T.metal],1)}
-      else{/* street fence: rubble-stone base 0.75 m, steel bars 1.85 m, cream piers every ~6 m */
-        const wb=0.75;
+      else{/* street fence (photo): rubble-stone base 0.65 m with a stone coping, light-grey galvanised bar panels 2.0 m on slim posts */
+        const wb=0.65;
         G.wall(p0[0],p0[1],p1[0],p1[1],ya-0.3,yb-0.3,ya+wb,yb+wb,nO[0],nO[1],k*sl,(k+1)*sl,ya-0.3,ya+wb,COL.stone,RECT[TM.rubble],0);
         G.wall(p0[0]-nO[0]*0.4,p0[1]-nO[1]*0.4,p1[0]-nO[0]*0.4,p1[1]-nO[1]*0.4,ya-0.3,yb-0.3,ya+wb,yb+wb,-nO[0],-nO[1],k*sl,(k+1)*sl,ya-0.3,ya+wb,shade(COL.stone,0.92),RECT[TM.rubble],0);
-        G.hq([p0[0],ya+wb,p0[1]],[p1[0],yb+wb,p1[1]],[p1[0]-nO[0]*0.4,yb+wb,p1[1]-nO[1]*0.4],[p0[0]-nO[0]*0.4,ya+wb,p0[1]-nO[1]*0.4],[0,0],[sl,0],[sl,.4],[0,.4],COL.trim,RECT[TM.marbleW],0);
+        G.hq([p0[0],ya+wb,p0[1]],[p1[0],yb+wb,p1[1]],[p1[0]-nO[0]*0.4,yb+wb,p1[1]-nO[1]*0.4],[p0[0]-nO[0]*0.4,ya+wb,p0[1]-nO[1]*0.4],[0,0],[sl,0],[sl,.4],[0,.4],hx('#e4ddcc'),RECT[TM.marbleW],0);
         const q0=[p0[0]-nO[0]*0.2,p0[1]-nO[1]*0.2],q1=[p1[0]-nO[0]*0.2,p1[1]-nO[1]*0.2];
-        GC.wall(q0[0],q0[1],q1[0],q1[1],ya+wb,yb+wb,ya+wb+1.85,yb+wb+1.85,nO[0],nO[1],0,sl/1.2,0,1,COL.iron,RECT[T.isaBars],0);
-        if(k%2===0||k===steps-1&&false){G.box(p0[0]-nO[0]*0.2,ya+1.45,p0[1]-nO[1]*0.2,0.5,2.9,0.5,Math.atan2(-e[1],e[0]),COL.wall,RECT[TM.plasterW],1);G.box(p0[0]-nO[0]*0.2,ya+2.95,p0[1]-nO[1]*0.2,0.62,0.12,0.62,Math.atan2(-e[1],e[0]),COL.trim,RECT[TM.plasterW],1)}}}}}
+        GC.wall(q0[0],q0[1],q1[0],q1[1],ya+wb,yb+wb,ya+wb+2.0,yb+wb+2.0,nO[0],nO[1],0,sl/1.2,0,1,COL.galv,RECT[T.isaBars],0);
+        G.box(q0[0],ya+wb+1.02,q0[1],0.07,2.04,0.07,Math.atan2(-e[1],e[0]),COL.galv,RECT[T.metal],1);if(k===steps-1)G.box(q1[0],yb+wb+1.02,q1[1],0.07,2.04,0.07,Math.atan2(-e[1],e[0]),COL.galv,RECT[T.metal],1)}}}}
   /* ---- gate position for missions / map / NPCs: on the pavement in front of the real gate ---- */
   if(!MAP.isa.gate0)MAP.isa.gate0=MAP.isa.gate.slice();
   {const out=P(gateU,S.fenceD-1.6);MAP.isa.gate=[Math.round(out[0]*10)/10,Math.round(out[1]*10)/10];ISALM.gate=MAP.isa.gate}
-  return true}
-function buildGate(p,e,nO,y){const ry=Math.atan2(-e[1],e[0]);const gw=2.7;const a=[p[0]-e[0]*gw/2,p[1]-e[1]*gw/2],b=[p[0]+e[0]*gw/2,p[1]+e[1]*gw/2];
-  for(const q of[a,b]){G.box(q[0]-nO[0]*0.2,y+1.55,q[1]-nO[1]*0.2,0.62,3.1,0.62,ry,COL.wall,RECT[TM.plasterW],1);G.box(q[0]-nO[0]*0.2,y+3.17,q[1]-nO[1]*0.2,0.76,0.14,0.76,ry,COL.trim,RECT[TM.plasterW],1);
-    G.cyl(q[0]-nO[0]*0.2,y+3.24,q[1]-nO[1]*0.2,0.12,0.16,0.36,8,hx('#f2ecd8'),RECT[T.white],true,0.6)}
-  const a2=[a[0]+e[0]*0.31-nO[0]*0.2,a[1]+e[1]*0.31-nO[1]*0.2],b2=[b[0]-e[0]*0.31-nO[0]*0.2,b[1]-e[1]*0.31-nO[1]*0.2];
+  ISALM.verts=(ISALM.verts||0)+G.size()+GC.size()-v0;return true}
+/* gate (photo): two cream plaster piers with globe lamps, light-grey steel leaves (solid lower sheet, bars above), blue street-number plate */
+function buildGate(p,e,nO,y,gw,main){const ry=Math.atan2(-e[1],e[0]);gw=gw||3.0;const a=[p[0]-e[0]*gw/2,p[1]-e[1]*gw/2],b=[p[0]+e[0]*gw/2,p[1]+e[1]*gw/2];const pw=0.5,ph=2.75;
+  for(const q of[a,b]){const c=[q[0]+e[0]*(q===a?-1:1)*pw/2-nO[0]*0.2,q[1]+e[1]*(q===a?-1:1)*pw/2-nO[1]*0.2];
+    G.box(c[0],y+ph/2-0.3,c[1],pw,ph+0.6,pw,ry,COL.wall,RECT[TM.plasterW],1);G.box(c[0],y+ph+0.06,c[1],pw+0.12,0.12,pw+0.12,ry,COL.trim,RECT[TM.plasterW],1);
+    globe(G,c[0],y+ph+0.12,c[1],0.42,0.17)}
+  const a2=[a[0]-nO[0]*0.2,a[1]-nO[1]*0.2],b2=[b[0]-nO[0]*0.2,b[1]-nO[1]*0.2],gc=hx('#c4c9cc'),wl=segLen(a2,b2);
   G.wall(a2[0],a2[1],b2[0],b2[1],y-0.05,y-0.05,y+0.02,y+0.02,nO[0],nO[1],0,2,0,.1,COL.trim,RECT[TM.marbleW],0);
-  GC.wall(a2[0],a2[1],b2[0],b2[1],y+0.05,y+0.05,y+2.45,y+2.45,nO[0],nO[1],0,segLen(a2,b2)/1.2,0,1,COL.gateG,RECT[T.isaBars],0);
-  for(const t of[0,0.5,1]){const q=[lerp(a2[0],b2[0],t),lerp(a2[1],b2[1],t)];G.box(q[0],y+1.25,q[1],0.07,2.4,0.07,ry,COL.gateG,RECT[T.metal],1)}
-  for(const hh of[0.12,1.2,2.42])G.box(p[0]-nO[0]*0.2,y+hh,p[1]-nO[1]*0.2,segLen(a2,b2),0.07,0.07,ry,COL.gateG,RECT[T.metal],1);
-  /* school name plaque on the left pier (plain text; the exact real plaque is not documented) */
-  if(typeof newSlot==='function'){const sl=newSlot('INTERNATIONAL SCHOOL OF ATHENS','#f1ece0','#22324f','plain');if(sl){const q=[a[0]-e[0]*1.6+nO[0]*0.03,a[1]-e[1]*1.6+nO[1]*0.03];
-    signAt(chunkAt(q[0],q[1]),q[0],y+1.55,q[1],nO[0],nO[1],1.9,0.5,null,0.4,sl)}}}
+  /* solid lower sheet (both faces), bars above */
+  G.wall(a2[0],a2[1],b2[0],b2[1],y+0.08,y+0.08,y+1.35,y+1.35,nO[0],nO[1],0,1,0,1,gc,RECT[T.metal],0);G.wall(b2[0],b2[1],a2[0],a2[1],y+0.08,y+0.08,y+1.35,y+1.35,-nO[0],-nO[1],0,1,0,1,shade(gc,0.9),RECT[T.metal],0);
+  GC.wall(a2[0],a2[1],b2[0],b2[1],y+1.35,y+1.35,y+2.35,y+2.35,nO[0],nO[1],0,wl/1.2,0,1,gc,RECT[T.isaBars],0);
+  const nl=main?[0,0.5,1]:[0,1];for(const t of nl){const q=[lerp(a2[0],b2[0],t),lerp(a2[1],b2[1],t)];G.box(q[0],y+1.2,q[1],0.07,2.3,0.07,ry,gc,RECT[T.metal],1)}
+  for(const hh of[1.35,2.33])G.box(p[0]-nO[0]*0.2,y+hh,p[1]-nO[1]*0.2,wl,0.06,0.06,ry,gc,RECT[T.metal],1);
+  if(typeof newSlot==='function'){
+    /* blue Greek street-number plate on the right pier */
+    const sn=newSlot('42','#1f4e9c','#ffffff','plain');if(sn){const q=[b[0]+e[0]*pw/2+nO[0]*0.06,b[1]+e[1]*pw/2+nO[1]*0.06];signAt(chunkAt(q[0],q[1]),q[0],y+1.9,q[1],nO[0],nO[1],0.22,0.16,null,0.4,sn)}
+    /* school name plaque beside the main gate (plain text; the exact real plaque is not documented) */
+    if(main){const sl=newSlot('INTERNATIONAL SCHOOL OF ATHENS','#f1ece0','#22324f','plain');if(sl){const q=[a[0]-e[0]*pw/2+nO[0]*0.06,a[1]-e[1]*pw/2+nO[1]*0.06];signAt(chunkAt(q[0],q[1]),q[0],y+1.75,q[1],nO[0],nO[1],0.46,0.3,null,0.4,sl)}}}}
 
 /* ============================== hooks ============================== */
 /* keep the generic pitches (lines, hoops) and the OSM school-ground fill out of the campus: this file builds them at the real court level */
@@ -375,7 +395,9 @@ if(_ba)buildAreas=function(){const pit=MAP.pitches,ar=MAP.areas;let poly=null;tr
 const _pt=typeof plantTrees==='function'?plantTrees:null;
 if(_pt)plantTrees=function(){const gt=MAP.garden_trees,st=MAP.street_trees;
   if(S.ok){MAP.garden_trees=gt.filter(t=>!pip(S.court,t[0]/10,t[1]/10));
-    MAP.street_trees=st.map(t=>{const l=S.loc([t[0]/10,t[1]/10]);return(l[0]>-2&&l[0]<S.L+1&&l[1]<S.fenceD&&l[1]>S.fenceD-4)?[t[0],t[1],'pine'].concat(t.slice(3)):t})}
+    /* 45_trees draws street trees only as plane/orange, so the pines go through the garden-tree list (species-aware) */
+    const front=t=>{const l=S.loc([t[0]/10,t[1]/10]);return l[0]>-2&&l[0]<S.L+1&&l[1]<S.fenceD+0.5&&l[1]>S.fenceD-4};
+    MAP.street_trees=st.filter(t=>!front(t));MAP.garden_trees=MAP.garden_trees.concat(st.filter(front).map(t=>[t[0],t[1],'pine']))}
   try{_pt()}finally{MAP.garden_trees=gt;MAP.street_trees=st}};
 LM.register({id:'isa',at:[[897,-410]],build(ctx){const fps=ctx.footprints||[];if(!fps.length){console.warn('lm-isa: ISA main building footprint not found');return}
   let big=fps[0];for(const f of fps)if(f.ps.length&&Math.abs(THREE.ShapeUtils.area(f.ps.map(p=>new THREE.Vector2(p[0],p[1]))))>Math.abs(THREE.ShapeUtils.area(big.ps.map(p=>new THREE.Vector2(p[0],p[1])))))big=f;

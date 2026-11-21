@@ -200,6 +200,15 @@ function pergolaN(G,ps,y,H){let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;for(const 
   for(const [px,pz] of[[-1,-1],[1,-1],[1,1],[-1,1]])G.box(cx+px*(w/2-0.1),y+1.15,cz+pz*(d/2-0.1),0.14,2.3,0.14,0,tc,tr);
   for(let k=0;k<=Math.floor(w/0.6);k++)G.box(cx-w/2+k*0.6,y+2.36,cz,0.06,0.14,d+0.3,0,tc,tr);for(const pz of[-1,1])G.box(cx,y+2.24,cz+pz*(d/2-0.1),w+0.3,0.12,0.1,0,tc,tr)}
 
+/* roof that the orthophoto classified as "mixed" (research-arch roofOrtho): a flat terrace with a small tiled penthouse (roofPartColour) */
+function partTiled(B,P,O,top,H){const rv=B.rv;if(!rv)return;const [cx,cz,L,W,ang]=rv;if(L<5||W<4)return;const ux=Math.cos(ang),uz=Math.sin(ang),vx=-uz,vz=ux;
+  const l=Math.min(L*0.45,7.5),w=Math.min(W*0.6,6.5),side=hf(H*23)<0.5?-1:1,u0=side*(L/2-l/2-1.0),v0=(hf(H*29)-0.5)*(W-w-1.6);
+  const P0=(u,v)=>[cx+ux*(u0+u)+vx*(v0+v),cz+uz*(u0+u)+vz*(v0+v)];const cs=[P0(-l/2,-w/2),P0(l/2,-w/2),P0(l/2,w/2),P0(-l/2,w/2)];for(const c of cs)if(!pip(B.ps,c[0],c[1]))return;
+  const wc=P._wc||C1,h=2.5;for(let k=0;k<4;k++){const a=cs[k],c=cs[(k+1)%4];const dx=c[0]-a[0],dz=c[1]-a[1],Lk=Math.hypot(dx,dz);let nx=dz/Lk,nz=-dx/Lk;const mc=[(a[0]+c[0])/2-(cs[0][0]+cs[2][0])/2,(a[1]+c[1])/2-(cs[0][1]+cs[2][1])/2];if(nx*mc[0]+nz*mc[1]<0){nx=-nx;nz=-nz}
+    O.wall(a[0],a[1],c[0],c[1],top,top,top+h,top+h,nx,nz,0,Lk/3,0,1,wc,RECT[k%2?T.plain:T.balc]||RECT[TM.plaster],k%2?0:0.6)}
+  const pc=B.arch&&/^#[0-9a-f]{6}$/i.test(B.arch.roofPartColour||'')?B.arch.roofPartColour:'#ac5d49';
+  hipRoof(O,[cx+ux*u0+vx*v0,cz+uz*u0+vz*v0,l,w,ang],top+h,B.style,B.h,{roofCol:pc,eaves:0.45,roofRise:w*0.22})}
+
 /* ---------- ground floor of a residential edge (no shop): pilotis, entrance, windows with bars, stone-clad base ---------- */
 function groundResP(B,P,E,s0,s1,O,X,FG,front,wc,base){const gy=B.gy,gfh=B.gfh,L=s1-s0;if(L<0.05)return;
   const lob=B.lobby&&B.lobby.E===E&&B.lobby.s>s0+0.9&&B.lobby.s<s1-0.9;if(lob){const ls=B.lobby.s;groundResP(B,P,E,s0,ls-1.25,O,X,FG,front,wc,base);groundResP(B,P,E,ls+1.25,s1,O,X,FG,front,wc,base);B.lobby.y=gy;return}
@@ -294,6 +303,7 @@ function buildShellP(B){const P=B.P,NM=FAC.mode==='near',ch0=chunkAt(B.cx,B.cz),
   else if(!B.pent)flatPoly(O,B.ps,top+0.02,shade(hexc(['#d8d3c8','#cfcabd','#e2ded4','#c9c4b8','#d6d6d2'][H%5]),0.92),TM.flatroof);
   if(B.roofT==='flat'&&B.lv>=2&&!NM){if(near)roofClutter(B,ch,N);if(B.solar&&!near){const p=B.pent?B.ip:B.ps;let cx=0,cz=0;for(const q of p){cx+=q[0];cz+=q[1]}ROOFI.solar.push([cx/p.length,B.pent?top+fh:top,cz/p.length,(H%7)*0.1+Math.PI*0.95])}
   }
+  if(!NM&&!B.pent&&B.roofT==='flat'&&P.feat.has('partly_tiled_roof'))partTiled(B,P,O,top,H);
   if(near&&!B.pent&&B.roofT==='flat'&&P.feat.has('pergola_top'))pergolaN(X.o,B.ps,top,H);
   if(NM)return;
   // ---- entrance (lobby) + plates ----

@@ -109,6 +109,8 @@ without a parking lane. Parked cars only on tertiary/residential/living streets 
 and always inside the carriageway (check_map).
 
 ## Counts (focus area, build of 2026-11-21 14:20, v3.1)
+v3.2 (18:03): POIs 687 total, 600 in the focus; OSM 409, census 275, address 2, overture 1 (Sephora). Bays: shop 398, directory 113, plate 95, building 34, standalone 29, area 18.
+v3.1 numbers below kept for comparison.
 POIs 665 total, 578 in the focus; sources: OSM 408, census 254 (verified address only; +375 census entries matched to OSM POIs), address 2, overture 1 (Sephora special). Bays: shop 397,
 plate 95, directory 93, building 33, standalone 29, area 18. Unplaced: 0. Not built: 479 Overture-only places, 229 census entries without a verifiable address (MAP.meta.audit).
 (Counts before the placement audit, v3 08:50: POIs 1046, shop bays 691, of which 285 Overture-only.)
@@ -122,6 +124,10 @@ charging 6, artworks 5, play equipment 3, + singles. Synthetic: street trees ~19
 - census.json: entries matching an OSM POI (OSM id or name + distance) only enrich it (street/number/tier); the OSM position wins. Census-only entries: tiers A/B, not closed, with a
   verified address (surveyed number / bracketed interpolation ≤ 12 / tier-A two-source listing on its street with a clear side; listing within 35 m of the address) → built at the address.
   Everything else is listed in `meta.audit.censusUnbuilt` with the reason. `streetLevel:false` → plate.
+- v3.2 (2026-11-21 18:03): a census address equal to an OSM building's own `addr:street`+`addr:housenumber` (building ≤ 20 m from the address) → that building only, facades
+  on its street only, else its `directory` (e.g. the "Κολοκοτρώνη 1" listings → b33 Φοίνικας). Last-resort geocoder: research-census `tools/census/addr.py` (exact number attested
+  by an independent listing, error ≤ 18 m, listing ≤ 35 m away; `posMethod` stays `address-listings`). Bays widen only without moving their centre away from the source point;
+  `directory` names share one board position per cluster (< 6 m apart along the facade) — several POIs can therefore have identical `fx,fz` with `bay:"directory"`.
 - Same normalised name/brand within 60 m → one POI. `meta.audit` = {rules, overtureNotBuilt, censusUnbuilt, duplicatesMerged, directoryBecauseEdgeFull, censusSaysClosedOsmKept}.
 
 ## Special shops — evidence and uncertainty

@@ -155,6 +155,11 @@ const ACTIONS = {
   punch: { c: ['punch_r', 'punch_l'], mode: 'once', fade: 0.08, nolook: true }, shoot: { c: ['shoot'], mode: 'hold', fade: 0.1, nolook: true }, climb: { c: ['climb'], mode: 'hold', fade: 0.1, nolook: true },
   lie: { c: ['lie'], mode: 'loop', in: 'knockdown', out: 'getup', fade: 0.08, nolook: true, flat: 1 }, eat: { c: ['eat'], mode: 'loop', fade: 0.3, prop: 'pita' },
   drive: { c: ['drive'], mode: 'loop', seat: 1, fade: 0.2 }, sit_ground: { c: ['sit_ground'], mode: 'loop', seat: 2 }, give: { c: ['give'], mode: 'once' }, pickup: { c: ['pickup'], mode: 'once', nolook: true },
+  /* paintball markers (game weapons are non-lethal): use as a carry (setCarry) so the legs keep walking, or play() when standing. aim pitch: person.aimPitch (rad, + = down) */
+  aim_pistol: { c: ['aim_pistol'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'marker_p' }, hold_pistol: { c: ['hold_pistol'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'marker_p' },
+  aim_rifle: { c: ['aim_rifle'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'marker_r' }, hold_rifle: { c: ['hold_rifle'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'marker_r' },
+  /* reactions */
+  flinch: { c: ['flinch'], mode: 'once', fade: 0.06, nolook: true }, cower: { c: ['cower'], mode: 'loop', fade: 0.25, nolook: true }, hands_up: { c: ['hands_up'], mode: 'loop', fade: 0.25 },
 };
 const MASKS = {};
 (function () { const armL = [BN.LCLAV, BN.LUP, BN.LFORE, BN.LHAND], armR = [BN.RCLAV, BN.RUP, BN.RFORE, BN.RHAND]; for (let i = 23; i < 38; i++) armL.push(i); for (let i = 38; i < 53; i++) armR.push(i);
@@ -165,9 +170,21 @@ const PROPS = { defs: {
   phone: { hand: 'R', geo: () => new THREE.BoxGeometry(0.145, 0.009, 0.07), col: 0x15171a, pos: [0.085, 0.024, 0.004], rot: [0, 0, 0] },
   cup: { hand: 'R', geo: () => { const g = new THREE.CylinderGeometry(0.036, 0.028, 0.11, 10); g.rotateX(Math.PI / 2); return g; }, col: 0xf1ece2, pos: [0.078, 0.042, 0.01], rot: [0, 0, 0] },
   pita: { hand: 'R', geo: () => { const g = new THREE.ConeGeometry(0.04, 0.17, 8); g.rotateX(-Math.PI / 2); return g; }, col: 0xe2c48f, pos: [0.075, 0.04, 0.03], rot: [0, 0, 0] },
-  bag: { hand: 'R', hang: true, geo: () => { const g = new THREE.BoxGeometry(0.1, 0.3, 0.27); g.translate(0, -0.25, 0); return g; }, col: 0xd9c9a8, pos: [0.06, 0, 0], rot: [0, 0, 0] } }, geo: {}, mat: {} };
-function propMesh(name, col) { const d = PROPS.defs[name]; if (!d) return null; const g = PROPS.geo[name] || (PROPS.geo[name] = d.geo()), c = col == null ? d.col : col, m = PROPS.mat[c] || (PROPS.mat[c] = new THREE.MeshLambertMaterial({ color: c })); const o = new THREE.Mesh(g, m); o.castShadow = true; o.userData.def = d; o.userData.name = name; return o; }
+  bag: { hand: 'R', hang: true, geo: () => { const g = new THREE.BoxGeometry(0.1, 0.3, 0.27); g.translate(0, -0.25, 0); return g; }, col: 0xd9c9a8, pos: [0.06, 0, 0], rot: [0, 0, 0] },
+  /* worn on the back (setWear): modelled in character space (facing +z), follows the chest (Spine2) */
+  backpack: { bone: 'SPINE2', vc: true, geo: () => vcBoxes([[0.29, 0.4, 0.14, 0, 0, -0.02, 0x2d3e57], [0.23, 0.19, 0.05, 0, -0.08, -0.11, 0x263449], [0.05, 0.03, 0.12, 0.1, 0.19, 0.08, 0x1d2533], [0.05, 0.03, 0.12, -0.1, 0.19, 0.08, 0x1d2533]], true), col: 0xffffff, pos: [0, 0.03, -0.17] },
+  /* paintball pistol / rifle-style marker (bright toy colours on purpose: plainly not a real gun). x = barrel direction */
+  marker_p: { hand: 'R', vc: true, geo: () => vcBoxes([[0.21, 0.035, 0.032, 0.07, 0.0, 0.045, 0x2b2f36], [0.05, 0.03, 0.1, 0.005, 0.0, -0.01, 0x1d2025], [0.075, 0.07, 0.07, 0.075, 0.0, 0.1, 0xf2c21b], [0.03, 0.022, 0.022, 0.19, 0.0, 0.045, 0x2f8f5b]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] },
+  marker_r: { hand: 'R', vc: true, geo: () => vcBoxes([[0.62, 0.05, 0.05, 0.18, 0.0, 0.05, 0x2b2f36], [0.05, 0.035, 0.1, 0.005, 0.0, -0.01, 0x1d2025], [0.13, 0.09, 0.09, 0.12, 0.0, 0.135, 0x2fa3e0], [0.22, 0.035, 0.035, 0.59, 0.0, 0.05, 0x2f8f5b], [0.16, 0.06, 0.08, -0.17, 0.0, 0.03, 0x2b2f36]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] } }, geo: {}, mat: {} };
+/* boxes [sx, sy, sz, x, y, z, colour] merged into one vertex-coloured geometry (in hand space; x along the fingers, z towards the thumb = up for a pistol grip) */
+function vcBoxes(list, charSpace) { const pos = [], nor = [], col = [], c = new THREE.Color();
+  /* charSpace: [w(x), h(y), d(z), x, y, z] boxes for a character-space prop (x left, y up, z forward) */
+  for (const b of list) { let g; if (charSpace) { g = new THREE.BoxGeometry(b[0], b[1], b[2]).toNonIndexed(); g.translate(b[3], b[4], b[5]); } else { g = new THREE.BoxGeometry(b[0], b[2], b[1]).toNonIndexed(); g.rotateX(-Math.PI / 2); g.translate(b[3], b[4], b[5]); } c.setHex(b[6]); const P = g.attributes.position.array, N = g.attributes.normal.array;
+    for (let i = 0; i < P.length; i += 3) { pos.push(P[i], P[i + 1], P[i + 2]); nor.push(N[i], N[i + 1], N[i + 2]); col.push(c.r, c.g, c.b); } g.dispose(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return g; }
+function propMesh(name, col) { const d = PROPS.defs[name]; if (!d) return null; const g = PROPS.geo[name] || (PROPS.geo[name] = d.geo()), c = col == null ? d.col : col, mk = d.vc ? 'vc' + c : c, m = PROPS.mat[mk] || (PROPS.mat[mk] = new THREE.MeshLambertMaterial({ color: c, vertexColors: !!d.vc })); const o = new THREE.Mesh(g, m); o.castShadow = true; o.userData.def = d; o.userData.name = name; return o; }
 
+const W_QA = new THREE.Quaternion(), W_QB = new THREE.Quaternion(), W_V = new THREE.Vector3(), W_V2 = new THREE.Vector3();
 /* ============================== PERSON ============================== */
 /* spec: avatar id ('m16') | { av, scale, build, tint:[top,bottom], walk, name, ... } | a legacy look object { fem, height, ... } */
 const GAITS = { m: { slow: ['walk_stroll_01', 'walk_slow_01', 'walk_stroll_02'], walk: ['walk_neutral_01', 'walk_cool_01', 'walk_neutral_02', 'walk_neutral_03'], brisk: 'walk_fast_02', run: ['run_slow_01', 'run_neutral_01', 'run_fast_01'] },
@@ -236,11 +253,25 @@ class Person {
     if (st.phase === 'out') { this.override = null; return this; }
     this._snapshot(fade || st.def.fade || 0.3); this.act = null; this.override = null; return this; }
   /* walk-around accessory: 'phone' | 'text' | 'bag' | 'drink' | null  (upper body only while moving, full clip while standing) */
-  setCarry(name) { if (!this.av) return this; const def = name && ACTIONS[name]; if (!def) { this.carry = null; return this; } const st = this._activity(def); if (!st.loop) return this; st.name = name; st.w = 0; st.mask = MASKS[def.mask] || MASKS.upper; this.carry = st; if (def.prop) this.setProp(def.prop); return this; }
+  setCarry(name) { if (!this.av) return this; const def = name && ACTIONS[name]; if (!def) { if (this.carry && this.carry.def.prop && !this.actProp) this.setProp(null); this.carry = null; return this; } const st = this._activity(def); if (!st.loop) return this; st.name = name; st.w = 0; st.mask = MASKS[def.mask] || MASKS.upper; if (!this.actProp) this.setProp(def.prop || null); this.carry = st; return this; }
+  /* something worn on the body that stays while actions and carries change: 'backpack' | null */
+  setWear(name) { if (this.wear) { this.root.remove(this.wear); this.wear = null; } if (name && PROPS.defs[name]) { this.wear = propMesh(name); this.root.add(this.wear); this.wear.visible = false; } return this; }
+  _wearUpd() { const o = this.wear, d = o.userData.def; if (!this.av) { o.visible = false; return; } o.visible = true; const b = BN[d.bone] || BN.SPINE2, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
+    W_QA.set(wq[b * 4], wq[b * 4 + 1], wq[b * 4 + 2], wq[b * 4 + 3]); W_QB.set(ri[b * 4], ri[b * 4 + 1], ri[b * 4 + 2], ri[b * 4 + 3]); W_QA.multiply(W_QB); /* rest -> current rotation of that bone, character space */
+    W_V.set(rp[b * 3] + d.pos[0], rp[b * 3 + 1] + d.pos[1], rp[b * 3 + 2] + d.pos[2]).sub(W_V2.set(rp[b * 3], rp[b * 3 + 1], rp[b * 3 + 2])).applyQuaternion(W_QA);
+    o.position.set(wp[b * 3] + W_V.x, wp[b * 3 + 1] + W_V.y, wp[b * 3 + 2] + W_V.z); o.quaternion.copy(W_QA); }
   setProp(name, col) { if (this.prop) { this.root.remove(this.prop); this.prop = null; } if (name) { this.prop = propMesh(name, col); if (this.prop) { this.root.add(this.prop); this.prop.visible = false; } } return this; }
   _prop() { const o = this.prop, want = this.lod === 0 && !!this.av; if (!want) { o.visible = false; return; } o.visible = true; const d = o.userData.def, hb = d.hand === 'L' ? BN.LHAND : BN.RHAND, wq = this.wq, wp = this.wp;
     qrotTo(S_V, 0, wq, hb * 4, d.pos[0], d.pos[1], d.pos[2] * (d.hand === 'L' ? -1 : 1)); o.position.set(wp[hb * 3] + S_V[0], wp[hb * 3 + 1] + S_V[1], wp[hb * 3 + 2] + S_V[2]);
     if (d.hang) o.quaternion.set(0, 0, 0, 1); else o.quaternion.set(wq[hb * 4], wq[hb * 4 + 1], wq[hb * 4 + 2], wq[hb * 4 + 3]); }
+  /* world position (THREE.Vector3) and orientation (THREE.Quaternion) of a hand ('R' | 'L'), e.g. to attach a weapon or find a muzzle; valid after update() of a near-LOD person.
+     Hand space: x along the fingers, y out of the palm, z towards the thumb (right hand).  Returns false when the person is not animated in detail (far LOD / no avatar). */
+  handWorld(side, outPos, outQuat) { if (!this.av || this.lod !== 0) return false; const hb = side === 'L' ? BN.LHAND : BN.RHAND, wq = this.wq, wp = this.wp;
+    if (!this._hq) { this._hq = new THREE.Quaternion(); } this.root.updateMatrixWorld();
+    if (outPos) { outPos.set(wp[hb * 3], wp[hb * 3 + 1], wp[hb * 3 + 2]).applyMatrix4(this.root.matrixWorld); }
+    if (outQuat) { this._hq.set(wq[hb * 4], wq[hb * 4 + 1], wq[hb * 4 + 2], wq[hb * 4 + 3]); outQuat.copy(this.root.quaternion).multiply(this._hq); } return true; }
+  /* the prop mesh in the hand (marker_p / marker_r / phone ...) or null; other modules may read its world matrix for the muzzle */
+  get handProp() { return this.prop || null; }
   /* a small acknowledging nod (additive, works on top of anything) */
   nod() { this.nodT = 1; return this; }
   lookAt(x, y, z) { if (x == null) { this.lookT = null; return this; } if (!this.lookT) this.lookT = [0, 0, 0]; this.lookT[0] = x; this.lookT[1] = y; this.lookT[2] = z; return this; }
@@ -263,7 +294,7 @@ class Person {
     const useIK = grounded && this.lod === 0 && this.ik && Math.abs(groundY(r.position.x, r.position.z) - gy) < 0.3; if (!useIK) { this.pelY *= Math.max(0, 1 - dt * 8); }
     if (def && def.seat === 1 && this.seatH != null) { const c = this.act.loop; this.rp[1] += this.seatH / sc + 0.1 * this.av.hip / 0.9 - (c.py || 0.59) * this.av.hip / c.hip; }
     const shift = (this.sy - gy) / sc + this.pelY + this.land; this.rp[1] += shift;
-    this._fk(nb); if (useIK) this._footIK(dt, shift); this._skin(nb); if (this.prop) this._prop(); }
+    this._fk(nb); if (useIK) this._footIK(dt, shift); this._skin(nb); if (this.prop) this._prop(); if (this.wear) this._wearUpd(); }
   /* jaw flaps while talking (def.jaw or this.talking), eyelids blink every few seconds */
   _face(dt) { const lq = this.lq, def = this.act ? this.act.def : (this.carry ? this.carry.def : null); const talk = this.talking || (def && def.jaw);
     let jt = 0; if (talk) { const t = this.t * 9.5 + this.seq; jt = Math.max(0, 0.45 + 0.4 * Math.sin(t) + 0.3 * Math.sin(t * 0.37 + 1.3)) * 0.16; } if (this.jawOpen != null) jt = this.jawOpen;
@@ -326,8 +357,9 @@ class Person {
     let nd = 0; if (this.nodT > 0) { this.nodT -= dt * 1.25; const u = 1 - Math.max(0, this.nodT); nd = Math.sin(u * Math.PI * 2) * Math.sin(u * Math.PI) * 0.2; }
     const ly = this.lookYaw * this.lookW, lp = this.lookPitch * this.lookW + nd;
     eulerTo(aq, 0, this.pitch * 0.5 + post * 0.4, 0, this.lean * 0.45);              // Spine
-    eulerTo(aq, 4, this.pitch * 0.5 + post * 0.6 + br, ly * 0.08, this.lean * 0.4);   // Spine1
-    eulerTo(aq, 8, br * 0.8, ly * 0.12, 0);                                             // Spine2
+    const ap = this.aimPitch ? clamp(this.aimPitch, -0.9, 0.9) : 0; /* weapons: bend the chest (arms follow) to aim up / down */
+    eulerTo(aq, 4, this.pitch * 0.5 + post * 0.6 + br + ap * 0.45, ly * 0.08, this.lean * 0.4);   // Spine1
+    eulerTo(aq, 8, br * 0.8 + ap * 0.55, ly * 0.12, 0);                                             // Spine2
     eulerTo(aq, 12, lp * 0.4 - post * 0.5 - br, ly * 0.32, -this.lean * 0.35);          // Neck
     eulerTo(aq, 16, lp * 0.6 - post * 0.3 - br * 0.6, ly * 0.48, -this.lean * 0.3); }   // Head
   _fk(nb, from) { const lq = this.lq, wq = this.wq, wp = this.wp, rt = this.av.rt, par = PPL.par, aq = this.aq;

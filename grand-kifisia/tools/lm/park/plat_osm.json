@@ -1,0 +1,168 @@
+{
+"park": [
+[
+-52.62082840008647,
+-5.2613051999664435
+],
+[
+-82.2600647999211,
+40.66966719969069
+],
+[
+-83.7863231999942,
+40.09247760004379
+],
+[
+-82.49689799988408,
+34.93107059966739
+],
+[
+-74.0235323999618,
+3.5297363994483675
+],
+[
+-71.08504639990164,
+-3.030245399920773
+],
+[
+-67.28694360007971,
+-7.503464800141828
+],
+[
+-63.27832239997905,
+-10.012019600275579
+],
+[
+-59.00655319991951,
+-10.156317000384476
+],
+[
+-55.796147600109606,
+-9.179534600011337
+],
+[
+-53.05940839991405,
+-7.558963800001706
+],
+[
+-52.62082840008647,
+-5.2613051999664435
+]
+],
+"nodes": [
+{
+"id": "2517680692",
+"x": -85.04,
+"z": 30.92,
+"tags": {
+"highway": "traffic_signals",
+"traffic_signals": "signal"
+}
+},
+{
+"id": "2517680693",
+"x": -84.14,
+"z": 26.48,
+"tags": {
+"bus": "yes",
+"name": "ΠΛΑΤΕΙΑ ΠΛΑΤΑΝΟΥ",
+"operator": "ΟΑΣΑ",
+"public_transport": "stop_position",
+"ref": "71"
+}
+},
+{
+"id": "2786688853",
+"x": -63.89,
+"z": 2.83,
+"tags": {
+"bus": "yes",
+"highway": "bus_stop",
+"name": "ΠΛ.ΚΗΦΙΣΙΑΣ",
+"public_transport": "platform"
+}
+},
+{
+"id": "4936848683",
+"x": -61.04,
+"z": -3.23,
+"tags": {
+"amenity": "fountain",
+"drinking_water": "no",
+"fountain": "decorative",
+"operator": "Δήμος Κηφισιάς"
+}
+},
+{
+"id": "6089722374",
+"x": -68.09,
+"z": 14.2,
+"tags": {
+"natural": "tree"
+}
+},
+{
+"id": "6337762586",
+"x": -72.1,
+"z": 34.9,
+"tags": {
+"highway": "traffic_signals",
+"traffic_signals": "signal"
+}
+},
+{
+"id": "12964580678",
+"x": -85.51,
+"z": 34.27,
+"tags": {
+"crossing": "traffic_signals",
+"crossing:markings": "zebra",
+"highway": "crossing"
+}
+},
+{
+"id": "12964580680",
+"x": -74.19,
+"z": 37.97,
+"tags": {
+"button_operated": "no",
+"crossing": "traffic_signals",
+"crossing:markings": "zebra",
+"highway": "crossing",
+"traffic_signals:sound": "no",
+"traffic_signals:vibration": "no"
+}
+}
+],
+"ways": [
+{
+"id": "1410928863",
+"tags": {
+"crossing": "traffic_signals",
+"crossing:markings": "zebra",
+"footway": "crossing",
+"highway": "footway"
+},
+"pts": [
+[
+-85.51,
+34.27
+],
+[
+-79.82,
+34.58
+],
+[
+-74.19,
+37.97
+],
+[
+-66.01,
+42.99
+]
+],
+"inside": 1,
+"n": 4
+}
+]
+}

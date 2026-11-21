@@ -142,7 +142,8 @@ const HF_FS=`precision highp float;uniform float uBase,uLeaf;varying float vY;vo
 function hfTag(){const train=typeof TRAIN!=='undefined'&&TRAIN.cars?TRAIN.cars:[];
   scene.traverse(o=>{if(!(o.isMesh)||o.isSkinnedMesh||o.userData.gkHF!==undefined&&o.userData.gkHF===HF.tag)return;o.userData.gkHF=HF.tag;o.layers.disable(2);o.layers.disable(3);
     const m=o.material;if(!m||Array.isArray(m))return;if(train.indexOf(o)>=0)return;
-    if(m===MAT.leaf||(o.isInstancedMesh&&m.defines&&m.defines.GK_WORLD!==undefined))o.layers.enable(3);// foliage and instanced props/trunks = soft cover (G)else if((m.defines&&m.defines.GK_WORLD!==undefined&&!m.transparent)||o.userData.gkStatic)o.layers.enable(2)})}
+    if(m===MAT.leaf||(o.isInstancedMesh&&m.defines&&m.defines.GK_WORLD!==undefined))o.layers.enable(3);/* foliage and instanced props/trunks = soft cover (G) */
+    else if((m.defines&&m.defines.GK_WORLD!==undefined&&!m.transparent)||o.userData.gkStatic)o.layers.enable(2)})}
 function hfSetup(){const big=Q.ao>1,size=big?1024:512,half=big?128:80;if(HF.rt&&HF.size===size)return;if(HF.rt)HF.rt.dispose();
   HF.size=size;HF.half=half;HF.rt=new THREE.WebGLRenderTarget(size,size,{type:THREE.HalfFloatType,format:THREE.RGFormat,depthBuffer:false,stencilBuffer:false,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter,magFilter:THREE.LinearFilter});
   HF.cam=new THREE.OrthographicCamera(-half,half,half,-half,1,3000);HF.cam.up.set(0,0,-1);
@@ -213,7 +214,8 @@ function postFX(){if(!Q.bloom||!BL.ok)return;const r=renderer;
 /* ---------- automatic quality ("auto" setting): after 90_main.js has lowered the resolution to Q.prMin, if the frame rate still stays well below Q.fpsLo
    for 6 s, drop one effect at a time (not under automation: the CPU-rendered test harness would always trip it) — bloom, then ambient occlusion, then High → Medium → Low — and give back resolution. Never steps up by itself. ---------- */
 const AUTOQ={t:0,cool:12};
-function autoQuality(dt){if(SETTINGS.q!=='auto'||navigator.webdriver||typeof fpsV==='undefined'||typeof running==='undefined'||!running||!(dt>0))return;AUTOQ.cool-=dt;
+function autoQuality(dt){if(dt===undefined)return autoQ();/* called without dt (88_menu.js qAuto): the preset name 'auto' resolves to */
+  if(SETTINGS.q!=='auto'||navigator.webdriver||typeof fpsV==='undefined'||typeof running==='undefined'||!running||!(dt>0))return;AUTOQ.cool-=dt;
   if(pixelRatio<=(Q.prMin||0.6)+0.01&&fpsV<(Q.fpsLo||30)-4)AUTOQ.t+=dt;else AUTOQ.t=Math.max(0,AUTOQ.t-dt*0.5);
   if(AUTOQ.t<6||AUTOQ.cool>0)return;AUTOQ.t=0;AUTOQ.cool=10;
   if(Q.bloom)Q.bloom=0;else if(Q.ao)Q.ao=0;else if(Q===QP.high){QP.medium.bloom=QP.medium.ao=0;Q=QP.medium}else if(Q===QP.medium)Q=QP.low;else return;

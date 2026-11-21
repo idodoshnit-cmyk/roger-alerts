@@ -35,13 +35,30 @@ defTile('lmKfcGlass',(g,S,m)=>{g.fillStyle='#e9e4dc';g.fillRect(0,0,S,S);g.fillS
   const gr=g.createLinearGradient(0,0,S,S);gr.addColorStop(0,'rgba(255,255,255,0.18)');gr.addColorStop(0.5,'rgba(255,255,255,0)');gr.addColorStop(1,'rgba(255,255,255,0.1)');g.fillStyle=gr;g.fillRect(0,0,S,S);
   m.fillStyle='#fff';m.fillRect(0,0,S,S)},{spec:.08,shin:90,glass:.55,glassDark:.25,glowK:1.6});
 // generic arcade shop window: warm-lit boutique / restaurant interior seen through glass
-defTile('lmMelaGlass',(g,S,m)=>{const gr=g.createLinearGradient(0,0,0,S);gr.addColorStop(0,'#3a3530');gr.addColorStop(0.55,'#6d6155');gr.addColorStop(1,'#2a2622');g.fillStyle=gr;g.fillRect(0,0,S,S);
-  g.fillStyle='rgba(255,226,170,0.55)';for(let i=0;i<5;i++){g.beginPath();g.ellipse(24+i*48,S*0.08,10,4,0,0,TAU);g.fill()}
-  g.fillStyle='#8a7a66';g.fillRect(10,S*0.3,S-20,6);g.fillRect(10,S*0.48,S-20,6);g.fillStyle='#c9b79c';for(let i=0;i<14;i++)g.fillRect(14+i*16,S*0.3-18-(i*7%11),10,18+(i*7%11));
-  g.fillStyle='#d8cfc2';for(let i=0;i<10;i++)g.fillRect(18+i*22,S*0.48-14-(i*5%9),14,14+(i*5%9));
-  g.fillStyle='#1d1a17';g.fillRect(0,S*0.78,S,S*0.22);g.fillStyle='#b9a27e';g.fillRect(30,S*0.66,70,26);g.fillRect(140,S*0.66,70,26);
-  const r=g.createLinearGradient(0,0,S,S);r.addColorStop(0,'rgba(220,235,255,0.22)');r.addColorStop(0.45,'rgba(255,255,255,0.02)');r.addColorStop(1,'rgba(220,235,255,0.14)');g.fillStyle=r;g.fillRect(0,0,S,S);
-  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{spec:.08,shin:90,glass:.7,glassDark:.35,glowK:1.4});
+defTile('lmMelaGlass',(g,S,m)=>{// warm, bright restaurant / boutique interior seen through clear glass (the gallery fronts in the photo read light)
+  const gr=g.createLinearGradient(0,0,0,S);gr.addColorStop(0,'#cdbb9e');gr.addColorStop(0.62,'#e2d5bf');gr.addColorStop(0.63,'#8a7158');gr.addColorStop(1,'#5e4a37');g.fillStyle=gr;g.fillRect(0,0,S,S);
+  g.fillStyle='#7d6a55';g.fillRect(0,0,S,S*0.07);// ceiling soffit
+  for(let i=0;i<4;i++){const x=32+i*64;g.fillStyle='#3b3128';g.fillRect(x-1,S*0.07,2,S*0.1);g.fillStyle='#ffe3a6';g.beginPath();g.ellipse(x,S*0.18,11,6,0,0,TAU);g.fill();
+    const lg=g.createRadialGradient(x,S*0.2,2,x,S*0.2,40);lg.addColorStop(0,'rgba(255,236,190,0.55)');lg.addColorStop(1,'rgba(255,236,190,0)');g.fillStyle=lg;g.fillRect(x-40,S*0.12,80,60)}
+  g.fillStyle='#a58f73';g.fillRect(150,S*0.27,96,S*0.33);g.fillStyle='#5b4634';g.fillRect(150,S*0.27,96,4);// bar back shelves
+  for(let r=0;r<3;r++)for(let i=0;i<11;i++){g.fillStyle=['#5d7a4a','#8a2f2a','#d9c27a','#3d5a6b'][(i+r)%4];g.fillRect(156+i*8,S*0.3+r*24,5,14)}
+  g.fillStyle='#6f5a46';g.fillRect(14,S*0.27,110,S*0.22);g.fillStyle='#e9e0cf';g.fillRect(20,S*0.29,98,S*0.18);g.fillStyle='#9fb19a';g.fillRect(28,S*0.31,40,S*0.12);g.fillStyle='#c98f6a';g.fillRect(74,S*0.33,36,S*0.1);// framed pictures
+  g.fillStyle='#4c3a2b';g.fillRect(140,S*0.6,116,S*0.16);g.fillStyle='#d8c7a8';g.fillRect(138,S*0.58,120,6);// bar counter
+  const person=(x,y,c)=>{g.fillStyle=c;g.fillRect(x-9,y,18,30);g.fillStyle='#6b4a36';g.beginPath();g.arc(x,y-7,7,0,TAU);g.fill()};
+  person(60,S*0.56,'#3c4a5c');person(196,S*0.5,'#efe7da');person(108,S*0.6,'#8a3b3b');
+  for(const x of[20,92]){g.fillStyle='#f4efe6';g.fillRect(x,S*0.66,52,7);g.fillStyle='#3a2c20';g.fillRect(x+22,S*0.66+7,6,26);g.fillStyle='#7a5a3c';g.fillRect(x-10,S*0.68,10,26);g.fillRect(x+52,S*0.68,10,26)}
+  const r=g.createLinearGradient(0,0,S,S);r.addColorStop(0,'rgba(225,238,255,0.30)');r.addColorStop(0.4,'rgba(255,255,255,0.0)');r.addColorStop(0.75,'rgba(255,255,255,0.06)');r.addColorStop(1,'rgba(225,238,255,0.22)');g.fillStyle=r;g.fillRect(0,0,S,S);
+  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{spec:.08,shin:90,glass:.55,glassDark:.2,glowK:1.4});
+// kiosk front: white aluminium frame, glazed fridge doors with drinks, magazines, a blue band (no text)
+defTile('lmKioskF',(g,S,m)=>{g.fillStyle='#f3f3f1';g.fillRect(0,0,S,S);g.fillStyle='#1f4f9c';g.fillRect(0,0,S,S*0.1);g.fillStyle='#d42a2a';g.fillRect(0,S*0.1,S,4);
+  g.fillStyle='#2c3138';g.fillRect(10,S*0.18,S*0.45,S*0.76);for(let r=0;r<5;r++)for(let i=0;i<9;i++){g.fillStyle=['#c8202a','#f2f2f2','#2f7d32','#f2a51a','#1d5fa8'][(i*3+r)%5];g.fillRect(16+i*12,S*0.22+r*36,8,24)}
+  g.fillStyle='rgba(255,255,255,0.18)';g.fillRect(10,S*0.18,S*0.2,S*0.76);
+  g.fillStyle='#e9e4da';g.fillRect(S*0.55,S*0.18,S*0.42,S*0.76);for(let r=0;r<6;r++)for(let i=0;i<4;i++){g.fillStyle=['#d63a5a','#2b6cb0','#f0c419','#3a9d5d','#7a3fa0','#e8743b'][(i+r*2)%6];g.fillRect(S*0.57+i*26,S*0.2+r*30,22,27)}
+  m.fillStyle='#000';m.fillRect(0,0,S,S);m.fillStyle='#888';m.fillRect(10,S*0.18,S*0.45,S*0.76)},{spec:.15,shin:60,glowK:1.5});
+// kiosk roof ad screens (generic bright ad layouts, no brands)
+defTile('lmKioskAd',(g,S,m)=>{const gr=g.createLinearGradient(0,0,0,S);gr.addColorStop(0,'#5fb6e8');gr.addColorStop(1,'#1d5fa8');g.fillStyle=gr;g.fillRect(0,0,S,S);
+  g.fillStyle='#ffffff';g.fillRect(S*0.08,S*0.12,S*0.5,S*0.1);g.fillRect(S*0.08,S*0.28,S*0.34,S*0.06);g.fillStyle='#f6d54a';g.beginPath();g.arc(S*0.74,S*0.62,S*0.18,0,TAU);g.fill();
+  g.fillStyle='rgba(255,255,255,0.85)';g.fillRect(S*0.08,S*0.78,S*0.4,S*0.08);m.fillStyle='#ccc';m.fillRect(0,0,S,S)},{spec:.3,shin:80,glowK:1.6});
 // the lower units of the wing in the photo have pale green-tinted glass (frosted / reflective)
 defTile('lmMelaGlassG',(g,S,m)=>{const gr=g.createLinearGradient(0,0,0,S);gr.addColorStop(0,'#9fb8b0');gr.addColorStop(0.6,'#7f9a93');gr.addColorStop(1,'#5f7570');g.fillStyle=gr;g.fillRect(0,0,S,S);
   g.fillStyle='rgba(40,50,48,0.35)';g.fillRect(0,S*0.55,S,S*0.45);g.fillStyle='rgba(255,240,210,0.35)';for(let i=0;i<4;i++)g.fillRect(20+i*58,S*0.12,30,5);
@@ -53,7 +70,7 @@ defTile('lmAwnW',(g,S)=>{g.fillStyle='#ece9e2';g.fillRect(0,0,S,S);for(let i=0;i
 const SIGNS_A=[['Meligan Beauty spot','#f3ece4','#5a3b48','serif'],['Fairynails','#ffffff','#b0457a','script'],['ΦΩΤΟ  FOTO','#1d1d1f','#ffffff','sans'],['Simply Burgers','#151515','#f2b632','sans'],
   ["Mailo's  The Pasta Project",'#f4efe6','#2a2a2a','serif'],['GORDO','#20302a','#f2d27a','sans'],['CELEST  ALL DAY','#0f0f10','#e8d9b0','serif'],['La Puerkita','#7a1f1f','#ffe9c7','script']];
 const SIGNS_B=[['Bubble Tale','#121212','#d9b25c','script'],['OLD BOY MEMBERS CLUB','#101010','#efe6d2','serif'],['ROJO','#8c1c13','#ffffff','sans'],['KESSARIS','#0d0d0d','#d4af37','serif'],
-  ['ΕΜΠΟΡΙΚΟ ΚΕΝΤΡΟ ΜΕΛΑ','#efe9dc','#3b3226','serif'],['MELA  ·  ARCADE','#efe9dc','#3b3226','serif'],['ΚΕΝΤΡΙΚΟ ΠΕΡΙΠΤΕΡΟ','#1b3f8b','#ffffff','sans'],['KFC  ▸  ΚΕΝΤΡΟ ΜΕΛΑ','#e4002b','#ffffff','sans']];
+  ['ΕΜΠΟΡΙΚΟ ΚΕΝΤΡΟ ΜΕΛΑ','#efe9dc','#3b3226','serif'],['MELA  ·  ARCADE','#efe9dc','#3b3226','serif'],['ΠΕΡΙΠΤΕΡΟ','#1f4f9c','#ffffff','sans'],['KFC  ▸  ΚΕΝΤΡΟ ΜΕΛΑ','#e4002b','#ffffff','sans']];
 const FONTS={serif:'bold $px Georgia,Times New Roman,serif',sans:'bold $px Arial,Helvetica,sans-serif',script:'italic bold $px Georgia,serif'};
 const sheet=list=>(g,S,m)=>{const H=S/8;list.forEach(([t,bg,fg,st],i)=>{const y=i*H;g.fillStyle=bg;g.fillRect(0,y,S,H);g.fillStyle=fg;g.textAlign='center';g.textBaseline='middle';
   fitText(g,t,S-16,Math.floor(H*0.62),FONTS[st]||FONTS.sans);g.fillText(t,S/2,y+H/2+1);g.strokeStyle='rgba(0,0,0,0.25)';g.lineWidth=1;g.strokeRect(0.5,y+0.5,S-1,H-1);
@@ -133,9 +150,11 @@ function glassRail(F,s0,s1,t,y0,h){const n=[-F.v[0],-F.v[1]];const L=s1-s0,k=Mat
   for(let i=0;i<k;i++){const a=F.P(s0+L*i/k+0.03,t),b=F.P(s0+L*(i+1)/k-0.03,t);wallUV(a,b,y0+0.08,y0+h-0.06,n,[0.78,0.86,0.86],T.lmMelaGlassG,0,[0,1,0.1,0.9]);wallUV(b,a,y0+0.08,y0+h-0.06,[-n[0],-n[1]],[0.78,0.86,0.86],T.lmMelaGlassG,0,[0,1,0.1,0.9])}
   for(let i=0;i<=k;i++){const s=s0+L*i/k;lbox(F,s-0.025,s+0.025,t-0.025,t+0.025,y0,y0+h,[0.55,0.56,0.58],TM.metalL,{noTop:true})}
   lbox(F,s0,s1,t-0.03,t+0.03,y0+h-0.02,y0+h+0.03,[0.62,0.63,0.65],TM.metalL)}
-function table(x,z,y,r,topCol,chairCol,n,yaw){const B=Oc(x,z);B.cyl(x,y+0.72,z,r,r,0.04,10,topCol,RECT[TM.marble],true);B.cyl(x,y,z,0.03,0.03,0.72,5,[0.12,0.12,0.12],RECT[TM.metalL],false);B.cyl(x,y,z,0.22,0.02,0.04,8,[0.12,0.12,0.12],RECT[TM.metalL],true);
-  for(let k=0;k<n;k++){const a=yaw+k*TAU/n,cx=x+Math.sin(a)*(r+0.32),cz=z+Math.cos(a)*(r+0.32);B.box(cx,y+0.23,cz,0.42,0.46,0.42,a,chairCol,RECT[TM.metalL]);B.box(cx,y+0.47,cz,0.44,0.04,0.44,a,chairCol,RECT[TM.metalL]);
-    const bx=cx+Math.sin(a)*0.2,bz=cz+Math.cos(a)*0.2;B.box(bx,y+0.72,bz,0.44,0.5,0.05,a,chairCol,RECT[TM.metalL])}}
+function table(x,z,y,r,topCol,chairCol,n,yaw,cush){const B=Oc(x,z);const MT=RECT[TM.metalL];B.cyl(x,y+0.72,z,r,r,0.04,10,topCol,RECT[TM.marble],true);B.cyl(x,y,z,0.03,0.03,0.72,5,[0.12,0.12,0.12],MT,false);B.cyl(x,y,z,0.22,0.02,0.04,8,[0.12,0.12,0.12],MT,true);
+  for(let k=0;k<n;k++){const a=yaw+k*TAU/n,sa=Math.sin(a),ca=Math.cos(a),cx=x+sa*(r+0.34),cz=z+ca*(r+0.34);
+    B.box(cx,y+0.45,cz,0.42,0.05,0.42,a,chairCol,MT);if(cush)B.box(cx,y+0.5,cz,0.38,0.05,0.38,a,cush,MT);
+    for(const [p,q] of[[-1,-1],[1,-1],[1,1],[-1,1]]){const lx=cx+(ca*p+sa*q)*0.18,lz=cz+(-sa*p+ca*q)*0.18;B.box(lx,y+0.22,lz,0.035,0.44,0.035,a,chairCol,MT)}
+    const bx=cx+sa*0.2,bz=cz+ca*0.2;B.box(bx,y+0.7,bz,0.42,0.44,0.04,a,chairCol,MT)}}
 function planter(F,s,t,y,w,d,h){lbox(F,s-w/2,s+w/2,t-d/2,t+d/2,y,y+h,[0.25,0.25,0.26],TM.metalL);lbox(F,s-w/2+0.06,s+w/2-0.06,t-d/2+0.06,t+d/2-0.06,y+h,y+h+0.45,[0.85,1,0.85],T.hedge)}
 // straight flight of steps in a local frame: s from s0 (height ya) to s1 (height yb), across t0..t1; each step a solid block down to yMin
 function steps(F,s0,s1,t0,t1,ya,yb,n,col,tile,yMin){for(let i=0;i<n;i++){const sa=s0+(s1-s0)*i/n,sb=s0+(s1-s0)*(i+1)/n;const y=ya+(yb-ya)*(i+(yb>ya?1:0))/n;
@@ -227,7 +246,7 @@ function build(ctx){
   const galNames=[null,'Simply Burgers',"Mailo's",'ROJO','La Puerkita','OLD BOY',null,null,null];
   for(let k=0;k<NB;k++){const s0=k===0?KD:k*bw,s1=(k+1)*bw;const g0=s0+0.35,g1=s1-0.35;
     if(g1>g0+0.5){const pane=Math.max(1,Math.round((g1-g0)/1.3));for(let i=0;i<pane;i++)wallUV(Wf.P(g0+(g1-g0)*i/pane,Dg),Wf.P(g0+(g1-g0)*(i+1)/pane,Dg),yG,yCl-0.6,nS,k===0?C1:[0.95,0.95,0.95],k===0?T.lmKfcGlass:T.lmMelaGlass,1,[0,1,0,1]);
-      for(let i=0;i<=pane;i++){const s=g0+(g1-g0)*i/pane;lbox(Wf,s-0.04,s+0.04,Dg-0.06,Dg,yG,yCl-0.6,DARK,TM.metalL,{noTop:true})}}
+      for(let i=0;i<=pane;i++){const s=g0+(g1-g0)*i/pane;lbox(Wf,s-0.035,s+0.035,Dg-0.06,Dg,yG,yCl-0.6,[0.72,0.72,0.73],TM.metalL,{noTop:true})}lbox(Wf,g0,g1,Dg-0.07,Dg,yCl-0.66,yCl-0.6,[0.72,0.72,0.73],TM.metalL,{bottom:true})}
     wallW(Wf.P(s0,Dg),Wf.P(g0,Dg),yG,yCl,nS,CREAM,TM.plaster);wallW(Wf.P(g1,Dg),Wf.P(s1,Dg),yG,yCl,nS,CREAM,TM.plaster);wallW(Wf.P(g0,Dg),Wf.P(g1,Dg),yCl-0.6,yCl,nS,CREAM,TM.plaster);
     if(galNames[k]){const sg=SG(galNames[k]);const sw=Math.min(3.2,g1-g0-0.2),sc=(g0+g1)/2;wallUV(Wf.P(sc-sw/2,Dg-0.03),Wf.P(sc+sw/2,Dg-0.03),yCl-0.52,yCl-0.12,nS,C1,sg[0],1,sg[1])}}
   // columns, glass balustrade, entablature (beam) along the court/garden
@@ -264,12 +283,43 @@ function build(ctx){
   // rooftop AC units at the back (north) slope, as in the photo
   for(let i=0;i<5;i++){const p=Wf.P(14+i*3.2,Dw-1.6);Oc(p[0],p[1]).box(p[0],yE+1.75,p[1],1.0,0.75,0.6,Math.atan2(u[0],u[1]),[0.82,0.82,0.8],RECT[TM.metalL])}
   // gallery furniture: restaurant tables (dark chairs)
-  for(let k=1;k<NB;k++){const p1=Wf.P(k*bw+bw*0.3,1.9),p2=Wf.P(k*bw+bw*0.72,1.9);table(p1[0],p1[1],yG,0.36,[0.85,0.82,0.78],[0.2,0.18,0.16],2,Math.atan2(u[0],u[1]));table(p2[0],p2[1],yG,0.36,[0.85,0.82,0.78],[0.2,0.18,0.16],2,Math.atan2(u[0],u[1]))}
+  for(let k=1;k<NB;k++){const p1=Wf.P(k*bw+bw*0.3,1.9),p2=Wf.P(k*bw+bw*0.72,1.9);table(p1[0],p1[1],yG,0.36,[0.96,0.95,0.93],[0.52,0.36,0.22],2,Math.atan2(u[0],u[1]),k%2?[0.82,0.36,0.42]:[0.9,0.88,0.82]);table(p2[0],p2[1],yG,0.36,[0.96,0.95,0.93],[0.52,0.36,0.22],2,Math.atan2(u[0],u[1]),k%2?[0.82,0.36,0.42]:[0.9,0.88,0.82])}
   // white flat-roofed structure on the garden terrace east of the south block (lift/stair head in the photo)
   {const s=Math.min(Lw-4,sP0+8.5);lbox(Wf,s,s+3.4,-4.6,-2.2,yG,yG+2.3,WHITE,TM.plaster,{});lbox(Wf,s-0.1,s+3.5,-4.7,-2.1,yG+2.3,yG+2.45,[0.9,0.9,0.88],TM.plaster,{bottom:true})}
 
+  /* ======== the kiosk (periptero) on the pavement in front of the stairs — photo: white booth, blue band, deep white canopy with a blue edge,
+     a big white hood carrying ad screens. It replaces the generic kiosk prop at the same spot (50_props builds after the landmarks). ======== */
+  try{const kp=MAP.props&&MAP.props.kiosk;const c=Wf.P(-5.5,1.5);let bi=-1,bd=10;
+    if(kp)kp.forEach((k,i)=>{const d=Math.hypot(k[0]/10-c[0],k[1]/10-c[1]);if(d<bd){bd=d;bi=i}});
+    const k=bi>=0?kp.splice(bi,1)[0]:null;const kx=k?k[0]/10:Wf.P(-7.6,1.2)[0],kz=k?k[1]/10:Wf.P(-7.6,1.2)[1];
+    console.log('[lm-kfc] kiosk '+(k?'prop replaced ('+bd.toFixed(1)+' m from the stair foot)':'not in map, built at the photo position'));
+    const n=nW,Fk=frame([kx,kz],[-n[1],n[0]],[-n[0],-n[1]]);// s along the avenue, t>0 = away from the road (outward front = n)
+    const y=groundY(kx,kz),BL=[0.12,0.31,0.61],B=Oc(kx,kz);
+    lbox(Fk,-1.15,1.15,-0.8,0.8,y,y+2.3,[0.95,0.95,0.94],TM.plaster,{});
+    wallUV(Fk.P(1.0,-0.81),Fk.P(-1.0,-0.81),y+0.15,y+2.2,n,C1,T.lmKioskF,1,[0,1,0,1]);// front (counter, fridge, magazines)
+    for(const sd of[-1,1]){const a=Fk.P(sd*1.16,-0.7),b=Fk.P(sd*1.16,0.7);wallUV(sd>0?b:a,sd>0?a:b,y+0.15,y+2.2,sd>0?[-Fk.u[0]*-1,-Fk.u[1]*-1]:[-Fk.u[0],-Fk.u[1]],C1,T.lmKioskF,0.6,[0.55,1,0,1])}
+    lbox(Fk,-1.17,1.17,-0.82,0.82,y+2.08,y+2.3,BL,TM.metalL,{noTop:true});
+    lbox(Fk,-1.62,1.62,-1.4,1.1,y+2.3,y+2.46,[0.96,0.96,0.95],TM.plaster,{bottom:true});lbox(Fk,-1.64,1.64,-1.42,1.12,y+2.46,y+2.56,BL,TM.metalL,{noTop:true});
+    // hood: truncated pyramid, ad screens on the front and both sides
+    const h0=y+2.56,h1=y+3.3,o0=[[-1.58,-1.36],[1.58,-1.36],[1.58,1.06],[-1.58,1.06]],o1=[[-0.85,-0.6],[0.85,-0.6],[0.85,0.35],[-0.85,0.35]];const ctr=Fk.P(0,-0.15);
+    const V=(q,yy)=>{const p=Fk.P(q[0],q[1]);return[p[0],yy,p[1]]};
+    const face=(a,b,c,d,col,rect,glow)=>{const nn=B.nrm(a,b,c);const mx=(a[0]+c[0])/2-ctr[0],mz=(a[2]+c[2])/2-ctr[1];if(nn[0]*mx+nn[2]*mz+nn[1]*0.3<0)B.quad(d,c,b,a,[0,1],[1,1],[1,0],[0,0],col,rect,glow);else B.quad(a,b,c,d,[0,0],[1,0],[1,1],[0,1],col,rect,glow)};
+    for(let i=0;i<4;i++){const j=(i+1)%4;face(V(o0[i],h0),V(o0[j],h0),V(o1[j],h1),V(o1[i],h1),[0.95,0.95,0.94],RECT[TM.plaster],0)}
+    flat(o1.map(q=>Fk.P(q[0],q[1])),h1,[0.93,0.93,0.92],TM.plaster);
+    const lerp=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t];
+    for(const [i,j] of[[0,1],[3,0],[1,2]]){const a0=lerp(o0[i],o1[i],0.15),b0=lerp(o0[j],o1[j],0.15),a1=lerp(o0[i],o1[i],0.85),b1=lerp(o0[j],o1[j],0.85);
+      const e=0.03,lift=(q,yy)=>{const v3=V(q,yy);return v3};const ya=h0+(h1-h0)*0.15+e,yb=h0+(h1-h0)*0.85+e;
+      const A0=lerp(a0,b0,0.08),B0=lerp(a0,b0,0.92),A1=lerp(a1,b1,0.08),B1=lerp(a1,b1,0.92);face(lift(A0,ya),lift(B0,ya),lift(B1,yb),lift(A1,yb),C1,RECT[T.lmKioskAd],1)}
+    {const sg=SG('ΠΕΡΙΠΤΕΡΟ');wallUV(Fk.P(0.8,-1.425),Fk.P(-0.8,-1.425),y+2.3,y+2.55,n,C1,sg[0],1,sg[1])}
+    lbox(Fk,1.25,1.85,-0.75,-0.1,y,y+1.85,[0.08,0.22,0.14],TM.metalL,{});wallUV(Fk.P(1.8,-0.76),Fk.P(1.3,-0.76),y+0.15,y+1.75,n,C1,T.lmKioskF,1,[0.06,0.4,0.05,0.9]);// drinks fridge
+    lbox(Fk,-1.95,-1.25,-0.7,-0.05,y,y+0.85,[0.94,0.94,0.95],TM.metalL,{});// ice-cream freezer
+    {const c4=[Fk.P(-1.95,-0.8),Fk.P(1.85,-0.8),Fk.P(1.85,0.8),Fk.P(-1.95,0.8)];for(let i=0;i<4;i++){const a=c4[i],b=c4[(i+1)%4];addSeg(a[0],a[1],b[0],b[1],'b')}}
+    {const ip=Fk.P(0,-1.9);INTER.push({type:'kiosk',x:ip[0],z:ip[1],label:'Buy a frappé'})}
+    if(typeof placed==='function')placed('kiosk',kx,kz,k&&k[2]||'ΠΕΡΙΠΤΕΡΟ');
+  }catch(e){console.warn('[lm-kfc] kiosk failed',e)}
+
   /* ======== the two stairs + the retaining wall along the avenue ======== */
-  const STEP=[0.62,0.55,0.47],STEPT=TM.marble;
+  const STEP=[0.6,0.47,0.34],STEPT=TM.marble;
   // upper flight: 13 steps from the pavement up to the gallery, side walls white with a steel handrail
   steps(Wf,-UF,0,UT0+0.2,UT1-0.05,yP,yG,13,STEP,STEPT,yP-0.4);
   swall(Wf,-UF,0,UT0,UT0+0.2,yP-0.4,yP+0.95,yG+0.95,WHITE,TM.plaster);// south side wall (parapet, follows the stair)

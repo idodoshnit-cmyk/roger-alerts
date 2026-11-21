@@ -32,7 +32,7 @@ const STREETS={};
 const CORE_STREETS=['Κασσαβέτη','Κολοκοτρώνη','Λεβίδου','Κυριαζή','Παναγίτσας','Αργυροπούλου','Γεωργίου Δροσίνη','Αγίων Θεοδώρων','Κηφισίας','Δηληγιάννη','Εμμανουήλ Μπενάκη','Χαριλάου Τρικούπη'];
 /* red_tile (research styles.paving): terracotta cement tiles 0.3 × 0.3 m in a straight grid with fine joints (Kolokotroni r17/r18, Platanos r11). One repeat = 1.2 m (4 × 4 tiles). */
 defTile('redtile',(g,S)=>{const n=4,c=S/n;let sd=3;const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};g.fillStyle='#8e5446';g.fillRect(0,0,S,S);
-  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const v=0.9+r()*0.18;g.fillStyle=`rgb(${Math.round(176*v)},${Math.round(97*v)},${Math.round(74*v)})`;g.fillRect(i*c+1.2,j*c+1.2,c-2.4,c-2.4);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){const v=0.9+r()*0.18;g.fillStyle=`rgb(${Math.round(166*v)},${Math.round(98*v)},${Math.round(80*v)})`;g.fillRect(i*c+1.2,j*c+1.2,c-2.4,c-2.4);
     for(let k=0;k<70;k++){const a=0.05+r()*0.08;g.fillStyle=r()<0.5?`rgba(60,30,20,${a})`:`rgba(230,190,160,${a})`;g.fillRect(i*c+1.2+r()*(c-4),j*c+1.2+r()*(c-4),1+r()*2.5,1+r()*2.5)}}
 },{rep:1/1.2,nrm:'slabs',nrmRep:0.6,nrmK:0.6,spec:.03,shin:14,macro:.35});
 const SWMAT={red_brick:'redtile',grey_pavers:'pavers',marble:'marble',slabs:'slabs',asphalt:'asph2'};

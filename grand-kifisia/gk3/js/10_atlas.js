@@ -289,7 +289,39 @@ uniform mediump sampler2DArray uNrm;
 uniform sampler2D uLamp;uniform vec4 uLampR;uniform vec2 uLampH;uniform vec3 uLampC;uniform vec3 uShopC;
 uniform float uNight;uniform float uNoiseL;uniform float uHaze;uniform vec3 uGlowC;uniform vec3 uSkyZ;uniform vec3 uSkyH;uniform vec3 uSkyG;uniform vec4 uFogSun;uniform vec2 uSunXZ;
 varying vec4 vTuv;varying vec4 vP1;varying vec4 vP2;varying vec4 vP3;varying vec3 vWp;
-float gkSunVis=1.0;`;
+float gkSunVis=1.0;float gkAo=1.0;float gkFoot=0.0;
+#ifdef GK_AO
+/* height-field ambient occlusion (82_sky.js renders a top-down height map around the camera: R = top of solid geometry, G = top of foliage, metres above uHFR.w).
+   Occludes only indirect light: contact shadow where walls meet the ground, darker narrow streets, shade under trees, darker crown interiors. */
+uniform sampler2D uHF;uniform vec4 uHFR;uniform vec4 uHFK;
+#define GK_HUV(P) vec2(((P).x-uHFR.x)*uHFR.z,(uHFR.y-(P).y)*uHFR.z)
+float gkOcc=0.0,gkCany=0.0;
+float gkHFAO(vec3 p,vec3 n){
+ vec2 uv0=GK_HUV(p.xz);vec2 e=min(uv0,1.0-uv0);float fade=smoothstep(0.0,0.06,min(e.x,e.y))*uHFK.x;
+ if(fade<=0.0)return 1.0;
+ float y=p.y-uHFR.w;vec3 q=p+n*0.3;float yq=q.y-uHFR.w;float occ=0.0;
+ // up-facing surfaces (ground, roofs, steps): occluders around them. Not used on walls, where a height field cannot tell a balcony above from a wall beside.
+ float up=saturate(n.y*1.4-0.2);
+ if(up>0.0){for(int i=0;i<8;i++){float a=float(i)*0.7853982+0.3927;vec2 d=vec2(cos(a),sin(a));
+  float t=(textureLod(uHF,GK_HUV(q.xz+d*0.9),0.0).r-yq)*1.11;
+  #ifdef GK_AO2
+  t=max(t,(textureLod(uHF,GK_HUV(q.xz+d*2.6),1.0).r-yq)*0.385);
+  #endif
+  t=max(t,0.0);occ+=t*t/(1.0+t*t);}
+  occ*=0.125*up;}
+ // walls: contact darkening near the ground (terrain height from the light map's blue channel)
+ float tg=uLampH.x+texture2D(uLamp,(p.xz-uLampR.xy)*uLampR.zw).b*uLampH.y;float hb=p.y-tg-0.16;
+ gkFoot=(1.0-abs(n.y))*(1.0-smoothstep(0.0,1.5,hb))*step(-0.6,hb);
+ // street canyon: how far the mean height of the ~12 m around rises above this point
+ float cany=saturate((textureLod(uHF,uv0,uHFK.y).r-yq)/16.0);
+ float lt=textureLod(uHF,uv0,0.0).g-y;
+ #ifdef GK_LEAF
+ float ao=(1.0-0.6*saturate(lt/3.2))*(1.0-0.25*cany);
+ #else
+ float ao=(1.0-0.85*occ)*(1.0-0.38*gkFoot)*(1.0-0.3*cany)*(1.0-0.3*smoothstep(0.4,1.6,lt));
+ #endif
+ gkOcc=occ;gkCany=cany;gkFoot*=fade;return mix(1.0,ao,fade);}
+#endif`;
 const GK_FMAP=`
 vec4 texel=texture(uArr,vec3(vTuv.xy,floor(vTuv.w+0.5)));
 #ifdef GK_CUT
@@ -321,6 +353,9 @@ const GK_FNORMAL=`
 #endif
 totalEmissiveRadiance+=diffuseColor.rgb*gm*vTuv.z*uNight*vP3.y;`;
 const GK_FPHONG=`
+#ifdef GK_AO
+gkAo=gkHFAO(vWp,normalize((vec4(normal,0.0)*viewMatrix).xyz));diffuseColor.rgb*=1.0-0.12*gkFoot;
+#endif
 BlinnPhongMaterial material;
 float gkGl=gm*vP2.w;
 material.diffuseColor=diffuseColor.rgb*(1.0-gm*vP3.x);
@@ -328,6 +363,7 @@ material.specularColor=vec3(mix(vP2.x,0.08,gkGl));
 material.specularShininess=mix(vP2.y,320.0,gkGl);
 material.specularStrength=1.0;`;
 const GK_FEXTRA=`
+reflectedLight.indirectDiffuse*=gkAo;reflectedLight.indirectSpecular*=gkAo;
 {vec3 gkV=normalize(vViewPosition);float gkNV=saturate(dot(normal,gkV));
  vec3 gkRw=normalize((vec4(reflect(-gkV,normal),0.0)*viewMatrix).xyz);
  vec3 gkEnv=mix(uSkyH,uSkyZ,pow(saturate(gkRw.y),0.5));gkEnv=mix(uSkyG,gkEnv,smoothstep(-0.05,0.22,gkRw.y));
@@ -347,16 +383,19 @@ const GK_FFOG=`
  float fogFactor=1.0-(1.0-smoothstep(fogNear,fogFar,vFogDepth))*exp(-vFogDepth*uHaze);
  float gkSg=max(dot(normalize(vWp.xz-cameraPosition.xz+vec2(1e-4)),uSunXZ),0.0);
  gl_FragColor.rgb=mix(gl_FragColor.rgb,mix(fogColor,uFogSun.rgb,gkSg*gkSg*gkSg*uFogSun.a),fogFactor);
+#endif
+#ifdef GK_AO
+if(uHFK.w>0.5)gl_FragColor.rgb=vec3(gkAo,1.0-gkOcc,1.0-gkFoot)*(1.0-0.5*gkCany);// debug view: U.hfK.value.w=1
 #endif`;
 function gkUniforms(sh){sh.uniforms.uLut={value:lutTex};sh.uniforms.uArr={value:arrTex};sh.uniforms.uNrm={value:nrmTex};sh.uniforms.uTime=U.time;sh.uniforms.uNight=U.night;sh.uniforms.uNoiseL=U.noiseL;
-  sh.uniforms.uLamp=U.lamp;sh.uniforms.uLampR=U.lampR;sh.uniforms.uLampH=U.lampH;sh.uniforms.uLampC=U.lampC;sh.uniforms.uShopC=U.shopC;sh.uniforms.uSkyZ=U.skyZ;sh.uniforms.uSkyH=U.skyH;sh.uniforms.uSkyG=U.skyG;sh.uniforms.uFogSun=U.fogSun;sh.uniforms.uSunXZ=U.sunXZ;sh.uniforms.uHaze=U.haze;sh.uniforms.uGlowC=U.glowC;sh.uniforms.uWind=U.wind}
+  sh.uniforms.uLamp=U.lamp;sh.uniforms.uLampR=U.lampR;sh.uniforms.uLampH=U.lampH;sh.uniforms.uLampC=U.lampC;sh.uniforms.uShopC=U.shopC;sh.uniforms.uSkyZ=U.skyZ;sh.uniforms.uSkyH=U.skyH;sh.uniforms.uSkyG=U.skyG;sh.uniforms.uFogSun=U.fogSun;sh.uniforms.uSunXZ=U.sunXZ;sh.uniforms.uHaze=U.haze;sh.uniforms.uGlowC=U.glowC;sh.uniforms.uWind=U.wind;sh.uniforms.uHF=U.hf;sh.uniforms.uHFR=U.hfR;sh.uniforms.uHFK=U.hfK}
 /* worldMat({cut, leaf}) — the shared world material. cut: alpha cut-out, double sided. leaf: foliage cards (normals not flipped, translucent). */
-function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={GK_WORLD:''};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';
+function worldMat(o){o=o||{};const m=new THREE.MeshPhongMaterial({vertexColors:true,side:o.cut?THREE.DoubleSide:THREE.FrontSide});m.defines={GK_WORLD:''};if(o.cut)m.defines.GK_CUT='';if(o.leaf)m.defines.GK_LEAF='';if(TEX.nsize>0||(!TEX.ready&&Q.ntex>0))m.defines.GK_NRM='';if(Q.ao>0)m.defines.GK_AO='';if(Q.ao>1)m.defines.GK_AO2='';
   m.onBeforeCompile=sh=>{gkUniforms(sh);
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>'+GK_VPARS).replace('#include <project_vertex>','#include <project_vertex>'+GK_VMAIN+(o.leaf?GK_VWIND:''));
     sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>'+GK_FPARS).replace('#include <map_fragment>',GK_FMAP).replace('#include <color_fragment>',GK_FCOLOR).replace('#include <specularmap_fragment>','float specularStrength=1.0;')
       .replace('#include <normal_fragment_maps>',GK_FNORMAL).replace('#include <lights_phong_fragment>',GK_FPHONG).replace('#include <lights_fragment_end>','#include <lights_fragment_end>'+GK_FEXTRA).replace('#include <fog_fragment>',GK_FFOG)};
-  m.customProgramCacheKey=()=>'gkWorld'+(o.cut?'C':'')+(o.leaf?'L':'');
+  m.customProgramCacheKey=()=>'gkWorld'+(o.cut?'C':'')+(o.leaf?'L':'')+('GK_AO2' in m.defines?'A2':'GK_AO' in m.defines?'A':'')+('GK_NRM' in m.defines?'N':'');
   if(o.leaf)m.onBeforeRender=(r,s,c,g,obj)=>{if(obj.castShadow&&!obj.customDepthMaterial)obj.customDepthMaterial=MAT.depthCut};
   return m}
 /* depth material for alpha cut-outs so that foliage casts leaf-shaped shadows */

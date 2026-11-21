@@ -73,17 +73,23 @@ function updatePlayer(dt){const car=player.car;const st=readStick(!!car);let jx=
   /* heading follows the stick: exponential ease with a speed-dependent rate cap, so it never snaps and never wobbles */
   const aim=CAMS.aim;if(aim){target=Math.min(target,2.6);player.yaw=wrapA(player.yaw+wrapA(camYaw-player.yaw)*(1-Math.exp(-18*dt)));if(mag>0.02)player.hdg=Math.atan2(mx,mz)}
   else if(mag>0.02){const d=wrapA(Math.atan2(mx,mz)-player.yaw),ad=Math.abs(d),s01=clamp(player.spd/PMOVE.SPRINT,0,1);
-    const cap=lerp(13,6.5,s01)*dt;player.yaw=wrapA(player.yaw+clamp(d*(1-Math.exp(-lerp(16,9,s01)*dt)),-cap,cap));
-    if(ad>1.9)target*=lerp(1,0.25,clamp((ad-1.9)/1.0,0,1))}// pivot on the spot before running back the other way
+    /* turn in place: from a standstill (or a slow walk) a big change of direction is a pivot on the spot at a steady ~10 rad/s
+       (the legs step round, 60_people), and only then does the character set off; while running, the turn rate drops with speed */
+    const still=player.spd<1.2,cap=(still?10.5:lerp(13,6.5,s01))*dt;player.yaw=wrapA(player.yaw+clamp(d*(1-Math.exp(-(still?22:lerp(16,9,s01))*dt)),-cap,cap));
+    if(still&&ad>0.9)target=Math.min(target,lerp(0.9,0.12,clamp((ad-0.9)/0.9,0,1)));
+    else if(ad>1.9)target*=lerp(1,0.25,clamp((ad-1.9)/1.0,0,1))}// pivot before running back the other way
   if(!aim)player.hdg=player.yaw;
   /* speed: exponential approach with a minimum slope so it settles cleanly (frame-rate independent) */
-  {const ds=target-player.spd;if(ds!==0){const k=ds>0?(player.air?2:6.5):(player.air?1:9);let s=ds*(1-Math.exp(-k*dt));const mn=(ds>0?2.5:5)*dt;if(Math.abs(s)<mn)s=Math.sign(ds)*Math.min(Math.abs(ds),mn);player.spd+=s}}
+  /* speed: a critically damped spring, so a start eases in (no jerk), a stop eases out and nothing overshoots; quicker to stop than to start,
+     sluggish in the air; settles exactly (frame-rate independent: sdamp is exact for any dt) */
+  {const st=player.air?(target>player.spd?0.9:1.6):target>player.spd?(target>PMOVE.RUN?0.32:0.2):(target<0.05?0.13:0.18);
+    player.spd=sdamp(player.spd,target,player.spdV||0,st,dt);player.spdV=_sdV;if(player.spd<0.004&&target===0){player.spd=0;player.spdV=0}if(player.spd<0)player.spd=0}
   const ox=player.x,oz=player.z;let px=ox,pz=oz,hit=false;
   if(player.spd>0.001){const dist=player.spd*dt,n=Math.max(1,Math.ceil(dist/PMOVE.SUB)),fx=Math.sin(player.hdg)*dist/n,fz=Math.cos(player.hdg)*dist/n;
     for(let i=0;i<n;i++){_ply2.x=px+fx;_ply2.z=pz+fz;if(footSolve(_ply2,px,pz))hit=true;px=_ply2.x;pz=_ply2.z}}
   const adx=px-ox,adz=pz-oz,mvRaw=dt>0?Math.hypot(adx,adz)/dt:0;player.vx=dt>0?adx/dt:0;player.vz=dt>0?adz/dt:0;
   /* blocked by a wall: bleed the speed so the character shuffles instead of running on the spot */
-  if(hit&&player.spd>0.7&&mvRaw<player.spd*0.55){player.spd=Math.max(0.7,mvRaw,player.spd-24*dt);player.blocked=0.2}else if(player.blocked>0)player.blocked-=dt;
+  if(hit&&player.spd>0.7&&mvRaw<player.spd*0.55){player.spd=Math.max(0.7,mvRaw,player.spd-24*dt);player.spdV=Math.min(player.spdV||0,0);player.blocked=0.2}else if(player.blocked>0)player.blocked-=dt;
   player.mv+=(mvRaw-player.mv)*(1-Math.exp(-14*dt));if(player.mv<0.01)player.mv=0;
   STATS.walked+=mvRaw*dt;
   player.x=px;player.z=pz;
@@ -96,7 +102,7 @@ function updatePlayer(dt){const car=player.car;const st=readStick(!!car);let jx=
 const _ply2={x:0,z:0};
 function playerJump(){if(player.car||player.busy>0||player.air||player.knock>0||player.frozen)return false;player.vy=PMOVE.JUMP;player.air=true;return true}
 /* place the player somewhere (missions, respawn, interiors): keeps the vertical state and camera consistent */
-function placePlayer(x,z,yaw,soft){player.x=x;player.z=z;player.step=lvl(x,z);player.y=terr(x,z)+player.step;player.vy=0;player.air=false;player.spd=player.mv=player.vx=player.vz=0;if(yaw!=null){player.yaw=player.hdg=yaw;if(!soft)camYaw=yaw}
+function placePlayer(x,z,yaw,soft){player.x=x;player.z=z;player.step=lvl(x,z);player.y=terr(x,z)+player.step;player.vy=0;player.air=false;player.spd=player.mv=player.vx=player.vz=0;player.spdV=0;if(yaw!=null){player.yaw=player.hdg=yaw;if(!soft)camYaw=yaw}
   if(ph){ph.root.position.set(x,player.y,z);ph.root.rotation.y=player.yaw}if(!soft)CAMS.ok=false}
 function hurt(n,why){if(player.health<=0)return;player.health-=n;if(typeof hudHurt==='function')hudHurt(n);
   if(player.health<=0){player.health=100;const fee=Math.min(player.money,15);STATS.knocked++;if(fee>0){if(typeof addMoney==='function')addMoney(-fee,'Hospital bill');else player.money=Math.round((player.money-fee)*100)/100}

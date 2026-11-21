@@ -15,3 +15,11 @@
 - 13:30 converted with work/weapons/guns_patch.py (+ guns_frag.js models, guns_frag2.js fx/hitscan) -> gk3/js/81_weapons.js now: Pistol/SMG/Rifle hitscan (tracers, flash, casings, bullet holes, dust, sparks, knockdown, panic, wanted stars + police fine), paint marker kept only as the Alsos Paintball match loaner; shop = Fun Ocean Outdoors (Kifisias 228) only; range uses own gun or loaner pistol.
 - docs/WEAPONS.md v1 written (paintball wording) -> must be rewritten for guns.
 - Next: t1 results -> fix -> integrate (integrate.sh weapons js/81_weapons.js + one-line script tag in MAIN index.html) -> ORDERS_DONE.
+
+## Session 2 (resumed 17:48)
+- Main unchanged since ~13:52; synced copy (syncwork weapons js/81_weapons.js docs). chars integrated npcReact/isProtected/setCarry/aim poses/handWorld/'down'+'getup' states in main.
+- Added 81_weapons.js script tag to COPY index.html. Wrote tests/t2.js (t1 adapted to guns). Running t2 (log work/weapons/t2.log).
+- 18:05 FOUND: file never loaded — global collisions `_wv` (70_vehicles), `_wp` (72_driving), `PAINT` (35_interiors). Renamed all `_w*` temporaries to `_W*`, PAINT->W_PAINT. Check: concat all scripts (work/weapons/all.js) + `node --check` = no lexical redeclarations.
+- 18:00 guns v2: side-profile ExtrudeGeometry models (pistol frame w/ trigger-guard hole + finger grooves, slide, sights; SMG ring sight/curved mag/tropical handguard; rifle AR-style lower/upper/curved PMAG/collapsible stock/red dot, tan furniture). backup of box version: work/weapons/81_guns_v1_boxes.js. New: tests/gunview.js (standalone close-up render, same slot lock).
+- Added npcReact(n,'aimed') when the reticle rests on a valid person.
+- Running gunview + t2 in sequence (gv.log, t2.log).

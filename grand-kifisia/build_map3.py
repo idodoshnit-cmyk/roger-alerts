@@ -931,6 +931,8 @@ def geocode(st, num, hint):
     for k_, v in ADDR_ANCHORS.items():
         if k_ == key_ or (len(key_) >= 5 and (key_ in k_ or k_ in key_)): A += v
     ls = r['ls']; A = [(a, ls.project(Point(x, z)), (x, z)) for a, x, z in A if a % 2 == n_ % 2 and ls.distance(Point(x, z)) < 45]
+    # an anchor beyond either end of the street line (projection clamped to an end) more than 20 m away belongs to another street (e.g. the AB on Kyriazi tagged "Levidou 2")
+    A = [a for a in A if not ((a[1] <= 0.5 or a[1] >= ls.length - 0.5) and ls.distance(Point(a[2])) > 20)]
     if not A: return None
     ex = [a for a in A if a[0] == n_]
     if ex:
@@ -946,12 +948,46 @@ def geocode(st, num, hint):
     dx, dz = c_.x - a_.x, c_.y - a_.y; L_ = math.hypot(dx, dz) or 1
     off = r['w'] / 2 + 3.0; nx_, nz_ = -dz / L_ * sl[0], dx / L_ * sl[0]
     return dict(p=(m_.x + nx_ * off, m_.y + nz_ * off), method='interp', road=r['id'], side=sl[0], span=hi[0] - lo[0])
+# ---- addressed buildings (OSM building ways carrying addr:street + addr:housenumber, ranges "8-10" expanded): a census tenant whose address is that
+# building's own address belongs to THAT building (free frontage on it, else its directory board), never to a neighbour (research-census audit 13:45 (a)/(d)).
+def hn_all(v):
+    s_ = str(v or '')
+    m = re.match(r'^\s*(\d+)\s*[-–]\s*(\d+)', s_)
+    if m:
+        a_, b_ = int(m.group(1)), int(m.group(2))
+        if a_ <= b_ <= a_ + 12: return list(range(a_, b_ + 1, 2 if (b_ - a_) % 2 == 0 else 1))
+    n_ = hn(s_)
+    return [n_] if n_ is not None else []
+ADDR_BLD = collections.defaultdict(set)      # (snorm(street), number) -> {building index}
+for bi_, b_ in enumerate(out_b):
+    tg_ = b_.get('tg') or {}
+    if tg_.get('addr:street') and tg_.get('addr:housenumber'):
+        for n_ in hn_all(tg_['addr:housenumber']): ADDR_BLD[(snorm(tg_['addr:street']), n_)].add(bi_)
+def addr_building(st, num, p):
+    """index of the OSM building whose own address is st + num (nearest to p if several, within 20 m of the geocoded address), else None"""
+    if not st: return None
+    key_ = snorm(st); best = None
+    for n_ in hn_all(num):
+        for bi_ in ADDR_BLD.get((key_, n_), ()):
+            d_ = out_b[bi_]['poly'].distance(Point(p))
+            if d_ < 20 and (best is None or d_ < best[0]): best = (d_, bi_)
+    return best[1] if best else None
+log('addressed buildings: %d (street, number) keys' % len(ADDR_BLD))
 # ---- research census (gk3/data/census.json): PLACEMENT AUDIT rules (OWNER_BRIEF 16) ----
 # * an entry that is an OSM object (or matches one by name within the same_place distance) only enriches the OSM POI; the OSM-surveyed position wins;
 # * a census-only entry is built only if: tier A/B, not reported closed, street + house number given, the number is VERIFIED on the surveyed OSM numbering
 #   (exact surveyed number, or bracketed by surveyed numbers <= 12 apart on the same side) and the census position agrees with that address within 35 m;
 #   it is then placed AT THE ADDRESS (not at the listing's coordinate), on the facade of its street on the address side, in frontage not used by an OSM shop.
 cs_stats = collections.Counter(); CS_UNBUILT = []; CS_CLOSED_OSM = []
+CAM = None          # research-census address model (optional; feature-detected)
+try:
+    sys.path.insert(0, os.path.join(ROOT, 'tools', 'census')); _cwd = os.getcwd()
+    from addr import build_model as _cam_build
+    CAM = _cam_build(); os.chdir(_cwd)
+except Exception as e_:
+    log('census address model not available:', repr(e_)[:120])
+finally:
+    if sys.path and sys.path[0].endswith('census'): sys.path.pop(0)
 if CENSUS:
     by_osm = {q['id'][4:]: q for q in pois if q['id'].startswith('osm:')}
     for q in pois:
@@ -1009,6 +1045,14 @@ if CENSUS:
                 if dst < r_['w'] / 2 + 1.0:
                     ps_ = PARITY.get((so[1], hn(c['number']) % 2))
                     so = (ps_, so[1]) if ps_ is not None else None
+            if not (c.get('tier') == 'A' and multi and so) and c.get('tier') == 'A' and multi and CAM is not None:
+                # V4: research-census street-address model (tools/census/addr.py): the exact number is attested by an independent listing on that street
+                # (how 'exact…', error <= 18 m); built at that address point on its side, only if the listing agrees within 35 m
+                try: cg = CAM.geocode(c['street'], hn(c['number']))
+                except Exception: cg = None
+                if cg and str(cg.get('how', '')).startswith('exact') and cg.get('errM', 99) <= 18 and math.dist((cg['x'], cg['z']), p) <= 35:
+                    so2 = side_of(c['street'], (cg['x'], cg['z']), 30)
+                    if so2: so = so2; p = (cg['x'], cg['z']); cs_stats['censusmodel'] += 1
             if not (c.get('tier') == 'A' and multi and so):
                 _unbuilt(c, p, 'address not on surveyed numbering, not confirmed by two sources (%s %s)' % (c['street'], c['number'])); continue
             g = dict(p=p, method='listings', road=so[1], side=so[0])
@@ -1019,6 +1063,8 @@ if CENSUS:
                  posMethod='address-' + g['method'], conf=c.get('confidence') if c.get('confidence') is not None else 0.5, census=c.get('id'),
                  street=str(c['street']), number=str(c['number']), gside=(g['road'], g['side']), listingXZ=[r2(p[0]), r2(p[1])])
         if c.get('sources'): q['datasets'] = c['sources'] if isinstance(c['sources'], list) else [c['sources']]
+        ab_ = addr_building(c['street'], c['number'], g['p'])
+        if ab_ is not None: q['abld'] = ab_; cs_stats['at_addressed_building'] += 1
         pois.append(q); allp.append((n, q)); cs_stats['added_' + g['method']] += 1
     log('census:', dict(cs_stats))
     for k_, v in ADDR_ANCHORS.items():
@@ -1215,6 +1261,9 @@ for i in order:
         if q['src'] in ('osm', 'address'):     # no facade reachable without crossing a street: kept as a free-standing point (kiosk/park/station object), never moved
             q['bay'] = 'standalone'; q['why'] = 'no building facade within 45 m on its side of the street'; continue
         q['bay'] = 'none'; unplaced.append(q); continue
+    if q.get('abld') is not None:
+        q_ = dict(q, force_b=q['abld']); own_ = [c_ for c_ in candidates(q_) if street_match(q, out_b[q['abld']], c_[2]) > 0] or candidates(q_)
+        if own_: cand = own_
     if q['mode'] == 'shop':
         score, bi, ei, u, Le, d = cand[0]
         slots[(bi, ei)].append(q); q['_e'] = (bi, ei, u, Le, d); q['bay'] = 'shop'; continue
@@ -1266,7 +1315,11 @@ for (bi, ei), items in slots.items():
 # second pass: census-only shops (verified address) take only frontage the surveyed shops left free, near their address
 CS_PLACED = 0; CS_DIR = 0
 for q in sorted(CENSUS_SHOPS, key=lambda q: (q['posErrM'], -q['conf'])):
-    cand = candidates(q, 15.0); done = False
+    cand = candidates(q, 15.0); done = False; reach = 12
+    if q.get('abld') is not None:     # its address is a surveyed building's own address: that building only (street-facing edges of its street first)
+        q_ = dict(q, force_b=q['abld']); fb = candidates(q_)
+        cand = [c_ for c_ in fb if street_match(q, out_b[q['abld']], c_[2]) > 0]      # only facades on the street of its address; full -> directory of this building
+        cand = cand or [c_ for c_ in fb if out_b[q['abld']]['setb'][c_[2]] >= 0] or fb; reach = 60
     for score, bi, ei, u, Le, d in [c_ for c_ in cand if c_[1] not in EXCL_CENSUS_B][:6]:
         L = out_b[bi]['normals'][ei][2]; want = u * L
         occ = sorted(x['_bay'] for x in slots.get((bi, ei), []) if '_bay' in x)
@@ -1278,7 +1331,7 @@ for q in sorted(CENSUS_SHOPS, key=lambda q: (q['posErrM'], -q['conf'])):
         best = None
         for f0, f1 in free:
             w = min(f1 - f0, maxw(q), 5.0); c0 = min(max(want, f0 + w / 2), f1 - w / 2)
-            if abs(c0 - want) <= 12 and (best is None or abs(c0 - want) < best[0]): best = (abs(c0 - want), c0, w)
+            if abs(c0 - want) <= reach and (best is None or abs(c0 - want) < best[0]): best = (abs(c0 - want), c0, w)
         if best:
             q['_e'] = (bi, ei, u, Le, d); q['_bay'] = (best[1] - best[2] / 2, best[1] + best[2] / 2); q['bay'] = 'shop'
             slots[(bi, ei)].append(q); done = True; CS_PLACED += 1; break
@@ -1298,7 +1351,13 @@ for (bi, ei), items in slots.items():
         left_room = max(0.0, s0 - lo); right_room = max(0.0, hi - s1)
         if k_ + 1 < len(it): right_room /= 2          # share the gap with the right neighbour (it grows into the other half)
         if k_: left_room = min(left_room, max(0.0, (s0 - lo) / 2)) if not it[k_ - 1].get('special') else left_room
-        gl = min(left_room, extra / 2); gr = min(right_room, extra - gl); gl = min(left_room, extra - gr)
+        # grow as wide as possible WITHOUT moving the bay centre away from its surveyed / address point (t = u*L): a sign never drifts because a neighbour left room
+        c_ = (s0 + s1) / 2; tgt = x['_e'][2] * L; best_ = (0.0, 0.0, 0.0)
+        for k2 in range(41):
+            gl = min(left_room, extra) * k2 / 40; gr = min(right_room, extra - gl); nc = c_ + (gr - gl) / 2
+            if abs(nc - tgt) > abs(c_ - tgt) + 0.05: continue
+            if (gl + gr, -abs(nc - tgt)) > (best_[0], -best_[1]): best_ = (gl + gr, abs(nc - tgt), gl)
+        gl = best_[2]; gr = best_[0] - gl
         x['_bay'] = (s0 - gl, s1 + gr)
 # plates / directories / whole-building signs: next to the middle of the edge's free part (they never take shopfront width)
 plates = collections.defaultdict(list)
@@ -1318,6 +1377,17 @@ for q in pois:
     if '_e' in q: finish(q)
 # plates sharing an edge: spread them 0.9 m apart around their position so they do not coincide
 for (bi, ei), items in plates.items():
+    # directory-board names (bay 'directory') share ONE board per edge (at the median of their positions) and do not push the surveyed plates around
+    dirs = [q for q in items if q.get('bay') == 'directory']
+    if dirs:      # names closer than 6 m along the facade share a board (one board per entrance cluster)
+        b = out_b[bi]; a, c, nx, nz, Le = edge_geom(b, ei); dirs.sort(key=lambda q: q['t']); grp = [[dirs[0]]]
+        for q in dirs[1:]:
+            if (q['t'] - grp[-1][-1]['t']) * Le > 6.0: grp.append([q])
+            else: grp[-1].append(q)
+        for g_ in grp:
+            t = g_[len(g_) // 2]['t']; fx, fz = a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t
+            for q in g_: q.update(t=round(t, 4), fx=r2(fx), fz=r2(fz), door=[r2(fx + nx * 1.2), r2(fz + nz * 1.2)])
+        items = [q for q in items if q.get('bay') != 'directory']
     if len(items) < 2: continue
     b = out_b[bi]; a, c, nx, nz, Le = edge_geom(b, ei)
     items.sort(key=lambda q: q['t']); n = len(items); sp = min(0.9, Le / (n + 1))

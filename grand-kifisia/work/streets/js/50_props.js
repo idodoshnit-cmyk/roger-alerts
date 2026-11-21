@@ -48,6 +48,16 @@ function propGeo(kind,far){const g=new GB(),M=RECT[T.metal],ML=RECT[T.metalL],W=
     for(let k=0;k<4;k++){const a=k/4*TAU,c=Math.cos(a),s=Math.sin(a);rod(g,[c*0.163,3.21,s*0.163],[c*0.262,3.76,s*0.262],0.024,I,M,0)}// corner frames (lantern rotated 45° → corners on the axes)
     sqfrust(g,0,0,3.18,3.22,0.13,0.13,I,M,0,Math.PI/4,3);sqfrust(g,0,0,3.75,3.79,0.215,0.215,I,M,0,Math.PI/4,3);sqfrust(g,0,0,3.79,4.0,0.235,0.02,I,M,0,Math.PI/4,0);
     ball(g,0,4.04,0,0.04,I,M,0,0);return g.build()}
+  if(kind==='lamp0D'){// kifisia_lantern_double (streets.json styles; Kolokotroni north side, r17): the lantern post with a 0.9 m scroll cross-arm carrying two lanterns, 4.2 m
+    I=PCOL.ironL;const LX=0.45;
+    if(far){g.cyl(0,0,0,0.13,0.06,3.5,5,I,M,false);g.box(0,3.42,0,0.95,0.06,0.06,0,I,M);for(const sx of[-LX,LX]){sqfrust(g,sx,0,3.45,3.95,0.11,0.17,PCOL.glow,W,1,Math.PI/4,0);sqfrust(g,sx,0,3.95,4.15,0.21,0.0,I,M,0,Math.PI/4,2)}return g.build()}
+    lathe(g,[[0.17,0],[0.17,0.07],[0.145,0.1],[0.135,0.42],[0.15,0.45],[0.15,0.5],[0.1,0.56],[0.08,0.72],[0.07,0.76],[0.062,1.0],[0.05,3.3],[0.068,3.33],[0.068,3.39],[0.045,3.42],[0.035,3.7],[0.05,3.74],[0,3.8]],10,I,M,0);ball(g,0,3.84,0,0.045,I,M,0,0);
+    rod(g,[-LX,3.4,0],[LX,3.4,0],0.045,I,M,0);
+    for(const sd of[-1,1]){let pv=[sd*0.04,3.05,0];for(let k=1;k<=8;k++){const t=k/8,q=[sd*(0.04+0.36*t),3.05+0.33*t+Math.sin(t*TAU)*0.04,0];rod(g,pv,q,0.024,I,M,0);pv=q}
+      const sx=sd*LX;sqfrust(g,sx,0,3.38,3.44,0.12,0.12,I,M,0,Math.PI/4,3);sqfrust(g,sx,0,3.44,3.96,0.11,0.175,PCOL.glow,W,1,Math.PI/4,0);
+      for(let k=0;k<4;k++){const a=k/4*TAU,c=Math.cos(a),s2=Math.sin(a);rod(g,[sx+c*0.155,3.44,s2*0.155],[sx+c*0.25,3.96,s2*0.25],0.022,I,M,0)}
+      sqfrust(g,sx,0,3.95,3.99,0.205,0.205,I,M,0,Math.PI/4,3);sqfrust(g,sx,0,3.99,4.18,0.225,0.02,I,M,0,Math.PI/4,0);ball(g,sx,4.21,0,0.035,I,M,0,0)}
+    return g.build()}
   if(kind==='lamp1'){// green post + opal globe
     if(far){g.cyl(0,0,0,0.15,0.06,3.45,5,G,M,false);ball(g,0,3.72,0,0.26,PCOL.glow,W,1,0);return g.build()}
     lathe(g,[[0.2,0],[0.2,0.09],[0.17,0.13],[0.155,0.16],[0.155,0.55],[0.175,0.58],[0.175,0.63],[0.11,0.7],[0.085,0.85],[0.075,0.9],[0.065,1.5],[0.082,1.54],[0.082,1.6],[0.06,1.64],[0.052,3.25],[0.075,3.3],[0.075,3.36],[0.05,3.39],[0.09,3.44],[0.09,3.48],[0,3.49]],12,G,M,0);
@@ -128,10 +138,10 @@ function propGeo(kind,far){const g=new GB(),M=RECT[T.metal],ML=RECT[T.metalL],W=
    PPOOL[kind] = {mat: Float32Array(16·n) world matrices, xz: Float32Array(2·n), n, near: InstancedMesh, far: InstancedMesh|null, dN, dF, cast}
    updatePropLOD(cx,cz) copies the instances within dN into `near` and those within dF into `far`. */
 const PPOOL={};
-const PROP_D={lampP:[100,220],lampC:[90,200],bollardC:[55,120],lamp0:[95,210],lamp1:[95,210],lamp2:[120,240],bollard:[55,120],bollardB:[55,120],bench:[60,150],basket:[50,120],bin:[70,170],recycle:[70,170],signal:[110,220],stopsign:[80,0],scooter:[60,0],solar:[0,200],ac:[0,170]};
+const PROP_D={lampP:[100,220],lampC:[90,200],bollardC:[55,120],lamp0:[95,210],lamp0D:[95,210],lampD:[95,210],bollardY:[55,120],lamp1:[95,210],lamp2:[120,240],bollard:[55,120],bollardB:[55,120],bench:[60,150],basket:[50,120],bin:[70,170],recycle:[70,170],signal:[110,220],stopsign:[80,0],scooter:[60,0],solar:[0,200],ac:[0,170]};
 function propPool(kind,list,cast){if(!list.length)return;const n=list.length,mat=new Float32Array(n*16),xz=new Float32Array(n*2),m=new THREE.Matrix4(),q=new THREE.Quaternion(),pv=new THREE.Vector3(),sv=new THREE.Vector3(1,1,1),Y=new THREE.Vector3(0,1,0);
   list.forEach((p,i)=>{q.setFromAxisAngle(Y,p[3]||0);pv.set(p[0],p[1],p[2]);sv.setScalar(p[4]||1);m.compose(pv,q,sv);m.toArray(mat,i*16);xz[i*2]=p[0];xz[i*2+1]=p[2]});
-  const d=PROP_D[kind]||[80,160],mk=geo=>{const im=new THREE.InstancedMesh(geo,MAT.atlas,n);im.count=0;im.frustumCulled=false;im.receiveShadow=false;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(im);return im};
+  const d=PROP_D[kind]||[80,160],mk=geo=>{const im=new THREE.InstancedMesh(geo,MAT.atlas,n);im.count=0;im.frustumCulled=false;im.receiveShadow=false;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);im.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(n*3).fill(1),3);scene.add(im);return im};
   const P=PPOOL[kind]={mat,xz,n,dN:d[0],dF:d[1],cast:!!cast,near:d[0]>0?mk(propGeo(kind,false)):null,far:d[1]>0?mk(propGeo(kind,true)):null};if(P.near)P.near.castShadow=!!cast;return P}
 let _plodX=1e9,_plodZ=1e9;
 function updatePropLOD(cx,cz,force){if(!force&&Math.abs(cx-_plodX)<4&&Math.abs(cz-_plodZ)<4)return;_plodX=cx;_plodZ=cz;const scale=typeof Q!=='undefined'&&Q.dist?Math.min(1,Q.dist/240):1;
@@ -147,6 +157,10 @@ function bollardStyle(x,z){const sp=specOf(x,z,12),st=sp&&sp.bollards&&sp.bollar
 const LAMPSTYLE={kifisia_double_globe:'lampD',kifisia_globe:'lamp1',kifisia_lantern:'lamp0',kifisia_lantern_double:'lamp0',avenue_mast:'lamp2',pole_arm:'lampP',globe_cluster:'lampC'};
 let _parks=null;function inPark(x,z){if(!_parks){_parks=[];(MAP.areas||[]).forEach((a,i)=>{if(a[0]==='park'){const r=unp(a[1][0]);let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const p of r){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);z0=Math.min(z0,p[1]);z1=Math.max(z1,p[1])}_parks.push({r,b:[x0,z0,x1,z1]})}})}
   for(const p of _parks)if(x>=p.b[0]&&x<=p.b[2]&&z>=p.b[1]&&z<=p.b[3]&&pip(p.r,x,z))return true;return false}
+/* kifisia_lantern_double: streets.json styles.lamps.kifisia_lantern_double.seen = "Kolokotroni north side (r17)" → lantern posts on the NORTH side (game north = -z) of segment
+   kolokotroni_1 get the two-lantern cross-arm, arm parallel to the street. Returns {yaw} or null. */
+function lantern2(x,z){const sp=specOf(x,z,16),seg=sp&&sp.seg;if(!seg||!/^kolokotroni_1$/.test(seg.id||''))return null;const dx=seg.bx-seg.ax,dz=seg.bz-seg.az,L=Math.hypot(dx,dz)||1;
+  const u=((x-seg.ax)*dx+(z-seg.az)*dz)/(L*L),pz=seg.az+dz*u;if(z>=pz)return null;return{yaw:Math.atan2(-dz/L,dx/L)}}
 function lampStyle(x,z,mapStyle){if(inPark(x,z))return'lampC';// parks and groves: globe_cluster posts (research: Kefalari r04, Agora r06; Alsos inferred)
   const sp=specOf(x,z,16),st=sp&&sp.lamps&&sp.lamps.style;return LAMPSTYLE[st]||('lamp'+(mapStyle|0))}
 /* nearest walkable line (any road, footway or path) → {x,z} of the closest point */
@@ -155,9 +169,10 @@ function nearestWay(x,z,maxd){let best=null,bd=maxd||25;for(const r of ROADS){co
 
 let lensMesh=null,poolMesh=null;const LENS=[];
 function buildLightPools(){/* street-lamp light now comes from the night light map of 82_sky.js (addLight / MAP.lamps); kept as a no-op for old callers */}
-function buildProps(){const L={lamp0:[],lamp1:[],lamp2:[],lampP:[],lampC:[],lampD:[],bollard:[],bollardY:[],bollardB:[],bollardC:[],bench:[],basket:[],bin:[],recycle:[],signal:[],stopsign:[],scooter:[]};
-  for(const l of MAP.lamps){const x=l[0]/10,z=l[1]/10,k=lampStyle(x,z,l[2]);let yaw=hf(l[0]+l[1])*TAU;
+function buildProps(){const L={lamp0:[],lamp0D:[],lamp1:[],lamp2:[],lampP:[],lampC:[],lampD:[],bollard:[],bollardY:[],bollardB:[],bollardC:[],bench:[],basket:[],bin:[],recycle:[],signal:[],stopsign:[],scooter:[]};
+  for(const l of MAP.lamps){const x=l[0]/10,z=l[1]/10;let k=lampStyle(x,z,l[2]);let yaw=hf(l[0]+l[1])*TAU;
     if(k==='lamp2'||k==='lampP'){if((l[2]|0)===2)yaw=l[3]+(l[4]>0?Math.PI:0);else{const q=typeof roadProj==='function'?roadProj(x,z,20,r=>r.ty<=5):null;if(q)yaw=Math.atan2(q.qx-x,q.qz-z)}yaw-=Math.PI/2}
+    const dbl=k==='lamp0'&&lantern2(x,z);if(dbl){k='lamp0D';yaw=dbl.yaw}
     L[k].push([x,k==='lampP'?terr(x,z):groundY(x,z),z,yaw]);addBoxC(x,z,k==='lampP'?0.17:0.15,'p');placed('lamp',x,z,k,'map.lamps')}
   for(const e of EXTRA.lamp2){L.lamp2.push([e[0],terr(e[0],e[1]),e[1],hf(e[0])*TAU]);addBoxC(e[0],e[1],0.18,'p')}
   for(const b of MAP.bollards){const x=b[0]/10,z=b[1]/10;L[bollardStyle(x,z)].push([x,groundY(x,z),z,0]);placed('bollard',x,z,'','map.bollards')}

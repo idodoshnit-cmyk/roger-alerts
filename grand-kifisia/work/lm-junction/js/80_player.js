@@ -133,7 +133,7 @@ function updateCamera(dt){if(CUT&&freeCam!==CUT.f)CUT.end(true,true);if(freeCam)
   let want,fovT,lax=0,laz=0,pivUp=0.25,stXZ=0.07,stY=0.16,rollT=0;
   if(c){const sp=Math.abs(c.vf||0);if((c.vf||0)<-1.5)CAMS.rev+=dt;else CAMS.rev=0;const heading=c.yaw+(CAMS.rev>0.6?Math.PI:0);
     if(idle>1.5&&!input.looking){camYaw=heading+sdamp(wrapA(camYaw-heading),0,CAMS.yv,lerp(0.6,0.24,clamp(sp/12,0,1)),dt);CAMS.yv=_sdV;camPitch=sdamp(camPitch,0.17+Math.min(0.05,sp*0.002),CAMS.pv,0.7,dt);CAMS.pv=_sdV}else{CAMS.yv=0;CAMS.pv=0}
-    want=5.4+Math.min(4.2,sp*0.11);fovT=58+Math.min(22,sp*0.72);const la=clamp((c.vf||0)*0.16,-1.5,4.5);lax=Math.sin(c.yaw)*la;laz=Math.cos(c.yaw)*la;stXZ=0.05;stY=0.22;pivUp=0.35;
+    const pa=camera.aspect<1?clamp((1-camera.aspect)/0.55,0,1):0;/* cars: portrait phones get a longer boom and wider lens so the road ahead stays in view */want=(5.4+Math.min(4.2,sp*0.11))*(1+0.28*pa);fovT=58+16*pa+Math.min(22,sp*0.72);const la=clamp((c.vf||0)*0.16,-1.5,4.5);lax=Math.sin(c.yaw)*la;laz=Math.cos(c.yaw)*la;stXZ=0.05;stY=0.22;pivUp=0.35;
     rollT=clamp(-(c.steer||0)*sp*0.004,-0.04,0.04)}
   else{const mv=player.mv;
     if(idle>1.6&&!input.looking&&mv>0.9&&!player.frozen&&!CAMS.aim){const d=wrapA(player.yaw-camYaw),ad=Math.abs(d);/* ease behind the direction of travel — but not while the player runs towards the camera */

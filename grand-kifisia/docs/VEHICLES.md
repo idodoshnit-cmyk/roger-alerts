@@ -67,7 +67,9 @@ while that finger is down and slows firmly when it lifts. The big **Brake** butt
 (auto-reverse after 0.22 s). **Gas** gives full power without the steering finger. **H-Brake** = handbrake. Keyboard: W/Up gas, S/Down brake+reverse,
 A/D steer, Space handbrake. **Car** (one tap) enters the nearest car within 3.6 m of its body (exotics a little further); pressed while moving it brakes
 to a stop and gets out by itself (`DRV.exitReq`).
-Model (`driveCar(dt, jx, jy)`, sub-stepped at 90 Hz): soft-centred steering input, speed-sensitive steering angle, fast turn-in and faster auto-centre;
+Model (`driveCar(dt, jx, jy)`, sub-stepped at 90 Hz): steering input goes through a dead zone, a gentle curve (0.45·x + 0.55·x²) and a short
+low-pass (`DRV.jxs`, 90 ms toward a new input, 50 ms back to centre — order 13:10 "smooth driving"); the steering angle is speed-sensitive (full lock at
+walking pace, 24 % at 130 km/h), turn-in slows with speed (3.4 → 1.7 rad/s) while the auto-centre stays fast, and yaw builds a little more progressively at speed;
 yaw follows the front wheels directly up to the grip limit (traction assist); **no lateral slip below `DRV.assistV` = 16.7 m/s (60 km/h)**, a gentle,
 capped drift above it; handbrake (> 6 m/s) lets the tail out by at most 0.45 × speed and recovers on its own — the car cannot spin. Automatic gearbox
 (drives the engine sound), slope gravity only while moving (no creep or jitter when stopped on Kifisia's hills). Collisions: 3–5 footprint circles per car;
@@ -104,3 +106,6 @@ close) → depart`. `TRAIN.hold` keeps it at the platform (missions).
 - No usable CC0 vehicle or scooter models exist on Poly Haven (only "covered_car"); all models except the Ferrari are procedural.
 - Train livery follows public descriptions of the Line 1 stock, not a specific photographed unit.
 - Only the driver's door is articulated, and only for the car being entered/left; handles/trim stay on the body while it swings.
+- Ferrari model: `tools/cars/ferrari_build.js` decodes the Draco glb, welds by position but keeps the ORIGINAL normals (clustered per position so
+  double-sided sheets do not cancel), simplifies with meshoptimizer and picks per triangle corner the normal cluster that matches its facing.
+  Near LOD ≈ 8.6k triangles + 2.2k glass — above the 2,500 per-car budget, accepted because at most five exotics exist and only one or two are ever near.

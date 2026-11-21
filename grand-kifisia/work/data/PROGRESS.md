@@ -1,6 +1,7 @@
 # OWNER-INSTANCE: this workstream ("data") is being worked on by the agent labelled "team:data" started by the project lead in a dedicated workflow.
 # If you are ANY OTHER process started with id "data": STOP. Do not create or modify anything. Report: "handled by the dedicated team:data instance".
 # (The owning instance keeps these three header lines at the top of this file and writes its progress below.)
+# STATUS: COMPLETE and integrated — nothing left to do
 
 
 ## Log (team:data)
@@ -48,3 +49,17 @@ See docs/OWNER_BRIEF.md item 9. A new research bot (research-census) is building
 - NEXT: runtime dump still queued; then shots; ORDERS_DONE entry.
 - [15:05] INTEGRATED: OSM `branch` kept (Intimissimi Uomo is a separate shop, no longer merged as a duplicate). Docs regenerated (assemble_audit_doc.py). ORDERS_DONE entry written (14:50).
   Runtime dump+shots job (tools/data/dump_and_shoot.js -> work/data/audit/signs_after.json, shots work/data/shots/pa_*) queued for a browser slot.
+- [resume 5, 17:50 UTC] previous dump_and_shoot job never produced output (process cut off). Main map == my copy (v3.1b). No new orders for data in ORDERS.md. Re-launched dump_and_shoot on MAIN -> work/data/audit/signs_runtime.json + shots work/data/shots/pa_* (waiting for a browser slot).
+- NEXT: compare runtime signs vs map bays (renderer moves?), review shots, add section to PLACEMENT_AUDIT.md, ORDERS_DONE, STATUS line.
+- [18:03 UTC] INTEGRATED map v3.2 (build_map3.py, backup work/data/build_map3.before_abld.py), answering research-census ORDERS_DONE 13:45 (a)-(d):
+  * census tenant whose address = an OSM building's own addr (99 keys, ranges expanded, building within 20 m of the address) -> that building only, facades on its street only, else its directory board (Kolokotroni 1 listings -> b33 Phoenix, not b931; Kifisias 232 -> b262).
+  * bay growth never moves a bay centre away from its surveyed/address point; directory names share one board per 6 m cluster (no longer push surveyed plates).
+  * geocode ignores anchors beyond a street end > 20 m (AB "Levidou 2" tag on Kyriazi corrupted Levidou 2).
+  * V4 fallback: census AddrModel (tools/census/addr.py, feature-detected) exact-number geocode err<=18 m and listing within 35 m -> built (2 entries, e.g. Imaginarium Levidou 2).
+  research-census audit main(before) -> v3.2: WRONG_BUILDING 43 -> 14, WRONG_STREET 0 -> 0, missing 22 -> 15, osmOver4 60 -> 48, OSM median 0.9 -> 0.5 m, p90 6.4 -> 5.7, DUPLICATE 0 -> 1 (two OSM-surveyed Alpha Bank branches 72 m apart, kept). check_map PASS.
+- NEXT: runtime dump job (queued, boots MAIN so it measures v3.2), compare_runtime.py, shots, docs update (MAP_DATA, PLACEMENT_AUDIT_DATA), ORDERS_DONE.
+- [18:10] docs: PLACEMENT_AUDIT_DATA.md §C2 + tables/images regenerated (assemble_audit_doc.py now uses A2_map = v3.2), MAP_DATA.md v3.2 notes, ORDERS_DONE entry 18:05 written.
+  First runtime dump attempt failed (page.click timeout under machine load) -> dump_and_shoot.js now clicks via evaluate with long timeouts; re-launched (log work/data/audit/dump_runtime.log).
+- NEXT: compare_runtime.py on signs_runtime.json, review pa_* shots, append runtime result to PLACEMENT_AUDIT_DATA §C2 + ORDERS_DONE, then STATUS line.
+
+- [18:20] Runtime dump OK on MAIN v3.2: 369/398 bays drawn by 30_buildings.js, all exact (0 moved/resized, 0 errors); 29 on landmark-owned buildings (23 ordinary shops not drawn unless lm-* read MAP.pois) -> reported in ORDERS_DONE + PLACEMENT_AUDIT_DATA §C2. Shots pa_* reviewed. DONE.

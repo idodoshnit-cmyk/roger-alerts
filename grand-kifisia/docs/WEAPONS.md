@@ -22,8 +22,14 @@ Enforced in code (`weaponBlock()`, `wProtected()`):
 Fun Ocean Outdoors is the only outdoors/sporting-goods shop in the playable map (Overture place, tier B); no gun shop exists in the open data, so it stands in.
 The items are added to that shop's own interior menu (`INTERIORS[key].menu`, order at the counter); without the interiors module a USE action at the door opens the sheet.
 
-- **Models**: detailed procedural meshes (slide with serrations, sights, ejection port, bore, trigger guard, magazine, rails, handguard, optic, stock), two PBR materials each:
-  steel (metalness 0.85, environment reflections) and stippled polymer (bump-mapped grip). Held in the right hand via the characters API (`handWorld`, aim/hold poses).
+- **Models** (v2, side-profile modelling): each gun is built from real side silhouettes extruded with rounded edges plus turned parts, two PBR materials:
+  nitride steel (metalness 0.8, brushed bump, environment reflections) and stippled polymer (bump-mapped). Pistol: polymer frame with beavertail, finger-groove grip,
+  open trigger guard (real hole), accessory rail, slide with front/rear serrations, ejection port showing the barrel hood, 3-dot sights, crowned bore, slide stop,
+  takedown and magazine-release levers, floor plate. SMG: round receiver tube, ring front sight, drum rear sight, cocking tube + handle, polymer trigger group
+  with grip, curved 30-round magazine, tropical handguard, retractable rod stock. Rifle: flat-top upper with picatinny rail, forward assist, dust cover, charging
+  handle, lower with magwell and trigger guard, octagonal free-float handguard with M-LOK slots and top rail, slotted flash hider, curved polymer magazine,
+  collapsible stock and grip in tan, red-dot sight with turrets and tinted lens. Held in the right hand via the characters API (`handWorld`, aim/hold poses);
+  the characters' own toy marker prop is hidden while a gun is drawn.
 - **Firing**: hitscan along the aim ray from the muzzle (1.5 m steps against people, cars, building/garden walls, props, ground, range targets); spread grows while moving
   and firing (bloom), shrinks standing still; tracers on most rounds.
 - **Feel**: camera recoil kick with recovery, shake, muzzle flash (two additive billboards, 45 ms), brass casings ejected to the right that bounce and tinkle and lie on the

@@ -65,6 +65,7 @@ function menuKey(c){const tabs=[...$('tabs').querySelectorAll('.tab')].map(b=>b.
 function tabMap(body){HUDS.mapOpened++;
   const cats=Object.keys(CATSTYLE).slice(0,8).map(k=>`<span><i style="background:${CATSTYLE[k][0]}"></i>${esc(CATSTYLE[k][2])}</span>`).join('');
   body.innerHTML=`<canvas id="bmc"></canvas>
+   <div id="mapFind" class="mapUi"><input id="mfq" type="search" placeholder="Find a shop, café or place…" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"><div id="mfr"></div></div>
    <div id="legend" class="mapUi" hidden><span><i style="background:#ffc832"></i>Mission</span><span><i style="background:#39b6ff"></i>GPS route</span>${cats}</div>
    <div id="mapInfo" class="mapUi"></div>
    <div id="mapBtns" class="mapUi"><button class="mb" id="mZin" type="button" aria-label="Zoom in">+</button><button class="mb" id="mZout" type="button" aria-label="Zoom out">−</button>
@@ -73,7 +74,20 @@ function tabMap(body){HUDS.mapOpened++;
   $('mZin').onclick=()=>{bigMapZoom(1.4);bigMapQueue()};$('mZout').onclick=()=>{bigMapZoom(1/1.4);bigMapQueue()};$('mMe').onclick=()=>bigMapCentre();
   $('mLeg').onclick=()=>{const l=$('legend');l.hidden=!l.hidden;$('mLeg').classList.toggle('on',!l.hidden)};
   $('mClr').onclick=()=>{clearWaypoint();bigMapAfterWp()};
+  const q=$('mfq'),r=$('mfr');let hits=[];
+  const show=()=>{hits=mapFind(q.value);const p=player.car||player;r.innerHTML=hits.map((h,i)=>`<button type="button" data-i="${i}"><i style="background:${h.col}"></i><b>${esc(h.name)}</b><span>${esc(h.sub)} · ${fmtDist(Math.hypot(h.x-p.x,h.z-p.z))}</span></button>`).join('')||(q.value.trim().length>1?'<p>Nothing with that name in Grand Kifisia.</p>':'');
+    r.querySelectorAll('button').forEach(b=>b.onclick=()=>{const h=hits[+b.dataset.i];setWaypoint(h.x,h.z,h.name);BM.cx=h.x;BM.cz=h.z;BM.s=Math.max(BM.s,3.6);BM.hl={x:h.x,z:h.z,t:performance.now()};q.value='';r.innerHTML='';q.blur();bigMapAfterWp()})};
+  q.oninput=show;q.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'&&hits[0])r.querySelector('button').click();else if(e.key==='Escape'){q.value='';r.innerHTML='';q.blur()}};
 }
+/* map search over every named shop / amenity (POIS) and landmark (PLACES); accents and Greek letters are folded, Greek input is transliterated */
+const foldTxt=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9α-ω ]+/g,' ').trim();
+function mapFind(raw){const q=foldTxt(isGreek(raw)?greeklish(raw):raw);if(q.length<2)return[];const out=[];
+  const score=n=>{const f=foldTxt(n);if(f.startsWith(q))return 0;if(f.split(' ').some(w=>w.startsWith(q)))return 1;return f.includes(q)?2:-1};
+  for(const P of PLACES){const sc=score(P.name);if(sc>=0)out.push({sc:sc-0.5,name:P.name,sub:'Place',x:P.x,z:P.z,col:P.col||'#ffc832'})}
+  for(const P of POIS){const sc=score(P.name);if(sc<0)continue;const st=CATSTYLE[P.cat]||CATSTYLE.other;const st2=typeof navNearestNamed==='function'?navNearestNamed(P.x,P.z,25):'';
+    out.push({sc,name:P.name,sub:(P.kind?String(P.kind).replace(/_/g,' '):st[2])+(st2?' · '+latin(st2):''),x:P.x,z:P.z,col:st[0]})}
+  const p=player.car||player;out.sort((a,b)=>a.sc-b.sc||Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z));
+  const seen=new Set();return out.filter(h=>{const k=h.name+'|'+Math.round(h.x/20)+'|'+Math.round(h.z/20);if(seen.has(k))return false;seen.add(k);return true}).slice(0,6)}
 function menuMapInfo(){const e=$('mapInfo');if(!e)return;const p=player.car||player;let h='';
   if(GPS.wp){const d=Math.hypot(GPS.wp.x-p.x,GPS.wp.z-p.z);h=`<span class="wp">GPS</span> · <b>${esc(GPS.wp.label)}</b> · ${fmtDist(GPS.len||d)}<br>Tap the pin again to clear it.`}
   else if(mission&&mission.step){const t=typeof mission.step.text==='function'?mission.step.text(mission):mission.step.text;h=`<b>${esc(mission.M.title)}</b> · ${String(t||'').replace(/<(?!\/?b>)[^>]*>/g,'')}`}
@@ -114,9 +128,11 @@ function tabStats(body){const S=STATS;const hm=s=>{s=Math.floor(s||0);const h=Ma
    <div class="stats">${rows.map(r=>`<div class="stat"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div></div>`}
 
 /* ---------- SETTINGS ---------- */
-function setQuality(q){SETTINGS.q=q;saveSettings();Q=QP[q==='auto'?'medium':q]||QP.medium;pixelRatio=Math.min(window.devicePixelRatio||1,Q.pr);applyQuality();resize()}
+/* 'auto' resolves exactly like boot (00_core.js), or through autoQuality() if the materials module provides one */
+function qAuto(){if(typeof autoQuality==='function')try{return autoQuality()}catch(e){}return Math.min(screen.width,screen.height)<500&&(navigator.hardwareConcurrency||4)<=4?'low':'medium'}
+function setQuality(q){SETTINGS.q=q;saveSettings();Q=QP[q==='auto'?qAuto():q]||QP.medium;pixelRatio=Math.min(window.devicePixelRatio||1,Q.pr);applyQuality();resize()}
 function tabSettings(body){const S=SETTINGS;const sw=(id,on)=>`<button class="sw ${on?'on':''}" id="${id}" type="button" role="switch" aria-checked="${!!on}"></button>`;
-  const seg=['auto','low','medium','high'].map(q=>`<button type="button" data-q="${q}" class="${(S.q||'auto')===q?'on':''}">${q}</button>`).join('');
+  const seg=['auto'].concat(Object.keys(QP)).map(q=>`<button type="button" data-q="${q}" class="${(S.q||'auto')===q?'on':''}">${q}</button>`).join('');
   body.innerHTML=`<div class="pane"><h3>Settings</h3>
    <h4>Graphics</h4>
    <div class="set"><div class="lb">Quality<small>Auto lowers the resolution when the phone struggles.</small></div><div class="seg" id="sQ">${seg}</div></div>
@@ -125,6 +141,7 @@ function tabSettings(body){const S=SETTINGS;const sw=(id,on)=>`<button class="sw
    <div class="set"><label for="sSens">Look sensitivity<small id="sSensV">${(S.sens||1).toFixed(2)}×</small></label><input type="range" id="sSens" min="0.4" max="2.2" step="0.05" value="${S.sens||1}"></div>
    <div class="set"><label for="sInv">Invert vertical look</label>${sw('sInv',S.invY)}</div>
    <div class="set"><label for="sLefty">Left-handed layout<small>Stick on the right, buttons on the left.</small></label>${sw('sLefty',S.lefty)}</div>
+   ${typeof setAutoThrottle==='function'?`<div class="set"><label for="sAuto">Auto-throttle when driving<small>Touch: while your thumb steers on the left, the car drives itself. BRAKE stops; hold it to reverse.</small></label>${sw('sAuto',DRV.auto!==false)}</div>`:''}
    <div class="set"><label for="sHap">Vibration</label>${sw('sHap',S.haptics)}</div>
    <h4>Sound and text</h4>
    <div class="set"><label for="sVol">Volume<small id="sVolV">${Math.round((S.vol==null?0.8:S.vol)*100)}%</small></label><input type="range" id="sVol" min="0" max="1" step="0.05" value="${S.vol==null?0.8:S.vol}"></div>
@@ -138,6 +155,7 @@ function tabSettings(body){const S=SETTINGS;const sw=(id,on)=>`<button class="sw
   $('sQ').querySelectorAll('button').forEach(b=>b.onclick=()=>{setQuality(b.dataset.q);$('sQ').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
   const tog=(id,key,after)=>{$(id).onclick=()=>{S[key]=!S[key];$(id).classList.toggle('on',!!S[key]);$(id).setAttribute('aria-checked',!!S[key]);saveSettings();if(after)after(S[key]);if(typeof uiSound==='function')uiSound('click')}};
   tog('sFps','fps',v=>{$('fps').hidden=!v});tog('sInv','invY');tog('sLefty','lefty',v=>document.body.classList.toggle('lefty',v));tog('sHap','haptics',v=>{if(v&&navigator.vibrate)try{navigator.vibrate(30)}catch(e){}});
+  if($('sAuto'))$('sAuto').onclick=()=>{const on=setAutoThrottle(!DRV.auto);$('sAuto').classList.toggle('on',on);$('sAuto').setAttribute('aria-checked',on);if(typeof uiSound==='function')uiSound('click')};
   $('sSubs').onclick=()=>{S.subs=S.subs===false;$('sSubs').classList.toggle('on',S.subs);saveSettings()};
   $('sSens').oninput=e=>{S.sens=+e.target.value;$('sSensV').textContent=S.sens.toFixed(2)+'×'};$('sSens').onchange=saveSettings;
   $('sVol').oninput=e=>{const v=+e.target.value;if(typeof ambVolume==='function')ambVolume(v);else S.vol=v;$('sVolV').textContent=Math.round(v*100)+'%'};$('sVol').onchange=()=>{saveSettings();if(typeof uiSound==='function')uiSound('click')};
@@ -169,7 +187,7 @@ function titleConfirm(){const mm=$('mainMenu');const keep=mm.innerHTML;
 function startGame(o){o=o||{};if(MENU.open)closeMenu();$('start').hidden=true;hudShow(true);radarResize();freeCam=null;booting=false;
   if(typeof tod==='number'&&SAVE.tod!=null)tod=SAVE.tod;player.money=SAVE.money;
   const P=SAVE.pos;if(!o.fresh&&P&&isFinite(P[0])&&inPlay(P[0],P[1])&&!collide({x:P[0],z:P[1]},0.4,null)){placePlayer(P[0],P[1],P[2])}else if(o.fresh){respawn(true);faceJunction()}
-  CAMS.ok=false;running=true;last=performance.now();updateChunkVis(player.x,player.z);
+  CAMS.ok=false;running=true;last=performance.now();updateChunkVis(player.x,player.z);if(!MENU.started){MENU.started=true;gameEvent('start',{fresh:!!o.fresh})}
   if(o.fresh&&!DEBUG&&!o.noIntro)openingCinematic();else if(typeof stinger==='function')stinger('obj');
   saveGame()}
 

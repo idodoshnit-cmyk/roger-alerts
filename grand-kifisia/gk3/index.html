@@ -97,6 +97,11 @@ body.cine #hud{opacity:0}
 #bHand{right:0;bottom:108px;width:54px;height:54px;font-size:11px}
 #bHorn{right:64px;bottom:106px;width:54px;height:54px;font-size:11px}
 #bExit{right:128px;bottom:78px;width:54px;height:54px;font-size:11px}
+#bBrake{flex-direction:column;gap:3px}
+#bBrake small{font:600 9px var(--f-ui);letter-spacing:.03em;text-transform:none;opacity:.8}
+#bBrake:active{background:rgba(255,80,60,.9);color:#fff}
+#bCar.ready{border-color:var(--gold);background:rgba(255,200,50,.28);color:#fff;animation:ready 1.6s ease-in-out infinite}
+@keyframes ready{0%,100%{box-shadow:0 0 0 0 rgba(255,200,50,.6)}50%{box-shadow:0 0 0 9px rgba(255,200,50,0)}}
 #bUse{right:calc(var(--sar) + 10px);bottom:calc(var(--sab) + 168px);min-width:112px;max-width:min(60vw,300px);height:50px;border-radius:25px;padding:0 20px;box-shadow:0 4px 18px rgba(0,0,0,.5);background:var(--gold);color:#111;border:2px solid #fff;font:700 16px/1 var(--f-cond);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #bUse.pop{animation:pop .3s}
 #bUse kbd{font:800 11px var(--f-ui);background:#111;color:var(--gold);border-radius:4px;padding:2px 6px;margin-right:8px;vertical-align:2px}
@@ -200,7 +205,16 @@ body.dlgOpen #keys,body.dlgOpen .pad,body.dlgOpen #bUse,body.dlgOpen #hint{visib
 #mapBtns{right:10px;bottom:12px;display:flex;flex-direction:column;gap:8px}
 .mb{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font:700 22px/1 var(--f-cond)}
 .mb.txt{font-size:11px;letter-spacing:.08em}
-#legend{left:10px;top:10px;padding:10px 12px;background:var(--panel);border-radius:10px;border:1px solid var(--line);display:grid;grid-template-columns:auto auto;gap:5px 14px;font:600 11.5px var(--f-ui)}
+#mapFind{left:10px;top:10px;width:min(62%,340px)}
+#mfq{width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:#fff;font:600 14px var(--f-ui);padding:0 14px 0 36px;outline:none;-webkit-appearance:none;appearance:none;
+  background-image:radial-gradient(circle at 17px 19px,transparent 5px,var(--gold) 5.5px,var(--gold) 7px,transparent 7.5px),linear-gradient(45deg,transparent 46%,var(--gold) 46%,var(--gold) 54%,transparent 54%);background-size:100% 100%,7px 7px;background-position:0 0,22px 24px;background-repeat:no-repeat}
+#mfq:focus{border-color:var(--gold)}
+#mfr{margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto}
+#mfr button{display:grid;grid-template-columns:12px 1fr;column-gap:9px;align-items:center;text-align:left;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:#fff;font:600 13px var(--f-ui)}
+#mfr button i{grid-row:span 2;width:11px;height:11px;border-radius:50%}
+#mfr button span{color:var(--dim);font-size:11.5px;font-weight:500;text-transform:capitalize}
+#mfr p{margin:0;padding:8px 11px;border-radius:10px;background:var(--panel);font:500 12.5px var(--f-ui);color:var(--dim)}
+#legend{left:10px;top:62px;padding:10px 12px;background:var(--panel);border-radius:10px;border:1px solid var(--line);display:grid;grid-template-columns:auto auto;gap:5px 14px;font:600 11.5px var(--f-ui)}
 #legend span{display:flex;align-items:center;gap:7px}
 #legend i{width:11px;height:11px;border-radius:50%;flex:none}
 .pane{max-width:900px;margin:0 auto;padding:14px 14px 28px}
@@ -319,7 +333,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-o
     <button class="btn" id="bExit" type="button">Exit</button>
     <button class="btn" id="bHorn" type="button">Horn</button>
     <button class="btn" id="bHand" type="button">H-Brake</button>
-    <button class="btn" id="bBrake" type="button">Brake</button>
+    <button class="btn" id="bBrake" type="button">Brake<small>hold = reverse</small></button>
     <button class="btn" id="bGas" type="button">Gas</button>
   </div>
   <div id="keys"><kbd>WASD</kbd>move<kbd>Shift</kbd>sprint<kbd>Space</kbd>jump<br><kbd>E</kbd>use<kbd>F</kbd>car<kbd>J</kbd>punch / horn<kbd>M</kbd>map</div>

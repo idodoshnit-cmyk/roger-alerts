@@ -101,7 +101,7 @@ function furnGeo(parts) { const P = [], N = [], C = [], I = []; let base = 0; co
   for (const [g, c, x, y, z, rx, ry] of parts) { e.set(rx || 0, ry || 0, 0); q.setFromEuler(e); m.compose(v.set(x, y, z), q, one); g.applyMatrix4(m); col.set(c).convertSRGBToLinear(); const p = g.attributes.position, n = g.attributes.normal, ix = g.index;
     for (let i = 0; i < p.count; i++) { P.push(p.getX(i), p.getY(i), p.getZ(i)); N.push(n.getX(i), n.getY(i), n.getZ(i)); C.push(col.r, col.g, col.b); } for (let i = 0; i < ix.count; i++) I.push(base + ix.getX(i)); base += p.count; g.dispose(); }
   const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); out.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); out.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); out.setIndex(I); return out; }
-function buildTerraceFurniture(f) { if (!f || !f.tables.length || typeof instanced !== 'function') return; const B = (w, h, d) => new THREE.BoxGeometry(w, h, d), Cy = (r0, r1, h, n) => new THREE.CylinderGeometry(r0, r1, h, n);
+function buildTerraceFurniture(f) { if (!f) f = { tables: [], chairs: [] }; const noInst = typeof instanced !== 'function'; const B = (w, h, d) => new THREE.BoxGeometry(w, h, d), Cy = (r0, r1, h, n) => new THREE.CylinderGeometry(r0, r1, h, n);
   const frame = '#2b2d2f', cane = '#c9a468', caneD = '#a8834c', marble = '#ebe8e1', china = '#f6f4ee', coffee = '#4a2f1c';
   /* chair: seat top at 0.455, back to -z (the sitter faces +z) */
   const ch = []; for (const sx of [-0.19, 0.19]) { ch.push([B(0.026, 0.44, 0.026), frame, sx, 0.22, 0.18]); ch.push([B(0.026, 0.9, 0.026), frame, sx, 0.45, -0.2, -0.1]); ch.push([B(0.022, 0.022, 0.36), frame, sx, 0.2, -0.01]); }
@@ -109,10 +109,10 @@ function buildTerraceFurniture(f) { if (!f || !f.tables.length || typeof instanc
   const tb = [[Cy(0.3, 0.3, 0.028, 16), marble, 0, 0.726, 0], [Cy(0.31, 0.31, 0.012, 16), frame, 0, 0.706, 0], [Cy(0.028, 0.034, 0.69, 8), frame, 0, 0.355, 0], [Cy(0.2, 0.23, 0.03, 12), frame, 0, 0.015, 0]];
   for (const k of [1, -1]) { tb.push([Cy(0.062, 0.05, 0.008, 10), china, 0.02 * k, 0.744, 0.17 * k]); tb.push([Cy(0.036, 0.027, 0.05, 8), china, 0.02 * k, 0.773, 0.17 * k]); tb.push([Cy(0.03, 0.03, 0.004, 8), coffee, 0.02 * k, 0.797, 0.17 * k]); }
   tb.push([Cy(0.03, 0.026, 0.11, 8), '#cfe3ea', -0.16, 0.795, 0.02]); tb.push([B(0.11, 0.012, 0.09), china, 0.15, 0.746, -0.03, 0, 0.5]);
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true }), cg = furnGeo(ch), tg = furnGeo(tb), by = {};
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true }), cg = furnGeo(ch), tg = furnGeo(tb), by = {}; STREET.furnKit = { cg, tg, mat };
   const chunkOf = (x, z) => typeof treeChunk === 'function' ? treeChunk(x, z) : { k: 'all', props: [] };
   for (const [list, key] of [[f.chairs, 'c'], [f.tables, 't']]) for (const it of list) { const c = chunkOf(it[0], it[2]), e = by[c.k] || (by[c.k] = { c, c_: [], t_: [] }); e[key + '_'].push(it); }
-  STREET.furniture = []; for (const k in by) { const e = by[k]; for (const [geo, list] of [[cg, e.c_], [tg, e.t_]]) { const im = instanced(geo, mat, list, false); if (!im) continue; im.userData.cast = true; im.receiveShadow = true; e.c.props.push(im); STREET.furniture.push(im); } }
+  STREET.furniture = []; if (noInst) return; for (const k in by) { const e = by[k]; for (const [geo, list] of [[cg, e.c_], [tg, e.t_]]) { const im = instanced(geo, mat, list, false); if (!im) continue; im.userData.cast = true; im.receiveShadow = true; e.c.props.push(im); STREET.furniture.push(im); } }
   if (typeof addBoxC === 'function') { for (const q of f.tables) addBoxC(q[0], q[2], 0.26, 'p'); for (const q of f.chairs) addBoxC(q[0], q[2], 0.2, 'p'); }
   if (typeof placed === 'function') for (const q of f.tables) placed('table', q[0], q[2], 'café table', 'estimated terrace in front of an OSM café/restaurant'); }
 
@@ -151,7 +151,11 @@ function castAnchor(at) { if (!at) return null; if (Array.isArray(at)) return { 
   /* a real seat of the street-life system: at.seat = place name (a café terrace chair in front of it), at.role = 'platform' | 'bench' | 'bus' ... (nearest to at.near or anywhere) */
   if (at.seat || at.role) { const P = at.seat ? findPoi(at.seat) : null, near = P ? [P.x, P.z] : (at.near || null); let best = null, bd = at.seat ? 30 : 1e9;
     for (const sp of STREET.spots) { if (sp.who || (at.seat ? sp.role !== 'terrace' : sp.role !== at.role)) continue; const d = near ? Math.hypot(sp.x - near[0], sp.z - near[1]) : 0; if (d < bd) { bd = d; best = sp; } }
-    if (best) return { x: best.x, z: best.z, yaw: best.yaw, seatH: best.seatH, spot: best, shop: P }; }
+    if (best) return { x: best.x, z: best.z, yaw: best.yaw, seatH: best.seatH, spot: best, shop: P };
+    if (P && at.own) { /* no terrace there in the data: put our own bistro table and chair on free pavement in front of the place (the sitter faces away from the facade) */
+      for (const out of [2.4, 3.2, 1.8, 4]) for (const u of [0, 1.6, -1.6, 3.2, -3.2]) { const yaw = Math.atan2(P.nx, P.nz), cx = P.x + P.tx * u + P.nx * out, cz = P.z + P.tz * u + P.nz * out, tx = cx + Math.sin(yaw) * 0.62, tz = cz + Math.cos(yaw) * 0.62;
+        if (!paveFree(cx, cz, 0.45) || !paveFree(tx, tz, 0.5) || collide({ x: cx, z: cz }, 0.35, null) || collide({ x: tx, z: tz }, 0.4, null)) continue;
+        const sp = { role: 'terrace', x: cx, z: cz, yaw, seatH: 0.455, tx, tz, own: true, name: P.name }; return { x: cx, z: cz, yaw, seatH: 0.455, spot: sp, shop: P, furn: true }; } } }
   if (at.isaGate && MAP.isa && MAP.isa.gate) { const g = MAP.isa.gate, r0 = at.dist || 5.5; for (let a = 0; a < 24; a++) { const ang = (at.angle || 2.4) + a * 0.45, rr = r0 + a * 0.15, x = g[0] + Math.cos(ang) * rr, z = g[1] + Math.sin(ang) * rr;
       if (!paveFree(x, z, 0.45) || (typeof ISA !== 'undefined' && ISA.poly && pip(ISA.poly, x, z))) continue; return { x, z, yaw: Math.atan2(g[0] - x, g[1] - z) + 0.9 }; } }
   if (at.poi || at.fallback) { const s = findPoi(at.poi, at.fallback, at.xz); if (s) { const side = at.side == null ? 2.3 : at.side, out = at.out == null ? 0.5 : at.out; for (const sg of [1, -1, 1.6, -1.6]) { const x = s.x + s.tx * side * sg + s.nx * out, z = s.z + s.tz * side * sg + s.nz * out; if (!collide({ x, z }, 0.3, null) || sg === -1.6) return { x, z, yaw: Math.atan2(s.nx, s.nz) + (at.turn || 0), shop: s }; } } }
@@ -165,7 +169,14 @@ function spawnCast() { for (const c0 of (PPL.cast && PPL.cast.characters) || [])
     n.h.root.rotation.y = a.yaw; if (c.hours) n.hours = c.hours; if (a.spot) { a.spot.who = n; n.castSpot = a.spot; } if (c.wear) n.h.setWear(c.wear); if (c.label) n.label = castLabel(c.label, c.labelColour); if (c.only) n.dialog = castDialog;
     if (c.does === 'walk') { n.state = 'walk'; n.fixed = false; placeNpc(n, a.x, a.z, 0, 60); } else if (c.does && c.does !== 'idle' && ACTIONS[c.does]) n.h.play(c.does, { seatH: c.seatH != null ? c.seatH : a.seatH });
     if (c.carry) n.h.setCarry(c.carry);
+    if (a.furn) castFurniture(a);
     if (c.props) n.set = castProps(c.props, a.spot ? Object.assign({}, a, { tx: a.spot.tx, tz: a.spot.tz }) : a); STREET.cast[c.id] = n; if (typeof placed === 'function') placed('cast', a.x, a.z, c.name || c.id, c.at && c.at.poi ? 'next to ' + (a.shop ? a.shop.name : c.at.poi) : 'cast.json'); } }
+/* our own table + chair for a cast character whose café has no terrace in the data (same models as the estimated terraces) */
+function castFurniture(a) { const K = STREET.furnKit; if (!K) return; const sp = a.spot, g = new THREE.Group();
+  const ch = new THREE.Mesh(K.cg, K.mat); ch.position.set(sp.x, groundY(sp.x, sp.z), sp.z); ch.rotation.y = sp.yaw; const tb = new THREE.Mesh(K.tg, K.mat); tb.position.set(sp.tx, groundY(sp.tx, sp.tz), sp.tz);
+  const ch2 = new THREE.Mesh(K.cg, K.mat), ox = sp.tx + Math.sin(sp.yaw) * 0.62, oz = sp.tz + Math.cos(sp.yaw) * 0.62; ch2.position.set(ox, groundY(ox, oz), oz); ch2.rotation.y = sp.yaw + Math.PI; /* the empty chair opposite */
+  for (const m of [ch, tb, ch2]) { m.castShadow = true; m.receiveShadow = true; g.add(m); } scene.add(g);
+  if (typeof addBoxC === 'function') { addBoxC(sp.tx, sp.tz, 0.26, 'p'); addBoxC(ox, oz, 0.2, 'p'); } return g; }
 /* little still-life around a sitting character: cardboard, blanket, bag, paper cup */
 function castProps(list, a) { const g = new THREE.Group(), mat = c => new THREE.MeshLambertMaterial({ color: c }); const add = (geo, col, x, y, z, ry) => { const m = new THREE.Mesh(geo, mat(col)); m.position.set(x, y, z); m.rotation.y = ry || 0; m.castShadow = true; m.receiveShadow = true; g.add(m); return m; };
   if (list.indexOf('cardboard') >= 0) { add(new THREE.BoxGeometry(1.25, 0.018, 1.5), 0xa8845a, 0.02, 0.012, 0.42, 0.04); add(new THREE.BoxGeometry(0.7, 0.016, 0.5), 0x9a7850, -0.5, 0.03, 0.9, -0.3); }

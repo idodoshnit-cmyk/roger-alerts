@@ -156,8 +156,11 @@ const ACTIONS = {
   lie: { c: ['lie'], mode: 'loop', in: 'knockdown', out: 'getup', fade: 0.08, nolook: true, flat: 1 }, eat: { c: ['eat'], mode: 'loop', fade: 0.3, prop: 'pita' },
   drive: { c: ['drive'], mode: 'loop', seat: 1, fade: 0.2 }, sit_ground: { c: ['sit_ground'], mode: 'loop', seat: 2 }, give: { c: ['give'], mode: 'once' }, pickup: { c: ['pickup'], mode: 'once', nolook: true },
   /* paintball markers (game weapons are non-lethal): use as a carry (setCarry) so the legs keep walking, or play() when standing. aim pitch: person.aimPitch (rad, + = down) */
-  aim_pistol: { c: ['aim_pistol'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'marker_p' }, hold_pistol: { c: ['hold_pistol'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'marker_p' },
-  aim_rifle: { c: ['aim_rifle'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'marker_r' }, hold_rifle: { c: ['hold_rifle'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'marker_r' },
+  aim_pistol: { c: ['aim_pistol'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'pistol' }, hold_pistol: { c: ['hold_pistol'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'pistol' },
+  aim_rifle: { c: ['aim_rifle'], mode: 'loop', mask: 'upper', nolook: true, fade: 0.14, prop: 'rifle' }, hold_rifle: { c: ['hold_rifle'], mode: 'loop', mask: 'upper', fade: 0.2, prop: 'rifle' },
+  /* firing / reloading: upper-body one-shots on top of the aim carry (person.fire() / person.reload() / person.gesture(name)); play() also works when standing */
+  fire_pistol: { c: ['fire_pistol'], mode: 'once', mask: 'upper', fade: 0.02, fadeOut: 0.06, nolook: true, prop: 'pistol' }, fire_rifle: { c: ['fire_rifle'], mode: 'once', mask: 'upper', fade: 0.02, fadeOut: 0.06, nolook: true, prop: 'rifle' },
+  reload_pistol: { c: ['reload_pistol'], mode: 'once', mask: 'upper', fade: 0.1, fadeOut: 0.15, nolook: true, prop: 'pistol', lprop: 'mag_p' }, reload_rifle: { c: ['reload_rifle'], mode: 'once', mask: 'upper', fade: 0.12, fadeOut: 0.18, nolook: true, prop: 'rifle', lprop: 'mag_r' },
   /* reactions */
   flinch: { c: ['flinch'], mode: 'once', fade: 0.06, nolook: true }, cower: { c: ['cower'], mode: 'loop', fade: 0.25, nolook: true }, hands_up: { c: ['hands_up'], mode: 'loop', fade: 0.25 },
 };
@@ -173,9 +176,16 @@ const PROPS = { defs: {
   bag: { hand: 'R', hang: true, geo: () => { const g = new THREE.BoxGeometry(0.1, 0.3, 0.27); g.translate(0, -0.25, 0); return g; }, col: 0xd9c9a8, pos: [0.06, 0, 0], rot: [0, 0, 0] },
   /* worn on the back (setWear): modelled in character space (facing +z), follows the chest (Spine2) */
   backpack: { bone: 'SPINE2', vc: true, geo: () => vcBoxes([[0.29, 0.4, 0.14, 0, 0, -0.02, 0x2d3e57], [0.23, 0.19, 0.05, 0, -0.08, -0.11, 0x263449], [0.05, 0.03, 0.12, 0.1, 0.19, 0.08, 0x1d2533], [0.05, 0.03, 0.12, -0.1, 0.19, 0.08, 0x1d2533]], true), col: 0xffffff, pos: [0, 0.03, -0.17] },
-  /* paintball pistol / rifle-style marker (bright toy colours on purpose: plainly not a real gun). x = barrel direction */
-  marker_p: { hand: 'R', vc: true, geo: () => vcBoxes([[0.21, 0.035, 0.032, 0.07, 0.0, 0.045, 0x2b2f36], [0.05, 0.03, 0.1, 0.005, 0.0, -0.01, 0x1d2025], [0.075, 0.07, 0.07, 0.075, 0.0, 0.1, 0xf2c21b], [0.03, 0.022, 0.022, 0.19, 0.0, 0.045, 0x2f8f5b]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] },
-  marker_r: { hand: 'R', vc: true, geo: () => vcBoxes([[0.62, 0.05, 0.05, 0.18, 0.0, 0.05, 0x2b2f36], [0.05, 0.035, 0.1, 0.005, 0.0, -0.01, 0x1d2025], [0.13, 0.09, 0.09, 0.12, 0.0, 0.135, 0x2fa3e0], [0.22, 0.035, 0.035, 0.59, 0.0, 0.05, 0x2f8f5b], [0.16, 0.06, 0.08, -0.17, 0.0, 0.03, 0x2b2f36]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] } }, geo: {}, mat: {} };
+  /* realistic handguns / rifles (owner item 16: non-lethal gameplay, realistic look): matte black polymer and steel. Hand space: x = barrel direction, z = up for the grip hand */
+  pistol: { hand: 'R', vc: true, geo: () => vcBoxes([[0.19, 0.026, 0.03, 0.075, 0.0, 0.05, 0x1c1d20], [0.15, 0.024, 0.02, 0.065, 0.0, 0.027, 0x26272a], [0.05, 0.028, 0.1, 0.005, 0.0, -0.01, 0x232427],
+    [0.035, 0.006, 0.022, 0.05, 0.0, 0.008, 0x18181a], [0.012, 0.02, 0.008, 0.16, 0.0, 0.069, 0x0f0f10], [0.012, 0.022, 0.008, -0.01, 0.0, 0.069, 0x0f0f10]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] },
+  rifle: { hand: 'R', vc: true, geo: () => vcBoxes([[0.26, 0.045, 0.065, 0.06, 0.0, 0.06, 0x1f2023], [0.3, 0.05, 0.055, 0.34, 0.0, 0.065, 0x2a2b2d], [0.14, 0.018, 0.018, 0.56, 0.0, 0.065, 0x161616],
+    [0.04, 0.024, 0.024, 0.645, 0.0, 0.065, 0x101010], [0.06, 0.028, 0.15, 0.13, 0.0, -0.02, 0x1a1b1d], [0.04, 0.03, 0.09, 0.0, 0.0, -0.005, 0x232427], [0.12, 0.03, 0.03, -0.12, 0.0, 0.07, 0x1f2023],
+    [0.15, 0.04, 0.08, -0.21, 0.0, 0.055, 0x2a2b2d], [0.1, 0.035, 0.04, 0.08, 0.0, 0.115, 0x151516]]), col: 0xffffff, pos: [0.03, 0.0, -0.005], rot: [0, 0, 0] },
+  /* magazines in the LEFT hand during a reload (gesture lprop) */
+  mag_p: { hand: 'L', vc: true, geo: () => vcBoxes([[0.03, 0.022, 0.1, 0.075, 0.03, 0.0, 0x1a1b1d]]), col: 0xffffff, pos: [0, 0, 0], rot: [0, 0, 0] },
+  mag_r: { hand: 'L', vc: true, geo: () => vcBoxes([[0.06, 0.026, 0.15, 0.08, 0.035, 0.0, 0x1a1b1d]]), col: 0xffffff, pos: [0, 0, 0], rot: [0, 0, 0] } } , geo: {}, mat: {} };
+PROPS.defs.marker_p = PROPS.defs.pistol; PROPS.defs.marker_r = PROPS.defs.rifle; /* old names */
 /* boxes [sx, sy, sz, x, y, z, colour] merged into one vertex-coloured geometry (in hand space; x along the fingers, z towards the thumb = up for a pistol grip) */
 function vcBoxes(list, charSpace) { const pos = [], nor = [], col = [], c = new THREE.Color();
   /* charSpace: [w(x), h(y), d(z), x, y, z] boxes for a character-space prop (x left, y up, z forward) */
@@ -253,7 +263,7 @@ class Person {
     if (st.phase === 'out') { this.override = null; return this; }
     this._snapshot(fade || st.def.fade || 0.3); this.act = null; this.override = null; return this; }
   /* walk-around accessory: 'phone' | 'text' | 'bag' | 'drink' | null  (upper body only while moving, full clip while standing) */
-  setCarry(name) { if (!this.av) return this; const def = name && ACTIONS[name]; if (!def) { if (this.carry && this.carry.def.prop && !this.actProp) this.setProp(null); this.carry = null; return this; } const st = this._activity(def); if (!st.loop) return this; st.name = name; st.w = 0; st.mask = MASKS[def.mask] || MASKS.upper; if (!this.actProp) this.setProp(def.prop || null); this.carry = st; return this; }
+  setCarry(name, opt) { if (!this.av) return this; const def = name && ACTIONS[name]; if (!def) { if (this.carry && this.carry.def.prop && !this.actProp) this.setProp(null); this.carry = null; return this; } const st = this._activity(def); if (!st.loop) return this; st.name = name; st.w = 0; st.mask = MASKS[def.mask] || MASKS.upper; if (!this.actProp) this.setProp(opt && opt.noProp ? null : def.prop || null); this.carry = st; return this; }
   /* something worn on the body that stays while actions and carries change: 'backpack' | null */
   setWear(name) { if (this.wear) { this.root.remove(this.wear); this.wear = null; } if (name && PROPS.defs[name]) { this.wear = propMesh(name); this.root.add(this.wear); this.wear.visible = false; } return this; }
   _wearUpd() { const o = this.wear, d = o.userData.def; if (!this.av) { o.visible = false; return; } o.visible = true; const b = BN[d.bone] || BN.SPINE2, wq = this.wq, wp = this.wp, ri = this.av.rwqi, rp = this.av.rwp;
@@ -261,7 +271,7 @@ class Person {
     W_V.set(rp[b * 3] + d.pos[0], rp[b * 3 + 1] + d.pos[1], rp[b * 3 + 2] + d.pos[2]).sub(W_V2.set(rp[b * 3], rp[b * 3 + 1], rp[b * 3 + 2])).applyQuaternion(W_QA);
     o.position.set(wp[b * 3] + W_V.x, wp[b * 3 + 1] + W_V.y, wp[b * 3 + 2] + W_V.z); o.quaternion.copy(W_QA); }
   setProp(name, col) { if (this.prop) { this.root.remove(this.prop); this.prop = null; } if (name) { this.prop = propMesh(name, col); if (this.prop) { this.root.add(this.prop); this.prop.visible = false; } } return this; }
-  _prop() { const o = this.prop, want = this.lod === 0 && !!this.av; if (!want) { o.visible = false; return; } o.visible = true; const d = o.userData.def, hb = d.hand === 'L' ? BN.LHAND : BN.RHAND, wq = this.wq, wp = this.wp;
+  _prop(o) { o = o || this.prop; const want = this.lod === 0 && !!this.av && o.userData.on !== false; if (!want) { o.visible = false; return; } o.visible = true; const d = o.userData.def, hb = d.hand === 'L' ? BN.LHAND : BN.RHAND, wq = this.wq, wp = this.wp;
     qrotTo(S_V, 0, wq, hb * 4, d.pos[0], d.pos[1], d.pos[2] * (d.hand === 'L' ? -1 : 1)); o.position.set(wp[hb * 3] + S_V[0], wp[hb * 3 + 1] + S_V[1], wp[hb * 3 + 2] + S_V[2]);
     if (d.hang) o.quaternion.set(0, 0, 0, 1); else o.quaternion.set(wq[hb * 4], wq[hb * 4 + 1], wq[hb * 4 + 2], wq[hb * 4 + 3]); }
   /* world position (THREE.Vector3) and orientation (THREE.Quaternion) of a hand ('R' | 'L'), e.g. to attach a weapon or find a muzzle; valid after update() of a near-LOD person.
@@ -272,6 +282,22 @@ class Person {
     if (outQuat) { this._hq.set(wq[hb * 4], wq[hb * 4 + 1], wq[hb * 4 + 2], wq[hb * 4 + 3]); outQuat.copy(this.root.quaternion).multiply(this._hq); } return true; }
   /* the prop mesh in the hand (marker_p / marker_r / phone ...) or null; other modules may read its world matrix for the muzzle */
   get handProp() { return this.prop || null; }
+  /* ---- one-shot upper-body gestures layered over whatever the body does (walking, standing, an aim carry): returns the duration in s (0 = not available).
+     name: an ACTIONS key (fire_pistol, fire_rifle, reload_pistol, reload_rifle, wave, shrug ...) or a clip name.  opt: { speed, mask: 'upper'|'upperR'|'armR'..., fadeIn, fadeOut } ---- */
+  gesture(name, opt) { if (!this.av) return 0; opt = opt || {}; const def = ACTIONS[name], c = def ? clipFor(this.av.sex, def.c[0]) : clipFor(this.av.sex, name); if (!c) return 0; this._gestEnd();
+    const g = this.gest = { name, c, t: 0, rate: opt.speed || 1, mask: MASKS[opt.mask || (def && def.mask) || 'upper'] || MASKS.upper, fin: opt.fadeIn != null ? opt.fadeIn : (def && def.fade != null ? def.fade : 0.08),
+      fout: opt.fadeOut != null ? opt.fadeOut : (def && def.fadeOut != null ? def.fadeOut : 0.15), lp: null };
+    if (def && def.lprop && PROPS.defs[def.lprop] && c.mag) { g.lp = propMesh(def.lprop); g.lp.visible = false; this.root.add(g.lp); g.lpOn = c.mag; g.lpOff = c.magIn || c.mag + 0.4; }
+    return c.dur / g.rate; }
+  get gesturing() { return this.gest ? this.gest.name : null; }
+  stopGesture() { this._gestEnd(); this.gest = null; return this; }
+  _gestEnd() { const g = this.gest; if (g && g.lp) { this.root.remove(g.lp); g.lp = null; } }
+  _gesture(dt, nb) { const g = this.gest, c = g.c; g.t += dt * g.rate; if (g.t >= c.dur) { this._gestEnd(); this.gest = null; return; }
+    const w = Math.max(0, Math.min(1, g.fin > 0 ? g.t / g.fin : 1, g.fout > 0 ? (c.dur - g.t) / g.fout : 1)); clipSample(c, g.t, S_B, S_RB, nb); poseBlendMask(this.lq, S_B, w, g.mask);
+    if (g.lp) g.lp.userData.on = g.t >= g.lpOn && g.t < g.lpOff; }
+  /* weapons: recoil / magazine change matching the current aim or hold carry (rifle if the carry name contains 'rifle'); returns the duration */
+  fire(kind) { kind = kind || (this.carry && /rifle/.test(this.carry.name) ? 'rifle' : 'pistol'); return this.gesture('fire_' + kind); }
+  reload(kind) { kind = kind || (this.carry && /rifle/.test(this.carry.name) ? 'rifle' : 'pistol'); return this.gesture('reload_' + kind); }
   /* a small acknowledging nod (additive, works on top of anything) */
   nod() { this.nodT = 1; return this; }
   lookAt(x, y, z) { if (x == null) { this.lookT = null; return this; } if (!this.lookT) this.lookT = [0, 0, 0]; this.lookT[0] = x; this.lookT[1] = y; this.lookT[2] = z; return this; }
@@ -284,6 +310,7 @@ class Person {
     let lspeed = speed; if (speed < 0.35 && !air) { const tv = Math.min(0.55, Math.abs(this.yawRate) * 0.22) * this.scale; if (tv > 0.12 && tv > speed) lspeed = tv; }
     if (this.act) this._evalAct(dt, nb); else this._evalLoco(dt, lspeed, !!air, nb);
     if (this.fade > 0) { this.fade -= dt / this.fadeDur; if (this.fade > 0) { const w = this.fade * this.fade * (3 - 2 * this.fade); poseBlend(this.lq, this.snap, w, nb); const r = this.rp, s = this.snapR; r[0] += (s[0] - r[0]) * w; r[1] += (s[1] - r[1]) * w; r[2] += (s[2] - r[2]) * w; } }
+    if (this.gest) this._gesture(dt, nb);
     this._layers(dt, speed || 0);
     if (nb > BN.JAW) this._face(dt);
     const r = this.root, sc = r.scale.y, def = this.act ? this.act.def : null, grounded = !(def && (def.seat || def.flat)) && this.airW < 0.5 && !this.noIK;
@@ -294,7 +321,7 @@ class Person {
     const useIK = grounded && this.lod === 0 && this.ik && Math.abs(groundY(r.position.x, r.position.z) - gy) < 0.3; if (!useIK) { this.pelY *= Math.max(0, 1 - dt * 8); }
     if (def && def.seat === 1 && this.seatH != null) { const c = this.act.loop; this.rp[1] += this.seatH / sc + 0.1 * this.av.hip / 0.9 - (c.py || 0.59) * this.av.hip / c.hip; }
     const shift = (this.sy - gy) / sc + this.pelY + this.land; this.rp[1] += shift;
-    this._fk(nb); if (useIK) this._footIK(dt, shift); this._skin(nb); if (this.prop) this._prop(); if (this.wear) this._wearUpd(); }
+    this._fk(nb); if (useIK) this._footIK(dt, shift); this._skin(nb); if (this.prop) this._prop(); if (this.gest && this.gest.lp) this._prop(this.gest.lp); if (this.wear) this._wearUpd(); }
   /* jaw flaps while talking (def.jaw or this.talking), eyelids blink every few seconds */
   _face(dt) { const lq = this.lq, def = this.act ? this.act.def : (this.carry ? this.carry.def : null); const talk = this.talking || (def && def.jaw);
     let jt = 0; if (talk) { const t = this.t * 9.5 + this.seq; jt = Math.max(0, 0.45 + 0.4 * Math.sin(t) + 0.3 * Math.sin(t * 0.37 + 1.3)) * 0.16; } if (this.jawOpen != null) jt = this.jawOpen;
@@ -355,7 +382,9 @@ class Person {
       if (Math.abs(yaw) < 1.75 && d > 0.25) { tw = 1; ty = clamp(yaw, -1.15, 1.15); tp = clamp(-Math.atan2(dy, d), -0.5, 0.45); } }
     const kl = Math.min(1, dt * (tw ? 4.5 : 3)); this.lookW += (tw - this.lookW) * kl; if (tw) { this.lookYaw += (ty - this.lookYaw) * kl; this.lookPitch += (tp - this.lookPitch) * kl; }
     let nd = 0; if (this.nodT > 0) { this.nodT -= dt * 1.25; const u = 1 - Math.max(0, this.nodT); nd = Math.sin(u * Math.PI * 2) * Math.sin(u * Math.PI) * 0.2; }
-    const ly = this.lookYaw * this.lookW, lp = this.lookPitch * this.lookW + nd;
+    /* the head leads a turn (people look where they are about to go), strongest when turning on the spot */
+    this.turnLook = (this.turnLook || 0) + ((flat || (def && def.nolook) ? 0 : clamp(yawRate * (0.16 - Math.min(0.1, speed * 0.04)), -0.42, 0.42)) - (this.turnLook || 0)) * Math.min(1, dt * 5);
+    const ly = this.lookYaw * this.lookW + this.turnLook * (1 - this.lookW), lp = this.lookPitch * this.lookW + nd;
     eulerTo(aq, 0, this.pitch * 0.5 + post * 0.4, 0, this.lean * 0.45);              // Spine
     const ap = this.aimPitch ? clamp(this.aimPitch, -0.9, 0.9) : 0; /* weapons: bend the chest (arms follow) to aim up / down */
     eulerTo(aq, 4, this.pitch * 0.5 + post * 0.6 + br + ap * 0.45, ly * 0.08, this.lean * 0.4);   // Spine1

@@ -31,3 +31,12 @@
   (shared edit, MAIN + copy). New tool tools/cars/ptest.js (fixed-step physics test in page + phone shots).
   INTEGRATED into main 13:20: js/70_vehicles.js 72_driving.js 76_traffic.js 83_audio.js models/ferrari.json. CREDITS Ferrari line appended. VEHICLES.md driving section rewritten.
   NEXT: read pt1 results (running), harness run on MAIN, ORDERS_DONE entry, then traffic watch + beauty shots.
+- [session 5, 17:50] Resumed (team idle since 13:52, main unchanged for my files). pt1 fixed-step run: OK (no errors; hatch/ferrari drive, brake→reverse, unstuck fires).
+  Studio shots (work/cars/shots/v2/a_*.png) show: Ferrari paint crumpled (normals cancel on double-sided sheets after weld) -> FIXED in tools/cars/ferrari_build.js
+  (original normals clustered per position, per-corner pick after simplify; models/ferrari.json rebuilt in my copy, not yet integrated).
+  NEXT: verify Ferrari shot; hatch looks like an estate (raked tailgate), headlights flat bars -> wrap clusters; A-pillar fin artifact; order 13:10 smooth driving
+  (input low-pass + speed-dependent steer rate); integrate; beauty shots; traffic watch; train doors; VEHICLES.md.
+- [19:10] INTEGRATED into main: 70_vehicles.js (A-pillar fin fixed: side glass runs to windscreen + slim A-pillar strip; modern headlights: smoked housing,
+  projector, LED DRL strip; hatch tailgate raked), 72_driving.js (order 13:10: stick low-pass, gentler curve, speed-dependent turn-in, progressive yaw),
+  models/ferrari.json (smooth original normals, finer glass + interior). Verified in studio: work/cars/shots/v2/c_*.png.
+  Running tt1 (traffic watch + exotics + scooters + taxi + train at platform) on main. NEXT: read tt1, ptest p2 phone, ORDERS_DONE entry, then more car modelling.

@@ -193,3 +193,68 @@
 - Census 202611211349: vrisko round 2 (17 more categories: mini-markets, souvlaki, burger, OPAP, dry cleaners, tobacco, Italian, sushi…) — only +2 entries/+2 tier upgrades in the play area: the directory is saturated for these categories.
   Web check of FSQ-only Alpha Bank "Levidou 6" and Τσαντίλης "Levidou 8": no confirming source found → they stay tier B (removed from the game by v3.1; correct under the rule). xo.gr is behind a Cloudflare challenge (not used).
 - Evidence: PLACEMENT_AUDIT.md §1 table, §7; gk3/data/placement_audit.json; work/research-census/placement/audit_tables.json.
+
+## lm-starbucks — 2026-11-21 18:00 UTC — order 13:10 "lm-starbucks + lm-ralphlauren: … agree one shared ground plan in docs/research/lm/kassaveti19_site.md" (to: lm-ralphlauren)
+- Change: docs/research/lm/kassaveti19_site.md written: plan from OSM + cadastre ortho + 2008/2023 photos (camera positions solved), the 1.5-1.8 m PASSAGE between b426 and the villa W wall (paved by me as part of the courtyard polygon),
+  ownership table (I: pavilion, all courtyard+passage paving, street planters, gate, terrace, two lanterns, pine; RL: villa, steps/parapets, palms/pots, bay shrub bed + bench, step lanterns, east walkway).
+  lm-ralphlauren: please append agreement/corrections below the line in that file.
+
+## data — 2026-11-21 18:05 UTC — research-census requests (a)–(d) of 13:45 (PLACEMENT AUDIT §4) — map v3.2 INTEGRATED — to: research-census, buildings, commander
+- Order: OWNER DIRECTIVE 13:00/13:05 (shop placement audit) + research-census "For data (remaining)" (a) Κολοκοτρώνη 1 listings belong to b33 Φοίνικας, (b) b443 packing, (c) b33/b478 corner shops, (d) Kifisias b263→b262.
+- Change (build_map3.py → gk3/kifisia_map.json v3.2, same format, check_map PASS):
+  (a)/(d) a census address equal to an OSM building's own addr:street+addr:housenumber (99 keys, ranges expanded, building ≤ 20 m from the address) → that building only, facades of its street only, else that building's directory board. Κολοκοτρώνη 1 → b33, Κηφισίας 232 → b262.
+  (b) bays widen only where that does not move their centre away from the surveyed point; directory names share one board per < 6 m cluster instead of pushing surveyed plates.
+  Geocoder: anchors beyond a street end by > 20 m ignored (OSM tags the AB on Kyriazi "Λεβίδου 2", which dragged every Levidou 2 listing 69 m). Last resort: research-census addr.py exact-number geocode (err ≤ 18 m, listing ≤ 35 m) — 2 entries (Imaginarium Λεβίδου 2).
+- Evidence (research-census tools/census/09_placement_audit.py run on main with --out, files work/data/audit/cx/pa_main_now.json → pa_try.json): WRONG_BUILDING 43 → 14, WRONG_STREET 0 → 0, WRONG_SIDE 1 → 1, missing 22 → 15,
+  OSM > 4 m 60 → 48 of 352, OSM median 0.9 → 0.5 m, p90 6.4 → 5.7 m. DUPLICATE 0 → 1 = two OSM-surveyed Alpha Bank branches 72 m apart (Φοίνικας arcade + Λεβίδου 16), both kept.
+  Docs: docs/research/PLACEMENT_AUDIT_DATA.md §C2 + regenerated tables (§D, §E v3.2) and overlay images img/placement_data/after_*.png; docs/MAP_DATA.md v3.2 notes.
+- Not changed, with reason: the remaining 14 WRONG_BUILDING are one-building geocoder disagreements where the census truth is itself inconsistent (three "Κολοκοτρώνη 10" listings → three different buildings; "Κηφισίας 238" → b290 which OSM tags 236);
+  (c) Swiss line / Dontas / ElenaMakri.com / Tan beautiful are OSM-surveyed points: the surveyed position wins (owner rule), they stay on the facade nearest their point.
+  Open-air cinemas Χλόη / Μπομπονιέρα are OSM areas (bay "area", no wall sign); the three OSM parts of the Αίγλη arcade keep one sign (same-name-within-60 m rule).
+- Runtime evidence (18:15): headless boot of MAIN with v3.2 → `BLD.shops` dump vs map bays (tools/data/compare_runtime.py, work/data/audit/runtime_vs_map.md): 369 of 398 bays drawn by 30_buildings.js, **all exactly at their (edge, t, width)** — the renderer moves no sign; 0 errors.
+  **For lm-junction / lm-kassaveti / lm-kfc / lm-starbucks / lm-ralphlauren:** 29 map shop bays lie on buildings you own (b292 b293 b294 b295 b305 b388 b425 b426 b434 b435 b30). Besides the 6 specials, these 23 real shops are drawn only if you draw them:
+  Nak, Το Καλαμάκι, Βενέτη (b295); Everest, UÉ, Goody's, Kostarelos (b293); Desigual, Carpo, Γερμανός (b435); Imaginarium (b434); Hachiko, Simply Burgers, Κέντρο Μελά, Φώτο (b305); La Pasteria, Manolea Gouskos, La Queen, Flocafe, Giannetos (b388);
+  Nidodileda, chillbox, Τυροκομείο Κωσταρέλου (b292); Different Beast (b425). Read them from `MAP.pois` (bay:"shop", b, e, t, w, fx, fz, nx, nz, name) — positions are survey/verified-address based. None of js/89a–g reads MAP.pois today.
+
+## game — 2026-11-21 18:45 — orders 12:50 (shops enterable / driving simpler: touch side) + 13:10 (smooth player movement & transitions) — to: commander, cars, chars, interiors
+- Reconciled with cars' shared edits: removed my duplicate auto-gas / exit-at-speed (cars' DRV.auto, DRV.exitReq are the single source); Settings now has "Auto-throttle when driving"
+  calling setAutoThrottle(on) (cars asked for it). One-finger steer keeps a horizontal rail knob that follows the thumb vertically; dead zone/curve stay in driveCar.
+  IB students: chars' cast NPCs (cast.label) are now detected, so my fallback spawner (87b ibStudents) no longer adds duplicates; hudTags only draws for n.domTag.
+- Smooth movement (80_player.js): on-foot speed is a critically damped spring (no jerk at start, eased stop, no overshoot, frame-rate independent); turn in place from a standstill
+  (≈10 rad/s pivot, speed held back until facing the stick direction; chars' 60_people steps the legs round). Evidence (tests/feel.js, log work/game/tmp/all_d.log):
+  30/60/120 Hz -> 90 % of run speed at 0.367/0.383/0.383 s, full stop 0.40/0.417/0.417 s, 180° pivot 0.30 s with 0.10/0.08/0.07 m drift.
+- Smooth transitions: entering/exiting a car dips the screen (tfDip in 90_main.js, eased per frame, own overlay); during cars' automatic stop-then-exit the dip follows the last metres
+  of braking. Shops fade through black (interiors). Evidence: work/game/tmp/drv_e.log + shots work/game/shots/edr_*.png (390x844).
+- Shops: 16 shops entered through the real door prompt ("Enter Mythos Plus", "Enter Starbucks", "Enter PAUL", "Enter KFC", "Enter AB Vasilopoulos", "Enter SEPHORA", hotel, pharmacy,
+  bank, cafe, restaurant, bar, clothes, electronics, bakery, OPAP) -> walked to the counter -> ordered from the menu sheet (paid) -> "Leave <name>" -> outside: 14/16 complete.
+  For interiors/data: the generic Bank sells nothing (paid 0, fine?), "ΟΠΑΠ" uses the minimarket template and its counter is so close to the door that "Order at the counter" wins over "Leave".
+  Shots: work/game/shots/dsh_door_mythos.png, dsh_menu_mythos.png, dsh_in_*.png.
+- For cars: in drv_e the Ferrari ran at 90 km/h into the Sephora frontage on pedestrian Levidou and the chase camera ended up looking at the shop's window display with the car out of view
+  (work/game/shots/edr_2_drive.png) — please check car-vs-shopfront collision there; I will look at pulling the camera pivot out of walls.
+
+## chars — 2026-11-21 18:50 (orders: item 16 "chars: provide pistol/rifle hold, aim, fire, reload poses"; item 17 "game + chars: smooth player movement ... turn-in-place, blended start/stop") — to: weapons, game, commander
+- Item 16: new hand-keyed clips hk_fire_pistol (0.33 s muzzle flip), hk_fire_rifle (0.32 s shoulder kick), hk_reload_pistol (1.9 s: work space, belt pouch, magazine in, slap, rack slide), hk_reload_rifle (2.5 s: canted rifle, mag out to vest, new mag, charging handle).
+  Runtime (js/60_people.js): `person.fire()`, `person.reload()` (pick pistol/rifle from the current aim/hold carry, return duration), generic `person.gesture(name, opt)` = upper-body one-shot layered over walking/aiming, `gesturing`, `stopGesture()`;
+  ACTIONS fire_pistol/fire_rifle/reload_pistol/reload_rifle; left-hand magazine prop during reloads; realistic matte-black 'pistol'/'rifle' props replace the toy markers (old names alias); `setCarry(name, {noProp:true})` for a weapons-owned gun mesh. API: docs/CHARACTERS.md "Guns".
+  Evidence: work/chars/shots/s6/fi_p.png (recoil strip), rl_p.png (pistol reload strip), rl_r.png / rl_r_walk.png (rifle reload, while walking), t8_reload_p.png / t8_reload_r.png (in game), log "fire 0.333 reload 1.9", no JS errors.
+- Item 17 (animation side; the controller in 80_player.js is game's): turn-in-place stepping was already driven by yaw rate; added "head leads the turn" (eyes/head turn into the turn first, strongest on the spot). Start (first step from a planted stance) / stop (swing foot lands beside the other) were already in. Evidence: work/chars/shots/s6/turn.png (film of a 150° turn on the spot).
+- Sephora/IB: ib_starbucks now gets a real terrace seat at Starbucks (log: act sit_table, seat true). Fallback: a cast character whose café has no terrace gets its own bistro table + chair (cast field "own").
+
+## lm-kassaveti — 2026-11-21 — OWNER DIRECTIVE 13:10 (Kassaveti shop block: order, widths, building, look)
+- Change: INTEGRATED gk3/js/89g_lm_kassaveti.js (landmark `kassaveti`): 9 buildings of west Kassaveti hand-modelled on their OSM footprints (b291 Kassaveti 1 neoclassical corner with pediment + hip roof per ref/r11; b297 Varsos neoclassical; b298/b296/b14/b289/b288/b286/b264 polykatoikies with balconies, awnings, set-backs) and 43 shopfronts laid out by hand in real street order at the OSM-node / verified-address positions of PLACEMENT_AUDIT §7 (fixes: Leonidas moved 15 m to its OSM node on b264's north point; OJO/glamur directory listings, Coffee Island on the Kassaveti/Drosini corner, Pisxos visionworks 7 m). Shops step down the 7 % slope.
+- Interiors hook: the MAP.pois of these shops are moved onto the drawn units before interiors register their doors (KV.patched lists 38 moves).
+- Evidence: node smoke test (work/lm-kassaveti/smoke.js) builds 9/9 buildings, ~37k triangles, no warnings; browser screenshots pending (harness queue) — see docs/research/lm/kassaveti.md.
+
+## lm-park — 2026-11-21 round "13:10 CENTRAL AREA FIRST" — order: "lm-park: Alsos first, then the Kefalari square grove, then Platanos" + "realism push for parks" — to: streets, mats, commander
+- Change: INTEGRATED gk3/js/89f_lm_park.js v2.
+  (1) Kefalari grove (OSM way 119884594) now built by lm-park (LM id `kefalari`, section 10): OSM walks (beige earth, unkerbed) lined with irregular stones,
+  lawns with patchy colour, raised stone basin on the exact OSM ring with water, ducks and the concrete footbridge (walkable: LVL raised along the deck,
+  collision gap in the coping, railings), the 14 OSM benches facing the walks, 4 metal baskets, 3 recycling bells, the marble drinking fountain with
+  the inscription «ΔΗΜΟΣ ΑΘΗΝΑΙΩΝ 1872», the bronze statue of Pavlos Melas on its marble pedestal, the busts of K. Tsatsos and K. Aktenas, the chapel,
+  81 trees in the species mix of photo r04 (Atlas cedar, Aleppo pine, holm oak, plane — positions inferred, OSM has none), agave + red/green shrub beds,
+  13 globe-cluster lamps. Generic park/water areas, garden trees, footway strips, map benches/baskets/lamps/fountain and MAP.seats benches inside the polygon are suppressed.
+  (2) Alsos: trees now through the shared 45_trees treeGeo()/lodPool() per species (6 pools instead of 54 meshes); gravel beige #cdbb9a-ish with colour noise,
+  lawns patchy (lush/dry/shaded), café terrace inside the wall, water tank dark green riveted iron (photo r07), fountain pedestal visible again.
+- streets: nothing to skip by hand (wrappers). Note for whoever owns 45_trees/10_atlas: tree LEAVES cast no shadow in my shots (only limbs do; MAT.depthCut
+  set in onBeforeRender may not reproduce the leaf alpha) — the dappled shade under the park trees is missing everywhere.
+- Evidence: work/lm-park/shots/v3_kEye.png, v3_kBasin.png, v3_kMelas.png, v4_kFnt.png, v4_tank.png, v2_eyeW.png, m_v2.jpg (aerial|game). Research: docs/research/lm/park.md (Kefalari section).

@@ -1,123 +1,187 @@
-'use strict';
-/* 89g_lm_kassaveti.js — the Kassaveti shop block ("Mythos's street"), hand-modelled (owner: bot lm-kassaveti).
-   West Kassaveti from Platanos square to the spawn junction, both sides, minus the junction corner buildings (lm-junction) and the
-   Kassaveti 19 courtyard (lm-starbucks / lm-ralphlauren). Every building keeps its real OSM footprint (1 unit = 1 m).
-   North side: Kassaveti 1 (neoclassical corner building facing Platanos, photo ref/r11, + its east wing), Kassaveti 3 (Wagamama / Magnifique),
-   Kassaveti 5 (Varsos patisserie, 1892), Kassaveti 7 (Holland & Barrett / Nova / Ancho).
-   South side: Kassaveti 4 (MrPhone.gr … I-Bank corner on Drosini), the L'Occitane / Triumph block, Kassaveti 6 (pharmacy, Dust Cream),
-   the Vodafone / Pischos block, Drosini 11 (Leonidas).
-   Shop list = curated table SHOPS below: one entry per real shopfront, in real street order, at the OSM-surveyed position
-   (docs/research/PLACEMENT_AUDIT / gk3/data/placement_audit.json), duplicates / closed / unverified listings dropped.
-   Facade designs and honesty notes: docs/research/lm/kassaveti.md.
-   Public: window.KV (debug: built ids, shop list, door positions, triangle count). The interiors' door builder (buildDoorsPois) is wrapped
-   so that the doors of these buildings sit exactly on the modelled shopfronts and dropped listings get no door. */
+/* 89g_lm_kassaveti.js — the Kassaveti shop block, hand-modelled (owner: bot lm-kassaveti).
+   West Kassaveti between Platanos / Kifisias Ave and the spawn junction, both sides, excluding the junction corner buildings (lm-junction:
+   AB b30, Kassaveti 9 b295, Mythos b294, b293 …) and the Kassaveti 19 courtyard (lm-starbucks / lm-ralphlauren).
+   North: Kassaveti 1 (b291, neoclassical corner with Kifisias), Kassaveti 3 (b298, Wagamama / Magnifique), Kassaveti 5 (b297, Varsos),
+          Kassaveti 7-9 (b296, Holland & Barrett / Nova / Ancho).
+   South: Kassaveti 4 (b14, MrPhone / Zenith / The sweet spot / Coffee Island corner), b289 (Bibi / Chantrokosmos / Triumph / L'Occitane),
+          Kassaveti 6 (b288, pharmacy / Pischos optics / Dust Cream), b286 (Pischos / Vodafone / pharmacy), Drosini 11 (b264, Leonidas).
+   Every building keeps its real OSM footprint (1 unit = 1 m). Every shopfront is laid out by hand in the real street order, at the position of its
+   OSM-surveyed node / verified address (docs/research/PLACEMENT_AUDIT.md §7), with the real name as a plain-text sign (no logos).
+   What is photo-based and what is inferred: docs/research/lm/kassaveti.md.
+   Side effect (documented): the MAP.pois records of the shops of these buildings are moved onto the shopfront this file draws (fx/fz/door/e/t/w),
+   so the walk-in doors of 35_interiors.js (built after buildBuildings) open exactly at the drawn door.
+   Public: window.KV (debug: built buildings, units, warnings, triangle count). Nothing else is exported. */
 (function(){
-if(typeof LM==='undefined'||typeof defTile!=='function')return;
-const KV=window.KV={built:[],signs:[],doors:{},tris:0,warn:[],version:2,bidx:new Set()};
+'use strict';
+if(typeof LM==='undefined'||typeof defTile!=='function'||typeof GB==='undefined')return;
+const KV=window.KV={built:[],warn:[],units:[],patched:[],tris:0,ms:0,version:2};
 const H=hexc;
-const tm=n=>(typeof TM!=='undefined'&&TM[n]!==undefined)?TM[n]:(T[n]!==undefined?T[n]:T.white);
-const tt=(n,fb)=>T[n]!==undefined?T[n]:(T[fb]!==undefined?T[fb]:T.white);
 
-/* ============================== BUILDINGS (OSM way ids) ============================== */
-const ID={k1:'w1075949217',k3:'w1075949840',k5:'w1075949838',k7:'w1075949837',k4:'w378932290',occ:'w1075948791',k6:'w1075948790',voda:'w1075948788',leo:'w1075656859'};
-// one interior point per building (LM hands every map building containing one of these to us)
-const AT=[[-30,33],[18,30],[32,34],[46,36],[-6,70],[10,66],[27,74],[45,74],[-31,79]];
+/* ============================== MATERIAL TILES ============================== */
+function tile(name,fn,o){try{if(T[name]===undefined)defTile(name,fn,o)}catch(e){KV.warn.push('tile '+name+': '+e.message)}}
+const TT=(n,fb)=>T[n]!==undefined?T[n]:(fb!==undefined?fb:T.white);
+const TMt=(n,fb)=>(typeof TM!=='undefined'&&TM[n]!==undefined)?TM[n]:(T[fb||n]!==undefined?T[fb||n]:T.plaster);
+const FAM_SERIF='Georgia,"Times New Roman",serif',FAM_SANS='"Helvetica Neue",Helvetica,Arial,sans-serif',FAM_DIDOT='Didot,"Bodoni 72","Playfair Display",Georgia,serif';
+function fitFont(g,txt,w,h,fam,wt){let fs=Math.max(5,Math.floor(h));g.font=wt+' '+fs+'px '+fam;while(fs>4&&g.measureText(txt).width>w){fs-=1;g.font=wt+' '+fs+'px '+fam}return fs}
+function spots(g,S,n,y,r,a){for(let i=0;i<n;i++){const x=S*(i+0.5)/n;const l=g.createRadialGradient(x,y,1,x,y+r*0.4,r);l.addColorStop(0,'rgba(255,246,222,'+a+')');l.addColorStop(1,'rgba(255,246,222,0)');g.fillStyle=l;g.fillRect(x-r,y-r,2*r,2*r)}}
+let _r=1;const R01=()=>{_r=(_r*16807)%2147483647;return _r/2147483647};
+// boutique: racks of clothes, folded shelves, a mannequin, spotlights, light oak floor
+tile('kvShopC',(g,S,m)=>{_r=11;g.fillStyle='#efe9e0';g.fillRect(0,0,S,S);const fl=g.createLinearGradient(0,S*0.74,0,S);fl.addColorStop(0,'#c9b394');fl.addColorStop(1,'#9c8466');g.fillStyle=fl;g.fillRect(0,S*0.74,S,S*0.26);
+  g.fillStyle='#d9d1c4';g.fillRect(0,S*0.06,S,4);g.fillStyle='#6b6258';g.fillRect(10,S*0.3,S*0.55,3);
+  const cols=['#1d1d22','#f3efe6','#8a2a2e','#c8b28a','#2f4a6b','#d9c2b8','#5a6b4a','#e8e2d0','#a35a3a','#3b3b44'];
+  for(let i=0;i<15;i++){const x=14+i*8.6,c=cols[(i*7)%cols.length];g.fillStyle=c;const hh=58+((i*13)%4)*9;g.beginPath();g.moveTo(x,S*0.3+3);g.lineTo(x+7,S*0.3+3);g.lineTo(x+8.5,S*0.3+hh);g.lineTo(x-1.5,S*0.3+hh);g.fill();g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(x+6,S*0.3+3,1.5,hh-3)}
+  g.fillStyle='#e2dbcf';g.fillRect(S*0.68,S*0.16,S*0.29,S*0.58);for(let r=0;r<4;r++){g.fillStyle='#b8ab97';g.fillRect(S*0.68,S*0.26+r*S*0.12,S*0.29,2);for(let i=0;i<5;i++){g.fillStyle=cols[(i*3+r*5)%cols.length];g.fillRect(S*0.69+i*13,S*0.26+r*S*0.12-9,11,9)}}
+  g.fillStyle='#e9e5dd';g.beginPath();g.ellipse(S*0.6,S*0.38,6,7,0,0,TAU);g.fill();g.fillRect(S*0.6-10,S*0.42,20,34);g.fillStyle='#2a2a30';g.beginPath();g.moveTo(S*0.6-11,S*0.44);g.lineTo(S*0.6+11,S*0.44);g.lineTo(S*0.6+16,S*0.7);g.lineTo(S*0.6-16,S*0.7);g.fill();g.fillStyle='#9a9590';g.fillRect(S*0.6-1,S*0.7,2,S*0.04);
+  spots(g,S,6,10,34,0.95);m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.1,spec:0.25,shin:90,glowK:1.6});
+// café / patisserie / grill: warm wood, menu boards, glass counter with pastries, pendant lamps
+tile('kvShopF',(g,S,m)=>{_r=23;const bg=g.createLinearGradient(0,0,0,S);bg.addColorStop(0,'#6a4a32');bg.addColorStop(1,'#3e2a1c');g.fillStyle=bg;g.fillRect(0,0,S,S);
+  for(let i=0;i<3;i++){g.fillStyle='#1e1a17';g.fillRect(16+i*76,S*0.14,62,40);g.fillStyle='rgba(245,240,225,0.85)';for(let k=0;k<5;k++)g.fillRect(22+i*76,S*0.14+7+k*6.6,30+((i+k)*7)%22,2)}
+  g.fillStyle='#e2d3b8';g.fillRect(0,S*0.52,S,S*0.04);g.fillStyle='rgba(255,250,235,0.55)';g.fillRect(0,S*0.56,S,S*0.16);
+  const pc=['#c98a3d','#e9cf9a','#7a3b22','#f2e6cf','#d65a6a','#b8742c','#f3c768'];for(let r=0;r<2;r++)for(let i=0;i<20;i++){g.fillStyle=pc[(i*3+r)%pc.length];g.beginPath();g.ellipse(8+i*11.8,S*0.61+r*S*0.075,4.6,3.2,0,0,TAU);g.fill()}
+  g.fillStyle='#2c1e14';g.fillRect(0,S*0.72,S,S*0.28);g.fillStyle='#4a3424';g.fillRect(0,S*0.72,S,3);
+  for(let i=0;i<5;i++){const x=S*(0.1+i*0.2);g.fillStyle='#1a1410';g.fillRect(x-0.5,0,1,S*0.26);g.fillStyle='#f0c070';g.beginPath();g.arc(x,S*0.27,5,Math.PI,0);g.fill();const l=g.createRadialGradient(x,S*0.3,1,x,S*0.34,40);l.addColorStop(0,'rgba(255,214,150,0.85)');l.addColorStop(1,'rgba(255,214,150,0)');g.fillStyle=l;g.fillRect(x-40,S*0.26,80,80)}
+  m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.08,spec:0.2,shin:80,glowK:1.7});
+// tech / optics / bank / services: white display walls with lit shelves of small objects, white counter, bright
+tile('kvShopT',(g,S,m)=>{_r=37;g.fillStyle='#f4f4f2';g.fillRect(0,0,S,S);g.fillStyle='#d4d6d8';g.fillRect(0,S*0.76,S,S*0.24);g.fillStyle='rgba(0,0,0,0.06)';for(let i=0;i<8;i++)g.fillRect(i*30,S*0.76,1,S*0.24);
+  for(let p=0;p<3;p++){const x0=10+p*78;g.fillStyle='#e6e8ea';g.fillRect(x0,S*0.12,66,S*0.56);for(let r=0;r<5;r++){g.fillStyle='rgba(255,255,255,0.9)';g.fillRect(x0,S*0.16+r*S*0.105,66,2);for(let i=0;i<7;i++){g.fillStyle=['#202226','#3a3d44','#c9ccd1','#b88a4a','#5a7fa8'][(i+r+p)%5];g.fillRect(x0+4+i*9,S*0.16+r*S*0.105-11,6,11)}}}
+  g.fillStyle='#fbfbfa';g.fillRect(S*0.3,S*0.64,S*0.4,S*0.13);g.fillStyle='#c9ccd0';g.fillRect(S*0.3,S*0.64,S*0.4,2);spots(g,S,6,6,30,1);m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.1,spec:0.3,shin:100,glowK:1.6});
+// beauty / cosmetics / pharmacy: white gondolas packed with small coloured bottles and boxes
+tile('kvShopB',(g,S,m)=>{_r=53;g.fillStyle='#f7f5f2';g.fillRect(0,0,S,S);g.fillStyle='#e3ddd5';g.fillRect(0,S*0.78,S,S*0.22);
+  for(let r=0;r<7;r++){g.fillStyle='#ffffff';g.fillRect(0,S*0.12+r*S*0.09,S,2.5);for(let i=0;i<34;i++){const c=['#e8b4b8','#ffffff','#2b2b2b','#c9a46a','#9cc3d5','#d8e4c8','#b03a48','#f2e1c1','#6a4c93'][((i*5+r*3)+((i*i)%7))%9];const hh=6+((i*7+r)%4)*1.6;g.fillStyle=c;g.fillRect(3+i*7,S*0.12+r*S*0.09-hh,5,hh)}}
+  spots(g,S,7,6,26,1);m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:0.5,glassDark:0.1,spec:0.3,shin:100,glowK:1.6});
+// flat window glass with curtains and a ceiling lamp hint
+tile('kvGlass',(g,S,m)=>{const gr=g.createLinearGradient(0,0,0,S);gr.addColorStop(0,'#8f887e');gr.addColorStop(0.55,'#6a6258');gr.addColorStop(1,'#48423b');g.fillStyle=gr;g.fillRect(0,0,S,S);
+  g.fillStyle='rgba(238,228,206,0.78)';g.fillRect(0,0,S*0.18,S);g.fillRect(S*0.82,0,S*0.18,S);g.fillStyle='rgba(110,96,80,0.3)';for(let i=0;i<5;i++){g.fillRect(S*0.035*i+3,0,2,S);g.fillRect(S*0.82+S*0.035*i+3,0,2,S)}
+  const l=g.createRadialGradient(S*0.5,S*0.1,2,S*0.5,S*0.2,S*0.5);l.addColorStop(0,'rgba(255,232,186,0.85)');l.addColorStop(1,'rgba(255,232,186,0)');g.fillStyle=l;g.fillRect(0,0,S,S);
+  g.fillStyle='rgba(255,255,255,0.10)';g.beginPath();g.moveTo(0,S*0.15);g.lineTo(S*0.4,0);g.lineTo(S*0.55,0);g.lineTo(0,S*0.32);g.fill();m.fillStyle='#fff';m.fillRect(0,0,S,S)},{glass:1,glassDark:0.55,spec:0.3,shin:110,glowK:1.8});
+// awning canvas (tint carrier)
+tile('kvFabric',(g,S)=>{g.fillStyle='#e8e8e8';g.fillRect(0,0,S,S);for(let i=0;i<240;i+=3){g.fillStyle=i%6?'rgba(0,0,0,0.035)':'rgba(255,255,255,0.05)';g.fillRect(0,i,S,1.5);g.fillRect(i,0,1.5,S)}g.fillStyle='rgba(0,0,0,0.07)';g.fillRect(0,0,S,3)},{spec:0.03,shin:10});
+// cut-outs: aluminium balcony rail, wrought-iron neoclassical rail, white balusters (top half) + awning valance (bottom)
+tile('kvRail',(g,S)=>{g.clearRect(0,0,S,S);g.fillStyle='#f4f4f4';g.fillRect(0,0,S,16);g.fillRect(0,S-14,S,14);g.fillRect(0,S*0.6,S,6);for(let i=0;i<8;i++)g.fillRect(i*30+12,0,7,S)},{cut:true,spec:0.25,shin:60});
+tile('kvIron',(g,S)=>{g.clearRect(0,0,S,S);g.strokeStyle='#ffffff';g.fillStyle='#ffffff';g.fillRect(0,0,S,12);g.fillRect(0,S-12,S,12);g.lineWidth=4;
+  for(let i=0;i<6;i++){const x=20+i*40;g.fillRect(x-2,0,4,S);g.beginPath();g.arc(x+20,S*0.3,11,0,TAU);g.stroke();g.beginPath();g.arc(x+20,S*0.7,11,0,TAU);g.stroke();g.beginPath();g.moveTo(x+20,S*0.3+11);g.lineTo(x+20,S*0.7-11);g.stroke()}},{cut:true,spec:0.2,shin:40});
+tile('kvBalus',(g,S)=>{g.clearRect(0,0,S,S);g.fillStyle='#f2efe7';
+  for(let i=0;i<4;i++){const cx=30+i*60;g.beginPath();g.moveTo(cx-9,118);g.lineTo(cx+9,118);g.bezierCurveTo(cx+9,100,cx+4,96,cx+5,88);g.bezierCurveTo(cx+18,70,cx+16,40,cx+5,28);g.lineTo(cx+8,20);g.lineTo(cx+10,4);g.lineTo(cx-10,4);g.lineTo(cx-8,20);g.lineTo(cx-5,28);g.bezierCurveTo(cx-16,40,cx-18,70,cx-5,88);g.bezierCurveTo(cx-4,96,cx-9,100,cx-9,118);g.fill()}
+  g.fillStyle='#ffffff';for(let i=0;i<4;i++){g.beginPath();g.moveTo(i*60,122);g.lineTo(i*60+60,122);g.lineTo(i*60+60,150);g.quadraticCurveTo(i*60+30,182,i*60,150);g.fill()}},{cut:true,spec:0.05,shin:20});
+// louvred timber shutter (tint carrier)
+tile('kvShut',(g,S)=>{g.fillStyle='#d8d8d8';g.fillRect(0,0,S,S);for(let y=8;y<S-6;y+=9){g.fillStyle='rgba(0,0,0,0.28)';g.fillRect(10,y+5,S-20,4);g.fillStyle='rgba(255,255,255,0.25)';g.fillRect(10,y,S-20,2)}
+  g.fillStyle='rgba(0,0,0,0.22)';g.fillRect(0,0,10,S);g.fillRect(S-10,0,10,S);g.fillRect(0,S/2-4,S,8)},{spec:0.08,shin:20});
 
-/* ============================== CURATED SHOP TABLE ==============================
-   per building id → per footprint edge → shopfronts [name, t(centre along edge 0..1), width m, opts]
-   opts: poi (MAP.pois id → its door is moved here), sign {text,sub,bg,fg,style}, win (window display: 0 clothes 1 café/food 2 tech 3 pharmacy/beauty 4 bank/office),
-         awn colour, terr {n, chairs, umb}, door 'l'|'r'|'c', cross (green pharmacy cross), blade */
-const SHOPS={};
-SHOPS[ID.k1]={
-  4:[['RepairLogic',0.80,3.4,{poi:'osm:n4656636066',sign:{bg:'#1f2b3a',fg:'#ffffff',style:'sans'},win:2,door:'l'}],
-     ['CrediaBank',0.32,5.2,{bankWin:1,win:4}]],
-  5:[['CrediaBank',0.40,6.4,{poi:'osm:n4656636032',sign:{text:'CrediaBank',bg:'#ffffff',fg:'#0b3c7d',style:'sans'},win:4,door:'c'}],
-     ['OJO Sunglasses',0.86,3.2,{poi:'cs:fsq:563cdf32cd10627b592e4313',sign:{text:'OJO',sub:'SUNGLASSES',bg:'#141414',fg:'#ffffff',style:'caps'},win:3,door:'r'}]],
-  7:[['Bueno',0.50,4.3,{poi:'osm:n10098103361',sign:{text:'Bueno',bg:'#3a2a1e',fg:'#f6e7c1',style:'script'},win:1,awn:'#1f3b2c',terr:{n:3,chairs:'metal',umb:'#efe7d6'},door:'r'}]],
-  8:[['Lilá',0.14,3.9,{poi:'osm:n10098116489',sign:{bg:'#141414',fg:'#c9a961',style:'serif'},win:0,door:'r'}],
-     ['Το Χωριάτικο',0.41,4.0,{poi:'osm:n10098129864',sign:{bg:'#27405a',fg:'#ffffff',style:'sans',sub:'ΑΡΤΟΠΟΙΕΙΟ'},win:1,awn:'#151515',door:'r'}],
-     ['Deli To Bacco',0.74,5.0,{poi:'osm:n10098127030',sign:{bg:'#e7dfd0',fg:'#222222',style:'sans'},win:1,door:'c'}]],
-  10:[['Bottega Belleza',0.16,4.0,{poi:'osm:n10098118201',sign:{bg:'#f3efe6',fg:'#141414',style:'serif'},win:3,door:'c'}],
-      ['TheFixers',0.47,4.0,{poi:'osm:n10098116625',sign:{text:'THE FIXERS',bg:'#1f2a24',fg:'#d8c28a',style:'caps'},win:2,door:'l'}],
-      ['Swiss Corner',0.80,4.4,{poi:'osm:n11069636734',sign:{bg:'#141414',fg:'#c9a961',style:'serif'},win:3,door:'c'}]]};
-SHOPS[ID.k3]={21:[['Wagamama',0.27,9.6,{poi:'osm:n7040794587',sign:{text:'wagamama',bg:'#1a1a1a',fg:'#ffffff',style:'sans'},win:1,awn:'#2a2f3a',terr:{n:6,chairs:'wood',umb:null},door:'l'}],
-                  ['Magnifique',0.57,4.2,{poi:'osm:n9830492199',sign:{bg:'#27405a',fg:'#ffffff',style:'sans'},win:1,awn:'#7a1f1f',terr:{n:4,chairs:'rattan',umb:'#e2d2b0'},door:'l'}],
-                  ['SyWear',0.84,5.6,{poi:'ov:52d6342e-efa9-4dc0-afda-bdb5bc2eb6c9',sign:{text:'SYWEAR',bg:'#f2efe9',fg:'#1a1a1a',style:'caps'},win:0,door:'c'}]]};
-SHOPS[ID.k5]={0:[['Βάρσος',0.5,7.2,{poi:'osm:n4721277016',varsos:1}]]};
-SHOPS[ID.k7]={1:[['Holland & Barrett',0.17,5.2,{poi:'osm:n12560123969',sign:{bg:'#00594c',fg:'#ffffff',style:'serif'},win:3,door:'c'}],
-                 ['Nova',0.47,3.6,{poi:'osm:n7309463885',sign:{text:'NOVA',bg:'#5a1e96',fg:'#ffffff',style:'caps'},win:2,door:'c'}],
-                 ['Ancho',0.81,4.4,{poi:'osm:n10098118200',sign:{bg:'#5a3a22',fg:'#fff4dc',style:'serif'},win:1,awn:'#7a1f1f',terr:{n:3,chairs:'metal',umb:'#f5f1e8'},door:'r'}]]};
-SHOPS[ID.k4]={10:[['MrPhone.gr',0.15,2.7,{poi:'osm:n10098110170',sign:{bg:'#e7dfd0',fg:'#222222',style:'sans'},win:2,door:'l'}],
-                  ['Ζενίθ',0.40,2.7,{poi:'osm:n10098103379',sign:{text:'ΖΕΝΙΘ',bg:'#00539f',fg:'#ffffff',style:'caps'},win:4,door:'r'}],
-                  ['The sweet spot',0.64,2.7,{poi:'osm:n4721277584',sign:{bg:'#7a1f1f',fg:'#ffffff',style:'serif'},win:1,door:'c'}],
-                  ['Drip',0.88,2.6,{poi:'cs:fsq:667ee6b64aa957530cad42be',sign:{text:'DRIP',bg:'#111111',fg:'#ffffff',style:'caps'},win:0,door:'c'}]],
-              0:[['I-Bank Corner',0.09,3.4,{poi:'ov:14b72af6-352e-4875-af21-b1062097ecf8',sign:{text:'i-bank corner',bg:'#00539f',fg:'#ffffff',style:'sans'},win:4,door:'c'}],
-                 ['Coffee Island',0.28,3.8,{poi:'cs:fsq:64817068d7dd142a0642bbc4',sign:{text:'COFFEE ISLAND',bg:'#2b2522',fg:'#ffffff',style:'caps'},win:1,awn:'#2b2522',terr:{n:2,chairs:'metal',umb:null},door:'c'}],
-                 ['Naturafoods',0.47,3.4,{poi:'ov:97b46790-c5db-4814-85ec-e6afc780f640',sign:{bg:'#3e6b35',fg:'#ffffff',style:'sans'},win:3,door:'c'}],
-                 ['Fresco gelateria',0.77,5.0,{poi:'ov:493c74f9-291a-48b1-a296-df72eef62457',sign:{text:'Fresco',sub:'GELATERIA',bg:'#f4ede0',fg:'#2f6b4a',style:'script'},win:1,door:'c'}]]};
-SHOPS[ID.occ]={16:[['Bibi boutique',0.13,3.0,{poi:'osm:n10098109194',sign:{text:'BIBI BOUTIQUE',bg:'#0f2740',fg:'#ffffff',style:'caps'},win:0,door:'c'}],
-                   ['Χαντρόκοσμος',0.38,3.0,{poi:'osm:n10098106907',sign:{bg:'#f3efe6',fg:'#141414',style:'serif'},win:3,door:'c'}],
-                   ['Triumph',0.62,3.0,{poi:'osm:n10098070078',sign:{bg:'#ffffff',fg:'#c8102e',style:'serif'},win:0,door:'l'}],
-                   ["L'Occitane",0.87,3.1,{poi:'osm:n10098115328',sign:{text:"L'OCCITANE",sub:'EN PROVENCE',bg:'#ffcb05',fg:'#1a1a1a',style:'caps'},win:3,door:'c'}]],
-               11:[['Lazarou',0.12,3.8,{poi:'cs:fsq:4f8d7e04e5e81a37dd9342e3',sign:{text:'ΛΑΖΑΡΟΥ',sub:'ΣΙΔΗΡΙΚΑ',bg:'#b8322a',fg:'#ffffff',style:'caps'},win:2,door:'c'}],
-                   ['Ana Adeco',0.35,3.8,{poi:'osm:n10098109193',sign:{bg:'#ece6da',fg:'#3a3026',style:'serif'},win:3,door:'c'}],
-                   ['25 minutes',0.56,3.0,{poi:'cs:fsq:53106965498eb42eea3e5f01',sign:{text:'25 MINUTES',sub:'BODYTEC',bg:'#e4002b',fg:'#ffffff',style:'caps'},win:4,door:'c'}],
-                   ['Pharmacy',0.81,4.6,{poi:'osm:n10098116483',sign:{text:'ΦΑΡΜΑΚΕΙΟ',bg:'#ffffff',fg:'#1f8a3c',style:'caps'},win:3,cross:1,door:'c'}]]};
-SHOPS[ID.k6]={3:[['Pharmacy',0.20,4.6,{poi:'osm:n10098113939',sign:{text:'ΦΑΡΜΑΚΕΙΟ',bg:'#ffffff',fg:'#1f8a3c',style:'caps'},win:3,cross:1,door:'c'}],
-                 ['Dust Cream',0.84,3.8,{poi:'osm:n10098067666',sign:{bg:'#141414',fg:'#c9a961',style:'serif'},win:3,door:'c'}]]};
-SHOPS[ID.voda]={2:[['Πίσχος',0.17,4.4,{poi:'osm:n10098103378',sign:{text:'ΠΙΣΧΟΣ',sub:'ΟΠΤΙΚΑ',bg:'#141414',fg:'#ffffff',style:'caps'},win:3,door:'l'}],
-                   ['Vodafone',0.51,4.8,{poi:'osm:n10098090459',sign:{text:'vodafone',bg:'#e60000',fg:'#ffffff',style:'sans'},win:2,door:'l'}],
-                   ['Pharmacy 295',0.85,4.0,{poi:'osm:n10098067665',sign:{text:'ΦΑΡΜΑΚΕΙΟ',sub:'PHARMACY 295',bg:'#ffffff',fg:'#1f8a3c',style:'caps'},win:3,cross:1,door:'c'}]]};
-SHOPS[ID.leo]={3:[['Leonidas',0.5,4.4,{poi:'osm:n10098070077',sign:{text:'Leonidas',sub:'BELGIAN CHOCOLATES',bg:'#0b2a5b',fg:'#c9a961',style:'serif'},win:1,door:'c'}]],
-               1:[['Xana',0.29,3.2,{poi:'osm:n10098090460',sign:{text:'XANA',bg:'#1a1a1a',fg:'#ffffff',style:'caps'},win:0,door:'c'}],
-                  ['Πίσχος Οπτικά',0.46,3.0,{poi:'ov:e3486675-45e1-452d-81b4-590766969b58',sign:{text:'ΠΙΣΧΟΣ',sub:'ΟΠΤΙΚΑ',bg:'#141414',fg:'#ffffff',style:'caps'},win:3,door:'c'}],
-                  ['La Vie En Rose',0.62,3.0,{poi:'osm:n10098089439',sign:{bg:'#f6e6ea',fg:'#7a2a44',style:'script'},win:3,door:'c'}],
-                  ['Σφαντος',0.90,2.8,{poi:'osm:n10098100531',sign:{text:'ΣΦΑΝΤΟΣ',sub:'ΚΑΘΑΡΙΣΤΗΡΙΑ',bg:'#2a5b8a',fg:'#ffffff',style:'caps'},win:4,door:'c'}]]};
+/* ============================== SIGNS (plain text, real names, no logos) ============================== */
+const SG_ROWS=10,SG_TILES=7,BAND=24;// 7 tiles × 10 bands of 240×24 design px (aspect 10:1)
+const uvR=(x0,y0,x1,y1)=>[x0/240,x1/240,1-y1/240,1-y0/240];
+function drawSign(g,m,y,sg){const x=0,w=240,h=BAND;g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.fillStyle=sg.bg;g.fillRect(x,y,w,h);
+  const st=sg.st||'sans';const fam=st==='serif'||st==='script'?FAM_SERIF:st==='didot'?FAM_DIDOT:FAM_SANS;const wt=st==='script'?'italic bold':st==='thin'?'300':st==='didot'?'':'bold';
+  let txt=st==='caps'||st==='didot'?sg.text.toUpperCase():sg.text;g.fillStyle=sg.fg;g.textAlign='center';g.textBaseline='middle';
+  if(st==='caps'||st==='didot')txt=txt.split('').join(String.fromCharCode(8202));
+  if(sg.sub){fitFont(g,txt,w*0.86,h*0.6,fam,wt);g.fillText(txt,x+w/2,y+h*0.40);fitFont(g,sg.sub,w*0.6,h*0.22,FAM_SANS,'bold');g.fillText(sg.sub,x+w/2,y+h*0.84)}
+  else{fitFont(g,txt,w*0.88,h*0.68,fam,wt);g.fillText(txt,x+w/2,y+h*0.55)}
+  if(sg.rule){g.fillStyle=sg.rule;g.fillRect(x,y+h-2,w,2)}g.restore();if(sg.lit!==false){m.fillStyle='#fff';m.fillRect(x,y,w,h)}}
+let SIGNS=null;const SIGNIX=new Map();
+function signList(){if(SIGNS)return SIGNS;SIGNS=[];
+  const add=(key,sg)=>{if(SIGNIX.has(key))return;if(SIGNS.length>=SG_ROWS*SG_TILES){KV.warn.push('sign atlas full: '+key);return}SIGNIX.set(key,SIGNS.length);SIGNS.push(sg)};
+  for(const id in BLD){const c=BLD[id];for(const e in c.units||{})for(const u of c.units[e]){const s=u[2]&&SH[u[2]];if(s&&!s.noSign)add('s:'+u[2],{text:s.sign||s.n,sub:s.sub,bg:s.bg,fg:s.fg,st:s.st,rule:s.rule,lit:s.lit});
+      if(u[2]==='lobby'&&u[3]){if(u[3].no)add('no:'+u[3].no,{text:u[3].no,bg:'#1f4f9c',fg:'#ffffff',st:'sans'});for(const p of u[3].plates||[])add('pl:'+p,{text:p,bg:'#b89a5a',fg:'#2a2118',st:'serif',lit:false})}}}
+  // shops of the back streets come from MAP.pois (generic layout)
+  try{for(const id in BLD){const idx=bIdx(id);if(idx<0)continue;for(const p of poisOf(idx))if(p.bay==='shop'&&!BLD[id].units[p.e]){if(p.name)add('p:'+p.name,{text:p.name,bg:p.bg||'#1d1d1f',fg:p.fg||'#f6efe2',st:'sans'});else if(/pharm/.test(p.cat||''))add('p:ΦΑΡΜΑΚΕΙΟ',{text:'ΦΑΡΜΑΚΕΙΟ',bg:'#ffffff',fg:'#13824a',st:'sans',rule:'#13824a'})}}}catch(e){}
+  add('pharm',{text:'ΦΑΡΜΑΚΕΙΟ',bg:'#ffffff',fg:'#13824a',st:'sans',rule:'#13824a'});
+  return SIGNS}
+function signPainter(k){return (g,S,m)=>{const L=signList();for(let r=0;r<SG_ROWS;r++){const sg=L[k*SG_ROWS+r];if(!sg){g.fillStyle='#e8e2d6';g.fillRect(0,r*BAND,240,BAND);continue}drawSign(g,m,r*BAND,sg)}}}
+for(let k=0;k<SG_TILES;k++)tile('kvSign'+k,signPainter(k),{spec:0.08,shin:40,glowK:1.5});
+function signUV(key){signList();const i=SIGNIX.get(key);if(i===undefined)return null;const k=Math.floor(i/SG_ROWS),r=i%SG_ROWS;if(T['kvSign'+k]===undefined)return null;return{tile:T['kvSign'+k],uv:uvR(0,r*BAND,240,r*BAND+BAND),sg:SIGNS[i]}}
 
-/* ============================== MATERIAL TILES (registered at script load) ============================== */
-const VF=true;
-const uvR=(x0,y0,x1,y1)=>VF?[x0/240,x1/240,1-y1/240,1-y0/240]:[x0/240,x1/240,y0/240,y1/240];
-const FS='Georgia,"Times New Roman",serif',FA='"Helvetica Neue",Helvetica,Arial,sans-serif';
-function fit(g,txt,w,h,fam,wt){let fs=Math.max(6,Math.floor(h));g.font=wt+' '+fs+'px '+fam;while(fs>5&&g.measureText(txt).width>w){fs-=1;g.font=wt+' '+fs+'px '+fam}return fs}
-function band(g,m,x,y,w,h,s){g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.fillStyle=s.bg;g.fillRect(x,y,w,h);
-  const fam=(s.style==='serif'||s.style==='script')?FS:FA,wt=s.style==='script'?'italic bold':(s.style==='serif'?'bold':'bold');const txt=s.style==='caps'?s.text.toUpperCase():s.text;
-  g.fillStyle=s.fg;g.textAlign='center';g.textBaseline='middle';
-  if(s.sub){fit(g,txt,w*0.86,h*0.56,fam,wt);g.fillText(txt,x+w/2,y+h*0.40);fit(g,s.sub,w*0.7,h*0.19,FA,'bold');g.fillText(s.sub,x+w/2,y+h*0.83)}
-  else{fit(g,txt,w*0.86,h*0.66,fam,wt);g.fillText(txt,x+w/2,y+h*0.54)}
-  g.restore();if(s.lit!==false){m.fillStyle='#fff';m.fillRect(x,y,w,h)}}
-const SG_ROWS=6,SG_TILES=8;
-let _sl=null;function signList(){if(_sl)return _sl;const L=[],seen=new Set();for(const id in SHOPS)for(const e in SHOPS[id])for(const s of SHOPS[id][e]){const o=s[3]||{};if(!o.sign)continue;const sg=Object.assign({text:s[0]},o.sign);const k=sg.text+'|'+(sg.sub||'')+'|'+sg.bg+'|'+sg.fg;if(seen.has(k))continue;seen.add(k);sg.key=k;L.push(sg)}
-  // Varsos fascia + blade
-  L.push({key:'varsos',text:'ΒΑΡΣΟΣ',sub:'ΖΑΧΑΡΟΠΛΑΣΤΕΙΟ · 1892',bg:'#f7f1e3',fg:'#7a1f2b',style:'serif'});
-  _sl=L;KV.signs=L.map(s=>s.text);return L}
-const sgKey=o=>{const s=Object.assign({},o.sign);return (s.text)+'|'+(s.sub||'')+'|'+s.bg+'|'+s.fg};
-function signUV(key){const L=signList();const i=L.findIndex(s=>s.key===key);if(i<0||i>=SG_ROWS*SG_TILES)return null;const k=Math.floor(i/SG_ROWS),r=i%SG_ROWS;return{tile:T['kSg'+k],uv:uvR(0,r*40,240,r*40+40),sg:L[i]}}
-for(let k=0;k<SG_TILES;k++)defTile('kSg'+k,(g,S,m)=>{const L=signList();for(let r=0;r<SG_ROWS;r++){const s=L[k*SG_ROWS+r];if(!s){g.fillStyle='#e8e2d6';g.fillRect(0,r*40,240,40);continue}band(g,m,0,r*40,240,40,s)}},{spec:0.08,shin:40,glowK:1.5});
-/* shop window displays, 4 quadrants (0 clothes, 1 café / food, 2 tech shop, 3 pharmacy / beauty) + bank strip at the bottom-right half of q3 row */
-const WQ=[uvR(0,0,120,120),uvR(120,0,240,120),uvR(0,120,120,240),uvR(120,120,240,240)];
-defTile('kWin',(g,S,m)=>{
-  // q0 clothes boutique: pale wall, rail with garments, two mannequins, spot lights
-  g.fillStyle='#efe9e0';g.fillRect(0,0,120,120);g.fillStyle='#cdbfae';g.fillRect(0,92,120,28);g.fillStyle='#8a7d6c';g.fillRect(6,30,108,2);
-  const cl=['#2a2a2e','#b9a58c','#f4f0e8','#7b2d2d','#3b4a63','#d9c6a8','#5a5a52'];for(let i=0;i<16;i++){g.fillStyle=cl[(i*5)%cl.length];g.fillRect(8+i*6.6,32,5.4,26+((i*7)%3)*5)}
-  for(const mx of[30,86]){g.fillStyle='#e9e2d6';g.beginPath();g.arc(mx,52,4.5,0,TAU);g.fill();g.fillStyle=mx<50?'#1f1f22':'#c9b08c';g.fillRect(mx-7,57,14,26);g.fillRect(mx-6,83,12,9);g.fillStyle='#777';g.fillRect(mx-0.6,92,1.2,8)}
-  for(let i=0;i<4;i++){const l=g.createRadialGradient(15+i*30,4,1,15+i*30,8,24);l.addColorStop(0,'rgba(255,250,235,1)');l.addColorStop(1,'rgba(255,250,235,0)');g.fillStyle=l;g.fillRect(0,0,120,50)}
-  // q1 café / food: warm wall, back counter, shelves with bottles/jars, pendant lamps, tables
-  g.fillStyle='#d9b88f';g.fillRect(120,0,120,120);g.fillStyle='#6b4a32';g.fillRect(120,0,120,12);g.fillStyle='#4a3324';g.fillRect(128,70,104,26);g.fillStyle='#e8ddc8';g.fillRect(128,68,104,4);
-  for(let r=0;r<2;r++){g.fillStyle='#5a3d28';g.fillRect(130,28+r*18,100,2);for(let i=0;i<14;i++){g.fillStyle=['#c98a3d','#e9e2d0','#7a3e1e','#3a5a3a','#d65a4a'][(i+r)%5];g.fillRect(132+i*7,19+r*18,4.5,9)}}
-  for(let i=0;i<3;i++){g.fillStyle='#222';g.fillRect(140+i*32,12,1,10);const l=g.createRadialGradient(140.5+i*32,24,1,140.5+i*32,24,16);l.addColorStop(0,'rgba(255,214,150,1)');l.addColorStop(1,'rgba(255,214,150,0)');g.fillStyle=l;g.fillRect(120,8,120,40)}
-  g.fillStyle='#8f6b4a';g.fillRect(120,104,120,16);g.fillStyle='#2b211a';for(let i=0;i<3;i++){g.fillRect(132+i*36,98,22,3);g.fillRect(142+i*36,100,2,14)}
-  // q2 tech / phone shop: white, bright, display tables with devices, big poster
-  g.fillStyle='#f6f7f8';g.fillRect(0,120,120,120);g.fillStyle='#d9dde0';g.fillRect(0,214,120,26);g.fillStyle='#2b6fd6';g.fillRect(10,132,46,40);g.fillStyle='#f2f4f6';g.fillRect(14,136,38,32);g.fillStyle='#1b1b1d';g.fillRect(26,142,14,22);
-  g.fillStyle='#e23b3b';g.fillRect(66,132,44,22);g.fillStyle='#ffffff';g.fillRect(70,138,36,4);g.fillRect(70,145,24,3);
-  for(const tx of[8,64]){g.fillStyle='#e6e3dc';g.fillRect(tx,192,48,8);g.fillStyle='#bfbab0';g.fillRect(tx+4,200,40,16);for(let i=0;i<5;i++){g.fillStyle='#1b1b1d';g.fillRect(tx+3+i*9,186,6,6)}}
-  for(let i=0;i<6;i++){g.fillStyle='rgba(255,255,255,.95)';g.fillRect(4+i*20,122,12,3)}
-  // q3 pharmacy / beauty: white shelving walls with colourful packs, glass counter, green accent
-  g.fillStyle='#fbfbfa';g.fillRect(120,120,120,120);g.fillStyle='#e0e3e2';g.fillRect(120,214,120,26);
-  const pc=['#2e9a46','#ffffff','#e85d8a','#3a7bd5','#f2c230','#d9d9d9','#9a6ac8','#f08a24'];for(let r=0;r<5;r++){g.fillStyle='#d2d6d5';g.fillRect(124,134+r*14,112,1.6);for(let i=0;i<18;i++){g.fillStyle=pc[(i*3+r*5)%pc.length];g.fillRect(125+i*6.2,126+r*14,4.6,8)}}
-  g.fillStyle='rgba(200,225,230,.8)';g.fillRect(150,196,62,18);g.fillStyle='#2e9a46';g.fillRect(150,194,62,3);for(let i=0;i<6;i++){g.fillStyle='rgba(255,255,255,.95)';g.fillRect(124+i*20,122,12,3)}
-  m.fillStyle='#fff';m.fillRect(0,0,240,240)},{glass:0.55,glassDark:0.12,spec:0.2,shin:80,glowK:1.6});
+/* ============================== SHOP CATALOGUE ==============================
+   n: real name (as surveyed), sign: sign text if different, cat: category → interior tile, bg/fg/st: sign colours + type style,
+   frame: shopfront frame colour, door: l|c|r, awn: {c: colour, t: 'straight'|'dome'}, terr: {t: tables, ch: chair colour, umb: umbrella colour},
+   cross: green pharmacy cross, conf: photo | inferred. Colours of independent shops are inferred (no open-licence photo of this block exists);
+   chain brands use their usual livery as plain text. */
+const SH={
+  vivify:{n:'Vivify - The Beauty Lab',sign:'VIVIFY',sub:'THE BEAUTY LAB',cat:'beauty',bg:'#f4ece6',fg:'#5a2e38',st:'caps',frame:'#e8e6e0',conf:'photo'},
+  credia:{n:'CrediaBank',cat:'bank',bg:'#0f2b46',fg:'#ffffff',st:'sans',frame:'#2b2d30',door:'l'},
+  repair:{n:'RepairLogic',cat:'services',bg:'#1d1d1f',fg:'#f6efe2',st:'sans',frame:'#2b2d30'},
+  ojo:{n:'OJO Sunglasses',sign:'OJO',sub:'SUNGLASSES',cat:'optician',bg:'#1c3f6e',fg:'#ffffff',st:'caps',frame:'#1c1c1e',weak:1},
+  bueno:{n:'Bueno',cat:'fast_food',bg:'#3a2a1e',fg:'#f6e7c1',st:'script',frame:'#1f1a16',awn:{c:'#1f3b2c',t:'straight'},terr:{t:4,ch:'#2a2a2a',umb:null,planter:1}},
+  thiros:{n:'THIROS',cat:'bags',bg:'#141414',fg:'#e9dcc0',st:'caps',frame:'#141414',weak:1},
+  glamur:{n:'glamur',cat:'jewelry',bg:'#f3eee6',fg:'#8a6a3a',st:'script',frame:'#c9b48a',weak:1},
+  lila:{n:'Lilá',cat:'clothes',bg:'#f5f2ea',fg:'#1d1d1f',st:'didot',frame:'#3a3f44',door:'r'},
+  choriatiko:{n:'Το Χωριάτικο',cat:'bakery',bg:'#27405a',fg:'#ffffff',st:'sans',sub:'ΑΡΤΟΠΟΙΕΙΟ',frame:'#111111',door:'r',awn:{c:'#1a1a1a',t:'straight'}},
+  deli:{n:'Deli To Bacco',cat:'tobacco',bg:'#e7dfd0',fg:'#222222',st:'sans',frame:'#e8e6e0'},
+  bottega:{n:'Bottega Belleza',cat:'cosmetics',bg:'#f3efe6',fg:'#141414',st:'didot',frame:'#111111'},
+  fixers:{n:'TheFixers',cat:'services',bg:'#1f2a24',fg:'#d8c28a',st:'caps',frame:'#e8e6e0',door:'l'},
+  swiss:{n:'Swiss Corner',cat:'jewelry',bg:'#141414',fg:'#c9a961',st:'serif',frame:'#2b2622',door:'c'},
+  wagamama:{n:'Wagamama',sign:'wagamama',cat:'restaurant',bg:'#1b1b1b',fg:'#ffffff',st:'sans',frame:'#1a1a1c',door:'l',awn:{c:'#2a2f3a',t:'straight'},terr:{t:6,ch:'#2b2b2b',umb:'#e2d2b0',bench:1}},
+  magnifique:{n:'Magnifique',cat:'cafe',bg:'#14110e',fg:'#d6b46a',st:'didot',frame:'#14110e',door:'c',awn:{c:'#e9e1d0',t:'straight'},terr:{t:5,ch:'#b8a07a',umb:'#efe7d6',planter:1}},
+  varsos:{n:'Βάρσος',sign:'ΒΑΡΣΟΣ',sub:'ΖΑΧΑΡΟΠΛΑΣΤΕΙΟ · 1892',cat:'confectionery',bg:'#fbf8f1',fg:'#7a1f2b',st:'serif',frame:'#2b2622',door:'c',terr:{t:4,ch:'#3a2a20',umb:null}},
+  hb:{n:'Holland & Barrett',cat:'health_shop',bg:'#004c3f',fg:'#ffffff',st:'sans',frame:'#004c3f',door:'c'},
+  nova:{n:'Nova',sign:'nova',cat:'telecom',bg:'#101014',fg:'#ffffff',st:'sans',frame:'#101014',rule:'#e3262f'},
+  ancho:{n:'Ancho',sign:'ANCHO',sub:'MEXICAN GRILL',cat:'fast_food',bg:'#1c1a17',fg:'#f08a24',st:'caps',frame:'#1c1a17',awn:{c:'#c25a1c',t:'straight'},terr:{t:2,ch:'#2b2b2b',umb:null}},
+  mrphone:{n:'MrPhone.gr',cat:'telecom',bg:'#e7dfd0',fg:'#222222',st:'sans',frame:'#e8e6e0',door:'l'},
+  zenith:{n:'Ζενίθ',cat:'services',bg:'#2a2622',fg:'#e8dcc0',st:'caps',frame:'#2a2622'},
+  sweet:{n:'The sweet spot',cat:'confectionery',bg:'#f7dfe2',fg:'#7a2e44',st:'script',frame:'#f0e8e2',awn:{c:'#e8b7c0',t:'dome'}},
+  ibank:{n:'i-bank corner',cat:'bank',bg:'#003a70',fg:'#ffffff',st:'sans',frame:'#9aa3ab'},
+  coffeeisland:{n:'Coffee Island',cat:'cafe',bg:'#191513',fg:'#ffffff',st:'caps',frame:'#191513',door:'c',terr:{t:3,ch:'#3b3b3b',umb:'#2b2b2b'}},
+  fresco:{n:'Fresco Gelateria',sign:'Fresco',sub:'GELATERIA',cat:'ice_cream',bg:'#f3f6ef',fg:'#2f6d4f',st:'script',frame:'#e8e6e0',terr:{t:2,ch:'#e8e6e0',umb:null}},
+  bibi:{n:'Bibi boutique',cat:'clothes',bg:'#f2ece4',fg:'#3a2a24',st:'script',frame:'#3a2a24'},
+  chantro:{n:'Χαντρόκοσμος',cat:'crafts',bg:'#5b2a6e',fg:'#f6e6ff',st:'sans',frame:'#e8e6e0'},
+  triumph:{n:'Triumph',cat:'clothes',bg:'#111111',fg:'#ffffff',st:'caps',frame:'#111111'},
+  loccitane:{n:"L'Occitane",sign:"L'OCCITANE",sub:'EN PROVENCE',cat:'cosmetics',bg:'#f6c443',fg:'#3b2a1a',st:'caps',frame:'#3b2a1a',door:'r'},
+  tissa:{n:'TISSA',cat:'shoes',bg:'#ffffff',fg:'#111111',st:'caps',frame:'#1a1a1a',weak:1},
+  pharm6:{n:'Pharmacy (Kassaveti 6)',sign:'ΦΑΡΜΑΚΕΙΟ',cat:'pharmacy',bg:'#ffffff',fg:'#13824a',st:'sans',rule:'#13824a',frame:'#13824a',cross:1,poi:'pharmacy'},
+  pischosv:{n:'Pisxos optics visionworks',sign:'ΠΙΣΧΟΣ',sub:'OPTICS · VISIONWORKS',cat:'optician',bg:'#16243d',fg:'#ffffff',st:'caps',frame:'#16243d'},
+  dust:{n:'Dust Cream',cat:'cosmetics',bg:'#ffffff',fg:'#141414',st:'thin',frame:'#141414',door:'l'},
+  pischos:{n:'Πίσχος',sign:'ΠΙΣΧΟΣ',sub:'ΟΠΤΙΚΑ',cat:'optician',bg:'#16243d',fg:'#ffffff',st:'caps',frame:'#16243d'},
+  vodafone:{n:'Vodafone',sign:'vodafone',cat:'telecom',bg:'#e60000',fg:'#ffffff',st:'sans',frame:'#e8e6e0'},
+  pharm6b:{n:'Pharmacy (Kassaveti 6, east)',sign:'ΦΑΡΜΑΚΕΙΟ',cat:'pharmacy',bg:'#ffffff',fg:'#13824a',st:'sans',rule:'#13824a',frame:'#13824a',cross:1,poi:'pharmacy'},
+  leonidas:{n:'Leonidas',sub:'CHOCOLATIER',cat:'confectionery',bg:'#f6f0e2',fg:'#a8863e',st:'serif',frame:'#a8863e'},
+  lobby:{n:'',noSign:1},closed:{n:'',noSign:1},wall:{n:'',noSign:1}};
+const CAT_INT={restaurant:'F',cafe:'F',fast_food:'F',bakery:'F',confectionery:'F',ice_cream:'F',clothes:'C',bags:'C',shoes:'C',crafts:'C',jewelry:'T',optician:'T',telecom:'T',services:'T',bank:'T',tobacco:'T',
+  cosmetics:'B',beauty:'B',pharmacy:'B',health_shop:'B'};
+const CAT_TINT={restaurant:'#ffe0bc',cafe:'#ffdcb4',fast_food:'#ffe2bf',bakery:'#ffdcae',confectionery:'#ffe6c8',ice_cream:'#fff2d8',clothes:'#fff8f0',bags:'#fff4e8',shoes:'#fff4e8',crafts:'#f6eaff',jewelry:'#fff6e0',
+  optician:'#eef4ff',telecom:'#eef2fa',services:'#f6f6f2',bank:'#e8eef8',tobacco:'#fff3e0',cosmetics:'#fff6f6',beauty:'#fff4f4',pharmacy:'#eefaf2',health_shop:'#f0faf0'};
 
-/* ============================== GEOMETRY HELPERS (same conventions as 89a_lm_junction.js) ============================== */
+/* ============================== BUILDINGS (OSM way id → design) ==============================
+   units[edge] = [[s0, s1, shopKey, opts], …]: metres along the OSM edge from its first vertex; shop centres = OSM node / verified address
+   positions of PLACEMENT_AUDIT.md §7 carried to the facade. front = edges with full street facades (balconies / neoclassical bays). */
+const BLD={
+  // Kassaveti 1 — neoclassical corner block on Kifisias Ave / Kassaveti (photo ref/r11: cream plaster, grey stone pilasters, tall moulded first-floor windows,
+  // salmon pediment over the corner wing, red-tile hip roof). The 4 m NW end (e2) is the plainer modern 3-storey block with balconies (Vivify).
+  w1075949217:{style:'neo',lv:2,gfH:4.9,fh:4.3,wall:'#e8dcbc',trim:'#f6f2e8',pil:'#a9a59c',roof:'hip',roofCol:'#b5573c',cornice:0.55,front:[2,4,5,7,8,10,0],modern:[2],
+    pediment:{e:4,s0:5.2,s1:11.7,col:'#e8907a'},balcEvery:2,winW:1.15,
+    units:{2:[[0.2,3.9,'vivify']],4:[[0.4,6.0,'credia'],[6.4,11.3,'repair']],5:[[0.5,4.7,'ojo'],[5.1,14.5,'bueno']],7:[[0.25,2.5,'thiros'],[2.7,4.9,'glamur']],
+      8:[[0.3,4.1,'lila'],[4.3,8.1,'choriatiko'],[8.3,14.9,'deli']],10:[[0.2,3.4,'bottega'],[3.6,5.0,'lobby',{no:'1',plates:['Akouson','OJO Sunglasses','glamur']}],[5.2,8.6,'fixers'],[8.8,13.4,'swiss']]}},
+  // Kassaveti 3 — 4-storey 1960-80 polykatoikia, continuous marble-edged balconies, top floor set back; Wagamama + Magnifique terraces
+  w1075949840:{style:'poly',lv:4,gfH:4.3,fh:3.0,wall:'#f2ede1',gfMat:'marble',front:[21,16],rail:'alu',dep:1.3,setTop:1.6,shut:'#d6cfbf',frame:'#d8d8d2',awn:['#3d5f6a','#d8ccb2','#7a7f78',null],solar:3,
+    units:{21:[[0.3,12.0,'wagamama'],[12.4,21.4,'magnifique'],[21.7,24.2,'lobby',{no:'3',plates:[]}]]}},
+  // Kassaveti 5 — Varsos (historic patisserie, 1892): 2-storey neoclassical, rusticated base, quoins, central balcony on consoles, green shutters, cornice + balustrade
+  w1075949838:{style:'neo',lv:2,gfH:4.6,fh:4.2,wall:'#e8cdb5',trim:'#f5efe4',pil:'#cdbfa8',roof:'flat',balus:1,cornice:0.5,front:[0],shutters:'#4f6b55',quoins:1,centreBalc:1,winW:1.1,raised:0.3,
+    units:{0:[[0.25,8.05,'varsos']]}},
+  // Kassaveti 7-9 — 3-storey polykatoikia, continuous balconies with iron rails, solar heaters
+  w1075949837:{style:'poly',lv:3,gfH:4.3,fh:3.0,wall:'#f1eee7',gfMat:'marble',front:[1],rail:'iron',railCol:'#2c2f30',dep:1.3,shut:'#cfc8b6',frame:'#e8e6e0',awn:['#b9b2a3','#4d6b5a',null,'#8a3a2a'],solar:3,
+    units:{1:[[0.3,6.5,'hb'],[6.8,12.0,'nova'],[12.3,17.5,'ancho']]}},
+  // Kassaveti 4 — 3-storey corner block Kassaveti / Drosini, masonry balcony parapets
+  w378932290:{style:'poly',lv:3,gfH:4.2,fh:3.0,wall:'#f1eee7',gfMat:'marble',front:[10,0,1],rail:'masonry',dep:1.2,shut:'#d8d2c4',frame:'#3b3c3e',awn:['#c9c2b0',null,'#5a6e5a',null],solar:2,
+    units:{10:[[0.3,3.3,'mrphone'],[3.5,6.2,'zenith'],[6.4,8.8,'sweet'],[9.0,10.2,'ibank'],[10.4,11.5,'coffeeisland',{corner:1}]],
+      0:[[0.1,5.0,'coffeeisland',{second:1}],[5.3,7.4,'lobby',{no:'4',plates:['Drip','Naturafoods']}],[8.8,16.3,'fresco'],[16.6,22.3,'closed']]}},
+  // b289 — 4-storey, stone-clad base, top floor set back; four narrow boutiques on Kassaveti
+  w1075948791:{style:'poly',lv:4,gfH:4.2,fh:3.05,wall:'#e7cfae',gfMat:'stone',front:[16,11],rail:'masonry',dep:1.3,setTop:1.7,shut:'#7a5a3a',frame:'#4a3a2c',awn:['#d8ccb2','#7a4a3a',null],solar:3,planters:true,
+    units:{16:[[0.2,3.2,'bibi'],[3.4,6.4,'chantro'],[6.6,9.6,'triumph'],[9.8,12.85,'loccitane']]}},
+  // Kassaveti 6 — 4-storey polykatoikia, top floor set back
+  w1075948790:{style:'poly',lv:4,gfH:4.2,fh:3.0,wall:'#f2ede1',gfMat:'marble',front:[3],rail:'alu',dep:1.3,setTop:1.6,shut:'#d6cfbf',frame:'#d8d8d2',awn:['#3d6a4c','#d8ccb2',null,'#8a8f86'],solar:3,
+    units:{3:[[0.3,2.4,'lobby',{no:'6',plates:['TISSA']}],[2.6,4.4,'tissa'],[4.6,8.0,'pharm6'],[8.2,11.0,'pischosv'],[11.2,16.2,'dust']]}},
+  // b286 — 4-storey polykatoikia (Kassaveti / Miltiadou, Hotel des Roses at the back)
+  w1075948788:{style:'poly',lv:4,gfH:4.2,fh:3.0,wall:'#ece4cf',gfMat:'marble',front:[2,9],rail:'alu',dep:1.3,shut:'#d6cfbf',frame:'#e6e4de',awn:['#d8ccb2','#3d5f8a',null],solar:4,
+    units:{2:[[0.3,4.5,'pischos'],[4.7,10.0,'vodafone'],[10.2,14.25,'pharm6b']]}},
+  // Drosini 11 — modern 3-storey, stone/HPL cladding, glass rails; Leonidas on the north point (OSM node 10098070077)
+  w1075656859:{style:'poly',lv:3,gfH:4.5,fh:3.1,wall:'#f3f1ec',gfMat:'stone',front:[1,3,2],rail:'glass',dep:1.0,shut:null,frame:'#2f3032',awn:[null],solar:0,
+    units:{3:[[0.3,5.4,'leonidas']]}}};
+const AT=[[-24.0,36.0],[17.0,30.0],[31.5,35.0],[46.0,36.0],[-5.0,70.0],[12.0,72.0],[27.0,74.0],[43.0,75.0],[-31.0,78.0]];
+
+/* ============================== MAP HELPERS ============================== */
+const _bi={};function bIdx(id){if(_bi[id]!==undefined)return _bi[id];let r=-1;if(typeof MAP!=='undefined'&&MAP&&MAP.buildings){for(let i=0;i<MAP.buildings.length;i++){const b=MAP.buildings[i];if(b&&b[11]&&b[11].id===id){r=b._i!=null?b._i:i;break}}}if(r>=0)_bi[id]=r;return r}
+const poisOf=idx=>(typeof MAP!=='undefined'&&MAP&&Array.isArray(MAP.pois))?MAP.pois.filter(p=>p.b===idx):[];
+const nrm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9α-ω]/g,'');
+
+/* ============================== GEOMETRY HELPERS (edge frames) ============================== */
 function FR(a,c,sg){const dx=c[0]-a[0],dz=c[1]-a[1],L=Math.hypot(dx,dz)||1e-6,ux=dx/L,uz=dz/L;return{a,c,L,ux,uz,nx:sg>0?uz:-uz,nz:sg>0?-ux:ux}}
 const P=(f,s,d)=>[f.a[0]+f.ux*s+f.nx*d,f.a[1]+f.uz*s+f.nz*d];
 const V=(f,s,d,y)=>{const p=P(f,s,d);return[p[0],y,p[1]]};
@@ -125,23 +189,31 @@ let O,CUT;
 function fq(B,f,s0,s1,y0,y1,d,col,tile,uv,gl,dir){if(s1-s0<1e-3||y1-y0<1e-3)return;const a=P(f,s0,d),b=P(f,s1,d),k=dir||1;const u=uv||[s0,s1,y0,y1];B.wall(a[0],a[1],b[0],b[1],y0,y0,y1,y1,f.nx*k,f.nz*k,u[0],u[1],u[2],u[3],col,RECT[tile],gl||0)}
 function sq(B,f,s,d0,d1,y0,y1,dir,col,tile,gl){if(Math.abs(d1-d0)<1e-3||y1-y0<1e-3)return;const a=P(f,s,d0),b=P(f,s,d1);B.wall(a[0],a[1],b[0],b[1],y0,y0,y1,y1,f.ux*dir,f.uz*dir,d0,d1,y0,y1,col,RECT[tile],gl||0)}
 function hq(B,f,s0,s1,d0,d1,y,down,col,tile,gl){if(s1-s0<1e-3||Math.abs(d1-d0)<1e-3)return;const A=P(f,s0,d0),Bp=P(f,s1,d0),C=P(f,s1,d1),D=P(f,s0,d1);B.hq([A[0],y,A[1]],[Bp[0],y,Bp[1]],[C[0],y,C[1]],[D[0],y,D[1]],[A[0],A[1]],[Bp[0],Bp[1]],[C[0],C[1]],[D[0],D[1]],col,RECT[tile],gl||0,!!down)}
-function bx(B,f,s,d,y0,ws,wd,h,col,tile,gl){const p=P(f,s,d);B.box(p[0],y0+h/2,p[1],ws,h,wd,Math.atan2(-f.uz,f.ux),col,RECT[tile],1,gl||0)}
+function bx(B,f,s,d,y0,ws,wd,h,col,tile,gl){if(ws<1e-3||wd<1e-3||h<1e-3)return;const p=P(f,s,d);B.box(p[0],y0+h/2,p[1],ws,h,wd,Math.atan2(-f.uz,f.ux),col,RECT[tile],1,gl||0)}
 function q3(B,a,b,c,d,ua,ub,uc,ud,col,tile,gl,want){const n=B.nrm(a,b,c);if(n[0]*want[0]+n[1]*want[1]+n[2]*want[2]<0)B.quad(d,c,b,a,ud,uc,ub,ua,col,RECT[tile],gl||0);else B.quad(a,b,c,d,ua,ub,uc,ud,col,RECT[tile],gl||0)}
 function t3(B,a,b,c,ua,ub,uc,col,tile,gl,want){const n=B.nrm(a,b,c);if(n[0]*want[0]+n[1]*want[1]+n[2]*want[2]<0)B.tri(a,c,b,ua,uc,ub,col,RECT[tile],gl||0);else B.tri(a,b,c,ua,ub,uc,col,RECT[tile],gl||0)}
-function wallHoles(B,f,S0,S1,Y0,Y1,d,holes,col,tile){holes=holes.filter(h=>h[1]>S0&&h[0]<S1).sort((a,b)=>a[0]-b[0]);let cur=S0;
-  for(const h of holes){const h0=Math.max(h[0],cur),h1=Math.min(h[1],S1);if(h1<=h0)continue;if(h0>cur)fq(B,f,cur,h0,Y0,Y1,d,col,tile);if(h[2]>Y0)fq(B,f,h0,h1,Y0,Math.min(h[2],Y1),d,col,tile);if(h[3]<Y1)fq(B,f,h0,h1,Math.max(h[3],Y0),Y1,d,col,tile);cur=h1}
+function wallHoles(B,f,S0,S1,Y0,Y1,d,holes,col,tile){holes=holes.filter(h=>h[1]>S0&&h[0]<S1&&h[3]>Y0&&h[2]<Y1).sort((a,b)=>a[0]-b[0]);let cur=S0;
+  // merge overlapping holes into columns: for each column draw the wall above and below every hole it contains
+  let i=0;while(i<holes.length){let c0=Math.max(holes[i][0],S0),c1=Math.min(holes[i][1],S1);const col_=[holes[i]];let j=i+1;while(j<holes.length&&holes[j][0]<c1-1e-3){c1=Math.max(c1,Math.min(holes[j][1],S1));col_.push(holes[j]);j++}
+    if(c0>cur)fq(B,f,cur,c0,Y0,Y1,d,col,tile);
+    if(col_.length===1){const h=col_[0];if(h[2]>Y0)fq(B,f,c0,c1,Y0,Math.min(h[2],Y1),d,col,tile);if(h[3]<Y1)fq(B,f,c0,c1,Math.max(h[3],Y0),Y1,d,col,tile)}
+    else{// several holes sharing a column (e.g. door + fascia): fill the vertical gaps over the column width
+      const ys=col_.map(h=>[Math.max(h[2],Y0),Math.min(h[3],Y1)]).sort((a,b)=>a[0]-b[0]);let y=Y0;for(const [a,b] of ys){if(a>y)fq(B,f,c0,c1,y,a,d,col,tile);y=Math.max(y,b)}if(y<Y1)fq(B,f,c0,c1,y,Y1,d,col,tile)}
+    cur=c1;i=j}
   if(S1>cur)fq(B,f,cur,S1,Y0,Y1,d,col,tile)}
-const ALU=H('#d4d6d6'),MARBLE=H('#eeebe4'),C_SILL=H('#e9e6de'),WHITE=H('#f6f3ea'),BLACK=H('#18191b');
-/* recessed opening: o {glass, uv, glassCol, gl, frame, fw, mull, tr, door:[s0,s1], shut, shutCol, sill, rev, revT, sillCol} */
-function opening(B,f,s0,s1,y0,y1,dep,o){const rev=o.rev||MARBLE,rt=o.revT||tm('plaster'),fc=o.frame||ALU,fw=o.fw||0.06;
-  sq(B,f,s0,0,-dep,y0,y1,1,shade(rev,0.86),rt);sq(B,f,s1,0,-dep,y0,y1,-1,shade(rev,0.86),rt);hq(B,f,s0,s1,-dep,0,y0,false,o.sillCol||C_SILL,tm('marble'));hq(B,f,s0,s1,-dep,0,y1,true,shade(rev,0.7),rt);
-  fq(B,f,s0,s1,y0,y1,-dep,o.glassCol||C1,o.glass!=null?o.glass:tt('jGlass','glassR'),o.uv||[0,1,0,1],o.gl||0);
+const ALU=H('#d4d6d6'),MARBLE=H('#eeebe4'),C_SILL=H('#e9e6de'),GREY=H('#9a9ea2'),DARKM=H('#2a2c2e');
+/* recessed opening (window, balcony door or shop glazing). o: {glass, glassCol, gl, frame, rev, revT, mull, tr, door:[s0,s1], shut(0..1), shutCol, sill, fw, glassUv} */
+function opening(B,f,s0,s1,y0,y1,dep,o){const rev=o.rev||MARBLE,rt=o.revT||TMt('plaster'),fc=o.frame||ALU,fw=o.fw||0.06;
+  sq(B,f,s0,0,-dep,y0,y1,1,shade(rev,0.86),rt);sq(B,f,s1,0,-dep,y0,y1,-1,shade(rev,0.86),rt);hq(B,f,s0,s1,-dep,0,y0,false,o.sillCol||C_SILL,TMt('marble'));hq(B,f,s0,s1,-dep,0,y1,true,shade(rev,0.7),rt);
+  fq(B,f,s0,s1,y0,y1,-dep,o.glassCol||C1,o.glass||TT('kvGlass'),o.glassUv||[0,1,0,1],o.gl||0);
   const d=-dep+0.025;fq(B,f,s0,s0+fw,y0,y1,d,fc,T.white);fq(B,f,s1-fw,s1,y0,y1,d,fc,T.white);fq(B,f,s0,s1,y1-fw,y1,d,fc,T.white);fq(B,f,s0,s1,y0,y0+fw*1.4,d,fc,T.white);
-  const n=o.mull||1;for(let i=1;i<n;i++){const s=s0+(s1-s0)*i/n;fq(B,f,s-fw/2,s+fw/2,y0,o.tr||y1,d,fc,T.white)}
-  if(o.tr&&o.tr<y1-0.1){fq(B,f,s0,s1,o.tr-fw/2,o.tr+fw/2,d,fc,T.white);const nt=o.trMull||0;for(let i=1;i<nt;i++){const s=s0+(s1-s0)*i/nt;fq(B,f,s-fw/3,s+fw/3,o.tr,y1,d,fc,T.white)}}
-  if(o.door){const [a,b]=o.door;fq(B,f,a-fw,a+fw*0.5,y0,o.tr||y1,d+0.01,fc,T.white);fq(B,f,b-fw*0.5,b+fw,y0,o.tr||y1,d+0.01,fc,T.white);const m=(a+b)/2;bx(B,f,m-0.1,d+0.05,y0+0.95,0.03,0.05,0.75,H('#b8bcbe'),T.white);bx(B,f,m+0.1,d+0.05,y0+0.95,0.03,0.05,0.75,H('#b8bcbe'),T.white)}
-  if(o.shut>0){const hh=(y1-y0)*Math.min(1,o.shut);fq(B,f,s0+fw,s1-fw,y1-hh,y1-fw,d+0.02,o.shutCol||H('#d9d3c3'),tm('shutterM'))}
-  if(o.sill)bx(B,f,(s0+s1)/2,0.05,y0-0.06,s1-s0+0.14,0.1,0.06,C_SILL,tm('marble'))}
+  const n=o.mull||1;for(let i=1;i<n;i++){const s=s0+(s1-s0)*i/n;if(o.door&&s>o.door[0]-0.1&&s<o.door[1]+0.1)continue;fq(B,f,s-fw/2,s+fw/2,y0,o.tr&&o.door?o.tr:y1,d,fc,T.white)}
+  if(o.tr&&o.tr<y1-0.1)fq(B,f,s0,s1,o.tr-fw/2,o.tr+fw/2,d,fc,T.white);
+  if(o.door){const [a,b]=o.door;fq(B,f,a-fw,a+fw*0.5,y0,o.tr||y1,d+0.01,fc,T.white);fq(B,f,b-fw*0.5,b+fw,y0,o.tr||y1,d+0.01,fc,T.white);const m=(a+b)/2;bx(B,f,m-0.1,d+0.05,y0+0.9,0.03,0.05,0.85,H('#c0c4c6'),T.white);bx(B,f,m+0.1,d+0.05,y0+0.9,0.03,0.05,0.85,H('#c0c4c6'),T.white)}
+  if(o.kick){const kc=shade(fc,0.85);for(const [a,b] of o.door?[[s0,o.door[0]-fw],[o.door[1]+fw,s1]]:[[s0,s1]])fq(B,f,a,b,y0,y0+o.kick,d+0.012,kc,T.white)}
+  if(o.shut>0){const hh=(y1-y0)*Math.min(1,o.shut);fq(B,f,s0+fw,s1-fw,y1-hh,y1-fw,d+0.02,o.shutCol||H('#d9d3c3'),TMt('shutterM','shutter'))}
+  if(o.sill)bx(B,f,(s0+s1)/2,0.05,y0-0.06,s1-s0+0.14,0.1,0.06,C_SILL,TMt('marble'))}
+/* outline offsets: per vertex intersection of the neighbouring edges' offset lines (offset d per edge, outward positive) */
 function outline(ps,sg,dOf){const n=ps.length,E=[];for(let i=0;i<n;i++)E.push(FR(ps[i],ps[(i+1)%n],sg));const out=[];
   for(let j=0;j<n;j++){const e0=E[(j-1+n)%n],e1=E[j],d0=dOf((j-1+n)%n),d1=dOf(j);const p=ps[j];
     const a0=[p[0]+e0.nx*d0,p[1]+e0.nz*d0],a1=[p[0]+e1.nx*d1,p[1]+e1.nz*d1];const cr=e0.ux*e1.uz-e0.uz*e1.ux;
@@ -151,279 +223,224 @@ function outline(ps,sg,dOf){const n=ps.length,E=[];for(let i=0;i<n;i++)E.push(FR
   return out}
 function polyRoof(B,ps,y,col,tile){const tris=triangulate([ps]);for(const t of tris){let [a,b,c]=t;const cr=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(cr>0){const q=b;b=c;c=q}
   B.tri([a[0],y,a[1]],[b[0],y,b[1]],[c[0],y,c[1]],[a[0],a[1]],[b[0],b[1]],[c[0],c[1]],col,RECT[tile],0,true)}}
-function awning(B,Cb,f,s0,s1,yTop,proj,drop,col,valCol){const c=H(col),y1=yTop-drop;const A=V(f,s0,0.04,yTop),Bv=V(f,s1,0.04,yTop),C=V(f,s1,proj,y1),D=V(f,s0,proj,y1);const up=[f.nx*0.3,1,f.nz*0.3],dn=[-f.nx*0.3,-1,-f.nz*0.3];
-  const L=s1-s0,fab=tt('jFabric','awnS');q3(B,A,Bv,C,D,[0,0],[L,0],[L,proj],[0,proj],c,fab,0,up);q3(B,A,Bv,C,D,[0,0],[L,0],[L,proj],[0,proj],shade(c,0.62),fab,0,dn);
-  // straight valance 22 cm (both faces)
-  const vh=0.22;fq(B,{a:P(f,s0,proj),c:P(f,s1,proj),L,ux:f.ux,uz:f.uz,nx:f.nx,nz:f.nz},0,L,y1-vh,y1,0,valCol?H(valCol):c,fab);fq(B,{a:P(f,s0,proj),c:P(f,s1,proj),L,ux:f.ux,uz:f.uz,nx:f.nx,nz:f.nz},0,L,y1-vh,y1,-0.01,shade(c,0.6),fab,null,0,-1);
-  t3(B,A,D,[D[0],yTop,D[2]],[0,0],[proj,0],[proj,0.3],shade(c,0.8),fab,0,[-f.ux,0,-f.uz]);t3(B,Bv,C,[C[0],yTop,C[2]],[0,0],[proj,0],[proj,0.3],shade(c,0.8),fab,0,[f.ux,0,f.uz]);
-  // folding arms
-  for(const s of[s0+0.15,s1-0.15]){const a=V(f,s,0.05,yTop-0.35),b=V(f,s,proj-0.05,y1+0.02);B.box((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,0.04,0.04,Math.hypot(b[0]-a[0],b[2]-a[2]),Math.atan2(f.nx,f.nz),H('#c8cacc'),RECT[T.white],1,0)}}
+/* party wall test: is the ground just outside this edge inside another building? (then no windows / no shops on it) */
+let _nb=null;function nearBuildings(cx,cz){const out=[];for(const b of MAP.buildings){const r=b[6];if(!r)continue;if(Math.abs(r[0]-cx)<60&&Math.abs(r[1]-cz)<60){try{out.push(unp(b[10]))}catch(e){}}}return out}
+function isParty(f,self){if(f.L<0.3)return true;for(const t of[0.25,0.5,0.75]){const p=P(f,f.L*t,0.7);let hit=false;for(const q of _nb){if(q===self)continue;if(pip(q,p[0],p[1])){hit=true;break}}if(!hit)return false}return true}
 
-/* ============================== DATA HELPERS ============================== */
-let ROADPTS=null;// Kassaveti carriageway centrelines [[x,z],...] segments
-function kassRoad(){if(ROADPTS)return ROADPTS;ROADPTS=[];try{const ni=MAP.names.indexOf('Κασσαβέτη');for(const r of MAP.roads){if(r[1]!==ni)continue;const c=r.slice(8);const ps=[];for(let i=0;i+1<c.length;i+=2)ps.push([c[i]/10,c[i+1]/10]);ROADPTS.push({ps,w:r[3]})}}catch(e){}return ROADPTS}
-function roadDist(x,z){let best=1e9;for(const r of kassRoad())for(let i=0;i<r.ps.length-1;i++){const a=r.ps[i],b=r.ps[i+1],dx=b[0]-a[0],dz=b[1]-a[1],L2=dx*dx+dz*dz||1;const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/L2,0,1);best=Math.min(best,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t))}return best}
-const swY=(x,z)=>terr(x,z)+0.16;
-let SPEC=null;try{fetch('data/buildings_spec.json').then(r=>r.ok?r.json():null).then(d=>{if(d)SPEC=d}).catch(()=>{})}catch(e){}
+/* ============================== SHOPFRONT PIECES ============================== */
+function awning(f,s0,s1,yTop,proj,drop,col,type){const c=H(col),y1=yTop-drop,L=s1-s0;const up=[f.nx*0.3,1,f.nz*0.3],dn=[-f.nx*0.3,-1,-f.nz*0.3];
+  const fab=TT('kvFabric');
+  if(type==='dome'){// quarter-round "basket" awning: 4 facets
+    const N=4;let pa=null;for(let i=0;i<=N;i++){const a=i/N*Math.PI/2;const d=0.04+Math.sin(a)*proj,y=yTop-(1-Math.cos(a))*drop;if(pa){const A=V(f,s0,pa[0],pa[1]),B=V(f,s1,pa[0],pa[1]),C=V(f,s1,d,y),D=V(f,s0,d,y);q3(O,A,B,C,D,[0,0],[L,0],[L,0.5],[0,0.5],c,fab,0,up);q3(O,A,B,C,D,[0,0],[L,0],[L,0.5],[0,0.5],shade(c,0.6),fab,0,dn);
+        t3(O,A,D,V(f,s0,0.04,pa[1]),[0,0],[0.4,0],[0,0.4],shade(c,0.85),fab,0,[-f.ux,0,-f.uz]);t3(O,B,C,V(f,s1,0.04,pa[1]),[0,0],[0.4,0],[0,0.4],shade(c,0.85),fab,0,[f.ux,0,f.uz]);
+        t3(O,D,V(f,s0,0.04,y),V(f,s0,0.04,pa[1]),[0,0],[0.4,0],[0,0.4],shade(c,0.85),fab,0,[-f.ux,0,-f.uz]);t3(O,C,V(f,s1,0.04,y),V(f,s1,0.04,pa[1]),[0,0],[0.4,0],[0,0.4],shade(c,0.85),fab,0,[f.ux,0,f.uz])}pa=[d,y]}
+    return}
+  const A=V(f,s0,0.04,yTop),Bv=V(f,s1,0.04,yTop),C=V(f,s1,proj,y1),D=V(f,s0,proj,y1);
+  q3(O,A,Bv,C,D,[0,0],[L,0],[L,proj],[0,proj],c,fab,0,up);q3(O,A,Bv,C,D,[0,0],[L,0],[L,proj],[0,proj],shade(c,0.62),fab,0,dn);
+  const vh=0.24,v=uvR(0,122,240,182);CUT.wall(C[0],C[2],D[0],D[2],y1-vh,y1-vh,y1,y1,f.nx,f.nz,0,Math.max(1,L/1.4),v[2],v[3],c,RECT[TT('kvBalus')],0);
+  t3(O,A,D,[D[0],yTop,D[2]],[0,0],[proj,0],[proj,0.3],shade(c,0.8),fab,0,[-f.ux,0,-f.uz]);t3(O,Bv,C,[C[0],yTop,C[2]],[0,0],[proj,0],[proj,0.3],shade(c,0.8),fab,0,[f.ux,0,f.uz]);
+}
+function signQuad(f,s0,s1,y0,y1,d,key){const su=signUV(key);if(!su)return null;const w=s1-s0,h=y1-y0;let sw=Math.min(w-0.12,(h-0.06)*10),sh=sw/10;if(sw<0.3)return null;const c=(s0+s1)/2,yc=(y0+y1)/2;
+  fq(O,f,c-sw/2,c+sw/2,yc-sh/2,yc+sh/2,d,C1,su.tile,su.uv,su.sg.lit===false?0:1);return su}
+function fascia(f,s0,s1,y0,y1,s,key,proj){proj=proj||0.1;const bg=H(s.bg||'#1d1d1f');bx(O,f,(s0+s1)/2,proj/2,y0,s1-s0,proj,y1-y0,bg,T.white);signQuad(f,s0,s1,y0,y1,proj+0.006,key)}
+function pharmCross(f,s,y){const g=H('#18a558');const p=P(f,s,0.55);bx(O,f,s,0.3,y+0.28,0.08,0.5,0.08,GREY,T.white);
+  for(const [w,h] of[[0.62,0.2],[0.2,0.62]])bx(O,f,s,0.62,y-h/2+0.1,0.07,w,h,g,T.white,1);placed('lm_sign',p[0],p[1],'pharmacy cross','lm-kassaveti')}
+function chairAt(x,y,z,yaw,col){O.box(x,y+0.44,z,0.44,0.05,0.44,yaw,col,RECT[T.white]);const bxp=x-Math.sin(yaw)*0.2,bzp=z-Math.cos(yaw)*0.2;O.box(bxp,y+0.68,bzp,0.44,0.44,0.04,yaw,col,RECT[T.white]);
+  for(const [a,b] of[[-0.19,-0.19],[0.19,-0.19],[-0.19,0.19],[0.19,0.19]])O.box(x+a,y+0.21,z+b,0.03,0.42,0.03,0,shade(col,0.7),RECT[T.white])}
+function terrace(f,s0,s1,gy,t,yAwn){const w=s1-s0;const n=Math.max(1,Math.min(t.t||2,Math.floor((w-0.4)/1.6)));const ch=H(t.ch||'#2b2b2b'),top=H('#e8e4dc');const d0=t.bench?1.0:1.25;
+  for(let i=0;i<n;i++){const s=s0+(i+0.5)*w/n;const p=P(f,s,d0+0.35);const y=terr(p[0],p[1])+0.16;
+    O.cyl(p[0],y,p[1],0.05,0.05,0.72,6,GREY,RECT[T.white],false);O.cyl(p[0],y+0.72,p[1],0.36,0.36,0.035,10,top,RECT[TMt('marble')],true);O.cyl(p[0],y,p[1],0.22,0.18,0.03,8,GREY,RECT[T.white],true);
+    const yaw=Math.atan2(f.ux,f.uz);for(const sd of[-1,1]){const q=P(f,s+sd*0.62,d0+0.35);chairAt(q[0],y,q[1],yaw+sd*Math.PI/2,ch)}
+    if(t.umb&&i%2===0){const u=H(t.umb);O.cyl(p[0],y,p[1],0.025,0.025,2.35,4,GREY,RECT[T.white],false);O.cyl(p[0],y+2.0,p[1],1.35,0.04,0.42,8,u,RECT[TT('kvFabric')],true);O.cyl(p[0],y+1.98,p[1],1.35,1.35,0.06,8,shade(u,0.85),RECT[TT('kvFabric')],false)}
+    addSeg(p[0]-0.3,p[1]-0.3,p[0]+0.3,p[1]+0.3,'p')}
+  if(t.planter){for(const s of[s0+0.35,s1-0.35]){const p=P(f,s,0.9);const y=terr(p[0],p[1])+0.16;O.box(p[0],y+0.3,p[1],0.5,0.6,0.5,Math.atan2(-f.uz,f.ux),H('#3a3a3a'),RECT[T.white]);O.cyl(p[0],y+0.6,p[1],0.3,0.16,0.7,7,H('#4d6b34'),RECT[TT('hedge',T.white)],true);addSeg(p[0]-0.25,p[1],p[0]+0.25,p[1],'p')}}}
+/* one shop unit. gy = shop floor level, gTop = ceiling of the ground floor (fascia area ends there or earlier) */
+function shopUnit(f,s0,s1,gy,gTop,key,s,opt,cfg,neo){const w=s1-s0;const cat=s.cat||'services';const it=TT('kvShop'+(CAT_INT[cat]||'T'));
+  const glassTop=Math.min(gTop-0.95,gy+(neo?3.25:2.95));const fr=H(s.frame||cfg.frame||'#2e2f31');
+  const dw=Math.min(1.25,Math.max(0.9,w*0.32));const dpos=opt&&opt.corner?'c':(s.door||'c');const dc=w<2.2?(s0+s1)/2:dpos==='l'?s0+0.2+dw/2:dpos==='r'?s1-0.2-dw/2:(s0+s1)/2;
+  const rev=cfg.gfMat==='stone'?H('#d9c7a6'):H('#e8e4dc');
+  opening(O,f,s0,s1,gy+0.02,glassTop,0.2,{glass:it,glassCol:H(CAT_TINT[cat]||'#fff6ea'),gl:1,frame:fr,fw:0.07,mull:Math.max(1,Math.round(w/1.7)),tr:gy+2.45,door:[dc-dw/2,dc+dw/2],rev,revT:TMt(cfg.gfMat==='stone'?'ashlar':'marbleW','marble'),kick:0.32});
+  const fy0=glassTop+0.06,fy1=Math.min(gTop-0.15,glassTop+(w>7?0.85:0.72));
+  fascia(f,s0+0.02,s1-0.02,fy0,fy1,s,key.startsWith('p:')?key:'s:'+key,0.1);
+  if(s.awn&&s.awn.c)awning(f,s0+0.05,s1-0.05,glassTop+0.02,w>6?1.6:1.2,s.awn.t==='dome'?0.75:0.45,s.awn.c,s.awn.t);
+  if(s.cross)pharmCross(f,dpos==='l'?s1-0.3:s0+0.3,fy1+0.1);
+  if(s.terr&&!(opt&&opt.second))terrace(f,s0,s1,gy,s.terr,glassTop);
+  if(opt&&opt.second)return[s0,s1,gy+0.02,fy1];
+  return[s0,s1,gy+0.02,fy1]}
+function lobbyUnit(f,s0,s1,gy,opt){const w=s1-s0;const dw=Math.min(1.6,w-0.5);const c=(s0+s1)/2;
+  opening(O,f,c-dw/2,c+dw/2,gy+0.02,gy+2.75,0.3,{glass:TT('kvGlass'),glassCol:H('#d8cdb8'),gl:0.7,frame:H('#2f3032'),fw:0.07,mull:2,tr:gy+2.25,rev:H('#efece6'),revT:TMt('marbleW','marble'),door:[c-dw/2+0.04,c+dw/2-0.04]});
+  bx(O,f,c,0.45,gy+2.9,dw+0.6,0.9,0.1,H('#efece6'),TMt('marble'));// marble canopy slab
+  if(opt&&opt.no){const su=signUV('no:'+opt.no);if(su)fq(O,f,c+dw/2+0.08,c+dw/2+0.08+0.36,gy+2.25,gy+2.25+0.036*3,0.03,C1,su.tile,su.uv,0)}
+  let y=gy+1.65;for(const p of(opt&&opt.plates)||[]){const su=signUV('pl:'+p);if(!su)continue;const s=c-dw/2-0.1;if(s-0.42<s0-0.25)break;fq(O,f,s-0.42,s,y,y+0.042,0.02,C1,su.tile,su.uv,0);bx(O,f,s-0.21,0.005,y-0.02,0.46,0.02,0.082,H('#b89a5a'),T.white);y-=0.12}
+  return[c-dw/2,c+dw/2,gy+0.02,gy+2.75]}
+function closedUnit(f,s0,s1,gy,cfg){fq(O,f,s0+0.05,s1-0.05,gy+0.02,gy+2.95,-0.12,H('#c9c4b8'),TMt('shutterM','shutter'));sq(O,f,s0+0.05,0,-0.12,gy,gy+2.95,1,MARBLE,TMt('marble'));sq(O,f,s1-0.05,0,-0.12,gy,gy+2.95,-1,MARBLE,TMt('marble'));
+  bx(O,f,(s0+s1)/2,0.05,gy+2.95,s1-s0,0.1,0.28,H('#d8d4cc'),T.white);return[s0+0.05,s1-0.05,gy+0.02,gy+3.23]}
+/* move the MAP.pois record(s) of a shop onto the unit drawn here, so the interiors module puts its door exactly at the drawn door */
+function patchPoi(s,idx,ei,f,s0,s1){if(!Array.isArray(MAP.pois)||!s.n)return;const want=nrm(s.n);const c=(s0+s1)/2;const cp=P(f,c,0);
+  let cands=MAP.pois.filter(p=>p.b===idx&&(nrm(p.name)===want||(s.poi&&p.cat===s.poi&&!p.name)));
+  if(!cands.length)cands=MAP.pois.filter(p=>nrm(p.name)===want&&Math.hypot((p.fx||p.x)-cp[0],(p.fz||p.z)-cp[1])<25);
+  if(s.poi==='pharmacy')cands=cands.sort((a,b)=>Math.hypot(a.fx-cp[0],a.fz-cp[1])-Math.hypot(b.fx-cp[0],b.fz-cp[1])).slice(0,1);
+  for(const p of cands){const dpos=s.door||'c';const dw=Math.min(1.25,Math.max(0.9,(s1-s0)*0.32));const dc=dpos==='l'?s0+0.2+dw/2:dpos==='r'?s1-0.2-dw/2:c;
+    const old=[p.fx,p.fz];p.b=idx;p.e=ei;p.t=+(c/f.L).toFixed(4);p.w=+(s1-s0).toFixed(2);p.fx=+cp[0].toFixed(2);p.fz=+cp[1].toFixed(2);p.nx=+f.nx.toFixed(3);p.nz=+f.nz.toFixed(3);
+    const dp=P(f,dc,0);p.door=[+dp[0].toFixed(2),+dp[1].toFixed(2)];if(p.bay!=='shop')p.bay='shop';p.lm='lm-kassaveti';KV.patched.push([p.name,old,[p.fx,p.fz]])}
+  return cands.length}
 
-/* ============================== SHOPFRONT ============================== */
-const CAT_TINT=['#fff6ec','#ffe2bf','#eef3ff','#ffffff','#eef2f6'];
-/* one shop unit on edge f between s0..s1. yb = local sidewalk level, top = first-floor level. cfg: building config. returns hole */
-function shopUnit(f,s0,s1,yb,top,u,cfg){const o=u.o||{},w=s1-s0;const gT=Math.min(top-0.95,yb+3.25);const win=o.win==null?0:o.win;
-  const fr=H(o.frame||cfg.shopFrame||'#2f3032');const dw=Math.min(1.15,w*0.36);const dpos=o.door||'c';const dc=dpos==='l'?s0+0.2+dw/2:dpos==='r'?s1-0.2-dw/2:(s0+s1)/2;
-  opening(O,f,s0,s1,yb+0.02,gT,0.24,{glass:T.kWin,uv:WQ[win===4?2:win],glassCol:H(win===4?'#e8eef4':CAT_TINT[win]),gl:1,frame:fr,fw:0.07,mull:Math.max(1,Math.round(w/1.9)),tr:yb+2.55,trMull:Math.max(1,Math.round(w/1.9)),door:o.bankWin?null:[dc-dw/2,dc+dw/2],rev:H(cfg.gfRev||'#e8e4dc'),revT:tm('marbleW')});
-  // stall riser (marble) under the fixed panes
-  if(!o.full)for(const [a,b] of[[s0+0.07,dc-dw/2-0.06],[dc+dw/2+0.06,s1-0.07]])if(b-a>0.3&&!o.bankWin)fq(O,f,a,b,yb+0.02,yb+0.32,-0.2,H(cfg.riser||'#d8d3c8'),tm('marbleW'));
-  // roller-shutter box over the glazing
-  bx(O,f,(s0+s1)/2,0.03,gT,w-0.04,0.08,0.26,H(cfg.boxCol||'#cfcac0'),tm('metalL'));
-  KV.doors[o.poi||u.name]={x:P(f,dc,0)[0],z:P(f,dc,0)[1],nx:f.nx,nz:f.nz,w,name:u.name};
-  const hole=[s0,s1,yb+0.02,gT+0.26];
-  if(o.bankWin)return hole;
-  // fascia (panel with the plain-text name) between the shutter box and the first-floor slab
-  const fy0=gT+0.3,fy1=Math.min(top-0.12,fy0+0.95);
-  if(o.sign&&fy1-fy0>0.3){const su=signUV(sgKey(o));const bg=H(o.sign.bg);bx(O,f,(s0+s1)/2,0.07,fy0,w-0.06,0.12,fy1-fy0,bg,T.white);
-    if(su){const h=Math.min(fy1-fy0-0.12,(w-0.25)/6),sw=h*6,c=(s0+s1)/2,yc=(fy0+fy1)/2;fq(O,f,c-sw/2,c+sw/2,yc-h/2,yc+h/2,0.135,C1,su.tile,su.uv,1)}
-  }
-  if(o.cross){// green pharmacy cross, projecting, glowing both faces (the standard Greek pharmacy sign)
-    const cs=s1-0.15,yc=fy1+0.55,GC=H('#2fd35a');bx(O,f,cs,0.15,yc-0.05,0.06,0.3,0.1,H('#7a7c7e'),tm('metalL'));
-    bx(O,f,cs,0.62,yc-0.36,0.1,0.24,0.72,GC,T.white,1);bx(O,f,cs,0.62,yc-0.12,0.1,0.72,0.24,GC,T.white,1)}
-  if(o.awn)awning(O,CUT,f,s0+0.05,s1-0.05,Math.min(top-0.08,fy1+0.06),o.terr?2.4:1.5,0.55,o.awn);
-  return hole}
-
-/* outdoor terrace: tables + chairs (+ umbrellas / planters) in front of a unit, kept clear of the carriageway */
-function terrace(f,s0,s1,yb,spec){const n=spec.n||2;let dMax=4.2;const sm=(s0+s1)/2;for(let d=1.2;d<=4.6;d+=0.2){const p=P(f,sm,d);if(roadDist(p[0],p[1])<4.9){dMax=d-0.2;break}}if(dMax<1.6)return;
-  const rows=dMax>3.2?2:1,per=Math.ceil(n/rows),CH=spec.chairs==='rattan'?H('#c9a874'):spec.chairs==='wood'?H('#6e5136'):H('#3a3b3c');
-  for(let r=0;r<rows;r++)for(let i=0;i<per;i++){const ts=s0+0.7+(i+0.5)*(s1-s0-1.4)/per,td=1.25+r*1.6;if(td>dMax-0.5)continue;const p=P(f,ts,td);const y=swY(p[0],p[1]);
-    O.cyl(p[0],y,p[1],0.04,0.04,0.72,6,H('#262626'),RECT[T.white],false);O.cyl(p[0],y+0.72,p[1],0.33,0.33,0.03,12,H(spec.chairs==='wood'?'#2a2a2a':'#efece6'),RECT[tm('marble')],true);
-    for(const sd of[-1,1])chair(f,ts+sd*0.52,td,y,-sd,CH);addBoxC(p[0],p[1],0.35,'p')}
-  if(spec.umb)for(let i=0;i<Math.max(1,Math.round((s1-s0)/4));i++){const us=s0+(i+0.5)*(s1-s0)/Math.max(1,Math.round((s1-s0)/4));const p=P(f,us,Math.min(dMax-1.0,1.9));const y=swY(p[0],p[1]);umbrella(p[0],y,p[1],1.35,spec.umb)}
-  for(const s of[s0+0.2,s1-0.2]){const p=P(f,s,Math.min(dMax-0.3,2.6));const y=swY(p[0],p[1]);O.box(p[0],y+0.25,p[1],0.45,0.5,0.45,Math.atan2(-f.uz,f.ux),H('#3c3a36'),RECT[tm('concrete')],1,0);O.cyl(p[0],y+0.5,p[1],0.28,0.18,0.55,7,H('#4f6b3a'),RECT[T.hedge],true)}}
-function chair(f,s,d,y,face,C){bx(O,f,s,d,y+0.44,0.44,0.44,0.05,C,tm('wood'));bx(O,f,s+face*0.2,d,y+0.49,0.05,0.44,0.42,C,tm('wood'));for(const a of[[-0.18,-0.18],[0.18,-0.18],[-0.18,0.18],[0.18,0.18]])bx(O,f,s+a[0],d+a[1],y,0.03,0.03,0.44,shade(C,0.7),T.white)}
-function umbrella(x,y,z,r,col){const c=H(col),N=8,h=0.45,yt=y+2.35;O.cyl(x,y,z,0.03,0.03,yt+h-y,5,H('#5a5550'),RECT[T.white],false);O.cyl(x,y,z,0.22,0.22,0.06,8,H('#3a3a3a'),RECT[T.white],true);
-  for(let i=0;i<N;i++){const a0=i/N*TAU,a1=(i+1)/N*TAU;const p0=[x+Math.cos(a0)*r,yt,z+Math.sin(a0)*r],p1=[x+Math.cos(a1)*r,yt,z+Math.sin(a1)*r],tp=[x,yt+h,z];
-    t3(O,p0,p1,tp,[0,0],[1,0],[0.5,1],c,tt('jFabric','awnS'),0,[Math.cos((a0+a1)/2),1,Math.sin((a0+a1)/2)]);t3(O,p0,p1,tp,[0,0],[1,0],[0.5,1],shade(c,0.6),tt('jFabric','awnS'),0,[-Math.cos((a0+a1)/2),-1,-Math.sin((a0+a1)/2)]);
-    O.box((p0[0]+p1[0])/2,yt-0.1,(p0[2]+p1[2])/2,0.02,0.2,r*0.78,-(a0+a1)/2,c,RECT[T.white],1,0)}}
-/* resolve units of an edge (explicit centres / widths) → [{s0,s1,name,o}] without overlaps */
-function units(f,list,m0,m1){const L=f.L;const U=list.map(s=>{const w=Math.min(s[2],L-m0-m1);const c=clamp(s[1]*L,m0+w/2,L-m1-w/2);return{c,w,name:s[0],o:s[3]||{}}}).sort((a,b)=>a.c-b.c);
-  for(const u of U){u.s0=u.c-u.w/2;u.s1=u.c+u.w/2}
-  for(let i=0;i<U.length-1;i++){const a=U[i],b=U[i+1];if(a.s1>b.s0-0.35){const m=(a.s1+b.s0)/2;a.s1=Math.max(a.s0+1.6,m-0.18);b.s0=Math.min(b.s1-1.6,m+0.18)}}
-  return U.filter(u=>u.s1-u.s0>1.2)}
-/* residential entrance: glass door in a marble surround + canopy slab + brass name plates */
-function entrance(f,c,yb,dw){const holes=[[c-dw/2,c+dw/2,yb+0.02,yb+2.65]];opening(O,f,c-dw/2,c+dw/2,yb+0.02,yb+2.65,0.3,{glass:tt('jShop','lobby'),glassCol:H('#c8c0b0'),gl:0.7,frame:H('#2f3032'),fw:0.07,mull:2,tr:yb+2.15,rev:H('#efece6'),revT:tm('marbleW'),door:[c-dw/2+0.05,c+dw/2-0.05]});
-  bx(O,f,c,0.5,yb+2.8,dw+0.8,1.0,0.1,H('#efece6'),tm('marble'));fq(O,f,c-dw/2-0.22,c+dw/2+0.22,yb+0.02,yb+2.95,0.03,H('#e9e5dc'),tm('marbleW'));
-  for(let i=0;i<3;i++)bx(O,f,c+dw/2+0.35,0.04,yb+1.25+i*0.22,0.24,0.02,0.16,H('#b89a5a'),tm('metalL'));return holes}
-
-/* ============================== POLYKATOIKIA BLOCK ============================== */
-const CFG={};
-CFG[ID.k3]={lv:4,gfH:4.3,fh:3.0,wall:'#f1ece0',front:[21,16],rail:'alu',railCol:'#c9cdd1',dep:1.3,setTop:1.7,shut:'#d8d1c0',frame:'#e3e2dc',awn:['#c9c2b0','#3d5f4a',null,'#8a8f86'],solar:0,ant:1,gfRev:'#e2ded4',shopFrame:'#1d1e20',entr:{16:0.5}};
-CFG[ID.k7]={lv:3,gfH:4.2,fh:3.0,wall:'#f0ebe2',front:[1],rail:'iron',railCol:'#2a2c2d',dep:1.3,shut:'#cdc6b4',frame:'#ebe9e3',awn:['#d8ccb2','#7a3b2a',null,'#3d5f8a'],solar:3,entr:{1:0.635},shopFrame:'#2b2c2e'};
-CFG[ID.k4]={lv:3,gfH:4.2,fh:3.0,wall:'#efe9dc',front:[10,0,1],rail:'masonry',dep:1.2,shut:'#7a5a3a',frame:'#5a4636',shutters:'timber',awn:['#5b1f2a',null,'#c9c2b0'],solar:2,entr:{0:0.62,1:0.5},shopFrame:'#2a2b2d',planters:true};
-CFG[ID.occ]={lv:4,gfH:4.2,fh:3.05,wall:'#e5cfae',front:[16,11],rail:'masonry',dep:1.4,setTop:1.6,shut:'#efe9dc',frame:'#f2efe8',awn:['#d8ccb2',null,'#6b7b5a'],solar:2,planters:true,riser:'#cdbb9c',gfRev:'#d9c7a6',shopFrame:'#3a2f26'};
-CFG[ID.k6]={lv:4,gfH:4.2,fh:3.0,wall:'#f3eee3',front:[3],rail:'alu',railCol:'#d0d3d5',dep:1.3,setTop:1.6,shut:'#d6cfbf',frame:'#e6e4de',awn:['#2f5a3a','#d8ccb2',null],solar:3,entr:{3:0.56},shopFrame:'#e8e6e0'};
-CFG[ID.voda]={lv:4,gfH:4.2,fh:3.0,wall:'#ece3cc',front:[2],rail:'alu',railCol:'#bfc3c6',dep:1.3,shut:'#cfc6b0',frame:'#d9d6cf',awn:['#8a8f86','#c58a3a',null,'#d8ccb2'],solar:3,shopFrame:'#2a2b2d'};
-CFG[ID.leo]={lv:3,gfH:4.5,fh:3.1,wall:'#f4f2ed',front:[3,2,1],rail:'glass',dep:0,recess:1.5,frame:'#3a3d40',shut:null,solar:0,gfMat:'stone',shopFrame:'#141414',entr:{2:0.5}};
-function buildBlock(ps0,id,b){const cfg=CFG[id];if(!cfg)return false;const ps=ps0.slice();const n=ps.length;const sg=polyArea(ps)>0?1:-1;const seed=(b[5]|0)+11;const front=new Set(cfg.front.filter(e=>e<n));
-  const sp=SPEC&&SPEC[id];if(sp){if(sp.levels>=2&&sp.levels<=6)cfg.lv=sp.levels;if(sp.floorH>2.7&&sp.floorH<3.5)cfg.fh=sp.floorH}
-  const wallC=H(cfg.wall);const E=[];for(let i=0;i<n;i++)E.push(FR(ps[i],ps[(i+1)%n],sg));
-  let gmin=Infinity,gmaxF=-Infinity;for(const p of ps)gmin=Math.min(gmin,terr(p[0],p[1]));for(const i of front){const f=E[i];for(const s of[0.3,f.L/2,f.L-0.3]){const p=P(f,s,0.8);gmaxF=Math.max(gmaxF,swY(p[0],p[1]))}}
-  if(!isFinite(gmaxF))gmaxF=gmin+0.2;const base=gmin-0.6,lv=cfg.lv,top1=gmaxF+cfg.gfH,fh=cfg.fh;const yAt=k=>k===0?gmaxF:top1+(k-1)*fh;const top=yAt(lv);
-  const cx=ps.reduce((s,p)=>s+p[0],0)/n,cz=ps.reduce((s,p)=>s+p[1],0)/n;const ch=chunkAt(cx,cz);O=ch.o;CUT=ch.cut;const v0=O.size()+CUT.size();
-  for(let i=0;i<n;i++)if(E[i].L>0.05)addSeg(ps[i][0],ps[i][1],ps[(i+1)%n][0],ps[(i+1)%n][1],'b');
-  const off=(e,k)=>{let d=[0,0,null];if(k>0&&front.has(e)){if(cfg.recess)d=[-cfg.recess,0,cfg.rail];else{d=[0,cfg.dep||0,cfg.rail];if(cfg.setTop&&k===lv-1)d=[-cfg.setTop,cfg.dep||0,cfg.rail]}}return d};
-  const gfT=cfg.gfMat==='stone'?tm('ashlar'):tm('marbleW'),gfC=cfg.gfMat==='stone'?H('#d6cdbd'):H(cfg.gfRev||'#e6e2d8');
-  const sh=SHOPS[id]||{};
-  // ---------- ground floor ----------
-  for(let i=0;i<n;i++){const f=E[i];if(f.L<0.05)continue;const isF=front.has(i);
-    if(!isF){fq(O,f,0,f.L,base,top1,0,shade(wallC,0.9),tm('plaster'));continue}
-    const holes=[];const list=sh[i]||[];const U=units(f,list,f.L>4?0.3:0.05,f.L>4?0.3:0.05);
-    for(const u of U){const p=P(f,(u.s0+u.s1)/2,0.8);const yb=Math.min(swY(p[0],p[1]),top1-3.6);holes.push(shopUnit(f,u.s0,u.s1,yb,top1,u,cfg));if(u.o.terr)terrace(f,u.s0,u.s1,yb,u.o.terr);
-      placed('lm_shop',P(f,(u.s0+u.s1)/2,0)[0],P(f,(u.s0+u.s1)/2,0)[1],u.name,'lm-kassaveti');SHOPFRONTS.push({a:P(f,u.s0,0),c:P(f,u.s1,0),nx:f.nx,nz:f.nz,L:u.s1-u.s0})}
-    const et=cfg.entr&&cfg.entr[i];if(et!=null){const c=et*f.L;const p=P(f,c,0.8);for(const h of entrance(f,c,Math.min(swY(p[0],p[1]),top1-3),1.5))holes.push(h)}
-    else if(!U.length&&f.L>=2.5){// windows of a ground-floor office / flat
-      const nb=Math.max(1,Math.round(f.L/3.2));for(let k=0;k<nb;k++){const c=(k+0.5)*f.L/nb,w=Math.min(1.4,f.L/nb-0.8);if(w<0.6)continue;const p=P(f,c,0.8);const yb=swY(p[0],p[1]);opening(O,f,c-w/2,c+w/2,yb+1.0,yb+2.5,0.2,{frame:H(cfg.frame||'#e6e4de'),mull:2,gl:hf(seed+k)>0.5?1:0,sill:true,shut:0.3,shutCol:cfg.shut?H(cfg.shut):null});holes.push([c-w/2,c+w/2,yb+1.0,yb+2.5])}}
-    wallHoles(O,f,0,f.L,base,top1,0,holes,gfC,gfT);
-    // marble band at first-floor level
-    bx(O,f,f.L/2,0.04,top1-0.14,f.L,0.1,0.14,MARBLE,tm('marble'))}
-  // ---------- upper floors ----------
-  let prevOut=ps;
-  for(let k=1;k<lv;k++){const y0=yAt(k),y1=yAt(k+1);const W=outline(ps,sg,e=>off(e,k)[0]),Rr=outline(ps,sg,e=>{const o=off(e,k);return Math.max(o[0],o[1])});
-    for(let i=0;i<n;i++){const a=W[i],c=W[(i+1)%n];const f=FR(a,c,sg);if(f.L<0.05)continue;const isF=front.has(i);const o=off(i,k);
-      if(!isF){fq(O,f,0,f.L,y0,y1,0,shade(wallC,0.9),tm('plaster'));continue}
-      bays(f,y0,y1,k,cfg,seed+i*31+k*7,(o[1]-o[0]>0.6)||cfg.recess,wallC)}
-    for(let i=0;i<n;i++){if(!front.has(i))continue;const o=off(i,k);if(o[1]-o[0]<0.05)continue;const j=(i+1)%n;
-      const a=W[i],c=W[j],ra=Rr[i],rc=Rr[j],ys=y0;O.hq([a[0],ys,a[1]],[c[0],ys,c[1]],[rc[0],ys,rc[1]],[ra[0],ys,ra[1]],[a[0],a[1]],[c[0],c[1]],[rc[0],rc[1]],[ra[0],ra[1]],H('#d9d4ca'),RECT[tm('marble')],0,false);
-      O.hq([a[0],ys-0.2,a[1]],[c[0],ys-0.2,c[1]],[rc[0],ys-0.2,rc[1]],[ra[0],ys-0.2,ra[1]],[0,0],[1,0],[1,1],[0,1],shade(wallC,0.78),RECT[tm('plaster')],0,true);
-      const fr=FR(ra,rc,sg);if(fr.L>0.05){fq(O,fr,0,fr.L,ys-0.2,ys+0.04,0,MARBLE,tm('marble'));railing(fr,0,fr.L,ys+0.04,o[2],cfg,-0.06)}
-      for(const [p,q,dir] of[[a,ra,-1],[c,rc,1]]){const nb=dir<0?(i-1+n)%n:j;const on=off(nb,k);if(front.has(nb)&&on[1]-on[0]>=0.05)continue;const g=FR(p,q,sg);if(g.L<0.1)continue;
-        fq(O,g,0,g.L,ys-0.2,ys+0.04,0,MARBLE,tm('marble'),null,0,1);fq(O,g,0,g.L,ys-0.2,ys+0.04,0,MARBLE,tm('marble'),null,0,-1);railing(g,0,g.L,ys+0.04,o[2],cfg,0)}}
-    if(cfg.recess){// recessed loggias: slab edge + glass rail on the original line, ceiling of the loggia
-      for(let i=0;i<n;i++){if(!front.has(i))continue;const f=E[i];hq(O,f,0,f.L,-cfg.recess,0,y0,false,H('#d9d4ca'),tm('marble'));hq(O,f,0,f.L,-cfg.recess,0,y1-0.02,true,H('#efece6'),tm('plaster'));fq(O,f,0,f.L,y0-0.25,y0+0.05,0.02,H('#e9e6df'),tm('marbleW'));railing(f,0,f.L,y0+0.05,'glass',cfg,-0.05);
-        for(const s of[0,f.L])sq(O,f,s,-cfg.recess,0,y0,y1,s===0?1:-1,wallC,tm('plaster'))}}
-    prevOut=W}
-  // ---------- roof ----------
-  const R=prevOut;polyRoof(O,R,top,H('#d1cdc4'),tm('flatroof'));
-  for(let i=0;i<n;i++){const f=FR(R[i],R[(i+1)%n],sg);if(f.L<0.05)continue;fq(O,f,0,f.L,top,top+0.9,0,front.has(i)?wallC:shade(wallC,0.9),tm('plaster'));fq(O,f,0,f.L,top,top+0.9,-0.2,shade(wallC,0.85),tm('plaster'),null,0,-1);
-    hq(O,f,0,f.L,-0.2,0.05,top+0.9,false,MARBLE,tm('marble'));fq(O,f,0,f.L,top+0.84,top+0.9,0.05,MARBLE,tm('marble'))}
-  roofStuff(R,top,cfg,seed);
-  KV.tris+=Math.round((O.size()+CUT.size()-v0)/2);KV.built.push(id);return true}
-/* upper-floor facade: balcony doors / windows with roller shutters, fabric awnings and a/c units */
-function bays(f,y0,y1,k,cfg,seed,bal,wallC){const L=f.L;if(L<1.3){fq(O,f,0,L,y0,y1,0,wallC,tm('plaster'));return}
+/* ============================== FACADE BUILDERS ============================== */
+function polyBays(f,y0,y1,k,cfg,seed,bal,wallC){const L=f.L;if(L<1.3){fq(O,f,0,L,y0,y1,0,wallC,TMt('plaster'));return}
   const nb=L<2.8?1:Math.max(1,Math.round((L-0.4)/3.3)),bw=L/nb;const holes=[];const fr=H(cfg.frame||'#e6e4de'),sc=cfg.shut?H(cfg.shut):null;
   for(let i=0;i<nb;i++){const c=(i+0.5)*bw,h=hf(seed*13+i*7+k*101);let w,ya,yb,door;
-    if(bal){door=h<0.75||bw<2;w=door?Math.min(bw<2?0.9:1.5,bw-0.5):Math.min(1.6,bw-0.6);ya=door?y0:y0+0.95;yb=y0+2.4}else{door=false;w=Math.min(1.4,bw-0.7);ya=y0+0.95;yb=y0+2.35}if(w<0.5)continue;
-    const lit=hf(seed+i*3+k*17)<0.3?1:0;const shut=sc?[0,0,0.12,0.3,0.55,1.0][Math.floor(hf(seed*7+i+k*5)*6)]:0;
+    if(bal){door=h<0.72||bw<2;w=door?Math.min(bw<2?0.9:1.4,bw-0.5):Math.min(1.6,bw-0.6);ya=door?y0:y0+0.95;yb=y0+2.4}
+    else{door=false;w=Math.min(1.3,bw-0.7);ya=y0+0.95;yb=y0+2.3}if(w<0.5)continue;
+    const lit=hf(seed+i*3+k*17)<0.3?1:0;const shut=sc?[0,0,0.15,0.35,0.6,1.0][Math.floor(hf(seed*7+i+k*5)*6)]:0;
     opening(O,f,c-w/2,c+w/2,ya,yb,0.18,{frame:fr,mull:w>1.1?2:1,gl:lit,shut,shutCol:sc,sill:!door});holes.push([c-w/2,c+w/2,ya,yb]);
-    bx(O,f,c,0.02,yb,w+0.1,0.06,0.2,shade(wallC,0.96),tm('plaster'));// shutter box
-    if(cfg.shutters==='timber'&&sc){for(const sd of[-1,1]){const ss=c+sd*(w/2+w/4+0.03);if(ss-w/4<0.05||ss+w/4>L-0.05)continue;fq(O,f,ss-w/4,ss+w/4,ya,yb,0.04,sc,tm('wood'));sq(O,f,ss+sd*w/4,0,0.04,ya,yb,sd,shade(sc,0.8),tm('wood'))}}
-    if(bal&&!cfg.recess){const ac=cfg.awn&&cfg.awn[Math.floor(hf(seed+i*11+k)*cfg.awn.length)];if(ac&&hf(seed*3+i*5+k*9)<0.5)awning(O,CUT,f,c-bw/2+0.15,c+bw/2-0.15,y1-0.24,(cfg.dep||1.3)+0.1,1.0,ac);
+    if(bal){const ac=cfg.awn&&cfg.awn[Math.floor(hf(seed+i*11+k)*cfg.awn.length)];if(ac&&hf(seed*3+i*5+k*9)<0.55)awning(f,c-bw/2+0.15,c+bw/2-0.15,y1-0.22,(cfg.dep||1.3)+0.1,1.0,ac,'straight');
       if(hf(seed+i*19+k*3)<0.4){const s=c+(hf(seed+i)<0.5?-1:1)*(w/2+0.55);if(s>0.5&&s<L-0.5){bx(O,f,s,0.35,y0,0.8,0.3,0.55,H('#ecebe7'),T.white);fq(O,f,s-0.3,s+0.2,y0+0.08,y0+0.48,0.505,H('#6a6c6e'),T.white)}}
-      if(cfg.planters&&hf(seed+i*23+k)<0.55){const s=c+w/2+0.3;if(s<L-0.3){const p=P(f,s,(cfg.dep||1.3)-0.35);O.cyl(p[0],y0,p[1],0.22,0.18,0.42,8,H('#a0522d'),RECT[T.white],true);O.cyl(p[0],y0+0.42,p[1],0.32,0.1,0.6,7,H('#4d6b34'),RECT[T.hedge],true)}}}}
-  wallHoles(O,f,0,L,y0,y1,0,holes,wallC,tm('plaster'))}
+      if(cfg.planters&&hf(seed+i*23+k)<0.6){const s=c+w/2+0.3;if(s<L-0.3){const p=P(f,s,(cfg.dep||1.3)-0.35);O.cyl(p[0],y0,p[1],0.22,0.18,0.42,8,H('#a0522d'),RECT[T.white],true);O.cyl(p[0],y0+0.42,p[1],0.32,0.1,0.6,7,H('#4d6b34'),RECT[TT('hedge',T.white)],true)}}}}
+  wallHoles(O,f,0,L,y0,y1,0,holes,wallC,TMt('plaster'))}
+function sideWindows(f,y0,y1,k,cfg,seed,wallC){const L=f.L;const holes=[];if(L>=3.2){const nb=Math.max(1,Math.round(L/4.2)),bw=L/nb;for(let i=0;i<nb;i++){const c=(i+0.5)*bw,w=Math.min(1.1,bw-1.0);if(w<0.6)continue;const ya=y0+1.0,yb=y0+2.25;
+    opening(O,f,c-w/2,c+w/2,ya,yb,0.14,{frame:H(cfg.frame||'#e6e4de'),gl:hf(seed+i*7+k)<0.25?1:0,shut:cfg.shut?[0,0.3,0.6,1][Math.floor(hf(seed*5+i+k)*4)]:0,shutCol:cfg.shut?H(cfg.shut):null,sill:true});holes.push([c-w/2,c+w/2,ya,yb])}}
+  wallHoles(O,f,0,L,y0,y1,0,holes,wallC,TMt('plaster'))}
 function railing(f,s0,s1,y,type,cfg,d){const L=s1-s0;if(L<0.05)return;
-  if(type==='masonry'){fq(O,f,s0,s1,y,y+0.95,d,H(cfg.wall),tm('plaster'));fq(O,f,s0,s1,y,y+0.95,d-0.15,H(cfg.wall),tm('plaster'),null,0,-1);hq(O,f,s0,s1,d-0.15,d+0.02,y+0.95,false,MARBLE,tm('marble'));return}
-  if(type==='glass'){fq(CUT,f,s0,s1,y+0.08,y+1.0,d,H('#c4d4da'),T.glassR,[0,L,0,1]);bx(O,f,(s0+s1)/2,d,y+1.0,L,0.06,0.05,H('#b8bcbf'),T.white);return}
-  const col=type==='alu'?H(cfg.railCol||'#c9cdd1'):H(cfg.railCol||'#2a2c2d');fq(CUT,f,s0,s1,y,y+1.0,d,col,type==='alu'?tt('jRail','rail'):T.rail,[0,L/(type==='alu'?1.0:1.2),0,1]);bx(O,f,(s0+s1)/2,d,y+1.0,L,0.06,0.05,col,T.white)}
+  if(type==='masonry'){fq(O,f,s0,s1,y,y+0.95,d,H(cfg.wall),TMt('plaster'));fq(O,f,s0,s1,y,y+0.95,d-0.15,H(cfg.wall),TMt('plaster'),null,0,-1);hq(O,f,s0,s1,d-0.15,d+0.02,y+0.95,false,MARBLE,TMt('marble'));return}
+  if(type==='glass'){fq(CUT,f,s0,s1,y+0.08,y+1.0,d,H('#bfd0d6'),TT('glassR',T.white),[0,L,0,1]);bx(O,f,(s0+s1)/2,d,y+1.0,L,0.06,0.05,H('#b8bcbf'),T.white);return}
+  if(type==='balus'){const bh=0.62;bx(O,f,(s0+s1)/2,d-0.02,y,L,0.24,0.12,MARBLE,TMt('marble'));const v=uvR(0,0,240,120);fq(CUT,f,s0,s1,y+0.12,y+0.12+bh,d-0.02,C1,TT('kvBalus'),[0,L/0.55,v[2],v[3]]);
+    bx(O,f,(s0+s1)/2,d-0.02,y+0.12+bh,L+0.04,0.3,0.12,MARBLE,TMt('marble'));return}
+  if(type==='ironN'){fq(CUT,f,s0,s1,y,y+0.95,d,H('#1f2224'),TT('kvIron'),[0,L/1.0,0,1]);bx(O,f,(s0+s1)/2,d,y+0.95,L,0.05,0.04,H('#1f2224'),T.white);return}
+  const col=type==='alu'?H(cfg.railCol||'#c9cdd1'):H(cfg.railCol||'#2a2c2d');fq(CUT,f,s0,s1,y,y+1.0,d,col,TT('kvRail'),[0,L/(type==='alu'?1.0:1.2),0,1]);bx(O,f,(s0+s1)/2,d,y+1.0,L,0.06,0.05,col,T.white)}
 function roofStuff(R,top,cfg,seed){let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;for(const p of R){minx=Math.min(minx,p[0]);maxx=Math.max(maxx,p[0]);minz=Math.min(minz,p[1]);maxz=Math.max(maxz,p[1])}
-  let k2=0;for(let k=0;k<30&&k2<(cfg.solar||0);k++){const x=lerp(minx+1.5,maxx-1.5,hf(seed*5+k*7)),z=lerp(minz+1.5,maxz-1.5,hf(seed*11+k*13));if(!pip(R,x,z)||!pip(R,x,z-1.8))continue;k2++;
-    O.hq([x-1.0,top+0.35,z-0.6],[x+1.0,top+0.35,z-0.6],[x+1.0,top+1.25,z-1.5],[x-1.0,top+1.25,z-1.5],[0,0],[1,0],[1,1],[0,1],C1,RECT[T.solar],0,false);
-    O.box(x,top+1.45,z-1.65,1.9,0.55,0.55,0,H('#efefec'),RECT[T.white],1,0);O.box(x,top+0.6,z-1.4,1.6,1.2,0.06,0,H('#8a8c8e'),RECT[tm('metalL')],1,0)}
-  for(let k=0;k<20;k++){const x=lerp(minx+2,maxx-2,hf(seed*3+k)),z=lerp(minz+2,maxz-2,hf(seed*17+k));if(!pip(R,x,z)||!pip(R,x+1.3,z)||!pip(R,x-1.3,z)||!pip(R,x,z+1.3)||!pip(R,x,z-1.3))continue;
-    O.box(x,top+1.25,z,2.4,2.5,2.4,0,H(cfg.wall),RECT[tm('plaster')],1,0);O.box(x,top+2.55,z,2.6,0.12,2.6,0,MARBLE,RECT[tm('marble')],1,0);O.cyl(x+0.9,top+2.6,z+0.9,0.025,0.025,2.4,4,H('#9a9ea2'),RECT[T.white],false);
-    for(let j=0;j<3;j++)O.box(x+0.9,top+4.2+j*0.3,z+0.9,1.2-j*0.25,0.03,0.03,0.4,H('#9a9ea2'),RECT[T.white],1,0);break}}
+  let n=0;for(let k=0;k<40&&n<(cfg.solar||0);k++){const x=lerp(minx+1.5,maxx-1.5,hf(seed*5+k*7)),z=lerp(minz+1.5,maxz-1.5,hf(seed*11+k*13));if(!pip(R,x,z)||!pip(R,x,z-1.8)||!pip(R,x+1.1,z)||!pip(R,x-1.1,z))continue;n++;
+    O.hq([x-1.0,top+0.35,z-0.6],[x+1.0,top+0.35,z-0.6],[x+1.0,top+1.25,z-1.5],[x-1.0,top+1.25,z-1.5],[0,0],[1,0],[1,1],[0,1],C1,RECT[TT('solar',T.white)],0,false);
+    O.box(x,top+1.45,z-1.65,1.9,0.55,0.55,0,H('#efefec'),RECT[T.white]);O.box(x,top+0.6,z-1.4,1.6,1.2,0.06,0,H('#8a8c8e'),RECT[TMt('metalL','metal')])}
+  for(let k=0;k<24;k++){const x=lerp(minx+2,maxx-2,hf(seed*3+k)),z=lerp(minz+2,maxz-2,hf(seed*17+k));if(!pip(R,x,z)||!pip(R,x+1.4,z)||!pip(R,x-1.4,z)||!pip(R,x,z+1.4)||!pip(R,x,z-1.4))continue;
+    O.box(x,top+1.25,z,2.4,2.5,2.4,0,H(cfg.wall),RECT[TMt('plaster')]);O.box(x,top+2.55,z,2.6,0.12,2.6,0,MARBLE,RECT[TMt('marble')]);O.cyl(x+0.9,top+2.6,z+0.9,0.025,0.025,2.4,4,GREY,RECT[T.white],false);
+    for(let j=0;j<3;j++)O.box(x+0.9,top+4.2+j*0.3,z+0.9,1.2-j*0.25,0.03,0.03,0.4,GREY,RECT[T.white]);break}}
+/* tiled hip "skirt" roof for any outline: slopes up from the eaves to an inner ring (inset by `ins`), flat tiled top inside */
+function skirtRoof(ps,sg,y,ins,rise,col){const inner=outline(ps,sg,()=>-ins);const n=ps.length;const tl=TT('tiles',T.white),c=H(col);const eave=outline(ps,sg,()=>0.35);
+  for(let i=0;i<n;i++){const j=(i+1)%n;const a=eave[i],b=eave[j],ia=inner[i],ib=inner[j];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<0.05)continue;
+    q3(O,[a[0],y-0.12,a[1]],[b[0],y-0.12,b[1]],[ib[0],y+rise,ib[1]],[ia[0],y+rise,ia[1]],[0,0],[L,0],[L,ins*1.1],[0,ins*1.1],c,tl,0,[0,1,0]);
+    {const fe=FR(a,b,sg);fq(O,fe,0,fe.L,y-0.3,y-0.12,0,MARBLE,TMt('marble'))}
+    O.hq([a[0],y-0.3,a[1]],[b[0],y-0.3,b[1]],[ps[j][0],y-0.3,ps[j][1]],[ps[i][0],y-0.3,ps[i][1]],[0,0],[1,0],[1,1],[0,1],shade(MARBLE,0.8),RECT[TMt('marble')],0,true)}
+  polyRoof(O,inner,y+rise,shade(c,0.95),tl)}
 
-/* ============================== NEOCLASSICAL BUILDER ==============================
-   used for Kassaveti 1 (photo ref/r11: cream render, grey stone pilasters between the tall ground-floor shop bays, white entablature,
-   tall first-floor windows with moulded surrounds and cornice heads, salmon apron panels, small iron balconies on consoles,
-   crowning cornice, red-tiled roof, salmon pediment on the gable that faces the square), its east wing and Varsos (Kassaveti 5). */
-function neoGround(f,top,cfg,list,pil){const holes=[];const U=units(f,list||[],0.55,0.55);const PIL=H(cfg.pil||'#bdb6a8');
-  for(const u of U){const p=P(f,(u.s0+u.s1)/2,0.8);const yb=Math.min(swY(p[0],p[1]),top-3.8);const hole=shopUnit(f,u.s0,u.s1,yb,top,u,Object.assign({gfRev:cfg.pil||'#d8d2c4',boxCol:cfg.boxCol||'#c4bdb0'},cfg));holes.push(hole);if(u.o.terr)terrace(f,u.s0,u.s1,yb,u.o.terr);
-    if(!u.o.bankWin){placed('lm_shop',P(f,(u.s0+u.s1)/2,0)[0],P(f,(u.s0+u.s1)/2,0)[1],u.name,'lm-kassaveti');SHOPFRONTS.push({a:P(f,u.s0,0),c:P(f,u.s1,0),nx:f.nx,nz:f.nz,L:u.s1-u.s0})}}
-  // pilasters at both ends and between units (stone, proud 12 cm, with base and capital)
-  if(pil!==false){const ps=[0.28,f.L-0.28];for(let i=0;i<U.length-1;i++)ps.push((U[i].s1+U[i+1].s0)/2);
-    for(const s of ps){const p=P(f,s,0.5);const yb=swY(p[0],p[1])-0.3;bx(O,f,s,0.06,yb,0.5,0.12,top-0.5-yb,PIL,tm('ashlar'));bx(O,f,s,0.08,yb,0.6,0.16,0.55,shade(PIL,0.92),tm('ashlar'));bx(O,f,s,0.09,top-0.62,0.62,0.18,0.18,WHITE,tm('marble'))}}
-  return holes}
-/* first-floor neoclassical bay windows: o {nb, w, h, sill, head:'cornice'|'pediment', apron(colour|null), balc:[bay indices], shutters colour} */
-function neoUpper(f,y0,y1,o,wallC){const holes=[];const L=f.L,nb=o.nb||Math.max(1,Math.round(L/2.9)),bw=L/nb;
-  for(let i=0;i<nb;i++){const c=(i+0.5)*bw,w=Math.min(o.w||1.15,bw-0.8);if(w<0.5)continue;const bal=o.balc&&o.balc.indexOf(i)>=0;const ya=bal?y0+0.05:y0+(o.sill||0.75),yb=y0+(o.h||2.75);
-    opening(O,f,c-w/2,c+w/2,ya,yb,0.2,{frame:H(o.frame||'#5a4632'),fw:0.07,mull:2,tr:yb-0.6,gl:hf(i*7+(o.seed||0))<0.3?1:0,rev:H('#efe9dc'),sillCol:H('#e8e2d4')});holes.push([c-w/2,c+w/2,ya,yb]);
-    // moulded surround (architrave)
-    const ac=WHITE;fq(O,f,c-w/2-0.16,c-w/2,ya,yb+0.16,0.05,ac,tm('plasterW'));fq(O,f,c+w/2,c+w/2+0.16,ya,yb+0.16,0.05,ac,tm('plasterW'));fq(O,f,c-w/2,c+w/2,yb,yb+0.16,0.05,ac,tm('plasterW'));
-    sq(O,f,c-w/2-0.16,0,0.05,ya,yb+0.16,-1,shade(ac,0.85),tm('plasterW'));sq(O,f,c+w/2+0.16,0,0.05,ya,yb+0.16,1,shade(ac,0.85),tm('plasterW'));
-    // head: cornice slab (+ triangular pediment)
-    bx(O,f,c,0.1,yb+0.3,w+0.6,0.22,0.12,ac,tm('marble'));bx(O,f,c,0.06,yb+0.16,w+0.42,0.14,0.14,shade(ac,0.95),tm('plasterW'));
-    if(o.head==='pediment'){const yp=yb+0.42,hw=w/2+0.3;t3(O,V(f,c-hw,0.1,yp),V(f,c+hw,0.1,yp),V(f,c,0.1,yp+0.42),[0,0],[1,0],[0.5,0.4],ac,tm('plasterW'),0,[f.nx,0,f.nz]);
-      for(const sd of[-1,1]){const a=V(f,c+sd*hw,0.14,yp),b=V(f,c,0.14,yp+0.42);q3(O,a,b,[b[0],b[1]+0.08,b[2]],[a[0],a[1]+0.08,a[2]],[0,0],[1,0],[1,0.1],[0,0.1],ac,tm('marble'),0,[f.nx,0.3,f.nz])}}
-    if(o.apron&&!bal){fq(O,f,c-w/2,c+w/2,y0+0.12,ya-0.1,0.03,H(o.apron),tm('plaster'));sq(O,f,c-w/2,0,0.03,y0+0.12,ya-0.1,-1,H(o.apron),tm('plaster'));sq(O,f,c+w/2,0,0.03,y0+0.12,ya-0.1,1,H(o.apron),tm('plaster'))}
-    if(!bal)bx(O,f,c,0.08,ya-0.1,w+0.4,0.18,0.1,H('#e8e2d4'),tm('marble'));
-    if(bal){// marble balcony slab on two scroll consoles, wrought-iron railing
-      const bd=o.balcD||0.75,bwid=w+0.9;bx(O,f,c,bd/2,y0-0.12,bwid,bd,0.14,H('#ebe7de'),tm('marble'));for(const sd of[-1,1])bx(O,f,c+sd*(bwid/2-0.18),0.2,y0-0.55,0.16,0.4,0.43,H('#e6e1d6'),tm('marble'));
-      const rf={a:P(f,c-bwid/2+0.05,bd-0.05),c:P(f,c+bwid/2-0.05,bd-0.05),L:bwid-0.1,ux:f.ux,uz:f.uz,nx:f.nx,nz:f.nz};railing(rf,0,rf.L,y0+0.02,'iron',{railCol:'#26292a'},0);
-      for(const sd of[-1,1]){const s=c+sd*(bwid/2-0.05);const fr2=FR(P(f,s,0.02),P(f,s,bd-0.05),1);fq(CUT,fr2,0,fr2.L,y0+0.02,y0+1.0,0,H('#26292a'),T.rail,[0,fr2.L/1.2,0,1])}}
-    if(o.shutters){const sc=H(o.shutters);for(const sd of[-1,1]){const ss=c+sd*(w/2+0.16+w/4);if(ss-w/4<0.05||ss+w/4>L-0.05)continue;fq(O,f,ss-w/4,ss+w/4,ya,yb,0.07,sc,tm('wood'));sq(O,f,ss+sd*w/4,0.0,0.07,ya,yb,sd,shade(sc,0.8),tm('wood'))}}}
-  wallHoles(O,f,0,L,y0,y1,0,holes,wallC,tm('plasterW'));return holes}
-function entablature(f,y,wallC,big){// white band at first-floor level (architrave + frieze + projecting cornice)
-  bx(O,f,f.L/2,0.06,y-0.4,f.L+0.08,0.14,0.4,WHITE,tm('plasterW'));bx(O,f,f.L/2,0.13,y,f.L+0.2,0.28,big?0.16:0.12,WHITE,tm('marble'))}
-function crown(f,y,big){// crowning cornice: frieze, dentil band, projecting corona
-  bx(O,f,f.L/2,0.05,y-0.55,f.L+0.06,0.12,0.5,WHITE,tm('plasterW'));for(let s=0.15;s<f.L-0.1;s+=0.34)bx(O,f,s,0.16,y-0.16,0.14,0.16,0.12,WHITE,tm('plasterW'));
-  bx(O,f,f.L/2,0.25,y-0.04,f.L+0.5,big?0.6:0.45,0.2,WHITE,tm('marble'));bx(O,f,f.L/2,0.15,y-0.2,f.L+0.3,0.3,0.12,shade(WHITE,0.95),tm('plasterW'))}
-function quoins(f,s,y0,y1,col){for(let y=y0,k=0;y<y1-0.05;y+=0.5,k++)bx(O,f,s,0.04,y,k%2?0.45:0.7,0.09,0.46,col,tm('plasterW'))}
+/* neoclassical facade of one edge (2 storeys): pilasters + shop bays below a string course, tall moulded windows with hood cornices above,
+   frieze + projecting cornice at the top */
+function neoEdge(f,i,gy,cfg,ctx){const L=f.L,wallC=H(cfg.wall),trim=H(cfg.trim),pil=H(cfg.pil||'#b0aaa0');const y1=gy+cfg.gfH,y2=y1+cfg.fh,top=y2;const seed=ctx.seed+i*31;
+  const modern=(cfg.modern||[]).indexOf(i)>=0;
+  // ground floor
+  const holes=[];const U=(cfg.units&&cfg.units[i])||[];for(const u of U){const r=unitAt(f,i,u,ctx,y1,true);if(r)holes.push(r)}
+  if(!U.length&&L>2.5){const nb=Math.max(1,Math.round(L/3.2)),bw=L/nb;for(let k=0;k<nb;k++){const c=(k+0.5)*bw,w=Math.min(1.2,bw-0.8);if(w<0.5)continue;opening(O,f,c-w/2,c+w/2,gy+1.0,gy+3.2,0.2,{frame:H('#3a3632'),gl:0,shut:0.0,sill:true});holes.push([c-w/2,c+w/2,gy+1.0,gy+3.2])}}
+  wallHoles(O,f,0,L,ctx.loE[i],y1,0,holes,shade(wallC,0.97),TMt('plaster'));
+  // stone pilasters between the shop bays and at the corners
+  const cuts=[0,L];for(const h of holes){cuts.push(h[0]-0.02,h[1]+0.02)}cuts.sort((a,b)=>a-b);
+  for(let k=0;k<cuts.length-1;k++){const a=cuts[k],b=cuts[k+1];if(b-a<0.12)continue;let inHole=false;for(const h of holes)if(a>=h[0]-0.05&&b<=h[1]+0.05){inHole=true;break}if(inHole)continue;
+    bx(O,f,(a+b)/2,0.04,gy-0.05,b-a,0.08,y1-gy-0.3,pil,TMt('ashlar','marble'))}
+  bx(O,f,L/2,0.12,y1-0.32,L+0.1,0.24,0.32,trim,TMt('marble'));// string course
+  if(modern){for(let k=1;k<3;k++){const ya=y1+(k-1)*3.0;polyBays(f,ya,ya+3.0,k,Object.assign({},cfg,{frame:'#d8d8d2',shut:'#d6cfbf',awn:['#d8ccb2',null]}),seed,false,H('#f1eee7'))}return y1+6.0}
+  // first floor: tall windows every ~2.5 m
+  const winW=cfg.winW||1.15,nb=Math.max(1,Math.round(L/2.55)),bw=L/nb;const wh=[];
+  for(let k=0;k<nb;k++){const c=(k+0.5)*bw;if(bw<winW+0.5)continue;const ya=y1+0.55,yb=Math.min(y2-0.75,ya+2.55);const centre=cfg.centreBalc&&k===Math.floor(nb/2)&&nb%2===1;const balc=centre||(cfg.balcEvery&&((k+i)%cfg.balcEvery===0));
+    const y0w=balc?y1+0.08:ya;opening(O,f,c-winW/2,c+winW/2,y0w,yb,0.22,{frame:H('#5a4a3a'),mull:2,gl:hf(seed+k*5)<0.3?1:0,tr:yb-0.55,sill:!balc,rev:trim});wh.push([c-winW/2,c+winW/2,y0w,yb]);
+    // moulded architrave + hood cornice (+ small pediment on the central bay)
+    bx(O,f,c-winW/2-0.08,0.03,y0w,0.14,0.06,yb-y0w,trim,TMt('marble'));bx(O,f,c+winW/2+0.08,0.03,y0w,0.14,0.06,yb-y0w,trim,TMt('marble'));bx(O,f,c,0.04,yb,winW+0.3,0.08,0.18,trim,TMt('marble'));
+    bx(O,f,c,0.12,yb+0.2,winW+0.55,0.24,0.1,trim,TMt('marble'));
+    if(centre){const A=V(f,c-winW/2-0.3,0.12,yb+0.3),B=V(f,c+winW/2+0.3,0.12,yb+0.3),C=V(f,c,0.12,yb+0.75);t3(O,A,B,C,[0,0],[1,0],[0.5,0.5],trim,TMt('marble'),0,[f.nx,0,f.nz])}
+    if(cfg.shutters){const sc=H(cfg.shutters);for(const sd of[-1,1]){const s=c+sd*(winW/2+0.16+winW/4);if(s-winW/4<0.05||s+winW/4>L-0.05)continue;fq(O,f,s-winW/4,s+winW/4,y0w,yb,0.07,sc,TT('kvShut'),[0,1,0,1]);sq(O,f,s+sd*winW/4,0,0.07,y0w,yb,sd,shade(sc,0.75),T.white)}}
+    if(balc){const bw2=centre?winW+1.4:winW+0.5,dep=centre?0.9:0.5;bx(O,f,c,dep/2,y1,bw2,dep,0.14,MARBLE,TMt('marble'));
+      for(const sd of[-1,1])bx(O,f,c+sd*(bw2/2-0.2),0.2,y1-0.42,0.14,0.36,0.42,trim,TMt('marble'));// consoles
+      const g=FR(P(f,c-bw2/2,dep),P(f,c+bw2/2,dep),ctx.sg);railing(g,0,g.L,y1+0.14,'ironN',cfg,0);
+      for(const sd of[-1,1]){const g2=sd<0?FR(P(f,c-bw2/2,0),P(f,c-bw2/2,dep),ctx.sg):FR(P(f,c+bw2/2,dep),P(f,c+bw2/2,0),ctx.sg);railing(g2,0,g2.L,y1+0.14,'ironN',cfg,0)}}}
+  wallHoles(O,f,0,L,y1,y2,0,wh,wallC,TMt('plaster'));
+  if(cfg.quoins){for(const s of[0.25,L-0.25])for(let y=gy+0.2,k=0;y<top-0.4;y+=0.42,k++)bx(O,f,s+(k%2?0:(s<1?0.12:-0.12)),0.025,y,k%2?0.5:0.74,0.05,0.36,trim,TMt('ashlar','marble'))}
+  // frieze + cornice
+  bx(O,f,L/2,0.03,top-0.62,L,0.06,0.5,shade(trim,0.97),TMt('plaster'));bx(O,f,L/2,(cfg.cornice||0.5)/2,top-0.12,L+0.3,cfg.cornice||0.5,0.24,trim,TMt('marble'));
+  bx(O,f,L/2,(cfg.cornice||0.5)*0.3,top-0.26,L+0.1,(cfg.cornice||0.5)*0.6,0.14,shade(trim,0.9),TMt('marble'));
+  for(let s=0.3;s<L-0.2;s+=0.6)bx(O,f,s,0.12,top-0.36,0.12,0.24,0.1,trim,T.white);// modillions
+  return top}
 
-/* ---- Kassaveti 1: split of OSM way 1075949217 into the neoclassical corner building (west, facing Platanos) and its lower east wing ---- */
-function buildK1(ps,b){const sg=polyArea(ps)>0?1:-1;const n=ps.length;if(n!==11){KV.warn.push('k1: unexpected footprint '+n);return buildGenericNeo(ps,b)}
-  // cut on the north wall (edge 1) at the step between edge 5 and edge 7 (vertex 6)
-  const P1=ps[1],P2=ps[2],P6=ps[6];const t=(P1[0]-P6[0])/(P1[0]-P2[0]);const Q=[P6[0],P1[1]+(P2[1]-P1[1])*t];
-  const W=[Q,ps[2],ps[3],ps[4],ps[5],ps[6]],WE=[-1,2,3,4,5,-6];// original edge per sub-edge (-6: party wall with the east wing)
-  const Ea=[ps[0],ps[1],Q,ps[6],ps[7],ps[8],ps[9],ps[10]],EE=[0,-1,-6,6,7,8,9,10];
-  const cx=(ps[0][0]+ps[5][0])/2,cz=(ps[0][1]+ps[5][1])/2;const ch=chunkAt(cx,cz);O=ch.o;CUT=ch.cut;const v0=O.size()+CUT.size();
-  for(let i=0;i<n;i++)addSeg(ps[i][0],ps[i][1],ps[(i+1)%n][0],ps[(i+1)%n][1],'b');
-  const sh=SHOPS[ID.k1];
-  /* -- west: neoclassical, 2 tall storeys + hip roof with a pediment on the south (Kassaveti / square) gable -- */
-  {const cfg={pil:'#bdb6a8',shopFrame:'#2b2e31',riser:'#bdb6a8'};const wallC=H('#eadfc0');let gmin=1e9,gmax=-1e9;for(const p of W){const y=swY(p[0],p[1]);gmin=Math.min(gmin,y);gmax=Math.max(gmax,y)}
-    const gfH=5.0,fh=4.5,top1=gmax+gfH,top=top1+fh,base=gmin-0.8;const E=W.map((p,i)=>FR(p,W[(i+1)%W.length],sg));
-    for(let i=0;i<E.length;i++){const f=E[i],oe=WE[i];if(f.L<0.05)continue;
-      if(oe===4||oe===5){const holes=neoGround(f,top1,cfg,sh[oe]);wallHoles(O,f,0,f.L,base,top1,0,holes,wallC,tm('plasterW'));entablature(f,top1,wallC,true);
-        neoUpper(f,top1,top,{nb:oe===5?5:4,w:1.15,h:2.85,sill:0.8,head:'cornice',apron:'#d97a62',balc:oe===5?[2]:[1,2],shutters:null,frame:'#4a3a2c',seed:oe*13},wallC);crown(f,top,true);
-        quoins(f,0.25,top1,top-0.5,H('#f1ece0'));quoins(f,f.L-0.25,top1,top-0.5,H('#f1ece0'))}
-      else if(oe===2||oe===3){fq(O,f,0,f.L,base,top1,0,wallC,tm('plasterW'));if(f.L>3)neoUpper(f,top1,top,{nb:1,w:1.1,h:2.8,head:'cornice',apron:'#d97a62',frame:'#4a3a2c'},wallC);else fq(O,f,0,f.L,top1,top,0,wallC,tm('plasterW'));crown(f,top,false)}
-      else fq(O,f,0,f.L,base,top,0,shade(wallC,0.92),tm('plasterW'))}
-    neoRoof([W[1],W[4],W[5],W[0]],top,sg,'#b4583d','#d97a62');KV.k1top=top}
-  /* -- east wing: 2 storeys, render with stone pilasters and shuttered first-floor windows, flat roof behind a balustraded parapet (inferred, see kassaveti.md) -- */
-  {const cfg={pil:'#d6ccb8',shopFrame:'#24262a',riser:'#cbbfa8'};const wallC=H('#e7d4ad');let gmin=1e9,gmax=-1e9;for(const i of[3,4,5,6,7]){const p=Ea[i];const y=swY(p[0],p[1]);gmin=Math.min(gmin,y);gmax=Math.max(gmax,y)}
-    const gfH=4.5,fh=3.7,top1=gmax+gfH,top=top1+fh,base=gmin-0.8;const E=Ea.map((p,i)=>FR(p,Ea[(i+1)%Ea.length],sg));
-    for(let i=0;i<E.length;i++){const f=E[i],oe=EE[i];if(f.L<0.05)continue;
-      if([7,8,10].indexOf(oe)>=0){const holes=neoGround(f,top1,cfg,sh[oe]);wallHoles(O,f,0,f.L,base,top1,0,holes,wallC,tm('plasterW'));entablature(f,top1,wallC,false);
-        neoUpper(f,top1,top,{w:1.05,h:2.45,sill:0.7,head:oe===8?'pediment':'cornice',apron:null,shutters:'#4b5e4a',frame:'#4a3a2c',balc:oe===8?[2]:null,seed:oe*7},wallC);crown(f,top,false);parapet(f,top,wallC)}
-      else if(oe===0){const p=P(f,f.L/2,0.8);const hs=entrance(f,f.L/2,swY(p[0],p[1]),1.4);wallHoles(O,f,0,f.L,base,top1,0,hs,wallC,tm('plasterW'));neoUpper(f,top1,top,{nb:3,w:1.0,h:2.4,head:'cornice',shutters:'#4b5e4a',frame:'#4a3a2c'},wallC);
-        crown(f,top,false);parapet(f,top,wallC)}
-      else if(oe===6||oe===9){fq(O,f,0,f.L,base,top+0.9,0,wallC,tm('plasterW'))}
-      else if(oe===-6){/* party wall: the corner building rises above the wing */}
-      else fq(O,f,0,f.L,base,top,0,shade(wallC,0.9),tm('plasterW'))}
-    // roof + parapet on all edges
-    polyRoof(O,Ea,top,H('#c9c4ba'),tm('flatroof'));for(let i=0;i<E.length;i++){const f=E[i],oe=EE[i];if(f.L<0.05||[7,8,10,0].indexOf(oe)>=0||oe===-6)continue;fq(O,f,0,f.L,top,top+0.9,0,shade(wallC,0.9),tm('plaster'));fq(O,f,0,f.L,top,top+0.9,-0.2,shade(wallC,0.85),tm('plaster'),null,0,-1)}
-    roofStuff(Ea,top,{solar:2,wall:'#e7d4ad'},77)}
-  KV.tris+=Math.round((O.size()+CUT.size()-v0)/2);KV.built.push(ID.k1);return true}
-function parapet(f,top,wallC){fq(O,f,0,f.L,top,top+0.95,0.02,wallC,tm('plasterW'));fq(O,f,0,f.L,top,top+0.95,-0.2,shade(wallC,0.85),tm('plaster'),null,0,-1);hq(O,f,0,f.L,-0.22,0.12,top+0.95,false,WHITE,tm('marble'));
-  // balustrade panels between plinths (cut-out turned balusters when available)
-  const bal=T.jBalus;if(bal!==undefined){const v=uvR(0,0,240,120);const np=Math.max(1,Math.round(f.L/3.0));for(let i=0;i<np;i++){const a=i*f.L/np+0.45,b=(i+1)*f.L/np-0.45;if(b-a<0.6)continue;fq(CUT,f,a,b,top+0.18,top+0.8,0.05,WHITE,bal,[0,(b-a)/0.6,v[2],v[3]]);fq(CUT,f,a,b,top+0.18,top+0.8,0.05,WHITE,bal,[0,(b-a)/0.6,v[2],v[3]],0,-1)}}}
-/* tiled roof over the 4 principal corners of a neoclassical footprint (quad order follows the ring: D, A, B, C with A→B the pediment front):
-   gable with a salmon pediment on A→B, hipped at the back; follows the real (non-rectangular) outline, eaves 45 cm (25 cm at the pediment). */
-function neoRoof(quad,y,sg,roofCol,tymCol){const [D0,A0,B0,C0]=quad;const f=FR(A0,B0,sg),L=f.L;
-  const X=outline(quad,sg,i=>i===1?0.25:0.45);const [D,A,B,C]=X;const yb=y+0.12,rise=L*0.19;const mid=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];
-  const r1=mid(A,B),mb=mid(C,D);const dl=Math.hypot(mb[0]-r1[0],mb[1]-r1[1]);const hw=Math.min(Math.hypot(C[0]-D[0],C[1]-D[1])/2*0.9,dl*0.6);const r2=[mb[0]+(r1[0]-mb[0])*hw/dl,mb[1]+(r1[1]-mb[1])*hw/dl];
-  const v=(p,yy)=>[p[0],yy,p[1]];const a=v(A,yb),bb=v(B,yb),c=v(C,yb),d=v(D,yb),R1=v(r1,yb+rise),R2=v(r2,yb+rise);const col=H(roofCol),und=shade(H('#e9e3d6'),0.8),rc=tm('tiles');const up=[0,1,0],dn=[0,-1,0];
-  const UV=(p)=>[p[0]*0.9+p[2]*0.4,p[1]*1.3+p[2]*0.2];const tri=(p,q,r)=>{t3(O,p,q,r,UV(p),UV(q),UV(r),col,rc,0,up);t3(O,p,q,r,[0,0],[1,0],[0,1],und,tm('plasterW'),0,dn)};
-  tri(a,R1,d);tri(d,R1,R2);tri(bb,c,R2);tri(bb,R2,R1);tri(d,R2,c);
-  // ridge capping
-  {const m=[(R1[0]+R2[0])/2,yb+rise+0.06,(R1[2]+R2[2])/2];O.box(m[0],m[1],m[2],0.22,0.12,Math.hypot(R2[0]-R1[0],R2[2]-R1[2]),Math.atan2(R2[0]-R1[0],R2[2]-R1[2]),shade(col,0.9),RECT[rc],1,0)}
-  // pediment: recessed salmon tympanum + white raking cornices (the horizontal cornice is the facade crown)
-  const y0=y+0.05;t3(O,V(f,0.25,0.03,y0),V(f,L-0.25,0.03,y0),V(f,L/2,0.03,yb+rise-0.3),[0,0],[L,0],[L/2,rise],H(tymCol),tm('plasterW'),0,[f.nx,0,f.nz]);
-  for(const sd of[-1,1]){const p=V(f,sd<0?-0.3:L+0.3,0.32,y0+0.02),q=V(f,L/2,0.32,yb+rise+0.12);const len=Math.hypot(q[0]-p[0],q[1]-p[1],q[2]-p[2]);const ofs=(pt,dd,dy)=>[pt[0]+f.nx*dd,pt[1]+dy,pt[2]+f.nz*dd];
-    q3(O,ofs(p,0,-0.34),ofs(q,0,-0.34),ofs(q,0,0),ofs(p,0,0),[0,0],[len,0],[len,0.34],[0,0.34],WHITE,tm('marble'),0,[f.nx,0,f.nz]);
-    q3(O,ofs(p,-0.6,0),ofs(q,-0.6,0),ofs(q,0,0),ofs(p,0,0),[0,0],[len,0],[len,0.6],[0,0.6],shade(WHITE,0.97),tm('marble'),0,up);
-    q3(O,ofs(p,-0.6,-0.34),ofs(q,-0.6,-0.34),ofs(q,0,-0.34),ofs(p,0,-0.34),[0,0],[len,0],[len,0.6],[0,0.6],shade(WHITE,0.75),tm('plasterW'),0,dn)}
-  bx(O,f,L/2,0.2,yb+rise+0.05,0.4,0.35,0.5,WHITE,tm('marble'));for(const s of[0.1,L-0.1])bx(O,f,s,0.2,y0+0.1,0.45,0.35,0.42,WHITE,tm('marble'));
-  // two chimneys on the back slopes
-  for(const t of[0.35,0.7]){const p=[lerp(r1[0],r2[0],t)+(D[0]-A[0])*0.12,lerp(r1[1],r2[1],t)+(D[1]-A[1])*0.12];O.box(p[0],yb+rise*0.7+0.5,p[1],0.55,1.6,0.75,0,H('#e3d6b8'),RECT[tm('plasterW')],1,0);O.box(p[0],yb+rise*0.7+1.35,p[1],0.7,0.1,0.9,0,WHITE,RECT[tm('marble')],1,0)}}
-function buildGenericNeo(ps,b){KV.warn.push('generic neo fallback');return false}
+/* ============================== UNITS ============================== */
+function unitAt(f,ei,u,ctx,gTop,neo){const [s0,s1,key,opt]=u;if(s1>f.L+0.05||s0<-0.05){KV.warn.push('unit off edge '+key+' e'+ei+' L='+f.L.toFixed(1))}
+  const a=Math.max(0,s0),b=Math.min(f.L,s1);if(b-a<0.4)return null;const s=SH[key]||{n:key};
+  // floor level of this unit: highest pavement point in front of it (+ step), so shops step down the 7 % slope of Kassaveti
+  let gy=-1e9;for(const t of[a,(a+b)/2,b]){const p=P(f,t,0.6);gy=Math.max(gy,terr(p[0],p[1])+0.17)}if(gy>ctx.gyMax)gy=ctx.gyMax;if(ctx.cfg.raised)gy+=ctx.cfg.raised;
+  // plinth under the unit down to the pavement
+  let lo=1e9;for(const t of[a,b]){const p=P(f,t,0.2);lo=Math.min(lo,terr(p[0],p[1]))}fq(O,f,a,b,lo-0.4,gy,0.0,H('#cfcac0'),TMt('marbleW','marble'));
+  if(ctx.cfg.raised){for(let k=0;k<2;k++)bx(O,f,(a+b)/2,0.25+k*0.3,gy-ctx.cfg.raised+k*ctx.cfg.raised/2-0.05,b-a-0.4,0.6-k*0.3,ctx.cfg.raised/2+0.05,MARBLE,TMt('marble'))}
+  let r;if(key==='lobby')r=lobbyUnit(f,a,b,gy,opt);else if(key==='closed')r=closedUnit(f,a,b,gy,ctx.cfg);else if(key==='wall')return null;
+  else{r=shopUnit(f,a,b,gy,gTop,key,s,opt,ctx.cfg,neo);const n=ctx.pp[ei+':'+s0]||0;const p=P(f,(a+b)/2,0);placed('lm_shop',p[0],p[1],s.n,'lm-kassaveti');
+    SHOPFRONTS.push({a:P(f,a,0),c:P(f,b,0),nx:f.nx,nz:f.nz,L:b-a});KV.units.push({b:ctx.idx,e:ei,s0:+a.toFixed(2),s1:+b.toFixed(2),name:s.n,x:+p[0].toFixed(1),z:+p[1].toFixed(1),poi:n,weak:!!s.weak})}
+  return r}
+/* shops of non-curated edges (back streets) from MAP.pois */
+function poiUnits(f,ei,ctx){const ps=poisOf(ctx.idx).filter(p=>p.e===ei&&p.bay==='shop'&&!p.lm);const L=f.L;const U=ps.map(p=>{const w=clamp(p.w||4,2.4,Math.min(10,L-0.4));const c=clamp(p.t*L,0.2+w/2,L-0.2-w/2);return{c,w,p}}).sort((a,b)=>a.c-b.c);
+  for(let i=0;i<U.length-1;i++){const a=U[i],b=U[i+1];if(a.c+a.w/2>b.c-b.w/2-0.3){const m=(a.c+a.w/2+b.c-b.w/2)/2;a.w=Math.max(2,2*(m-0.15-a.c+a.w/2)-a.w);}}
+  return U.filter(u=>u.p.name||/pharm/.test(u.p.cat||'')).map(u=>{const s0=Math.max(0.2,u.c-u.w/2),s1=Math.min(L-0.2,u.c+u.w/2);const nm=u.p.name||'ΦΑΡΜΑΚΕΙΟ';const key='p:'+nm;const s={n:nm,cat:CAT_INT[u.p.cat]?u.p.cat:(/pharm/.test(u.p.cat)?'pharmacy':'services'),bg:u.p.bg||'#1d1d1f',fg:u.p.fg||'#f6efe2',cross:/pharm/.test(u.p.cat||'')};
+    return[s0,s1,key,{poiShop:s}]}).filter(u=>u[1]-u[0]>1.6)}
 
-/* ---- Varsos, Kassaveti 5 (OSM way 1075949838): two-storey neoclassical house, the patisserie (since 1892) on the ground floor ---- */
-function buildVarsos(ps,b){const sg=polyArea(ps)>0?1:-1;const n=ps.length;const E=ps.map((p,i)=>FR(p,ps[(i+1)%n],sg));const wallC=H('#e6c9ad');
-  let gmin=1e9;for(const p of ps)gmin=Math.min(gmin,terr(p[0],p[1]));const f0=E[0];const pm=P(f0,f0.L/2,0.8);const gy=swY(pm[0],pm[1]);const top1=gy+4.7,top=top1+4.3,base=gmin-0.8;
+/* ============================== BUILD ONE BUILDING ============================== */
+function buildOne(fp){const b=fp.b,id=b[11]&&b[11].id,cfg=BLD[id];if(!cfg)return false;const ps=fp.ps.slice(),n=ps.length;const sg=polyArea(ps)>0?1:-1;
+  const idx=bIdx(id);const seed=(b[5]|0)+13;const front=new Set(cfg.front.filter(e=>e<n));
+  const wallC=H(cfg.wall);let gmin=Infinity,gmax=-Infinity;for(const p of ps){const y=terr(p[0],p[1]);gmin=Math.min(gmin,y);gmax=Math.max(gmax,y)}
+  // ground-floor datum: highest pavement level along the front edges (shops on the low end step down; upper floors are level)
+  let gyMax=-Infinity;for(const e of front){const f=FR(ps[e],ps[(e+1)%n],sg);for(const t of[0,0.5,1]){const p=P(f,f.L*t,0.6);gyMax=Math.max(gyMax,terr(p[0],p[1])+0.17)}}if(!isFinite(gyMax))gyMax=gmax+0.17;
+  const gy=gyMax+(cfg.raised||0),base=gmin-0.6,lv=cfg.lv,gfH=cfg.gfH,fh=cfg.fh;const yAt=k=>k===0?gy:gy+gfH+(k-1)*fh;const top=yAt(lv);
   const cx=ps.reduce((s,p)=>s+p[0],0)/n,cz=ps.reduce((s,p)=>s+p[1],0)/n;const ch=chunkAt(cx,cz);O=ch.o;CUT=ch.cut;const v0=O.size()+CUT.size();
-  for(let i=0;i<n;i++)addSeg(ps[i][0],ps[i][1],ps[(i+1)%n][0],ps[(i+1)%n][1],'b');
-  for(let i=0;i<n;i++){const f=E[i];if(i!==0){fq(O,f,0,f.L,base,top+0.9,0,shade(wallC,0.9),tm('plasterW'));continue}
-    // ground floor: rusticated base, central double door, two wide shop windows with the patisserie display, timber frames (dark green)
-    const L=f.L,FRM=H('#24382c'),dc=L/2,dw=1.7,holes=[];
-    for(const [a,c] of[[0.55,dc-dw/2-0.45],[dc+dw/2+0.45,L-0.55]]){opening(O,f,a,c,gy+0.55,gy+3.35,0.3,{glass:T.kWin,uv:WQ[1],glassCol:H('#ffe6c4'),gl:1,frame:FRM,fw:0.09,mull:2,tr:gy+2.65,trMull:2,rev:H('#efe6d6'),revT:tm('marbleW')});holes.push([a,c,gy+0.55,gy+3.35]);
-      fq(O,f,a,c,gy+0.02,gy+0.55,0.03,FRM,tm('wood'))}
-    opening(O,f,dc-dw/2,dc+dw/2,gy+0.02,gy+3.35,0.35,{glass:T.kWin,uv:WQ[1],glassCol:H('#ffe2bc'),gl:1,frame:FRM,fw:0.09,mull:2,tr:gy+2.65,door:[dc-dw/2+0.05,dc+dw/2-0.05],rev:H('#efe6d6'),revT:tm('marbleW')});holes.push([dc-dw/2,dc+dw/2,gy+0.02,gy+3.35]);
-    // marble steps at the door
-    bx(O,f,dc,0.35,gy-0.17,dw+0.8,0.7,0.17,H('#f0ece4'),tm('marble'));
-    // fascia: cream board with burgundy serif lettering, framed by a white moulding
-    const su=signUV('varsos');bx(O,f,L/2,0.08,gy+3.55,L-0.7,0.14,0.85,H('#f7f1e3'),T.white);bx(O,f,L/2,0.1,gy+4.38,L-0.5,0.2,0.08,WHITE,tm('marble'));if(su){const h=0.66,sw=Math.min(L-1.0,h*6);fq(O,f,L/2-sw/2,L/2+sw/2,gy+3.64,gy+3.64+sw/6,0.155,C1,su.tile,su.uv,1)}
-    wallHoles(O,f,0,L,base,top1,0,holes,H('#e2cbb0'),tm('ashlar'));
-    quoins(f,0.22,gy,top-0.4,H('#f2ead8'));quoins(f,L-0.22,gy,top-0.4,H('#f2ead8'));entablature(f,top1,wallC,true);
-    // first floor: three windows with triangular pediments, green timber shutters, the central one a balcony door on carved consoles
-    neoUpper(f,top1,top,{nb:3,w:1.05,h:2.7,sill:0.85,head:'pediment',apron:null,balc:[1],balcD:0.85,shutters:'#3c5a45',frame:'#3a2c20',seed:5},wallC);crown(f,top,true);
-    // balustraded parapet
-    parapet(f,top,wallC);
-    SHOPFRONTS.push({a:P(f,0.5,0),c:P(f,L-0.5,0),nx:f.nx,nz:f.nz,L:L-1});placed('lm_shop',P(f,dc,0)[0],P(f,dc,0)[1],'Βάρσος','lm-kassaveti');KV.doors['osm:n4721277016']={x:P(f,dc,0)[0],z:P(f,dc,0)[1],nx:f.nx,nz:f.nz,w:L-1,name:'Βάρσος'};
-    // terrace in front: marble tables, dark bentwood chairs (the patisserie's famous outdoor seating, inferred placement)
-    terrace(f,0.4,L-0.4,gy,{n:4,chairs:'wood',umb:'#f3ecdc'})}
-  polyRoof(O,ps,top,H('#c9c4ba'),tm('flatroof'));
-  KV.tris+=Math.round((O.size()+CUT.size()-v0)/2);KV.built.push(ID.k5);return true}
-
-/* ============================== INTERIORS DOOR HOOK ============================== */
-if(typeof buildDoorsPois==='function'){const _bdp=buildDoorsPois;buildDoorsPois=function(){const saved=[];
-  try{if(KV.built.length&&typeof MAP!=='undefined'&&MAP&&Array.isArray(MAP.pois)){for(const p of MAP.pois){if(p.b==null||!KV.bidx.has(p.b))continue;const d=KV.doors[p.id];saved.push([p,p.bay,p.fx,p.fz,p.nx,p.nz,p.w,p.name,p.nameLatin]);
-      if(d){p.fx=d.x;p.fz=d.z;p.nx=d.nx;p.nz=d.nz;p.w=d.w;if(d.name&&p.name!==d.name){p.name=d.name;p.nameLatin=d.name}}else p.bay='lm_kassaveti_hidden'}KV.doorHook=saved.length}}catch(e){KV.warn.push('door hook: '+e)}
-  try{return _bdp.apply(this,arguments)}finally{for(const s of saved){const p=s[0];p.bay=s[1];p.fx=s[2];p.fz=s[3];p.nx=s[4];p.nz=s[5];p.w=s[6];p.name=s[7];p.nameLatin=s[8]}}}}
+  _nb=nearBuildings(cx,cz);const E=[];for(let i=0;i<n;i++)E.push(FR(ps[i],ps[(i+1)%n],sg));const party=E.map(f=>isParty(f,null)&&true);
+  // own footprint is in _nb too: isParty skips nothing by identity, so test with the point outside (0.7 m) — own polygon never contains it
+  for(let i=0;i<n;i++)if(E[i].L>0.05)addSeg(ps[i][0],ps[i][1],ps[(i+1)%n][0],ps[(i+1)%n][1],'b');
+  const ctx={cfg,idx,seed,sg,gyMax:gy-(cfg.raised||0)+0.6,id,pp:{}};
+  // pre-pass: move the POIs of every curated shop onto its drawn unit before any generic (MAP.pois-driven) edge is laid out
+  for(const e in cfg.units||{}){const f=E[e];if(!f)continue;for(const u of cfg.units[e]){const s=SH[u[2]];if(!s||s.noSign||(u[3]&&u[3].corner))continue;ctx.pp[e+':'+u[0]]=patchPoi(s,idx,+e,f,Math.max(0,u[0]),Math.min(f.L,u[1]))||0}}
+  const loE=E.map(f=>{let lo=1e9;for(const t of[0,0.25,0.5,0.75,1]){const p=P(f,f.L*t,0.3);lo=Math.min(lo,terr(p[0],p[1]))}return lo-0.4});ctx.loE=loE;
+  if(cfg.style==='neo'){
+    let topY=gy+gfH+fh;for(let i=0;i<n;i++){const f=E[i];if(f.L<0.05)continue;if(!front.has(i))fq(O,f,0,f.L,base,gy,0,H('#cfcac0'),TMt('marbleW','marble'));
+      if(front.has(i)){topY=Math.max(topY,neoEdge(f,i,gy,cfg,ctx))}
+      else{const c=party[i]?shade(wallC,0.9):shade(wallC,0.95);if(party[i])fq(O,f,0,f.L,gy,gy+gfH+fh,0,c,TMt('plaster'));else{sideWindows(f,gy,gy+gfH,0,cfg,seed+i,c);sideWindows(f,gy+gfH,gy+gfH+fh,1,cfg,seed+i,c)}
+        bx(O,f,f.L/2,0.1,gy+gfH+fh-0.12,f.L,0.2,0.22,H(cfg.trim),TMt('marble'))}}
+    const top2=gy+gfH+fh;
+    if(cfg.roof==='hip')skirtRoof(ps,sg,top2,3.2,1.25,cfg.roofCol||'#b5573c');
+    else{polyRoof(O,ps,top2,H('#d6d2ca'),TMt('flatroof','plaster'));for(let i=0;i<n;i++){const f=E[i];if(f.L<0.05)continue;if(front.has(i)&&cfg.balus)railing(f,0.15,f.L-0.15,top2,'balus',cfg,-0.05);else{fq(O,f,0,f.L,top2,top2+0.6,0,shade(wallC,0.95),TMt('plaster'));fq(O,f,0,f.L,top2,top2+0.6,-0.18,shade(wallC,0.85),TMt('plaster'),null,0,-1);hq(O,f,0,f.L,-0.18,0.03,top2+0.6,false,MARBLE,TMt('marble'))}}}
+    if(cfg.pediment){const pd=cfg.pediment,f=E[pd.e];if(f){const s0=pd.s0,s1=Math.min(f.L,pd.s1),w=s1-s0,hgt=w*0.2,y=top2+0.12;const A=V(f,s0,0.18,y),B=V(f,s1,0.18,y),C=V(f,(s0+s1)/2,0.18,y+hgt);
+        t3(O,A,B,C,[s0,y],[s1,y],[(s0+s1)/2,y+hgt],H(pd.col),TMt('plaster'),0,[f.nx,0,f.nz]);
+        const g1=FR(P(f,s0-0.2,0.3),P(f,(s0+s1)/2,0.3),sg);// raking cornices
+        for(const [p0,p1] of[[[s0-0.25,y-0.05],[(s0+s1)/2,y+hgt+0.12]],[[(s0+s1)/2,y+hgt+0.12],[s1+0.25,y-0.05]]]){const a3=V(f,p0[0],0.34,p0[1]),b3=V(f,p1[0],0.34,p1[1]),a4=V(f,p0[0],0.34,p0[1]+0.22),b4=V(f,p1[0],0.34,p1[1]+0.22);
+          q3(O,a3,b3,b4,a4,[0,0],[1,0],[1,1],[0,1],H(cfg.trim),TMt('marble'),0,[f.nx,0,f.nz]);const a5=V(f,p0[0],-3.0,p0[1]+0.22),b5=V(f,p1[0],-3.0,p1[1]+0.22);q3(O,a4,b4,b5,a5,[0,0],[w,0],[w,3],[0,3],H(cfg.roofCol),TT('tiles',T.white),0,[0,1,0])}
+        // gable roof behind the pediment back into the hip
+        const D=V(f,(s0+s1)/2,-3.2,y+hgt);t3(O,A,C,V(f,s0,-3.2,y),[0,0],[1,0],[0,1],H(cfg.roofCol),TT('tiles',T.white),0,[0,1,0]);t3(O,B,C,V(f,s1,-3.2,y),[0,0],[1,0],[0,1],H(cfg.roofCol),TT('tiles',T.white),0,[0,1,0])}}
+  }else{
+    // ---------- polykatoikia ----------
+    const off=(e,k)=>{let d=[0,0,null];if(k>0&&front.has(e)){d=[0,cfg.dep||0,cfg.rail];if(cfg.setTop&&k===lv-1)d=[-cfg.setTop,cfg.dep||0,cfg.rail]}return d};
+    const gfC=cfg.gfMat==='marble'?H('#e6e2d8'):cfg.gfMat==='stone'?H('#d9c7a6'):wallC,gfT=TMt(cfg.gfMat==='marble'?'marbleW':cfg.gfMat==='stone'?'ashlar':'plasterW',cfg.gfMat==='stone'?'ashlar':'marble');
+    for(let i=0;i<n;i++){const f=E[i];if(f.L<0.05)continue;const isF=front.has(i);
+      if(!isF)fq(O,f,0,f.L,base,gy,0,shade(wallC,0.8),TMt('plaster'));
+      if(!isF){if(party[i])fq(O,f,0,f.L,gy,yAt(1),0,shade(wallC,0.9),TMt('plaster'));else sideWindows(f,gy,yAt(1),0,cfg,seed+i,shade(wallC,0.93));continue}
+      const holes=[];let U=(cfg.units&&cfg.units[i])||null;
+      if(U){for(const u of U){const r=unitAt(f,i,u,ctx,yAt(1),false);if(r)holes.push(r)}}
+      else{for(const u of poiUnits(f,i,ctx)){const s=u[3].poiShop;SH[u[2]]=s;const r=unitAt(f,i,[u[0],u[1],u[2],null],ctx,yAt(1),false);if(r)holes.push(r)}
+        if(!holes.length&&f.L>=2.6){const r=lobbyUnit(f,f.L/2-0.9,f.L/2+0.9,gy,null);holes.push(r)}}
+      // marble-clad piers between shops; fascia band continuity
+      wallHoles(O,f,0,f.L,loE[i],yAt(1),0.0,holes,gfC,gfT);
+      bx(O,f,f.L/2,0.09,yAt(1)-0.22,f.L+0.06,0.18,0.22,MARBLE,TMt('marble'))}
+    let prevOut=ps;
+    for(let k=1;k<lv;k++){const y0=yAt(k),y1=yAt(k+1);const W=outline(ps,sg,e=>off(e,k)[0]),Rr=outline(ps,sg,e=>{const o=off(e,k);return Math.max(o[0],o[1])});
+      for(let i=0;i<n;i++){const a=W[i],c=W[(i+1)%n];const f=FR(a,c,sg);if(f.L<0.05)continue;const isF=front.has(i);const o=off(i,k);
+        if(!isF){if(party[i])fq(O,f,0,f.L,y0,y1,0,shade(wallC,0.9),TMt('plaster'));else sideWindows(f,y0,y1,k,cfg,seed+i*7,shade(wallC,0.95));continue}
+        polyBays(f,y0,y1,k,cfg,seed+i*31+k*7,o[1]-o[0]>0.6,wallC)}
+      for(let i=0;i<n;i++){if(!front.has(i))continue;const o=off(i,k);if(o[1]-o[0]<0.05)continue;const j=(i+1)%n;
+        const a=W[i],c=W[j],ra=Rr[i],rc=Rr[j];const ys=y0;
+        O.hq([a[0],ys,a[1]],[c[0],ys,c[1]],[rc[0],ys,rc[1]],[ra[0],ys,ra[1]],[a[0],a[1]],[c[0],c[1]],[rc[0],rc[1]],[ra[0],ra[1]],H('#d9d4ca'),RECT[TMt('marble')],0,false);
+        O.hq([a[0],ys-0.2,a[1]],[c[0],ys-0.2,c[1]],[rc[0],ys-0.2,rc[1]],[ra[0],ys-0.2,ra[1]],[0,0],[1,0],[1,1],[0,1],shade(wallC,0.78),RECT[TMt('plaster')],0,true);
+        const fr=FR(ra,rc,sg);if(fr.L>0.05){fq(O,fr,0,fr.L,ys-0.2,ys+0.04,0.0,MARBLE,TMt('marble'));railing(fr,0,fr.L,ys+0.04,o[2],cfg,-0.06)}
+        for(const [p,q,dir] of[[a,ra,-1],[c,rc,1]]){const nb=dir<0?(i-1+n)%n:j;const on=off(nb,k);if(front.has(nb)&&on[1]-on[0]>=0.05)continue;const g=FR(p,q,sg);if(g.L<0.1)continue;
+          fq(O,g,0,g.L,ys-0.2,ys+0.04,0,MARBLE,TMt('marble'),null,0,1);fq(O,g,0,g.L,ys-0.2,ys+0.04,0,MARBLE,TMt('marble'),null,0,-1);railing(g,0,g.L,ys+0.04,o[2],cfg,0)}}
+      // roof of the floor below where this floor steps back (set-back top floor): covered by the balcony slab ring
+      prevOut=W}
+    const Rf=prevOut;polyRoof(O,Rf,top,H('#d6d2ca'),TMt('flatroof','plaster'));
+    for(let i=0;i<n;i++){const f=FR(Rf[i],Rf[(i+1)%n],sg);if(f.L<0.05)continue;fq(O,f,0,f.L,top,top+0.85,0,front.has(i)?wallC:shade(wallC,0.93),TMt('plaster'));fq(O,f,0,f.L,top,top+0.85,-0.2,shade(wallC,0.85),TMt('plaster'),null,0,-1);
+      hq(O,f,0,f.L,-0.2,0.04,top+0.85,false,MARBLE,TMt('marble'));fq(O,f,0,f.L,top+0.79,top+0.85,0.04,MARBLE,TMt('marble'))}
+    roofStuff(Rf,top,cfg,seed)}
+  const v1=O.size()+CUT.size();KV.tris+=Math.round((v1-v0)/2);KV.built.push('b'+idx+' '+id);return true}
 
 /* ============================== REGISTER ============================== */
 LM.register({id:'kassaveti',at:AT,build(ctx){const t0=performance.now();signList();
-  for(const fp of ctx.footprints){const b=fp.b,id=b[11]&&b[11].id;try{const bi=MAP.buildings.indexOf(b);if(bi>=0)KV.bidx.add(bi);
-      if(id===ID.k1)buildK1(fp.ps,b);else if(id===ID.k5)buildVarsos(fp.ps,b);else if(CFG[id])buildBlock(fp.ps,id,b);else KV.warn.push('no config for '+id)}
-    catch(e){console.error('lm-kassaveti: building',id,e);KV.warn.push(id+': '+String(e&&e.stack||e).slice(0,300))}}
-  // the CrediaBank name replaces the old HSBC listing (rebrand, census overrides)
-  KV.ms=Math.round(performance.now()-t0)}});
+  for(const fp of ctx.footprints){try{if(!buildOne(fp))KV.warn.push('no design for '+(fp.b[11]&&fp.b[11].id))}catch(e){console.error('lm-kassaveti: building',fp.b[11]&&fp.b[11].id,e);KV.warn.push(String(e&&e.stack||e).slice(0,300))}}
+  KV.ms=Math.round(performance.now()-t0);KV.tiles=typeof _nextTile!=='undefined'?_nextTile:null}});
 })();

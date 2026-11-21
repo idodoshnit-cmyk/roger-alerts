@@ -139,12 +139,19 @@ function allocateShops(){if(MAP.pois&&MAP.pois.length&&MAP.pois[0].b!==undefined
     if(!ok)BLD.unplaced.push({name:sp.name,x:sp.x,z:sp.z,src:sp.src,reason:cand.length?'no free frontage on the facades within 36 m':'no building facade within 36 m'})}
   for(const sp of plates){const c=near(sp.x,sp.z,30);if(c.length){c[0][1].plates.push(sp)}else BLD.unplaced.push({name:sp.name,x:sp.x,z:sp.z,src:sp.src,reason:'upper-floor business: no building within 30 m'})}
   layoutEdges()}
-function layoutEdges(){
-  for(const B of BLD.list)for(const E of B.E){const it=B.shopsE[E.i];if(!it.length)continue;it.sort((p,q)=>p.s-q.s);const m=0.3,gap=0.3,A=E.L-2*m,G=gap*(it.length-1);
-    let want=0,minw=0;for(const o of it){o.want=Math.min(o.sp.want||4.5,A);o.minW=Math.min(o.sp.minW||2.4,o.want);want+=o.want;minw+=o.minW}
-    if(want+G<=A)for(const o of it)o.w=o.want;else{const extra=Math.max(0,A-G-minw),span=Math.max(1e-6,want-minw);for(const o of it)o.w=o.minW+(o.want-o.minW)*Math.min(1,extra/span)}
-    let prev=m-gap;for(const o of it){o.s0=Math.max(o.s-o.w/2,prev+gap,m);prev=o.s0+o.w}let next=E.L-m+gap;for(let k=it.length-1;k>=0;k--){const o=it[k];o.s0=Math.min(o.s0,next-gap-o.w);next=o.s0}
-    for(const o of it){o.s0=Math.max(o.s0,0.05);o.s1=Math.min(o.s0+o.w,E.L-0.05);const sh=(o.s0+o.s1)/2-o.s;if(o.sp.poi&&(Math.abs(sh)>0.25||o.s1-o.s0<(o.sp.poi.w||o.want)-0.25))(BLD.moved||(BLD.moved=[])).push({name:o.sp.name,id:o.sp.id,b:B.i,e:E.i,shift:+sh.toFixed(2),w:+(o.s1-o.s0).toFixed(2),want:o.sp.poi.w||null})}}}
+/* 1-D layout of the shop bays on one facade edge. MAP.pois bays (fixed) keep their real centre and width (data/placement audit = truth):
+   only where two real bays overlap is the overlap split at its middle; a bay is shifted only when it would otherwise become narrower than 1.6 m.
+   Every deviation > 0.25 m from (edge, t, w) is logged in BLD.moved (reported by docs/BUILDINGS_IMPL.md). */
+function layoutEdges(){const m=0.15,gap=0.2;
+  for(const B of BLD.list)for(const E of B.E){const it=B.shopsE[E.i];if(!it.length)continue;it.sort((p,q)=>p.s-q.s);const A=E.L-2*m;
+    for(const o of it){o.want=Math.min(o.sp.want||4.5,A);o.minW=Math.min(o.sp.minW||2.4,o.want);o.s0=o.s-o.want/2;o.s1=o.s+o.want/2;
+      if(o.s0<m){o.s0=m;if(o.s1-o.s0<Math.min(1.6,o.want))o.s1=o.s0+Math.min(1.6,o.want)}if(o.s1>E.L-m){o.s1=E.L-m;if(o.s1-o.s0<Math.min(1.6,o.want))o.s0=o.s1-Math.min(1.6,o.want)}}
+    for(let k=0;k+1<it.length;k++){const p=it[k],q=it[k+1];if(p.s1+gap>q.s0){const c=clamp((p.s1+q.s0)/2,p.s0+0.8,q.s1-0.8);p.s1=c-gap/2;q.s0=c+gap/2}}
+    // safety pass: never overlap, keep >= 1.0 m, stay on the edge
+    let prev=-1e9;for(const o of it){if(o.s1-o.s0<1.0)o.s1=o.s0+1.0;if(o.s0<prev+gap){const w=o.s1-o.s0;o.s0=prev+gap;o.s1=o.s0+w}prev=o.s1}
+    let next=1e9;for(let k=it.length-1;k>=0;k--){const o=it[k];if(o.s1>Math.min(next-gap,E.L-0.05)){const w=o.s1-o.s0;o.s1=Math.min(next-gap,E.L-0.05);o.s0=Math.max(0.05,o.s1-w)}next=o.s0}
+    for(const o of it){o.s0=Math.max(o.s0,0.05);o.s1=Math.min(Math.max(o.s1,o.s0+0.6),E.L-0.05);o.w=o.s1-o.s0;const sh=(o.s0+o.s1)/2-o.s;
+      if(o.sp.poi&&(Math.abs(sh)>0.25||o.w<(o.sp.poi.w||o.want)-0.25))(BLD.moved||(BLD.moved=[])).push({name:o.sp.name,id:o.sp.id,b:B.i,e:E.i,shift:+sh.toFixed(2),w:+o.w.toFixed(2),want:o.sp.poi.w||null})}}}
 
 /* ============================== buildings: the shell ============================== */
 function bldHeights(B){const has=B.shopsE.some(a=>a.length>0);B.hasShop=has;const st=B.style;

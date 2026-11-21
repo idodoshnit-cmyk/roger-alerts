@@ -15,7 +15,7 @@ function lookBy(dx,dy,ms){const k=0.0052*(SETTINGS.sens||1)*clamp(900/Math.max(i
 function joySet(t){let dx=t.clientX-JOY.cx,dy=t.clientY-JOY.cy,d=Math.hypot(dx,dy);const R=JOY.R,lim=R*1.35;
   if(d>lim){const k=(d-lim)/d;JOY.cx+=dx*k;JOY.cy+=dy*k;joyEl.style.left=JOY.cx+'px';joyEl.style.top=JOY.cy+'px';dx=t.clientX-JOY.cx;dy=t.clientY-JOY.cy;d=lim}/* the base follows a thumb that drifts away */
   if(player.car){/* driving: one finger steers — only the sideways distance counts (wide, forgiving), the knob slides on a rail */
-    const c=clamp(dx/(R*1.15),-1,1),a=Math.abs(c),dz=0.08,m=a<=dz?0:Math.pow((a-dz)/(1-dz),1.25);input.jx=Math.sign(c)*m;input.jy=0;
+    const c=clamp(dx/(R*1.15),-1,1);input.jx=c;input.jy=0;/* dead zone + response curve live in driveCar (72_driving) */
     if(Math.abs(dy)>R*1.6){JOY.cy+=dy-Math.sign(dy)*R*1.6;joyEl.style.top=JOY.cy+'px'}
     knob.style.transform=`translate(${(c*R).toFixed(1)}px,0)`;return}
   const c=Math.min(1,d/R),dz=0.14;let m=c<=dz?0:Math.pow((c-dz)/(1-dz),1.2);
@@ -45,9 +45,10 @@ addEventListener('keydown',e=>{const c=e.code;if(e.target&&e.target.tagName==='I
   if(!$('sheet').hidden){if(c==='Escape'&&!sheetModal)closeSheet();else if(c==='Enter'){const b=$('card').querySelector('.cta');if(b)b.click()}return}
   if(!running)return;
   if(DLG.open){if(c==='Digit1'||c==='Digit2'||c==='Digit3')dlgPick(+c.slice(5)-1);else if(c==='Enter'||c==='Space'||c==='KeyE')dlgPick(0);else if(c==='Escape')dlgClose();return}
+  if(typeof xactKey==='function'&&xactKey(c,true))return;
   if(c==='KeyF')carBtn();else if(c==='KeyE'||c==='Enter')use();else if(c==='KeyJ'||c==='KeyH')act();else if(c==='Space'){if(!player.car)jump()}else if(c==='KeyM')openMenu('map');else if(c==='Escape'||c==='KeyP'||c==='Tab')openMenu();
   else if(c==='KeyC'){camYaw=player.car?player.car.yaw:player.yaw;lastDrag=0}});
-addEventListener('keyup',e=>{keys[e.code]=false});
+addEventListener('keyup',e=>{keys[e.code]=false;if(running&&typeof xactKey==='function')xactKey(e.code,false)});
 /* on-screen buttons: down() on press, up() on release of the same touch */
 function bind(id,down,up){const el=$(id);let tid=null;
   el.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();if(tid!==null)return;tid=e.changedTouches[0].identifier;if(up!==false)el.classList.add('on');setInputMode('touch');audioOn();down()},{passive:false});
@@ -57,10 +58,20 @@ function bind(id,down,up){const el=$(id);let tid=null;
 bind('bCar',()=>carBtn());bind('bExit',()=>carBtn());bind('bJump',()=>jump());bind('bSprint',()=>{input.sprint=!input.sprint;JOY.idle=0},false);bind('bAct',()=>act());bind('bHorn',()=>act());
 bind('bGas',()=>input.gas=true,()=>input.gas=false);bind('bBrake',()=>input.rev=true,()=>input.rev=false);bind('bHand',()=>input.brake=true,()=>input.brake=false);
 bind('bUse',()=>use());bind('radar',()=>openMenu('map'));bind('pauseBtn',()=>openMenu());bind('skip',()=>{if(cutSkip)cutSkip()});
-/* one tap: get into the nearest car / get out. Getting out at speed brakes to a stop first, then opens the door (never "Slow down first"). */
-function carBtn(){if(!running||player.frozen||DLG.open||player.busy>0)return;
-  if(player.car){const c=player.car;if(Math.abs(c.vf||0)>3.5){CARX.exit=!CARX.exit;$('bExit').classList.toggle('on',CARX.exit);return}CARX.exit=false;$('bExit').classList.remove('on');exitCar();if(!player.car)gameEvent('exitCar',{car:c})}
-  else if(!player.interior){enterCar();if(player.car){STATS.cars++;input.sprint=false;CARX.t=0;CARX.exit=false;gameEvent('enterCar',{car:player.car})}}}
+/* one tap: get into the nearest car / get out. A short dip of the screen (TF) hides the moment the character disappears into the car or
+   reappears beside it; when the car is still moving, 72_driving brakes to a stop first and the dip follows the last metres of braking. */
+const TF={v:0,t:0,el:null,next:null,hold:0};
+function tfTick(dt){if(TF.next&&TF.v>=TF.t-0.02){const f=TF.next;TF.next=null;try{f()}catch(e){console.warn(e)}TF.hold=0.06}
+  if(TF.hold>0)TF.hold-=dt;else if(!TF.next)TF.t=0;
+  if(typeof DRV!=='undefined'&&DRV.exitReq&&player.car){const v=Math.abs(player.car.vf||0);TF.t=Math.max(TF.t,clamp((3.2-v)/2,0,1)*0.6);TF.hold=0.1}
+  const k=TF.v<TF.t?1-Math.exp(-dt*22):1-Math.exp(-dt*7);TF.v+=(TF.t-TF.v)*k;if(TF.v<0.004&&TF.t===0)TF.v=0;
+  if(!TF.el&&TF.v>0){TF.el=document.createElement('div');TF.el.style.cssText='position:fixed;inset:0;z-index:18;background:#05070a;pointer-events:none;opacity:0';document.body.appendChild(TF.el)}
+  if(TF.el){const o=TF.v.toFixed(3);if(TF.el._o!==o){TF.el._o=o;TF.el.style.opacity=o}}}
+function tfDip(fn,depth){if(TF.next)return;TF.t=depth||0.62;TF.next=fn}
+function carBtn(){if(!running||player.frozen||DLG.open||player.busy>0||TF.next)return;
+  if(player.car){const c=player.car;if(Math.abs(c.vf||0)>4||typeof DRV==='undefined'){exitCar();if(!player.car)gameEvent('exitCar',{car:c});return}
+    tfDip(()=>{if(player.car!==c)return;exitCar();if(!player.car)gameEvent('exitCar',{car:c})})}
+  else if(!player.interior&&nearestCar())tfDip(()=>{if(player.car||player.interior)return;enterCar();if(player.car){STATS.cars++;input.sprint=false;gameEvent('enterCar',{car:player.car})}})}
 function jump(){if(!running||DLG.open)return;if(playerJump()&&typeof ambJump==='function')ambJump()}
 function act(){if(!running||player.frozen||DLG.open)return;
   if(player.car){sfx('horn');for(const p of NPCS)if(!p.static&&Math.hypot(p.x-player.x,p.z-player.z)<15)p.panic=3;gameEvent('horn',{});return}
@@ -69,7 +80,7 @@ function act(){if(!running||player.frozen||DLG.open)return;
   ph.play('punch',true);STATS.punches++;setTimeout(()=>{if(ph.override==='punch')ph.stop()},550);const fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
   for(const p of NPCS){if(p.static||p.state==='down')continue;const dx=p.x-player.x,dz=p.z-player.z,d=Math.hypot(dx,dz);if(d<1.5&&(dx*fx+dz*fz)>0){setTimeout(()=>{p.state='down';p.timer=4;p.panic=6;p.h.play('lie');sfx('thud');gameEvent('punch',{npc:p})},180);break}}}
 /* per-frame input upkeep: the sprint toggle lets go when the stick has been released for a moment */
-function inputTick(dt){if(player.car){CARX.t+=dt;if(CARX.exit&&Math.abs(player.car.vf||0)<3.5){CARX.exit=false;$('bExit').classList.remove('on');carBtn()}}else CARX.exit=false;
+function inputTick(dt){tfTick(dt);
   if(input.sprint){if(Math.hypot(input.jx,input.jy)<0.3&&!keys.KeyW&&!keys.ArrowUp){JOY.idle+=dt;if(JOY.idle>0.7)input.sprint=false}else JOY.idle=0}}
 
 /* ============================== MAIN LOOP ==============================

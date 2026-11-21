@@ -47,3 +47,19 @@ Private copy: work/game/gk3. Shots: work/game/shots. Test scripts: work/game/tes
   one-finger driving (90_head joySet car rail steer; 80_player readStick auto-gas while thumb down, CARX{t,exit,cruise}; carBtn exit-at-speed auto-brake; index.html big BRAKE pad, bCar.ready pulse;
   85_hud ONB_DRIVE hint; 88_menu setting autoGas), map search (88_menu mapFind + #mapFind CSS), districtName shows INTERIORS name indoors. GAMEPLAY.md updated.
   NEXT: read all_a.log + shots -> fix -> integrate 80/85/86/87/87b/88 + 90_main(build_main --main) + index.html (hand-merge into MAIN: CSS blocks + bBrake markup).
+- 17:50 UTC RESUMED (session 6). Found: cars integrated their own one-finger/auto-throttle driving (72_driving DRV.auto/setAutoThrottle/exitReq) and shared edits in MY main files
+  (90_main joySet, index.html #bBrake layout, 80_player portrait car boom); chars integrated IB students with sprite tags + castDialog (p.dialog).
+  RECONCILED copy: 80_player = main's; dropped my CARX auto-gas/exit-at-speed + ONB_DRIVE (duplicates); menu toggle now calls setAutoThrottle; hudTags only for n.domTag (my fallback students);
+  joySet keeps my rail (linear, cars do curve); index.html = main + brake label/ready pulse/mapFind CSS. Synced 18 files from main.
+  Testing a frozen snapshot (work/game/snap, tests/run_snap.sh <pfx>, log tmp/all_<pfx>.log) so I can keep editing gk3 while it queues. Run 'c' queued 17:55.
+  NEXT: integrate after 'c' passes; then ORDER 13:10 smooth movement (accel/decel curves, turn-in-place, start/stop blends, fades for car/shop transitions).
+- 18:15 copy also has: speed as critically damped spring (sdamp; player.spdV) for eased starts/stops, turn-in-place pivot from standstill (10.5 rad/s, speed held ≤0.12-0.9 until facing),
+  TF screen dip (90_head tfTick/tfDip, own overlay z18) for entering/exiting cars incl. following the auto-stop of DRV.exitReq. New test tests/feel.js (in all.js). Run 'd' queued (snapshot).
+- 18:42 INTEGRATED into main: index.html, 80_player, 85_hud, 86_map, 87_missions, 87b_mission_data, 88_menu, 90_main (build_main --main equivalent: work build + integrate.sh).
+  Verified on snapshot before: tmp/all_d.log (16 shops entered via "Enter <name>" -> counter -> order -> leave: 14/16 full OK; Bank sells nothing (paid 0), ΟΠΑΠ counter next to door;
+  0 errors), FEEL 30/60/120 Hz: 90% run speed in 0.37-0.38 s, stop in 0.40-0.42 s, 180° turn in place 0.30 s with ≤0.10 m drift; tmp/drv_e.log 390x844: tap Car -> dip -> in car,
+  auto-throttle drive, brake+reverse, exit at speed -> on foot, map search ok, 0 errors. Added after the test (syntax-checked only): initial body.touch/kb class (no pad+legend overlap
+  before first input), walking hints paused while driving. Smoke on MAIN 390x844 queued (tmp/smoke_m6.log).
+- 19:20 copy (NOT integrated yet, needs tests/f.js run): indoor minimap draws the interior floor plan (IN.alive.segs) + gold/blue dots for counter/door; useTarget picks the
+  NEAREST option (mission step first) so "Leave" beats "Order" at a door next to a counter; xactBuild()/xactKey() implemented (registerAction buttons in #xact above the pad + keys;
+  weapons noted it was missing). Waiting for smoke_m6 (main) -> missions_m6 (chained, main) -> then run tests/f.js on a snapshot.

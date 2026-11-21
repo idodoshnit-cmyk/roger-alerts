@@ -65,9 +65,9 @@ defCar('mini',{name:'Supermini',L:3.62,W:1.66,H:1.50,wb:2.32,fo:0.71,wr:0.29,ww:
 defCar('hatch',{name:'Hatchback',L:4.05,W:1.75,H:1.46,wb:2.56,fo:0.84,wr:0.31,rwf:0.76,
   bot:[[0,0.42],[0.035,0.33],[0.1,0.215],[0.9,0.215],[0.97,0.3],[1,0.36]],
   belt:[[0,0.93],[0.05,0.985],[0.16,1.0],[0.5,0.97],[0.76,0.935],[0.82,0.915],[0.93,0.84],[0.985,0.73],[1,0.64]],
-  top:[[0,0.95],[0.025,1.15],[0.075,1.35],[0.14,1.425],[0.3,1.455],[0.5,1.46],[0.6,1.435],[0.66,1.35],[0.79,0.935,1],[0.8,0]],
+  top:[[0,0.95],[0.04,1.12],[0.1,1.31],[0.165,1.41],[0.3,1.452],[0.5,1.46],[0.6,1.435],[0.66,1.35],[0.79,0.935,1],[0.8,0]],
   hw:[[0,0.86],[0.02,0.935],[0.06,0.985],[0.15,1],[0.82,1],[0.93,0.975],[0.985,0.9],[1,0.83]],
-  wsB:0.79,wsT:0.62,rwT:0.115,rwB:0.004,pil:[[0.405,0.452],[0.115,0.215]],doors:[0.695,0.43,0.255],bon:0.795,hl:{w:0.42,h:0.12},tl:{w:0.28,h:0.2},gr:{w:0.66,y0:0.47,y1:0.6},seat:[-0.36,0.5,-0.05],cap:200});
+  wsB:0.79,wsT:0.62,rwT:0.15,rwB:0.004,pil:[[0.405,0.452],[0.15,0.275]],doors:[0.695,0.43,0.255],bon:0.795,hl:{w:0.42,h:0.12},tl:{w:0.28,h:0.2},gr:{w:0.66,y0:0.47,y1:0.6},seat:[-0.36,0.5,-0.05],cap:200});
 defCar('sedan',{name:'Saloon',L:4.62,W:1.78,H:1.46,wb:2.68,fo:0.93,wr:0.315,rwf:0.75,
   bot:[[0,0.42],[0.04,0.32],[0.1,0.215],[0.9,0.215],[0.97,0.3],[1,0.37]],
   belt:[[0,0.86],[0.03,0.95],[0.12,0.995],[0.3,1.0],[0.5,0.97],[0.73,0.93],[0.8,0.905],[0.93,0.83],[0.985,0.72],[1,0.63]],
@@ -215,7 +215,7 @@ function panelKind(S,u,j,cab){
   if(j<=6){if(S.scoop&&(j===4||j===5)&&inZ(u,S.scoop[0],S.scoop[1]))return'black';return'paint'}
   if(!cab)return S.open&&inZ(u,S.open[0],S.open[1])&&j>=7?'skip':'paint';
   if(S.open&&inZ(u,S.open[0],S.open[1]))return j>=7?'skip':'paint';
-  if(u>S.wsT&&u<S.wsB){if(j>=9)return'glass';if(j===7)return'glass';return'paint'}
+  if(u>S.wsT&&u<S.wsB){if(j>=7)return'glass';return'paint'}/* side glass runs forward to the windscreen; the A-pillar is a slim strip along ring point 9 (carDetails) */
   if(u>=S.rwT&&u<=S.wsT){if(j>=9)return S.roofCol?'roof':'paint';for(const p of S.pil)if(inZ(u,p[0],p[1]))return S.pilBlack&&p[1]-p[0]<0.07&&p[0]>S.rwT+0.04?'black':'paint';return'glass'}
   if(u>S.rwB&&u<S.rwT){if(j>=9)return'glass';if(j===7&&S.qwR&&inZ(u,S.qwR[0],S.qwR[1]))return'glass';return'paint'}
   if(S.louvre&&inZ(u,S.louvre[0],S.louvre[1])&&j>=9)return'black';
@@ -277,7 +277,7 @@ function carPatch(vb,S,z0,z1,t0,t1,side,nz,nt,off,col,aux,auxFn){const G=[];for(
 function capRect(vb,S,end,x0,x1,y0,y1,col,aux,off,auxs){const z=end*(S.L/2+(off||0.004));const n=[0,0,end];vb.quad([x0,y0,z],[x1,y0,z],[x1,y1,z],[x0,y1,z],col,aux,n,n,n,n,auxs)}
 function plateAux(k,lg){const f=(u,v)=>[VK.fixed,lg||0,u,v];return[f(0,0),f(1,0),f(1,1),f(0,1)]}
 function carDetails(S,b,gl,R,zs){const L=S.L,H=L/2;const rF=carRing(S,H,new Float64Array(31)),rR=carRing(S,-H,new Float64Array(31));const hwF=rF[29],hwR=rR[29],blF=rF[27],blR=rR[27],bF=rF[26],bR=rR[26];
-  const HL=lin('#dfe3e6'),TL=lin('#8a0a12'),AMB=lin('#7a4a08'),REV=lin('#c9c9c9'),PLW=lin('#f4f4f2'),DRK=lin('#050506');
+  const HL=lin('#dfe3e6'),HSG=lin('#6c7277'),DRL=lin('#e9eef2'),TL=lin('#8a0a12'),AMB=lin('#7a4a08'),REV=lin('#c9c9c9'),PLW=lin('#f4f4f2'),DRK=lin('#050506');
   const u2z=u=>(u-0.5)*L;
   // ---- seams (door cut lines, bonnet, boot)
   if(S.cls==='car'){for(const u of S.doors){const z=u2z(u);for(const s of[-1,1])carPatch(b,S,z-0.0035,z+0.0035,2.2,6.9,s,1,5,0.0018,TRIM,ax(VK.fixed))}
@@ -285,6 +285,8 @@ function carDetails(S,b,gl,R,zs){const L=S.L,H=L/2;const rF=carRing(S,H,new Floa
     if(S.boot){const z=u2z(S.boot);for(const s of[-1,1]){carPatch(b,S,z-0.0035,z+0.0035,6.4,12,s,1,4,0.0018,TRIM,ax(VK.fixed));carPatch(b,S,-H+0.1,z,6.35,6.5,s,3,1,0.0018,TRIM,ax(VK.fixed))}}
     // window-line trim along the belt (chrome on premium cars)
     if(S.wsT>S.rwT+0.05){const z0=u2z(Math.max(S.rwB,S.rwT-0.02)),z1=u2z(S.wsB-0.01);for(const s of[-1,1])carPatch(b,S,z0,z1,6.92,7.12,s,6,1,0.002,S.chromeTrim?CHR:TRIM,ax(S.chromeTrim?VK.chrome:VK.gloss))}
+    // A-pillars: slim body-colour strips along the windscreen's side edges
+    if(S.wsB<1&&S.wsB-S.wsT>0.05){const z0=u2z(S.wsT)-0.012,z1=u2z(S.wsB)-0.004;for(const s of[-1,1])carPatch(b,S,z0,z1,8.72,9.1,s,8,1,0.006,S.pilBlack&&S.exotic?TRIM:[1,1,1],S.pilBlack&&S.exotic?ax(VK.gloss):ax(VK.paint))}
     // door handles
     for(const u of S.doors.slice(1)){const z=u2z(u)+0.1;const r=carRing(S,z,new Float64Array(31));for(const s of[-1,1]){const p=ringT(r,5.55,s);b.box([p[0]+s*0.012,p[1],z],[0.03,0.028,0.15],S.chromeTrim?CHR:(S.clad?TRIM:[1,1,1]),ax(S.chromeTrim?VK.chrome:(S.clad?VK.gloss:VK.paint)))}}
     if(S.doors.length===2){/* coupé: one handle */}
@@ -294,9 +296,12 @@ function carDetails(S,b,gl,R,zs){const L=S.L,H=L/2;const rF=carRing(S,H,new Floa
   for(const s of[-1,1]){const xo=s*(hwF*0.94),xi=s*(hwF*0.94-hl.w);const ind=s<0?5:4;
     if(hl.round){const cx=(xo+xi)/2,cyc=(hy0+hy1)/2,rr=Math.min(hl.h,hl.w)*0.5;for(let k=0;k<10;k++){const a0=k/10*TAU,a1=(k+1)/10*TAU;b.tri([cx,cyc,H+0.006],[cx+Math.cos(a0)*rr,cyc+Math.sin(a0)*rr,H+0.006],[cx+Math.cos(a1)*rr,cyc+Math.sin(a1)*rr,H+0.006],HL,ax(VK.chrome,1),[0,0,1])}
       capRect(b,S,1,xo-s*0.02,xo-s*0.07,hy0-0.05,hy0-0.02,AMB,ax(VK.gloss,ind),0.005)}
-    else{const xm=lerp(xo,xi,0.18);capRect(b,S,1,xo,xm,hy0,hy1,AMB,ax(VK.gloss,ind));capRect(b,S,1,xm,xi,hy0+0.018,hy1,HL,ax(VK.chrome,1));capRect(b,S,1,xm,xi,hy0,hy0+0.018,HL,ax(VK.gloss,8))}
-    // wrap: the light cluster continues round the front corner
-    carPatch(b,S,H-0.16,H-0.004,5.0,6.6,s,3,3,0.003,HL,ax(VK.chrome,1));
+    else{/* modern cluster: smoked chrome housing (glows with the headlights), bright projector lens, LED daytime-running strip along the lower edge */
+      const xm=lerp(xo,xi,0.12);capRect(b,S,1,xo,xm,hy0+hl.h*0.25,hy1,AMB,ax(VK.gloss,ind));capRect(b,S,1,xm,xi,hy0,hy1,HSG,ax(VK.chrome,1));
+      const pr=Math.min(hl.h*0.36,0.05),pc=lerp(xm,xi,0.62);capRect(b,S,1,pc-pr,pc+pr,hy0+hl.h*0.5-pr,hy0+hl.h*0.5+pr,HL,ax(VK.chrome,1),0.006);
+      capRect(b,S,1,xo,xi,hy0,hy0+0.014,DRL,ax(VK.gloss,8),0.006);capRect(b,S,1,xi-s*0.012,xi,hy0,hy1,DRL,ax(VK.gloss,8),0.006)}
+    // wrap: the light cluster continues round the front corner (housing + DRL line)
+    carPatch(b,S,H-0.16,H-0.004,5.0,6.6,s,3,3,0.003,HSG,ax(VK.chrome,1));carPatch(b,S,H-0.15,H-0.004,5.0,5.25,s,3,1,0.0045,DRL,ax(VK.gloss,8));
     // side repeater on the front wing
     if(S.cls==='car'){const z=S.zf+S.ra+0.12;carPatch(b,S,z,z+0.06,4.6,4.85,s,1,1,0.003,AMB,ax(VK.gloss,ind))}}
   // ---- grille, lower intake, fog lamps, splitter, front plate

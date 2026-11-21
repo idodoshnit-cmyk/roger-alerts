@@ -24,12 +24,16 @@ const isGreek=s=>/[Ͱ-Ͽ]/.test(s||'');
    shadow cascade (0 = single cascade), dist: view distance (m), trees: garden tree density, real: realistic characters,
    tex: material layer size, ntex: normal-map layer size (0 = no normal mapping), aniso: anisotropic filtering, aa: multisampling (also SETTINGS.aa=false). */
 const SETTINGS=Object.assign({q:'auto',fps:false},store.get('settings',{}));
-const QP={low:{pr:0.7,sh:0,sh2:0,shN:40,shF:0,dist:170,trees:0.45,real:4,tex:256,ntex:0,aniso:2,aa:false},
-  medium:{pr:1.0,sh:1024,sh2:1024,shN:30,shF:125,dist:240,trees:0.75,real:8,tex:512,ntex:256,aniso:4,aa:true},
-  high:{pr:1.4,sh:2048,sh2:2048,shN:36,shF:150,dist:320,trees:1,real:14,tex:512,ntex:512,aniso:8,aa:true}};
+const QP={low:{pr:0.7,sh:0,sh2:0,shN:40,shF:0,dist:170,trees:0.45,real:4,tex:256,ntex:0,aniso:2,aa:false,ao:0,bloom:0,prMin:0.6,fpsLo:28},
+  medium:{pr:1.0,sh:1024,sh2:1024,shN:30,shF:125,dist:240,trees:0.75,real:8,tex:512,ntex:256,aniso:4,aa:true,ao:1,bloom:1,prMin:0.75,fpsLo:30},
+  high:{pr:1.5,sh:2048,sh2:2048,shN:36,shF:150,dist:320,trees:1,real:14,tex:512,ntex:512,aniso:8,aa:true,ao:2,bloom:1,prMin:0.8,fpsLo:40}};
+/* ao: height-field ambient occlusion (0 off, 1 = 512² over 160 m, 2 = 1024² over 256 m, two radii), bloom: soft glow of bright light (82_sky.js).
+   prMin/fpsLo: the auto-resolution loop in 90_main.js lowers the pixel ratio down to prMin while the frame rate is below fpsLo. */
 /* phones render at CSS resolution (pr 1.0), where 384² layers are indistinguishable from 512² beyond ~2 m but take 44 % less GPU memory */
 const MOBILE=typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches;if(MOBILE)QP.medium.tex=384;
-let Q=QP[SETTINGS.q==='auto'?(Math.min(screen.width,screen.height)<500&&(navigator.hardwareConcurrency||4)<=4?'low':'medium'):SETTINGS.q]||QP.medium;
+/* "auto" quality: High on desktops/laptops, Medium on phones and tablets (82_sky.js steps an auto preset down at run time if the frame rate stays low) */
+function autoQ(){return MOBILE?'medium':'high'}
+let Q=QP[SETTINGS.q==='auto'?autoQ():SETTINGS.q]||QP.medium;
 const canvas=$('c');
 let renderer;
 try{renderer=new THREE.WebGLRenderer({canvas,antialias:Q.aa&&SETTINGS.aa!==false,powerPreference:'high-performance',stencil:false});}
@@ -38,6 +42,11 @@ const GL2=renderer.capabilities.isWebGL2;
 if(!GL2)$('loadTxt').textContent='This browser has no WebGL 2, which the game needs. Please update your browser or try another device.';
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.6;
+/* colour grade applied inside ACES tone mapping (all lit materials): +6 % saturation, slightly cool shadows and warm highlights — the Athens summer look */
+(function(){const C=THREE.ShaderChunk,s=C.tonemapping_pars_fragment,k='color = ACESOutputMat * color;';const i=s.indexOf(k);
+  if(i>0)C.tonemapping_pars_fragment=s.slice(0,i+k.length)+`
+	color = max( color, 0.0 ); { float gkL = dot( color, vec3( 0.2126, 0.7152, 0.0722 ) ); color = mix( vec3( gkL ), color, 1.06 );
+	color *= mix( vec3( 0.975, 1.0, 1.035 ), vec3( 1.03, 1.0, 0.96 ), smoothstep( 0.02, 0.5, gkL ) ); }`+s.slice(i+k.length);else console.warn('grade patch not applied')})();
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(60,1,0.3,900);
@@ -94,12 +103,13 @@ const sun2=new THREE.DirectionalLight(0xffffff,0);sun2.castShadow=true;sun2.shad
 	#endif`+s.slice(end)}else console.warn('shadow cascade patch not applied')})();
 /* uniforms shared by the world material and the sky (10_atlas.js, 82_sky.js) */
 const U={night:{value:0},time:{value:0},noiseL:{value:0},lamp:{value:null},lampR:{value:new THREE.Vector4(0,0,1,1)},lampH:{value:new THREE.Vector2(0,1)},lampC:{value:new THREE.Color(0,0,0)},shopC:{value:new THREE.Color(0,0,0)},
-  skyZ:{value:new THREE.Color(0.1,0.2,0.5)},skyH:{value:new THREE.Color(0.5,0.6,0.8)},skyG:{value:new THREE.Color(0.1,0.1,0.1)},fogSun:{value:new THREE.Vector4(1,1,1,0)},sunXZ:{value:new THREE.Vector2(1,0)},haze:{value:0.0005},glowC:{value:new THREE.Color(0,0,0)},wind:{value:new THREE.Vector3(0.8,0.6,0.07)}};
+  skyZ:{value:new THREE.Color(0.1,0.2,0.5)},skyH:{value:new THREE.Color(0.5,0.6,0.8)},skyG:{value:new THREE.Color(0.1,0.1,0.1)},fogSun:{value:new THREE.Vector4(1,1,1,0)},sunXZ:{value:new THREE.Vector2(1,0)},haze:{value:0.0005},glowC:{value:new THREE.Color(0,0,0)},wind:{value:new THREE.Vector3(0.8,0.6,0.07)},
+  hf:{value:null},hfR:{value:new THREE.Vector4(0,0,0.001,0)},hfK:{value:new THREE.Vector4(0,4,0,0)}};
 let pixelRatio=Math.min(window.devicePixelRatio||1,Q.pr);
 function applyQuality(){renderer.setPixelRatio(pixelRatio);const on=Q.sh>0;sun.castShadow=on;sun2.visible=on&&Q.sh2>0;
   for(const [l,size,half] of [[sun,Q.sh,Q.shN||55],[sun2,Q.sh2||0,Q.shF||125]]){if(!size)continue;l.shadow.mapSize.set(size,size);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null}
     const s=l.shadow.camera,texel=2*half/size;s.left=-half;s.right=half;s.top=half;s.bottom=-half;s.near=1;s.far=420;s.updateProjectionMatrix();l.shadow.bias=-0.00004-texel*0.0004;l.shadow.normalBias=texel*1.1;l.shadow.needsUpdate=true}
-  camera.far=Q.dist*1.35;scene.fog.far=Q.dist-8;scene.fog.near=Q.dist*0.6;camera.updateProjectionMatrix();resize();if(typeof texQuality==='function')texQuality()}
+  camera.far=Q.dist*1.35;scene.fog.far=Q.dist-8;scene.fog.near=Q.dist*0.6;camera.updateProjectionMatrix();resize();if(typeof texQuality==='function')texQuality();if(typeof fxQuality==='function')fxQuality()}
 function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);
 

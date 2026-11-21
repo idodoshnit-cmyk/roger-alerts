@@ -124,4 +124,99 @@ function updateSky(dt){tod=(tod+dt*todRate+24)%24;const e=SKY.elev=sunDir(tod,su
     if(Q.sh2&&sun2.visible){const f=Q.shF||125,tx=cx+fx*f*0.5,tz=cz+fz*f*0.5;if(--SKY.farN<=0||Math.hypot(tx-SKY.farX,tz-SKY.farZ)>f*0.14||SKY.farL.dot(lightV)<0.99985){placeShadow(sun2,f,Q.sh2,tx,gy,tz);sun2.shadow.needsUpdate=true;SKY.farN=8;SKY.farX=tx;SKY.farZ=tz;SKY.farL.copy(lightV)}}}
   else{const p=player.car||player;sun.position.set(p.x+lightV.x*200,lightV.y*200,p.z+lightV.z*200);sun.target.position.set(p.x,0,p.z);sun.target.updateMatrixWorld()}
   // refresh the reflection environment when the light has changed enough
-  if(ENV.pm&&dt>0){SKY.envT-=dt;const thr=(e>-10&&e<14)?1.2:4;if(SKY.envT<=0&&(Math.abs(e-SKY.envElev)>thr||Math.abs(night-SKY.envNight)>0.1)){skyEnv(true);SKY.envT=Q===QP.low?12:4}}}
+  if(ENV.pm&&dt>0){SKY.envT-=dt;const thr=(e>-10&&e<14)?1.2:4;if(SKY.envT<=0&&(Math.abs(e-SKY.envElev)>thr||Math.abs(night-SKY.envNight)>0.1)){skyEnv(true);SKY.envT=Q===QP.low?12:4}}
+  updateHF(dt);autoQuality(dt)}
+
+/* ============================== HEIGHT-FIELD AMBIENT OCCLUSION ==============================
+   A top-down orthographic height map of the static world around the camera (R = highest solid surface, G = highest foliage or instanced prop/trunk: soft cover, metres above HF.base),
+   re-rendered when the camera has moved. The world material (10_atlas.js, GK_AO) samples it to darken indirect light: contact shadows at the foot of
+   walls and kerbs, darker narrow streets, shade under trees, darker crown interiors. Static world = meshes using the world materials (MAT.atlas/cut/leaf)
+   or flagged object.userData.gkStatic = true (landmark modules may set this on their own meshes). Moving things (cars, people, the train) are excluded. */
+const HF={rt:null,cam:null,mat:null,size:0,half:0,x:1e9,z:1e9,t:0,ok:true,base:0,k:0,tag:0};
+const HF_VS=`varying float vY;void main(){vec4 p=vec4(position,1.0);
+#ifdef USE_INSTANCING
+p=instanceMatrix*p;
+#endif
+vec4 w=modelMatrix*p;vY=w.y;gl_Position=projectionMatrix*viewMatrix*w;}`;
+const HF_FS=`precision highp float;uniform float uBase,uLeaf;varying float vY;void main(){float h=vY-uBase;gl_FragColor=uLeaf>0.5?vec4(-1000.0,h,0.0,1.0):vec4(h,-1000.0,0.0,1.0);}`;
+function hfTag(){const train=typeof TRAIN!=='undefined'&&TRAIN.cars?TRAIN.cars:[];
+  scene.traverse(o=>{if(!(o.isMesh)||o.isSkinnedMesh||o.userData.gkHF!==undefined&&o.userData.gkHF===HF.tag)return;o.userData.gkHF=HF.tag;o.layers.disable(2);o.layers.disable(3);
+    const m=o.material;if(!m||Array.isArray(m))return;if(train.indexOf(o)>=0)return;
+    if(m===MAT.leaf||(o.isInstancedMesh&&m.defines&&m.defines.GK_WORLD!==undefined))o.layers.enable(3);/* foliage and instanced props/trunks = soft cover (G) */
+    else if((m.defines&&m.defines.GK_WORLD!==undefined&&!m.transparent)||o.userData.gkStatic)o.layers.enable(2)})}
+function hfSetup(){const big=Q.ao>1,size=big?1024:512,half=big?128:80;if(HF.rt&&HF.size===size)return;if(HF.rt)HF.rt.dispose();
+  HF.size=size;HF.half=half;HF.rt=new THREE.WebGLRenderTarget(size,size,{type:THREE.HalfFloatType,format:THREE.RGFormat,depthBuffer:false,stencilBuffer:false,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter,magFilter:THREE.LinearFilter});
+  HF.cam=new THREE.OrthographicCamera(-half,half,half,-half,1,3000);HF.cam.up.set(0,0,-1);
+  if(!HF.mat)HF.mat=new THREE.ShaderMaterial({uniforms:{uBase:{value:0},uLeaf:{value:0}},vertexShader:HF_VS,fragmentShader:HF_FS,side:THREE.DoubleSide,depthTest:false,depthWrite:false,fog:false,toneMapped:false,
+    blending:THREE.CustomBlending,blendEquation:THREE.MaxEquation,blendSrc:THREE.OneFactor,blendDst:THREE.OneFactor});
+  U.hf.value=HF.rt.texture;HF.x=1e9;U.hfK.value.y=Math.log2(12/(2*half/size))}
+const _hfC=new THREE.Color(),_hfI={};
+function hfRender(cx,cz){const r=renderer,ts=2*HF.half/HF.size;cx=Math.round(cx/ts)*ts;cz=Math.round(cz/ts)*ts;HF.x=cx;HF.z=cz;HF.base=TER?terr(cx,cz):0;
+  if(++HF.tag>1e6)HF.tag=1;hfTag();
+  const info=r.info.render;_hfI.c=info.calls;_hfI.t=info.triangles;_hfI.p=info.points;_hfI.l=info.lines;
+  const prev=r.getRenderTarget(),au=r.shadowMap.autoUpdate,ac=r.autoClear,ca=r.getClearAlpha();r.getClearColor(_hfC);
+  HF.cam.position.set(cx,HF.base+1500,cz);HF.cam.lookAt(cx,HF.base,cz);HF.cam.updateMatrixWorld();
+  r.shadowMap.autoUpdate=false;r.autoClear=false;scene.overrideMaterial=HF.mat;const bg=scene.background;scene.background=null;HF.mat.uniforms.uBase.value=HF.base;
+  r.setRenderTarget(HF.rt);r.setClearColor(_hfC.setRGB(-1000,-1000,0),1);r.clear(true,false,false);
+  HF.cam.layers.set(2);HF.mat.uniforms.uLeaf.value=0;r.render(scene,HF.cam);
+  HF.cam.layers.set(3);HF.mat.uniforms.uLeaf.value=1;r.render(scene,HF.cam);
+  if(HF.ok===true){const gl=r.getContext();r.setRenderTarget(HF.rt);if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){HF.ok=false;console.warn('height-field AO unavailable (no float render targets)')}else HF.ok=1}
+  scene.overrideMaterial=null;scene.background=bg;r.setRenderTarget(prev);r.setClearColor(_hfC.setRGB(0,0,0),ca);r.autoClear=ac;r.shadowMap.autoUpdate=au;
+  _hfC.copy(scene.fog?scene.fog.color:_hfC);info.calls=_hfI.c;info.triangles=_hfI.t;info.points=_hfI.p;info.lines=_hfI.l;
+  U.hfR.value.set(cx-HF.half,cz+HF.half,1/(2*HF.half),HF.base);U.hfK.value.x=HF.ok&&!HF.off?1:0}
+const _hfD=new THREE.Vector3();
+function updateHF(dt){if(!Q.ao||!HF.ok||!MAT.atlas||!worldBuilt()||player.interior){return}
+  if(!HF.rt)hfSetup();HF.t-=dt;camera.getWorldDirection(_hfD);const fl=Math.hypot(_hfD.x,_hfD.z)||1,p=camera.position,tx=p.x+_hfD.x/fl*HF.half*0.3,tz=p.z+_hfD.z/fl*HF.half*0.3;
+  const d=Math.hypot(tx-HF.x,tz-HF.z);if(d>HF.half*0.3||(HF.t<=0&&d>2)||HF.t<-6){hfRender(tx,tz);HF.t=2.5}}
+/* fxQuality() — called by applyQuality(): world-material defines and effect buffers follow the preset */
+function fxQuality(){if(!MAT.atlas)return;for(const k of['atlas','cut','leaf']){const m=MAT[k];if(!m)continue;const a=Q.ao>0&&HF.ok!==false,a2=a&&Q.ao>1;
+    if(('GK_AO' in m.defines)!==a||('GK_AO2' in m.defines)!==a2){delete m.defines.GK_AO;delete m.defines.GK_AO2;if(a)m.defines.GK_AO='';if(a2)m.defines.GK_AO2='';m.needsUpdate=true}}
+  if(Q.ao>0&&HF.rt&&HF.size!==(Q.ao>1?1024:512))hfSetup();if(!Q.ao)U.hfK.value.x=0}
+
+/* ============================== BLOOM + VIGNETTE ==============================
+   postFX() runs right after the scene is drawn to the canvas (90_main.js frame()). The finished frame is copied to a texture, its bright parts are
+   extracted at 1/4 resolution, blurred at 1/4 and 1/8, and added back on top together with a soft vignette in one blended full-screen pass.
+   Thresholds follow the light: by day only the sun's glare, glints and the brightest sky bloom; at night lamps, lit windows and signs glow. Q.bloom = 0 turns it off. */
+const BL={fb:null,a:null,b:null,c:null,d:null,w:0,h:0,scene:null,cam:null,quad:null,m:{},v0:new THREE.Vector2(),thr:0.9,k:0.3,vig:0.22,ok:true,info:{}};
+const BL_VS=`varying vec2 vUv;void main(){vUv=position.xy*0.5+0.5;gl_Position=vec4(position.xy,0.0,1.0);}`;
+function blMat(fs,u,blend){const m=new THREE.ShaderMaterial({uniforms:u,vertexShader:BL_VS,fragmentShader:'precision highp float;varying vec2 vUv;'+fs,depthTest:false,depthWrite:false,fog:false,toneMapped:false});
+  if(blend){m.blending=THREE.CustomBlending;m.blendEquation=THREE.AddEquation;m.blendSrc=THREE.OneFactor;m.blendDst=THREE.SrcAlphaFactor;m.transparent=true}else m.blending=THREE.NoBlending;return m}
+function blSetup(){const s=renderer.getDrawingBufferSize(BL.v0),w=Math.max(4,s.x|0),h=Math.max(4,s.y|0);if(BL.fb&&BL.w===w&&BL.h===h)return;BL.w=w;BL.h=h;
+  for(const k of['fb','a','b','c','d'])if(BL[k])BL[k].dispose();
+  BL.fb=new THREE.FramebufferTexture(w,h,THREE.RGBAFormat);BL.fb.minFilter=BL.fb.magFilter=THREE.LinearFilter;BL.fb.generateMipmaps=false;
+  const rt=(d)=>new THREE.WebGLRenderTarget(Math.max(2,Math.ceil(w/d)),Math.max(2,Math.ceil(h/d)),{depthBuffer:false,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
+  BL.a=rt(4);BL.b=rt(4);BL.c=rt(8);BL.d=rt(8);
+  if(!BL.scene){BL.scene=new THREE.Scene();BL.cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([-1,-1,0,3,-1,0,-1,3,0],3));
+    BL.quad=new THREE.Mesh(g,null);BL.quad.frustumCulled=false;BL.scene.add(BL.quad);
+    BL.m.bright=blMat(`uniform sampler2D tSrc;uniform vec2 uTx;uniform vec2 uThr;void main(){
+      vec3 c=0.25*(texture2D(tSrc,vUv+uTx*vec2(-1.0,-1.0)).rgb+texture2D(tSrc,vUv+uTx*vec2(1.0,-1.0)).rgb+texture2D(tSrc,vUv+uTx*vec2(-1.0,1.0)).rgb+texture2D(tSrc,vUv+uTx*vec2(1.0,1.0)).rgb);
+      float l=max(c.r,max(c.g,c.b));float s=clamp((l-uThr.x)/max(1.0-uThr.x,0.01),0.0,1.0);gl_FragColor=vec4(c*s*s,1.0);}`,{tSrc:{value:null},uTx:{value:new THREE.Vector2()},uThr:{value:new THREE.Vector2()}});
+    BL.m.blur=blMat(`uniform sampler2D tSrc;uniform vec2 uDir;void main(){
+      vec3 c=texture2D(tSrc,vUv).rgb*0.2270;c+=(texture2D(tSrc,vUv+uDir*1.3846).rgb+texture2D(tSrc,vUv-uDir*1.3846).rgb)*0.3162;c+=(texture2D(tSrc,vUv+uDir*3.2308).rgb+texture2D(tSrc,vUv-uDir*3.2308).rgb)*0.0703;
+      gl_FragColor=vec4(c,1.0);}`,{tSrc:{value:null},uDir:{value:new THREE.Vector2()}});
+    BL.m.comp=blMat(`uniform sampler2D tA,tC;uniform float uK,uVig;uniform vec2 uAsp;void main(){
+      vec3 b=texture2D(tA,vUv).rgb*0.55+texture2D(tC,vUv).rgb*0.85;vec2 p=(vUv-0.5)*uAsp;float v=1.0-uVig*smoothstep(0.25,0.95,dot(p,p)*1.6);
+      gl_FragColor=vec4(b*uK*v,v);}`,{tA:{value:null},tC:{value:null},uK:{value:0.3},uVig:{value:0.2},uAsp:{value:new THREE.Vector2(1,1)}},true)}}
+function blPass(m,target){BL.quad.material=m;renderer.setRenderTarget(target);renderer.render(BL.scene,BL.cam)}
+function postFX(){if(!Q.bloom||!BL.ok)return;const r=renderer;
+  try{blSetup();const info=r.info.render,I=BL.info;I.c=info.calls;I.t=info.triangles;I.p=info.points;I.l=info.lines;const ac=r.autoClear;r.autoClear=false;
+    r.copyFramebufferToTexture(BL.v0.set(0,0),BL.fb);
+    const n=SKY.night,thr=player.interior?0.86:lerp(0.88,0.62,n),k=player.interior?0.22:lerp(0.28,0.75,n);
+    const mb=BL.m.bright.uniforms;mb.tSrc.value=BL.fb;mb.uTx.value.set(1/BL.w,1/BL.h);mb.uThr.value.set(thr,0);blPass(BL.m.bright,BL.a);
+    const u=BL.m.blur.uniforms,aw=BL.a.width,ah=BL.a.height,cw=BL.c.width,ch=BL.c.height;
+    u.tSrc.value=BL.a.texture;u.uDir.value.set(1/aw,0);blPass(BL.m.blur,BL.b);u.tSrc.value=BL.b.texture;u.uDir.value.set(0,1/ah);blPass(BL.m.blur,BL.a);
+    u.tSrc.value=BL.a.texture;u.uDir.value.set(1.5/cw,0);blPass(BL.m.blur,BL.d);u.tSrc.value=BL.d.texture;u.uDir.value.set(0,1.5/ch);blPass(BL.m.blur,BL.c);
+    u.tSrc.value=BL.c.texture;u.uDir.value.set(2.5/cw,0);blPass(BL.m.blur,BL.d);u.tSrc.value=BL.d.texture;u.uDir.value.set(0,2.5/ch);blPass(BL.m.blur,BL.c);
+    const mc=BL.m.comp.uniforms;mc.tA.value=BL.a.texture;mc.tC.value=BL.c.texture;mc.uK.value=k;mc.uVig.value=BL.vig;mc.uAsp.value.set(Math.min(1,BL.w/BL.h),Math.min(1,BL.h/BL.w));blPass(BL.m.comp,null);
+    r.autoClear=ac;info.calls=I.c;info.triangles=I.t;info.points=I.p;info.lines=I.l}
+  catch(e){BL.ok=false;console.warn('bloom disabled',e)}}
+
+/* ---------- automatic quality ("auto" setting): after 90_main.js has lowered the resolution to Q.prMin, if the frame rate still stays well below Q.fpsLo
+   for 6 s, drop one effect at a time (not under automation: the CPU-rendered test harness would always trip it) — bloom, then ambient occlusion, then High → Medium → Low — and give back resolution. Never steps up by itself. ---------- */
+const AUTOQ={t:0,cool:12};
+function autoQuality(dt){if(dt===undefined)return autoQ();/* called without dt (88_menu.js qAuto): the preset name 'auto' resolves to */
+  if(SETTINGS.q!=='auto'||navigator.webdriver||typeof fpsV==='undefined'||typeof running==='undefined'||!running||!(dt>0))return;AUTOQ.cool-=dt;
+  if(pixelRatio<=(Q.prMin||0.6)+0.01&&fpsV<(Q.fpsLo||30)-4)AUTOQ.t+=dt;else AUTOQ.t=Math.max(0,AUTOQ.t-dt*0.5);
+  if(AUTOQ.t<6||AUTOQ.cool>0)return;AUTOQ.t=0;AUTOQ.cool=10;
+  if(Q.bloom)Q.bloom=0;else if(Q.ao)Q.ao=0;else if(Q===QP.high){QP.medium.bloom=QP.medium.ao=0;Q=QP.medium}else if(Q===QP.medium)Q=QP.low;else return;
+  pixelRatio=Math.min(window.devicePixelRatio||1,Q.pr);applyQuality();console.warn('auto quality stepped down: bloom '+Q.bloom+' ao '+Q.ao+' preset '+(Q===QP.high?'high':Q===QP.medium?'medium':'low'))}

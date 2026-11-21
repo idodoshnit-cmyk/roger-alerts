@@ -5,21 +5,34 @@ const fs=require('fs'),path=require('path');const {decodeGLB}=require('./glb_dec
 const NM=process.env.CARS_NODE_MODULES||path.resolve(__dirname,'../../work/cars/tools/node/node_modules');const {MeshoptSimplifier}=require(path.join(NM,'meshoptimizer'));
 const Q=+(process.argv[4]||1);
 function xf(p,w){const o=new Float32Array(p.length);for(let i=0;i<p.length;i+=3){const x=p[i],y=p[i+1],z=p[i+2];const X=w[0]*x+w[4]*y+w[8]*z+w[12],Y=w[1]*x+w[5]*y+w[9]*z+w[13],Z=w[2]*x+w[6]*y+w[10]*z+w[14];o[i]=-X;o[i+1]=Y;o[i+2]=-Z}return o}// model faces -z: rotate 180° so it faces +z
-function weld(pos,idx){const map=new Map(),np=[],remap=new Uint32Array(pos.length/3);for(let i=0;i<pos.length/3;i++){const k=Math.round(pos[i*3]*1e4)+','+Math.round(pos[i*3+1]*1e4)+','+Math.round(pos[i*3+2]*1e4);let j=map.get(k);if(j===undefined){j=np.length/3;map.set(k,j);np.push(pos[i*3],pos[i*3+1],pos[i*3+2])}remap[i]=j}
-  const ni=new Uint32Array(idx.length);for(let i=0;i<idx.length;i++)ni[i]=remap[idx[i]];return{pos:new Float32Array(np),idx:ni}}
-function simplify(m,target,err){if(m.idx.length/3<=target)return m;const [ni]=MeshoptSimplifier.simplify(m.idx,m.pos,3,Math.max(3,Math.floor(target)*3),err||0.02,[]);return{pos:m.pos,idx:ni}}
-function compact(m){const used=new Map(),np=[];const ni=new Uint32Array(m.idx.length);for(let i=0;i<m.idx.length;i++){const v=m.idx[i];let j=used.get(v);if(j===undefined){j=np.length/3;used.set(v,j);np.push(m.pos[v*3],m.pos[v*3+1],m.pos[v*3+2])}ni[i]=j}
+// normals of the ORIGINAL dense mesh (rotated like xf) travel with the welded vertices, so the simplified body keeps smooth, correct shading
+function xfn(n,w){if(!n)return null;const o=new Float32Array(n.length);for(let i=0;i<n.length;i+=3){const x=n[i],y=n[i+1],z=n[i+2];let X=w[0]*x+w[4]*y+w[8]*z,Y=w[1]*x+w[5]*y+w[9]*z,Z=w[2]*x+w[6]*y+w[10]*z;const l=Math.hypot(X,Y,Z)||1;o[i]=-X/l;o[i+1]=Y/l;o[i+2]=-Z/l}return o}
+function weld(pos,idx,nor){const map=new Map(),np=[],nn=[],cl=new Map(),remap=new Uint32Array(pos.length/3);for(let i=0;i<pos.length/3;i++){const k=Math.round(pos[i*3]*1e4)+','+Math.round(pos[i*3+1]*1e4)+','+Math.round(pos[i*3+2]*1e4);let j=map.get(k);if(j===undefined){j=np.length/3;map.set(k,j);np.push(pos[i*3],pos[i*3+1],pos[i*3+2]);nn.push(0,0,0)}remap[i]=j;if(nor){/* cluster the original normals met at this position (opposite sheets, hard creases) */let L=cl.get(j);if(!L){L=[];cl.set(j,L)}const x=nor[i*3],y=nor[i*3+1],z=nor[i*3+2];let hit=null;for(const q of L){const l=Math.hypot(q[0],q[1],q[2])||1;if((q[0]*x+q[1]*y+q[2]*z)/l>0.55){hit=q;break}}if(hit){hit[0]+=x;hit[1]+=y;hit[2]+=z}else L.push([x,y,z])}}
+  const ni=new Uint32Array(idx.length);for(let i=0;i<idx.length;i++)ni[i]=remap[idx[i]];
+  for(const L of cl.values())for(const q of L){const l=Math.hypot(q[0],q[1],q[2])||1;q[0]/=l;q[1]/=l;q[2]/=l}
+  return{pos:new Float32Array(np),idx:ni,cl:nor?cl:null}}
+/* after simplification: every triangle corner takes the original-normal cluster that best matches the triangle's facing; vertices split per cluster */
+function splitN(m){if(!m.cl)return m;const P=m.pos,I=m.idx,key=new Map(),np=[],nn=[],ni=new Uint32Array(I.length);
+  for(let t=0;t<I.length;t+=3){const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3;const ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];const fx=uy*vz-uz*vy,fy=uz*vx-ux*vz,fz=ux*vy-uy*vx;
+    for(let k=0;k<3;k++){const v=I[t+k];const L=m.cl.get(v)||[[fx,fy,fz]];let bi=0,bd=-1e9;for(let q=0;q<L.length;q++){const d=L[q][0]*fx+L[q][1]*fy+L[q][2]*fz;if(d>bd){bd=d;bi=q}}
+      const kk=v*16+bi;let j=key.get(kk);if(j===undefined){j=np.length/3;key.set(kk,j);np.push(P[v*3],P[v*3+1],P[v*3+2]);const n=L[bi];const l=Math.hypot(n[0],n[1],n[2])||1;nn.push(n[0]/l,n[1]/l,n[2]/l)}ni[t+k]=j}}
+  return{pos:new Float32Array(np),idx:ni,nor:new Float32Array(nn)}}
+function simplify(m,target,err){if(m.idx.length/3<=target)return splitN(m);const [ni]=MeshoptSimplifier.simplify(m.idx,m.pos,3,Math.max(3,Math.floor(target)*3),err||0.02,[]);return splitN({pos:m.pos,idx:ni,cl:m.cl})}
+function compact(m){const used=new Map(),np=[],nn=[];const ni=new Uint32Array(m.idx.length);for(let i=0;i<m.idx.length;i++){const v=m.idx[i];let j=used.get(v);if(j===undefined){j=np.length/3;used.set(v,j);np.push(m.pos[v*3],m.pos[v*3+1],m.pos[v*3+2]);if(m.nor)nn.push(m.nor[v*3],m.nor[v*3+1],m.nor[v*3+2])}ni[i]=j}
   // drop degenerate triangles
-  const keep=[];for(let i=0;i<ni.length;i+=3){if(ni[i]!==ni[i+1]&&ni[i+1]!==ni[i+2]&&ni[i]!==ni[i+2])keep.push(ni[i],ni[i+1],ni[i+2])}return{pos:new Float32Array(np),idx:new Uint32Array(keep)}}
+  const keep=[];for(let i=0;i<ni.length;i+=3){if(ni[i]!==ni[i+1]&&ni[i+1]!==ni[i+2]&&ni[i]!==ni[i+2])keep.push(ni[i],ni[i+1],ni[i+2])}return{pos:new Float32Array(np),idx:new Uint32Array(keep),nor:m.nor?new Float32Array(nn):null}}
+/* the source glass is mixed-winding (drawn double-sided there); our glass material culls back faces, so emit both windings with matching normals */
+function twoSided(m){const nv=m.pos.length/3;const pos=new Float32Array(nv*6),nor=new Float32Array(nv*6);pos.set(m.pos);pos.set(m.pos,nv*3);for(let i=0;i<nv*3;i++){nor[i]=m.nor[i];nor[nv*3+i]=-m.nor[i]}
+  const idx=new Uint32Array(m.idx.length*2);idx.set(m.idx);for(let i=0;i<m.idx.length;i+=3){idx[m.idx.length+i]=m.idx[i]+nv;idx[m.idx.length+i+1]=m.idx[i+2]+nv;idx[m.idx.length+i+2]=m.idx[i+1]+nv}return{pos,idx,nor}}
 function normals(m){const n=new Float32Array(m.pos.length);const P=m.pos;for(let i=0;i<m.idx.length;i+=3){const a=m.idx[i]*3,b=m.idx[i+1]*3,c=m.idx[i+2]*3;const ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;for(const k of[a,b,c]){n[k]+=nx;n[k+1]+=ny;n[k+2]+=nz}}
   for(let i=0;i<n.length;i+=3){const l=Math.hypot(n[i],n[i+1],n[i+2])||1;n[i]/=l;n[i+1]/=l;n[i+2]/=l}return n}
 // material table: kind (0 fixed, 1 paint, 2 chrome, 3 gloss), colour (linear), light group, target fraction
-const MATS={Body_Color:{k:1,c:[1,1,1],t:3000},metal_chrome:{k:2,c:[0.78,0.78,0.78],t:380},metal_gray:{k:2,c:[0.45,0.45,0.45],t:160},plastic_gray:{k:3,c:[0.05,0.05,0.05],t:320},Interior_dark:{k:0,c:[0.05,0.05,0.05],t:520},
-  Interior_light:{k:0,c:[0.09,0.09,0.09],t:380},Leather:{k:0,c:[0.035,0.035,0.04],t:260},Leather_red:{k:0,c:[0.2,0.03,0.03],t:80},Carbon_Fiber:{k:3,c:[0.03,0.03,0.035],t:170},Taillight_Glass:{k:3,c:[0.45,0.0,0.0],lg:2,t:260},
+const MATS={Body_Color:{k:1,c:[1,1,1],t:3000},metal_chrome:{k:2,c:[0.78,0.78,0.78],t:380},metal_gray:{k:2,c:[0.45,0.45,0.45],t:160},plastic_gray:{k:3,c:[0.05,0.05,0.05],t:320},Interior_dark:{k:0,c:[0.05,0.05,0.05],t:1500},
+  Interior_light:{k:0,c:[0.09,0.09,0.09],t:900},Leather:{k:0,c:[0.035,0.035,0.04],t:700},Leather_red:{k:0,c:[0.2,0.03,0.03],t:80},Carbon_Fiber:{k:3,c:[0.03,0.03,0.035],t:170},Taillight_Glass:{k:3,c:[0.45,0.0,0.0],lg:2,t:260},
   Projector_Glass:{k:2,c:[0.8,0.8,0.82],lg:1,t:220},Turn_Signal_LED:{k:3,c:[0.6,0.25,0.02],lg:'ind',t:200},Tires:{k:0,c:[0.012,0.012,0.012],t:300},Carpet:{k:0,c:[0.04,0.04,0.04],t:60},Ferrari_Yellow:{k:3,c:[0.94,0.6,0],t:60}};
 function pack(parts){let nv=0,ni=0;for(const p of parts){nv+=p.m.pos.length/3;ni+=p.m.idx.length}const pos=new Float32Array(nv*3),nor=new Int8Array(nv*3),col=new Uint8Array(nv*3),aux=new Int8Array(nv*4),idx=new Uint16Array(ni);let vo=0,io=0;
   if(nv>65535)throw new Error('too many vertices '+nv);
-  for(const p of parts){const m=p.m,n=normals(m);for(let i=0;i<m.pos.length/3;i++){pos.set(m.pos.subarray(i*3,i*3+3),(vo+i)*3);for(let k=0;k<3;k++){nor[(vo+i)*3+k]=Math.round(n[i*3+k]*127);col[(vo+i)*3+k]=Math.round(Math.sqrt(Math.min(1,p.c[k]))*255)}
+  for(const p of parts){const m=p.m,n=m.nor||normals(m);for(let i=0;i<m.pos.length/3;i++){pos.set(m.pos.subarray(i*3,i*3+3),(vo+i)*3);for(let k=0;k<3;k++){nor[(vo+i)*3+k]=Math.round(n[i*3+k]*127);col[(vo+i)*3+k]=Math.round(Math.sqrt(Math.min(1,p.c[k]))*255)}
       const lg=p.lg==='ind'?(m.pos[i*3]>0?4:5):(p.lg||0);aux[(vo+i)*4]=p.k;aux[(vo+i)*4+1]=lg;aux[(vo+i)*4+2]=-1;aux[(vo+i)*4+3]=0}
     for(let i=0;i<m.idx.length;i++)idx[io+i]=m.idx[i]+vo;vo+=m.pos.length/3;io+=m.idx.length}
   const b=a=>Buffer.from(a.buffer,a.byteOffset,a.byteLength).toString('base64');return{nv,nt:ni/3,pos:b(pos),nor:b(nor),col:b(col),aux:b(aux),idx:b(idx)}}
@@ -30,9 +43,9 @@ function pack(parts){let nv=0,ni=0;for(const p of parts){nv+=p.m.pos.length/3;ni
   for(const p of g.prims){const mat=MATS[p.matName];if(p.matName==='_0098_DodgerBlue')continue;let P=xf(p.pos,p.world);const tris=p.idx.length/3;
     if(p.path.indexOf('/wheel_')>=0){if(p.path.indexOf('wheel_fr/')<0)continue;// one wheel → unit wheel: centre at origin, outward face +x (the fr wheel is the right wheel; after the 180° turn its outer face is −x)
       const U=new Float32Array(P.length);for(let i=0;i<P.length;i+=3){U[i]=-(P[i]-wc.c[0])/wc.w;U[i+1]=(P[i+1]-wc.c[1])/wc.r;U[i+2]=-(P[i+2]-wc.c[2])/wc.r}
-      const tgt={tire:220,wheel:260,rim_fr:130,brake:70,nuts:30,centre:20}[p.nodeName]||40;const m=compact(simplify(weld(U,p.idx),tgt*Q,0.08));wheel.push({m,k:mat?mat.k:0,c:p.nodeName==='tire'?[0.012,0.012,0.012]:p.nodeName==='brake'?[0.25,0.02,0.02]:mat?mat.c:[0.5,0.5,0.5],lg:0});continue}
-    const w=weld(P,p.idx);
-    if(p.matName==='Glass_Gray'){const m=compact(simplify(w,400*Q,0.01));glass.push({m,k:0,c:[1,1,1],lg:0});far.push({m:compact(simplify(w,40,0.05)),k:3,c:[0.012,0.016,0.02],lg:0});continue}
+      const tgt={tire:220,wheel:260,rim_fr:130,brake:70,nuts:30,centre:20}[p.nodeName]||40;const WN=xfn(p.nor,p.world);if(WN)for(let i=0;i<WN.length;i+=3){const nx=-WN[i]/wc.w,ny=WN[i+1]/wc.r,nz=-WN[i+2]/wc.r,l=Math.hypot(nx,ny,nz)||1;WN[i]=nx/l;WN[i+1]=ny/l;WN[i+2]=nz/l}const m=compact(simplify(weld(U,p.idx,WN),tgt*Q,0.08));wheel.push({m,k:mat?mat.k:0,c:p.nodeName==='tire'?[0.012,0.012,0.012]:p.nodeName==='brake'?[0.25,0.02,0.02]:mat?mat.c:[0.5,0.5,0.5],lg:0});continue}
+    const w=weld(P,p.idx,xfn(p.nor,p.world));
+    if(p.matName==='Glass_Gray'){const m=compact(simplify(w,2200*Q,0.004));glass.push({m,k:0,c:[1,1,1],lg:0});far.push({m:compact(simplify(w,40,0.05)),k:3,c:[0.012,0.016,0.02],lg:0});continue}
     if(!mat){console.log('unmapped',p.matName);continue}
     // share each material's budget among its prims by their size
     const total=g.prims.filter(q=>q.matName===p.matName&&q.path.indexOf('/wheel_')<0).reduce((s,q)=>s+q.idx.length/3,0);let tgt=Math.max(12,mat.t*Q*tris/total);

@@ -28,7 +28,9 @@ function driveIntent(jy){const touch=typeof JOY!=='undefined'&&JOY.id!==null;con
   return{thr,brk,hand:!!(input.brake||keys.Space),touch}}
 function driveCar(dt,jx,jy){const c=player.car;if(!c)return;const S=CARTYPES[c.type],d=S.dyn,E=DRV.eng;
   const I=driveIntent(jy);const hand=I.hand;let steps=Math.max(1,Math.ceil(dt/DRV.h));const h=dt/steps;
-  if(Math.abs(jx)<0.08)jx=0;else jx=Math.sign(jx)*Math.min(1,(Math.abs(jx)-0.08)/0.92);jx=Math.sign(jx)*Math.pow(Math.abs(jx),1.35);/* soft centre: small thumb wobbles do not weave */
+  if(Math.abs(jx)<0.08)jx=0;else jx=Math.sign(jx)*Math.min(1,(Math.abs(jx)-0.08)/0.92);jx=Math.sign(jx)*(0.45*Math.abs(jx)+0.55*Math.pow(Math.abs(jx),2));/* gentle curve: small thumb wobbles do not weave, full lock still there */
+  /* input smoothing (order 13:10): a short low-pass on the stick so a jumpy thumb or a key tap never jerks the wheel; releasing re-centres quickly */
+  if(DRV.jxs===undefined)DRV.jxs=0;DRV.jxs+=(jx-DRV.jxs)*(1-Math.exp(-dt/(jx===0?0.05:0.09)));if(Math.abs(DRV.jxs)<0.004&&jx===0)DRV.jxs=0;jx=DRV.jxs;
   if(c.gear===undefined){c.gear=1;c.yr=0;c.shv=0;c.spv=0;c.srv=0;c.sh=0;c.sp=0;c.sr=0;c.shiftT=0;c.fixY=true;c.vr=0;const w=wheelGround(c);c.y=w[0];c.pitch=w[1];c.roll=w[2];DRV.stk.t=0;DRV.revT=0}
   if(c.hp===undefined)c.hp=100;const wreck=c.hp<=0;
   if(DRV.exitReq){I.thr=0;I.brk=0;const bd=12*dt;c.vf=Math.abs(c.vf)<=bd?0:c.vf-Math.sign(c.vf)*bd}
@@ -48,11 +50,11 @@ function driveCar(dt,jx,jy){const c=player.car;if(!c)return;const S=CARTYPES[c.t
     a-=0.00028*v*Math.abs(v);v+=a*h;v=clamp(v,-7.5,d.vmax*1.02);ax+=(v-c.vf)/h;c.vf=v;
     /* ---- steering: speed-sensitive angle, quick to turn in, faster still to straighten (strong auto-centre) */
     const maxSt=d.steer*lerp(1,0.24,clamp(av/36,0,1));const tgt=jx*maxSt;const toward=Math.abs(tgt)>Math.abs(c.steer)&&Math.sign(tgt)===Math.sign(c.steer||tgt);
-    const rate=jx===0?7.5:toward?3.2:6.5;c.steer+=clamp(tgt-c.steer,-rate*h,rate*h);
+    const rate=(jx===0?7.5:toward?lerp(3.4,1.7,clamp(av/30,0,1)):6.5);c.steer+=clamp(tgt-c.steer,-rate*h,rate*h);/* speed-sensitive: slower turn-in at speed */
     /* ---- yaw: follows the wheels directly (traction assist) up to the grip limit; handbrake lets the tail out a little and always recovers */
     const hb=hand&&av>6;const rdes=-v*Math.tan(c.steer)/S.wb;const amax=DRV.g*d.grip*1.05*(wreck?0.75:1);const rcap=amax/Math.max(3,av);
     let rg=clamp(rdes,-rcap,rcap);if(hb)rg=clamp(rdes*1.7,-1.9,1.9);
-    c.yr+=(rg-c.yr)*Math.min(1,h*(hb?3.5:12));c.yaw+=c.yr*h;
+    c.yr+=(rg-c.yr)*Math.min(1,h*(hb?3.5:lerp(12,7,clamp(av/30,0,1))));c.yaw+=c.yr*h;/* yaw builds a touch more progressively at speed (weight) */
     /* ---- lateral slip: none below ~60 km/h; a gentle drift above it or on the handbrake, capped so the car never spins */
     const allow=hb?1:clamp((av-DRV.assistV)/14,0,0.6);
     c.vr+=c.yr*v*0.32*allow*h;c.vr*=Math.exp(-h*(hb?1.6:lerp(30,4,allow)));const vmaxR=Math.abs(v)*(hb?0.45:0.22);c.vr=clamp(c.vr,-vmaxR,vmaxR);

@@ -15,7 +15,7 @@ function lookBy(dx,dy,ms){const k=0.0052*(SETTINGS.sens||1)*clamp(900/Math.max(i
 function joySet(t){let dx=t.clientX-JOY.cx,dy=t.clientY-JOY.cy,d=Math.hypot(dx,dy);const R=JOY.R,lim=R*1.35;
   if(d>lim){const k=(d-lim)/d;JOY.cx+=dx*k;JOY.cy+=dy*k;joyEl.style.left=JOY.cx+'px';joyEl.style.top=JOY.cy+'px';dx=t.clientX-JOY.cx;dy=t.clientY-JOY.cy;d=lim}/* the base follows a thumb that drifts away */
   const c=Math.min(1,d/R),dz=0.14;let m=c<=dz?0:Math.pow((c-dz)/(1-dz),1.2);
-  if(d>1e-3){input.jx=dx/d*m;input.jy=player.car?0:dy/d*m}else input.jx=input.jy=0;/* in a car the stick only steers; the pedals do the rest */
+  if(d>1e-3){input.jx=player.car?clamp(dx/R,-1,1):dx/d*m;input.jy=player.car?0:dy/d*m}else input.jx=input.jy=0;/* in a car the stick only steers; the pedals do the rest */
   const kd=Math.min(d,R);knob.style.transform=d>1e-3?`translate(${(dx/d*kd).toFixed(1)}px,${(dy/d*kd).toFixed(1)}px)`:''}
 function joyEnd(){JOY.id=null;input.jx=input.jy=0;joyEl.hidden=true}
 touchEl.addEventListener('touchstart',e=>{e.preventDefault();setInputMode('touch');audioOn();if(cutSkip&&HUDS.cine)return;

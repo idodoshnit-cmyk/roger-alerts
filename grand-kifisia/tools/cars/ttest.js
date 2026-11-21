@@ -24,5 +24,9 @@ const {launch,ROOT}=require('../harness');const fs=require('fs'),path=require('p
     if(row)await shot('scooters',[row[0]+Math.sin(row[2])*3.2+1.2,1.5,row[1]+Math.cos(row[2])*3.2+1.2,row[0],0.5,row[1]],13);
     const tx=await h.page.evaluate(()=>{const c=CARS.find(c=>c.type==='taxi'&&c.mode==='parked');return c?[c.x,c.z,c.yaw]:null});
     if(tx)await shot('taxi',[tx[0]+Math.sin(tx[2])*5+2.5,1.6,tx[1]+Math.cos(tx[2])*5+2.5,tx[0],0.6,tx[1]],13);
+    // --- the train at the platform with its doors open (step game time until the dwell)
+    const tr=await h.page.evaluate(()=>{for(let i=0;i<400;i++){if(TRAIN.state==='dwell'&&TRAIN.doors>0.9)break;__gk.step(1/10,5)}TRAIN.hold=true;const m=TRAIN.cars[2];return m?[TRAIN.state,+TRAIN.doors.toFixed(2),m.position.x,m.position.z,m.rotation.y]:null});
+    log('train '+JSON.stringify(tr));
+    if(tr){const [st,d,x,z,ry]=tr;const lx=Math.cos(ry),lz=-Math.sin(ry);for(const s of[1,-1]){const ok=await h.page.evaluate(([x,z])=>!collide({x,z},0.3),[x+lx*s*7,z+lz*s*7]);if(ok||s<0){await shot('train',[x+lx*s*7+Math.sin(ry)*5,1.7,z+lz*s*7+Math.cos(ry)*5,x,1.6,z],13);break}}}
     log(h.errors.length?('ERRORS:\n'+[...new Set(h.errors)].slice(0,25).join('\n')):'no errors')}
   catch(e){log('FAILED: '+e.message);log([...new Set(h.errors)].slice(0,25).join('\n'))}finally{await h.close();fs.writeFileSync(path.join(SH,prefix+'.log'),out.join('\n'))}})();

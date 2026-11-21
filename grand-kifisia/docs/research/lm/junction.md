@@ -12,12 +12,12 @@ street south — the buildings framing the start view are the eight below.)
 |---|---|---|---|---|
 | SW | b30 | w668312663 | AB Vasilopoulos supermarket, Levidou 2 / Kassaveti 8, corner block | GF 4.4 m + 2 × 3.05 m = 10.5 m (+0.85 parapet) |
 | NW | b294 | w1075949835 | Mythos Plus, Kassaveti 13 (arched shopfront, terrace) | GF 4.4 + 1 set-back storey 3.3 = 7.7 m (+parapet ≈ 8.5 m, shops.json says 8.5) |
-| NW corner | b293 | w1075949834 | corner block: Bufala Gelato, UÉ (Kassaveti) / Goody's, Everest, Bubble Tale, Κλειδαράς, Nidodileda (Levidou) | 3, top floor set back 1.7 m |
-| NW | b292 | w1075949833 | Kostarelos / Tsouderos building on Levidou | 2 + hip roof |
-| NW | b295 | w1075949836 | Kassaveti 9: Το Καλαμάκι, Yard 242, Nak, Munchy's, Βενέτη, Master Meat | 4 |
+| NW corner | b293 | w1075949834 | corner block: UÉ (Kassaveti) / Goody's, Everest, Kostarelos (Levidou) — shop list follows the map, which data rebuilds from the placement audit | 3, top floor set back 1.7 m (glass rail on the Kassaveti side, mythos_01), terracotta hip roof (orthophoto) |
+| NW | b292 | w1075949833 | Kostarelos / Tsouderos building on Levidou | 3, flat dark roof (orthophoto) |
+| NW | b295 | w1075949836 | Kassaveti 9: Το Καλαμάκι, Nak, Βενέτη | 3 (mythos_01 shows the left neighbour at 2–3 storeys; spec's 4 is inferred), rust/copper ground-floor cladding (photo note), tiled pent strip along the front of the roof (orthophoto) |
 | NE | b434 | w1076768357 | PAUL (Levidou 4) with Alpha Bank, Amos Cafe, Βιβλιοθήκη της Κηφισιάς | 3, top set back 1.6 m |
 | NE corner | b435 | w1076768358 | Carpo, Desigual, Dwdwni (Levidou) / Γερμανός, Imaginarium (corner) / La Queen (Kassaveti) | 3, top set back 1.8 m |
-| SE corner | b388 | w1076626153 | "Πύργος Κηφισιάς" with rounded corner: La Pasteria, Manolea Gouskos (Kassaveti) / Flocafe, Zara, Giannetos… (Ag. Dimitriou) | 4, top set back 1.6 m |
+| SE corner | b388 | w1076626153 | "Πύργος Κηφισιάς" with rounded corner: Manolea Gouskos, La Pasteria, La Queen (Kassaveti) / Flocafe, Giannetos (Ag. Dimitriou) | 4 + one terracotta hip roof (28°) running round a glazed atrium lantern; round corner tower Ø 6.5 m rising 3.5 m above the eaves with 8 windows and a light-grey dome (orthophoto + buildings_spec `parts`) |
 
 Footprints are the real OSM polygons (metres, 1:1); nothing is rescaled. Ground-floor level = highest terrain under the footprint + 0.17 m;
 a marble plinth fills down to the street on the low side. Storey heights: shop ground floors 4.4 m, upper floors 3.05 m (door 2.1–2.4 m, balcony rail 1.0 m),
@@ -29,6 +29,10 @@ balcony slabs 1.3 m deep (buildings_spec `continuous_slab`, 1.3 m).
 - **Data-based**: footprints, levels, shop names and their edge positions (`kifisia_map.json` from OSM), wall colours / balcony type / rail type /
   set-back top / solar heaters per building (`gk3/data/buildings_spec.json`, research-arch; confidence there = "inferred"), sign texts and colours
   (`gk3/data/shops.json` where present, else the map's shop colours).
+- **Orthophoto (reference only, never shipped)**: Hellenic Cadastre open orthophoto c. 2007-2010 with the OSM footprints drawn over it —
+  `docs/research/img/lm/junction/ortho_junction_REFONLY.jpg` (made with `python3 -I tools/arch/ortho.py overlay 35 10 160 120 … 0.125`). It decides the roofs:
+  b293 and b388 tiled hip roofs, b388's atrium skylight and domed corner tower, b292/b294/b30/b435 flat roofs, the tiled strip on b295's front.
+  PAUL's footprint (b434) also has a small tiled hip section at its east (back) end — not modelled yet (not visible from the junction).
 - **Searched, nothing usable**: Wikimedia Commons geosearch 150 m around the node (only Οικία Κότσικα and Οδός Λεβίδου 7899, which look elsewhere),
   Commons text search "Κασσαβέτη Κηφισιά" / "Λεβίδου Κηφισιά", web search for PAUL Levidou 4 photos. No Google imagery used (rule).
 - **Inferred (not photo-verified)**: everything about AB, PAUL, b293, b435, b388, b292, b295 facades beyond footprint/levels — modelled in the documented
