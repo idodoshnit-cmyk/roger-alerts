@@ -1,0 +1,351 @@
+[
+ {
+  "file": "img/work/kitchen-navy-wide.webp",
+  "w": 1280,
+  "h": 720,
+  "desc": "Finished navy blue spray-painted shaker kitchen, wide angle, cream floor tiles",
+  "colours": [
+   "#2a2e34",
+   "#43464a",
+   "#d4bda0",
+   "#ebd3ad",
+   "#a69279"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-navy-front.webp",
+  "w": 1600,
+  "h": 900,
+  "desc": "Finished navy spray-painted kitchen units, straight-on, white worktop and splashback",
+  "colours": [
+   "#e2d3bc",
+   "#404852",
+   "#505a64",
+   "#61656a",
+   "#bead93"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-navy-ovens.webp",
+  "w": 1280,
+  "h": 720,
+  "desc": "Finished navy spray-painted kitchen with double oven, oak door on left",
+  "colours": [
+   "#d0b596",
+   "#33383d",
+   "#4b4e55",
+   "#7b6447",
+   "#a78e6c"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-navy-masked.webp",
+  "w": 1600,
+  "h": 900,
+  "desc": "IN PROGRESS: same navy kitchen fully masked with plastic sheeting and tape, doors off, mid-spray",
+  "colours": [
+   "#626262",
+   "#32363a",
+   "#beb3a5",
+   "#a1998d",
+   "#cbc0b2"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-green-lantern.webp",
+  "w": 1600,
+  "h": 900,
+  "desc": "Finished sage green spray-painted kitchen under a roof lantern skylight, island, pendant lights",
+  "colours": [
+   "#59604a",
+   "#313929",
+   "#a7a89c",
+   "#898b78",
+   "#c5cdbe"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-green-island.webp",
+  "w": 1280,
+  "h": 720,
+  "desc": "Finished sage green kitchen, close view along island with brass cup handles and hob",
+  "colours": [
+   "#727b6f",
+   "#92958e",
+   "#40443c",
+   "#a8acad",
+   "#bec9bf"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-green-garden.webp",
+  "w": 1600,
+  "h": 900,
+  "desc": "Finished sage green kitchen with tall units, ovens, view to garden",
+  "colours": [
+   "#afb4a2",
+   "#48573e",
+   "#7f8168",
+   "#59634c",
+   "#333b2a"
+  ]
+ },
+ {
+  "file": "img/work/kitchen-green-spraying.webp",
+  "w": 1600,
+  "h": 1204,
+  "desc": "IN PROGRESS: decorator in white overalls spraying units in the same kitchen (roof lantern, pendants), everything masked",
+  "colours": [
+   "#5f5e5c",
+   "#7e7f7f",
+   "#323130",
+   "#99a1ab",
+   "#cacdc7"
+  ]
+ },
+ {
+  "file": "img/work/spraying-unit.webp",
+  "w": 720,
+  "h": 1271,
+  "desc": "IN PROGRESS: decorator with respirator spray-painting a tall white unit inside a masked spray tent (portrait)",
+  "colours": [
+   "#9c9897",
+   "#beb8be",
+   "#7d7874",
+   "#524a46",
+   "#8d857e"
+  ]
+ },
+ {
+  "file": "img/work/wallpaper-jungle.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Bold jungle/leopard patterned wallpaper hung next to a rustic plank door",
+  "colours": [
+   "#796e61",
+   "#574b3e",
+   "#95928b",
+   "#b4b3b0",
+   "#d3d4d4"
+  ]
+ },
+ {
+  "file": "img/work/wallpaper-birds.webp",
+  "w": 768,
+  "h": 1024,
+  "desc": "Dark botanical bird wallpaper feature wall in a cloakroom (portrait)",
+  "colours": [
+   "#dcd0c4",
+   "#afa496",
+   "#3c413b",
+   "#8e8376",
+   "#707166"
+  ]
+ },
+ {
+  "file": "img/work/wallpaper-mural.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Large black-and-white photographic wall mural (workers on a girder) hung above a radiator",
+  "colours": [
+   "#958c7b",
+   "#37322c",
+   "#ccc2b5",
+   "#7a7163",
+   "#645d52"
+  ]
+ },
+ {
+  "file": "img/work/wallpaper-floral.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Grey floral wallpaper in a living room, open oak door to a second papered room",
+  "colours": [
+   "#6d645d",
+   "#463a30",
+   "#8b8582",
+   "#aaa3a4",
+   "#c0c0c6"
+  ]
+ },
+ {
+  "file": "img/work/wallpaper-stars.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Grey wallpaper with white stars, bedroom feature wall",
+  "colours": [
+   "#9a8f8a",
+   "#ada29e",
+   "#bab0ac",
+   "#796f6b",
+   "#c5bdbb"
+  ]
+ },
+ {
+  "file": "img/work/panelling-mauve.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Mauve painted wall panelling in a bedroom",
+  "colours": [
+   "#908f8d",
+   "#aaaca9",
+   "#6a6160",
+   "#544d4b",
+   "#7b7374"
+  ]
+ },
+ {
+  "file": "img/work/landing-sage-chandelier.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Sage green painted galleried landing with mahogany balustrade and crystal chandelier",
+  "colours": [
+   "#706b62",
+   "#453835",
+   "#8f8980",
+   "#b2aaa0",
+   "#d1ccc4"
+  ]
+ },
+ {
+  "file": "img/work/landing-sage-doors.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Sage green landing, white six-panel doors and architraves, balustrade",
+  "colours": [
+   "#66635f",
+   "#2a2524",
+   "#888886",
+   "#abaaaa",
+   "#c9c7c6"
+  ]
+ },
+ {
+  "file": "img/work/room-sage-frenchdoors.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Sage green room with white woodwork, dark glazed French doors, cast radiator",
+  "colours": [
+   "#999184",
+   "#dad4cb",
+   "#5c5c55",
+   "#372d2a",
+   "#756e62"
+  ]
+ },
+ {
+  "file": "img/work/loft-white-beams.webp",
+  "w": 720,
+  "h": 720,
+  "desc": "Freshly painted white loft conversion with grey painted beams, yellow step ladder",
+  "colours": [
+   "#979293",
+   "#676568",
+   "#888281",
+   "#a19ea2",
+   "#aeaeb3"
+  ]
+ },
+ {
+  "file": "img/work/exterior-grey-house.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Detached 1930s house painted pale grey render with anthracite windows and oak porch",
+  "colours": [
+   "#202122",
+   "#4b4745",
+   "#9fa5ac",
+   "#85888b",
+   "#c5cad6"
+  ]
+ },
+ {
+  "file": "img/work/exterior-blue-door.webp",
+  "w": 768,
+  "h": 1024,
+  "desc": "Georgian-style brick entrance with painted pale blue front door and white surround (portrait)",
+  "colours": [
+   "#795a52",
+   "#9f9d95",
+   "#483833",
+   "#857e76",
+   "#c4c7c6"
+  ]
+ },
+ {
+  "file": "img/work/exterior-grey-render.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Rear of house, grey painted render upper storey over brick, white windows",
+  "colours": [
+   "#cacbca",
+   "#886751",
+   "#49392d",
+   "#9b9587",
+   "#66614a"
+  ]
+ },
+ {
+  "file": "img/work/exterior-cream-extension.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Cream painted rendered extension with bifold doors",
+  "colours": [
+   "#36312d",
+   "#a7a198",
+   "#635f58",
+   "#cbc6be",
+   "#dee4ec"
+  ]
+ },
+ {
+  "file": "img/work/exterior-cream-house.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Cream painted rendered house front, sash windows, black door, dust sheets down",
+  "colours": [
+   "#b6ac9d",
+   "#9b948a",
+   "#464445",
+   "#bcb3a3",
+   "#cbcfd4"
+  ]
+ },
+ {
+  "file": "img/work/exterior-dark-terrace.webp",
+  "w": 1024,
+  "h": 576,
+  "desc": "Terrace painted dark grey, white windows, street view",
+  "colours": [
+   "#5f5c5b",
+   "#68696a",
+   "#483d39",
+   "#838584",
+   "#d8d8d7"
+  ]
+ },
+ {
+  "file": "img/work/commercial-unit.webp",
+  "w": 1024,
+  "h": 768,
+  "desc": "Commercial brick unit, roller shutters masked and ladders up during painting",
+  "colours": [
+   "#776a65",
+   "#817c76",
+   "#89857e",
+   "#564847",
+   "#9e9d99"
+  ]
+ },
+ {
+  "file": "img/work/exterior-white-house.webp",
+  "w": 1040,
+  "h": 547,
+  "desc": "Freshly painted white rendered house with black garage door under blue sky. This is the AFTER photo that customer David attached to his Google review - ideal next to his quote",
+  "colours": [
+   "#f1f1f1",
+   "#3a3836",
+   "#3f73c4"
+  ]
+ }
+]
