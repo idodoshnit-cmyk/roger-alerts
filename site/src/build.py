@@ -96,3 +96,18 @@ boot = '<script>window.__IMG=' + json.dumps(uri, separators=(',', ':')) + ';[].f
 prev = prev.replace('<script>window.__WORK=', boot + '\n<script>window.__WORK=', 1)
 open(os.path.join(SITE, 'preview.html'), 'w', encoding='utf-8').write(prev)
 print('index.html', len(page) // 1024, 'KB | preview.html', len(prev) // 1024, 'KB |', len(names), 'photos')
+
+# ---- optional: hosted preview page (content only, the host adds the document skeleton) ----
+out = os.environ.get('HOSTED_OUT')
+if out:
+    style = re.search(r'<style>(.*?)</style>', prev, re.S).group(1)
+    body = re.search(r'<body>(.*)</body>', prev, re.S).group(1)
+    body = body.replace(' action="https://formspree.io/f/YOUR_FORM_ID" method="POST"', '')
+    body = body.replace('<script>window.__WORK=', '<script>window.__NOEMBED=1;</script>' + NL + '<script>window.__WORK=', 1)
+    hosted = ('<title>JK Decorators Landing Page</title>' + NL + '<meta name="claude:viewport-fit-sides" content="cover">' + NL +
+              '<style>' + style + '</style>' + NL +
+              "<script>document.documentElement.classList.add('js');setTimeout(function(){document.documentElement.classList.add('ready')},3200);</script>" + NL + body)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    open(out, 'w', encoding='utf-8').write(hosted)
+    print('hosted', len(hosted) // 1024, 'KB ->', out)
+

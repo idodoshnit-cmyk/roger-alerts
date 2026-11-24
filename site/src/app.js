@@ -364,9 +364,10 @@
     status.className = 'status';
     if (bad) { bad.focus(); return; }
     var fail = function () { status.textContent = 'Sorry, that did not send. Please call us on 0116 478 5346.'; status.className = 'status no'; label.textContent = 'Send request'; };
-    if (form.action.indexOf('YOUR_FORM_ID') > -1 || !window.fetch) { fail(); return; }
+    var endpoint = form.getAttribute('action') || '';
+    if (!endpoint || endpoint.indexOf('YOUR_FORM_ID') > -1 || !window.fetch) { fail(); return; }
     label.textContent = 'Sending…';
-    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } }).then(function (r) {
+    fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } }).then(function (r) {
       if (!r.ok) throw 0; form.reset(); label.textContent = 'Send request';
       status.textContent = 'Thanks. We have your request and will ring you back.'; status.className = 'status ok';
     }).catch(fail);
@@ -378,6 +379,7 @@
   function applyC(maps) {
     if (mapsToggle) mapsToggle.checked = !!maps;
     if (!mapBox) return;
+    if (maps && window.__NOEMBED) { mapBox.innerHTML = '<div><p>Unit 1L04, 90 Sanvey Gate, Leicester LE1 4BQ</p><a class="btn btn-glass btn-sm" href="https://www.google.com/maps/search/?api=1&query=90+Sanvey+Gate+Leicester+LE1+4BQ" target="_blank" rel="noopener">Open in Google Maps</a></div>'; return; }
     if (maps) { if (!$('iframe', mapBox)) mapBox.innerHTML = '<iframe title="Map showing Unit 1L04, 90 Sanvey Gate, Leicester" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=90%20Sanvey%20Gate%2C%20Leicester%20LE1%204BQ&z=15&output=embed"></iframe>'; }
     else if ($('iframe', mapBox)) { mapBox.innerHTML = mapHTML; bindMap(); }
   }
