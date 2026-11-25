@@ -1,28 +1,7 @@
 {
- "date": "2026-11-24",
- "day_r": 0.05,
+ "date": "2026-11-25",
+ "day_r": 0.0,
  "stopped": false,
- "trades": [
-  {
-   "ticker": "PMVP",
-   "setup": "orb15",
-   "entry": 1.0299999713897705,
-   "stop": 0.9269999742507935,
-   "target": 1.184499967098236,
-   "i": 3,
-   "open": false,
-   "r": 0.05,
-   "p": 0.5694036356036803,
-   "plan": "tp15",
-   "shares": 48,
-   "k": 72,
-   "half": false,
-   "bank": 0.0,
-   "risk": 0.102999997138977,
-   "warned": true,
-   "how": "close",
-   "pct": 0.004854364437391164
-  }
- ],
+ "trades": [],
  "done": true
 }
