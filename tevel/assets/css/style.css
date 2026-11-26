@@ -3753,3 +3753,27 @@ html.has-cart .social.is-tucked {
     animation: none !important;
   }
 }
+
+/* ======================= v7: product shots, 4:5 catalogue, gallery clock ======================= */
+
+/* catalogue files are 4:5 now, the same shape as the card photo: nothing is cut off */
+.card[data-product] .gal__slide img {
+  object-position: 50% 50%;
+}
+
+/* viewer: show the whole 4:5 picture */
+.qv__track img {
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+}
+
+.qv__gal {
+  background: #f1ece5;
+}
+
+/* with less motion the bar simply marks the current picture */
+@media (prefers-reduced-motion: reduce) {
+  .slider__seg[aria-current="true"] i::after {
+    transform: scaleX(1);
+  }
+}

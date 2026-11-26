@@ -415,7 +415,10 @@
     var EASE = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
     var pos = 0;
     var step = 0;
-    var holds = { hover: false, view: true, page: false, user: false, drag: false, near: false };
+    var holds = { hover: false, focus: false, view: true, page: false, user: false, drag: false, near: false };
+    var DUR = 2600;                 /* time on each picture */
+    var elapsed = 0;
+    slider.style.setProperty('--dur', DUR + 'ms');
 
     function snapActive(i) {
       all.forEach(function (s, k) { s.style.transition = 'none'; s.classList.toggle('is-active', k === i); });
@@ -472,6 +475,7 @@
         target = N - 1;
       }
       pos = target;
+      elapsed = 0;
       place(!reduceMotion.matches);
       paint();
     }
@@ -485,9 +489,24 @@
       }
     });
 
-    function sync() {
-      slider.classList.toggle('is-paused', holds.hover || !holds.view || holds.page || holds.drag);
+    function paused() {
+      return holds.hover || holds.focus || !holds.view || holds.page || holds.drag;
     }
+
+    function sync() {
+      slider.classList.toggle('is-paused', paused());
+    }
+
+    /* the clock: a JS timer, so it also runs when the phone asks for less motion */
+    var lastTick = Date.now();
+    window.setInterval(function () {
+      var now = Date.now();
+      var dt = Math.min(now - lastTick, 400);
+      lastTick = now;
+      if (holds.user || paused()) return;
+      elapsed += dt;
+      if (elapsed >= DUR) go(pos + 1);
+    }, 100);
 
     function stop(on) {
       holds.user = on;
@@ -496,21 +515,23 @@
       if (!on) paint();
     }
 
-    $('.slider__segs', slider).addEventListener('animationend', function () {
-      if (!holds.user) go(pos + 1);
-    });
     $('[data-slide-next]', slider).addEventListener('click', function () { go(pos + 1); });
     $('[data-slide-prev]', slider).addEventListener('click', function () { go(pos - 1); });
     segs.forEach(function (seg, i) { seg.addEventListener('click', function () { go(i); }); });
     playBtn.addEventListener('click', function () { stop(!holds.user); });
 
-    slider.addEventListener('mouseenter', function () { holds.hover = true; sync(); });
-    slider.addEventListener('mouseleave', function () { holds.hover = false; sync(); });
-    slider.addEventListener('focusin', function () { holds.hover = true; sync(); });
-    slider.addEventListener('focusout', function () { holds.hover = false; sync(); });
+    /* a mouse resting on the gallery holds it; a finger tap does not (touch has no "leave") */
+    slider.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { holds.hover = true; sync(); } });
+    slider.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { holds.hover = false; sync(); } });
+    slider.addEventListener('focusin', function (e) {
+      var kb = false;
+      try { kb = e.target.matches(':focus-visible'); } catch (err) { kb = false; }
+      holds.focus = kb; sync();
+    });
+    slider.addEventListener('focusout', function () { holds.focus = false; sync(); });
     document.addEventListener('visibilitychange', function () { holds.page = document.hidden; sync(); });
     if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) { holds.view = entries[0].isIntersecting; sync(); }, { threshold: 0.3 }).observe(slider);
+      new IntersectionObserver(function (entries) { holds.view = entries[0].isIntersecting; sync(); }, { threshold: 0.25 }).observe(slider);
       var nearWatch = new IntersectionObserver(function (entries) {
         if (!entries[0].isIntersecting) return;
         holds.near = true;
@@ -563,7 +584,7 @@
     window.addEventListener('resize', function () { measure(); place(false); });
     measure();
     place(false);
-    if (reduceMotion.matches) stop(true);
+    /* the client asked for the gallery to keep moving on its own; the pause button stays for anyone who wants it still */
     paint();
   }
 
