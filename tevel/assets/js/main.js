@@ -99,9 +99,13 @@
   /* ---------- top bar: turns solid once the hero has scrolled away ---------- */
 
   var bar = $('[data-bar]');
+  var themeMeta = $('meta[name="theme-color"]');
   if (bar && hero && 'IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
-      bar.classList.toggle('is-solid', !entries[0].isIntersecting);
+      var solid = !entries[0].isIntersecting;
+      bar.classList.toggle('is-solid', solid);
+      /* the browser's own bar follows: deep sea over the hero, ivory over the shop */
+      if (themeMeta) themeMeta.content = solid ? '#faf6ef' : '#0c2e35';
     }, { rootMargin: '-92px 0px 0px 0px' }).observe(hero);
   } else if (bar) {
     bar.classList.add('is-solid');
