@@ -2173,3 +2173,575 @@ html.has-cart .minibar {
     display: none !important;
   }
 }
+
+/* ======================= v3 additions ======================= */
+
+/* ---------- scroll progress ---------- */
+
+.progress {
+  position: fixed;
+  z-index: 31;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--sea-mid);
+  transform: scaleX(0);
+  transform-origin: right;
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @keyframes grow {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  .progress {
+    animation: grow linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+/* ---------- catalogue extras: photo viewer button ---------- */
+
+.gal__slide img {
+  cursor: zoom-in;
+}
+
+.gal__zoom {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(250, 246, 239, 0.88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--ink);
+  opacity: 0.92;
+  transition: transform 0.4s var(--spring), opacity 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+
+.gal__zoom::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+.gal__zoom svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (hover: hover) {
+  .gal__zoom {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  .gal:hover .gal__zoom,
+  .gal__zoom:focus-visible {
+    opacity: 1;
+    transform: none;
+  }
+  .gal__zoom:hover {
+    background: #fff;
+  }
+}
+
+/* ---------- embroidery: the line that sews itself ---------- */
+
+.stitch {
+  width: min(220px, 60%);
+  height: auto;
+  margin-block: 2px 4px;
+  overflow: visible;
+}
+
+.stitch path {
+  fill: none;
+  stroke: var(--sea-mid);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 7 6;
+}
+
+.reveal-on [data-reveal="stitch"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 100%);
+  transition: clip-path 1.6s var(--ease-out) 0.35s;
+}
+
+.reveal-on [data-reveal="stitch"].is-in {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ---------- gallery slider ---------- */
+
+.slider {
+  margin-top: 4px;
+}
+
+.slider__stage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-l);
+  overflow: hidden;
+  background: var(--sea-deep);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  transform: translateZ(0);
+}
+
+.slider__track {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s var(--ease), visibility 0s linear 0.9s;
+}
+
+.slide.is-active {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.9s var(--ease), visibility 0s;
+}
+
+/* the photo is shown whole; the frame around it is the same photo, softly blurred */
+.slide__bg {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  max-width: none;
+  object-fit: cover;
+  filter: blur(28px) saturate(1.15) brightness(0.85);
+}
+
+.slide__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  transform: scale(1.06);
+  transition: transform 6s linear;
+}
+
+.slide.is-active .slide__img {
+  transform: scale(1);
+}
+
+.slider__nav {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-top: -23px;
+  border-radius: 50%;
+  background: rgba(250, 246, 239, 0.9);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(6, 26, 31, 0.18);
+  transition: transform 0.4s var(--spring), background-color 0.3s var(--ease);
+}
+
+.slider__nav svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slider__nav--prev {
+  right: 12px;
+}
+
+.slider__nav--next {
+  left: 12px;
+}
+
+.slider__nav--next svg {
+  transform: scaleX(-1);
+}
+
+.slider__nav:active {
+  transform: scale(0.92);
+}
+
+@media (hover: hover) {
+  .slider__nav:hover {
+    background: #fff;
+    transform: scale(1.08);
+  }
+}
+
+.slider__count {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--on-sea);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 10px rgba(6, 26, 31, 0.5);
+}
+
+.slider__count b {
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+
+.slider__count span {
+  opacity: 0.6;
+}
+
+.slider__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.slider__segs {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+.slider__seg {
+  flex: 1;
+  display: grid;
+  align-items: center;
+  height: 24px;
+}
+
+.slider__seg i {
+  position: relative;
+  display: block;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(20, 67, 76, 0.16);
+  overflow: hidden;
+}
+
+.slider__seg i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--sea);
+  transform: scaleX(0);
+  transform-origin: right;
+}
+
+.slider__seg.is-done i::after {
+  transform: scaleX(1);
+}
+
+.slider__seg[aria-current="true"] i::after {
+  animation: seg var(--dur, 5s) linear forwards;
+}
+
+.slider.is-paused .slider__seg[aria-current="true"] i::after {
+  animation-play-state: paused;
+}
+
+.slider.is-stopped .slider__seg[aria-current="true"] i::after {
+  animation: none;
+  transform: scaleX(1);
+}
+
+@keyframes seg {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.slider__play {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--sea);
+}
+
+.slider__play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.slider__play .i-play,
+.slider.is-stopped .slider__play .i-pause {
+  display: none;
+}
+
+.slider.is-stopped .slider__play .i-play {
+  display: block;
+}
+
+@media (min-width: 700px) {
+  .slider__stage {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (min-width: 1100px) {
+  .slider__stage {
+    aspect-ratio: 16 / 9;
+  }
+  .slider__nav--prev {
+    right: 20px;
+  }
+  .slider__nav--next {
+    left: 20px;
+  }
+}
+
+/* ---------- photo viewer ---------- */
+
+.qv {
+  position: fixed;
+  z-index: 65;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.qv__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 36, 42, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+
+.qv.is-open .qv__scrim {
+  opacity: 1;
+}
+
+.qv__panel {
+  position: relative;
+  display: grid;
+  width: min(100% - 24px, 980px);
+  max-height: calc(100svh - 24px);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  background: var(--ivory);
+  outline: 0;
+  box-shadow: 0 40px 90px rgba(6, 26, 31, 0.35);
+  opacity: 0;
+  transform: translate3d(0, 40px, 0) scale(0.96);
+  transition: opacity 0.3s var(--ease), transform 0.35s var(--ease-in);
+}
+
+.qv.is-open .qv__panel {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.45s var(--ease-out), transform 0.7s var(--ease-out);
+}
+
+.qv__close {
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(250, 246, 239, 0.92);
+  color: var(--ink);
+}
+
+.qv__close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.qv__gal {
+  position: relative;
+  min-height: 0;
+  background: var(--sand);
+}
+
+.qv__track {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.qv__track::-webkit-scrollbar {
+  display: none;
+}
+
+.qv__track li {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+
+.qv__track img {
+  width: 100%;
+  height: 100%;
+  max-height: min(100vw - 24px, 62svh);
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.qv__dots {
+  position: absolute;
+  inset: auto 0 6px;
+  display: flex;
+  justify-content: center;
+}
+
+.qv__dots button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+}
+
+.qv__dots button::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(19, 34, 38, 0.3);
+  opacity: 0.7;
+  transition: width 0.4s var(--ease-out), opacity 0.3s var(--ease);
+}
+
+.qv__dots button[aria-current="true"]::before {
+  width: 18px;
+  opacity: 1;
+}
+
+.qv__info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px 16px;
+  padding: 20px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+}
+
+.qv__name {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.12em;
+  margin-right: -0.12em;
+  text-align: right;
+}
+
+.qv__price {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.qv__add {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  min-height: 54px;
+}
+
+.qv__add svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.qv.is-open .qv__name,
+.qv.is-open .qv__price,
+.qv.is-open .qv__add {
+  animation: rise 0.7s var(--ease-out) both;
+}
+
+.qv.is-open .qv__price {
+  animation-delay: 0.08s;
+}
+
+.qv.is-open .qv__add {
+  animation-delay: 0.16s;
+}
+
+@media (min-width: 820px) {
+  .qv__panel {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .qv__track img {
+    max-height: calc(100svh - 24px);
+    height: 100%;
+  }
+  .qv__info {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 10px;
+    padding: 48px 44px;
+  }
+  .qv__name {
+    font-size: 2.75rem;
+  }
+  .qv__close {
+    left: auto;
+    right: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide__img {
+    transform: none !important;
+  }
+  .reveal-on [data-reveal="stitch"] {
+    clip-path: none;
+  }
+}
+
+/* the stage takes the drag, not the browser's own image drag */
+.slide img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
