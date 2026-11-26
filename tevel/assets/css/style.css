@@ -1,14 +1,38 @@
 /* Tevel — landing page and mini shop
    Layout: a video hero, then ivory "sheets" that slide over the band before; the catalogue two models a row.
-   Fonts: Bellefair (display, Hebrew + Latin, the logo's high-contrast serif world), Heebo (interface). SIL OFL, see assets/fonts. */
+   Fonts: Fredoka (Hebrew headings, soft and clear), Rubik (interface), Bellefair (model names, the logo's serif). SIL OFL, see assets/fonts. */
 
 @font-face {
-  font-family: "Bellefair";
+  font-family: "Fredoka";
   font-style: normal;
-  font-weight: 400;
+  font-weight: 300 700;
   font-display: swap;
-  src: url("../fonts/bellefair-hebrew-400-normal.woff2") format("woff2");
+  src: url("../fonts/fredoka-hebrew-wght-normal.woff2") format("woff2");
   unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("../fonts/fredoka-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("../fonts/rubik-hebrew-wght-normal.woff2") format("woff2");
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("../fonts/rubik-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: "Bellefair";
@@ -16,22 +40,6 @@
   font-weight: 400;
   font-display: swap;
   src: url("../fonts/bellefair-latin-400-normal.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0329, U+2000-200B, U+2011-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: "Heebo";
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("../fonts/heebo-hebrew-wght-normal.woff2") format("woff2");
-  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
-}
-@font-face {
-  font-family: "Heebo";
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("../fonts/heebo-latin-wght-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -51,8 +59,9 @@
   --wa-deep: #128c4a;
   --ig: linear-gradient(45deg, #f9b03f 0%, #f15f4b 30%, #d6246e 55%, #9b36b7 80%, #5a51d6 100%);
 
-  --font-sans: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  --font-display: "Bellefair", "Noto Serif Hebrew", "Frank Ruhl Libre", "Times New Roman", serif;
+  --font-sans: "Rubik", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display: "Fredoka", "Rubik", system-ui, sans-serif;
+  --font-name: "Bellefair", "Times New Roman", serif;
 
   --gutter: 16px;
   --wrap: 1080px;
@@ -197,7 +206,7 @@ button {
 
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 340;
 }
 
 .latin {
@@ -371,18 +380,30 @@ button {
 
 .bar__cart {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
   margin-inline-start: auto;
-  border-radius: 50%;
-  transition: background-color 0.3s var(--ease);
+  padding: 0 14px 0 12px;
+  border: 1px solid rgba(251, 248, 242, 0.5);
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background-color 0.3s var(--ease), border-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+
+.bar.is-solid .bar__cart {
+  border-color: rgba(19, 34, 38, 0.18);
 }
 
 .bar__cart svg {
-  width: 24px;
-  height: 24px;
+  flex: none;
+}
+
+.bar__cart svg {
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.4;
@@ -401,9 +422,7 @@ button {
 }
 
 .bar__count {
-  position: absolute;
-  top: 5px;
-  inset-inline-end: 3px;
+  position: static;
   display: grid;
   place-items: center;
   min-width: 19px;
@@ -515,8 +534,15 @@ button {
 .menu__head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: var(--bar-h);
-  margin-inline: -18px;
+  margin-inline-end: -12px;
+}
+
+.menu__word {
+  width: auto;
+  height: 26px;
+  fill: currentColor;
 }
 
 .menu__close {
@@ -543,11 +569,34 @@ button {
 }
 
 .menu__nav a {
-  display: block;
-  padding-block: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 14px;
+  border-bottom: 1px solid rgba(251, 248, 242, 0.14);
   font-family: var(--font-display);
-  font-size: clamp(2.75rem, 13vw, 4rem);
+  font-weight: 340;
+  font-size: clamp(2.25rem, 10vw, 3.25rem);
   line-height: 1.1;
+}
+
+.menu__nav a svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+  transition: transform 0.4s var(--ease-out), opacity 0.3s var(--ease);
+}
+
+.menu__nav a:active svg,
+.menu__nav a:hover svg {
+  opacity: 1;
+  transform: translateX(-6px);
 }
 
 .menu__nav a,
@@ -881,8 +930,9 @@ button {
 }
 
 .sec-title {
-  font-size: clamp(2.75rem, 1.8rem + 4.6vw, 4.75rem);
-  line-height: 1;
+  font-size: clamp(2.5rem, 1.7rem + 4vw, 4.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
 }
 
 /* ---------- catalogue: two models a row, on every screen ---------- */
@@ -910,45 +960,51 @@ button {
 .gal {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 22px 22px var(--r-s) var(--r-s);
-  border-radius: 14cqi 14cqi var(--r-s) var(--r-s);
+  border-radius: var(--r-m);
   overflow: hidden;
   background: var(--sand);
+  touch-action: pan-y;
   transform: translateZ(0);
 }
 
 .gal__track {
-  display: flex;
+  position: relative;
   height: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.gal__track::-webkit-scrollbar {
-  display: none;
 }
 
 .gal__track:focus-visible {
   outline-offset: -3px;
 }
 
+/* the photos lie on top of each other and cross-fade */
 .gal__slide {
-  flex: 0 0 100%;
-  overflow: hidden;
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease);
+}
+
+.gal__slide.is-on {
+  z-index: 1;
+  opacity: 1;
 }
 
 .gal__slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  -webkit-user-drag: none;
+  transform: scale(1.045);
+  transition: transform 5s var(--ease-out);
+}
+
+.gal__slide.is-on img {
+  transform: scale(1);
 }
 
 .gal__dots {
   position: absolute;
+  z-index: 2;
   inset: auto 0 2px;
   display: flex;
   justify-content: center;
@@ -981,6 +1037,7 @@ button {
 
 .gal__nav {
   position: absolute;
+  z-index: 2;
   top: 50%;
   display: none;
   place-items: center;
@@ -1050,7 +1107,7 @@ button {
 .card__name {
   min-width: 0;
   grid-column: 1 / -1;
-  font-family: var(--font-display);
+  font-family: var(--font-name);
   font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.15;
@@ -1203,15 +1260,29 @@ button {
 
 .emb__img {
   aspect-ratio: 3 / 2;
-  border-radius: var(--r-m);
+  margin-inline: calc(-1 * var(--gutter));
   overflow: hidden;
-  background: var(--line);
+  background: var(--ink);
 }
 
 .emb__img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform-origin: 28% 14%;
+}
+
+.emb__img.is-in img {
+  animation: push 9s var(--ease-out) 0.6s both;
+}
+
+@keyframes push {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12);
+  }
 }
 
 .emb__text {
@@ -1229,9 +1300,16 @@ button {
   color: var(--ink-soft);
 }
 
+@media (min-width: 700px) {
+  .emb__img {
+    margin-inline: 0;
+    border-radius: var(--r-l);
+  }
+}
+
 @media (min-width: 900px) {
   .emb__grid {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: clamp(48px, 7vw, 104px);
   }
   .emb__price {
@@ -1272,7 +1350,7 @@ button {
   align-items: center;
   gap: 36px;
   padding-inline-end: 36px;
-  font-family: var(--font-display);
+  font-family: var(--font-name);
   font-size: 1.25rem;
   letter-spacing: 0.26em;
   white-space: nowrap;
@@ -1704,8 +1782,30 @@ html.has-cart .minibar {
 }
 
 .cart__title {
-  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2.25rem;
   line-height: 1.1;
+}
+
+.cart__n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--sea);
+  color: var(--on-sea);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart__n:empty {
+  display: none;
 }
 
 .cart__close {
@@ -1740,7 +1840,7 @@ html.has-cart .minibar {
 
 .line {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 84px minmax(0, 1fr);
   gap: 16px;
   padding-block: 20px;
   border-bottom: 1px solid var(--line);
@@ -1752,8 +1852,8 @@ html.has-cart .minibar {
 }
 
 .line__img {
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   border-radius: 14px 14px 8px 8px;
   object-fit: cover;
   background: var(--sand);
@@ -1773,7 +1873,7 @@ html.has-cart .minibar {
 }
 
 .line__name {
-  font-family: var(--font-display);
+  font-family: var(--font-name);
   font-size: 1.25rem;
   font-weight: 400;
   line-height: 1.2;
@@ -1849,8 +1949,16 @@ html.has-cart .minibar {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: var(--r-s);
+  background: var(--sand);
   cursor: pointer;
+  transition: background-color 0.3s var(--ease);
+}
+
+.opt:has(input:checked) {
+  background: rgba(20, 67, 76, 0.1);
 }
 
 .opt input {
@@ -1983,6 +2091,7 @@ html.has-cart .minibar {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  font-size: 1.0625rem;
 }
 
 .cart__total strong {
@@ -2107,7 +2216,7 @@ html.has-cart .minibar {
   transform: scale(1.12);
 }
 
-.reveal-on [data-reveal="card"] .gal__slide img {
+.reveal-on [data-reveal="card"]:not(.is-done) .gal__slide img {
   transition: transform 1.6s var(--ease-out);
   transition-delay: calc(var(--i, 0) * 110ms);
 }
@@ -2134,7 +2243,6 @@ html.has-cart .minibar {
     transition: transform 1.2s var(--ease-out);
     transition-delay: 0s;
   }
-  .reveal-on [data-reveal="card"].is-done:hover .gal__slide img,
   .reveal-on [data-reveal="wipe"].is-done:hover img {
     transform: scale(1.04);
   }
@@ -2209,6 +2317,7 @@ html.has-cart .minibar {
 
 .gal__zoom {
   position: absolute;
+  z-index: 2;
   top: 10px;
   left: 10px;
   display: grid;
@@ -2407,7 +2516,7 @@ html.has-cart .minibar {
   align-items: baseline;
   gap: 6px;
   color: var(--on-sea);
-  font-family: var(--font-display);
+  font-family: var(--font-name);
   font-size: 1.125rem;
   letter-spacing: 0.08em;
   text-shadow: 0 1px 10px rgba(6, 26, 31, 0.5);
@@ -2664,7 +2773,7 @@ html.has-cart .minibar {
 }
 
 .qv__name {
-  font-family: var(--font-display);
+  font-family: var(--font-name);
   font-size: 2rem;
   font-weight: 400;
   line-height: 1.1;

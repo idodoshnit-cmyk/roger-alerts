@@ -179,50 +179,75 @@
     revealEls.forEach(function (el) { revealer.observe(el); });
   }
 
-  /* ---------- product galleries ---------- */
+  /* ---------- product photos: cross-fade, by hand and by themselves ---------- */
 
-  $$('[data-gal]').forEach(function (gal) {
-    var track = $('.gal__track', gal);
-    var slides = Array.prototype.slice.call(track.children);
+  var fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  $$('[data-gal]').forEach(function (gal, cardIndex) {
+    var slides = $$('.gal__slide', gal);
     var dots = $$('.gal__dot', gal);
     var current = 0;
-
-    function mark(i) {
-      current = i;
-      dots.forEach(function (dot, j) {
-        dot.setAttribute('aria-current', j === i ? 'true' : 'false');
-      });
-    }
+    var timer = 0;
+    var inView = false;
+    var hovering = false;
+    var touched = false;
 
     function go(i) {
       var n = slides.length;
-      var target = slides[((i % n) + n) % n];
-      /* direction-agnostic: the same in RTL and LTR */
-      var delta = target.getBoundingClientRect().left - track.getBoundingClientRect().left;
-      track.scrollBy({ left: delta, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      current = ((i % n) + n) % n;
+      slides.forEach(function (s, k) { s.classList.toggle('is-on', k === current); });
+      dots.forEach(function (d, k) { d.setAttribute('aria-current', k === current ? 'true' : 'false'); });
     }
 
-    if ('IntersectionObserver' in window) {
-      var watcher = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) mark(slides.indexOf(entry.target));
-        });
-      }, { root: track, threshold: 0.6 });
-      slides.forEach(function (slide) { watcher.observe(slide); });
+    /* each card changes on its own beat, only while it is on screen and nobody is handling it */
+    function schedule() {
+      window.clearTimeout(timer);
+      if (reduceMotion.matches || slides.length < 2 || !inView || hovering || touched) return;
+      timer = window.setTimeout(function () { go(current + 1); schedule(); }, 4200 + (cardIndex % 4) * 650);
+    }
+
+    function handled() {
+      touched = true;
+      window.clearTimeout(timer);
     }
 
     dots.forEach(function (dot, i) {
-      dot.addEventListener('click', function () { go(i); });
+      dot.addEventListener('click', function () { handled(); go(i); });
     });
-    if (slides.length > 1 && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      gal.addEventListener('mouseenter', function () { if (current === 0) go(1); });
-      gal.addEventListener('mouseleave', function () { go(0); });
-    }
-
     var prev = $('.gal__nav--prev', gal);
     var next = $('.gal__nav--next', gal);
-    if (prev) prev.addEventListener('click', function () { go(current - 1); });
-    if (next) next.addEventListener('click', function () { go(current + 1); });
+    if (prev) prev.addEventListener('click', function () { handled(); go(current - 1); });
+    if (next) next.addEventListener('click', function () { handled(); go(current + 1); });
+
+    if (slides.length > 1 && fineHover) {
+      gal.addEventListener('mouseenter', function () { hovering = true; window.clearTimeout(timer); if (current === 0) go(1); });
+      gal.addEventListener('mouseleave', function () { hovering = false; go(0); schedule(); });
+    }
+
+    /* swipe: in a right-to-left page, a swipe to the right brings the next photo */
+    var sx = null;
+    var sy = 0;
+    gal.addEventListener('pointerdown', function (e) { sx = e.clientX; sy = e.clientY; });
+    gal.addEventListener('pointerup', function (e) {
+      if (sx === null) return;
+      var dx = e.clientX - sx;
+      var dy = e.clientY - sy;
+      sx = null;
+      if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
+        handled();
+        go(current + (dx > 0 ? 1 : -1));
+        gal.dataset.swiped = '1';
+        window.setTimeout(function () { delete gal.dataset.swiped; }, 350);
+      }
+    });
+    gal.addEventListener('pointercancel', function () { sx = null; });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        inView = entries[0].isIntersecting;
+        if (inView) schedule(); else window.clearTimeout(timer);
+      }, { threshold: 0.55 }).observe(gal);
+    }
   });
 
   /* ---------- photo viewer ---------- */
@@ -307,7 +332,13 @@
       };
       var zoom = $('[data-qv-open]', card);
       if (zoom) zoom.addEventListener('click', open);
-      $$('.gal__slide img', card).forEach(function (pic) { pic.addEventListener('click', open); });
+      $$('.gal__slide img', card).forEach(function (pic) {
+        pic.addEventListener('click', function () {
+          var g = $('[data-gal]', card);
+          if (g && g.dataset.swiped) return;
+          open();
+        });
+      });
     });
   }
 
@@ -522,6 +553,8 @@
     openBtns.forEach(function (btn) {
       btn.setAttribute('aria-label', has ? 'פתיחת הסל, ' + (n === 1 ? 'פריט אחד' : n + ' פריטים') : 'פתיחת הסל');
     });
+    var headCount = $('[data-cart-n]', cartEl);
+    if (headCount) headCount.textContent = has ? n : '';
     if (minibar) {
       minibar.hidden = !has;
       miniCount.textContent = n === 1 ? 'פריט אחד' : n + ' פריטים';
