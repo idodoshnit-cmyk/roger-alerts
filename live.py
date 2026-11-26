@@ -83,6 +83,16 @@ WATCH_LAST_ENTRY = time(15, 30)
 WATCH_END = time(15, 55)
 
 
+# US half days (NYSE closes 13:00 New York): last entry 12:30, "sell before the close" email at 12:45, no afternoon
+# handoff, and the morning run sends the day summary itself. George 2026-11-26.
+EARLY_CLOSE_DAYS = {"2026-11-28", "2026-12-24"}
+EARLY_CLOSE = datetime.now(ET).strftime("%Y-%m-%d") in EARLY_CLOSE_DAYS
+if EARLY_CLOSE:
+    WATCH_LAST_ENTRY = time(12, 30)
+    WATCH_END = time(12, 55)
+    CLOSE_WARN = time(12, 45)
+
+
 def watch_day(today):
     return os.path.exists(WATCH_DAY_FILE) and today in open(WATCH_DAY_FILE).read()
 MAX_CANDIDATES = 400  # user 2026-10-27: watch as many charts as the free sources give
@@ -981,7 +991,7 @@ def run_live(late=False, carry=None):
     catchup = bool(late)       # a run that picks up mid-day first re-checks the candles that closed while no run was watching
     while True:
         now = datetime.now(ET)
-        if allday and not late and not queued and now.time() >= HANDOFF_DISPATCH:
+        if allday and not late and not queued and not EARLY_CLOSE and now.time() >= HANDOFF_DISPATCH:
             queued = True
             dispatch_successor()
         # every 5-minute candle close: Hans re-scans, Roger reads every chart (he decides on closed 5-minute candles)
@@ -1040,7 +1050,7 @@ def run_live(late=False, carry=None):
             break
         nxt = now + timedelta(minutes=1)
         sleep_until(nxt.replace(second=3, microsecond=0))
-    s.summary(datetime.now(ET), len(metas), email=late or not allday)
+    s.summary(datetime.now(ET), len(metas), email=late or not allday or EARLY_CLOSE)
     if late:
         os.makedirs(LOG, exist_ok=True)
         json.dump({"date": today, "day_r": s.day_r, "stopped": s.stopped, "trades": s.trades, "done": True},
