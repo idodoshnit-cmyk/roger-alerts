@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tevel | חצאיות גלישה</title>
+  <title>חצאיות גלישה | Tevel</title>
   <meta name="description" content="Tevel – חצאיות גלישה. הדגמים: MAUI, PEARL, SHELL ו‑THE CLASSIC, עם אפשרות לרקמה אישית. מוסיפים לסל ושולחים את ההזמנה בוואטסאפ.">
   <meta name="theme-color" content="#0c2e35">
   <meta name="format-detection" content="telephone=no">
@@ -11,8 +11,8 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="he_IL">
   <meta property="og:site_name" content="Tevel">
-  <meta property="og:title" content="Tevel | חצאיות גלישה">
-  <meta property="og:description" content="MAUI, PEARL, SHELL ו‑THE CLASSIC. הזמנה בוואטסאפ.">
+  <meta property="og:title" content="חצאיות גלישה | Tevel">
+  <meta property="og:description" content="הדגמים: MAUI, PEARL, SHELL ו‑THE CLASSIC. הזמנה בוואטסאפ.">
   <meta property="og:image" content="assets/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -36,7 +36,7 @@
     <a class="bar__home" href="#top" aria-label="Tevel – לראש העמוד">
       <!-- LOGO-WORDMARK --><svg viewBox="19.4 245.0 646.6 225.3" aria-hidden="true" focusable="false"><use href="#logo-word"/></svg><!-- /LOGO-WORDMARK -->
     </a>
-    <button class="bar__cart" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart" aria-label="פתיחת הסל">
+    <button class="bar__cart" type="button" data-cart-open aria-haspopup="dialog" aria-controls="cart" aria-label="פתיחת הסל" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.6 8.5h12.8l1 11.5H4.6l1-11.5z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/></svg>
       <span class="bar__count" data-cart-count hidden>0</span>
     </button>
@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <button class="hero__toggle" type="button" aria-pressed="false" aria-label="השהיית הסרטון" data-label-pause="השהיית הסרטון" data-label-play="הפעלת הסרטון">
+      <button class="hero__toggle" type="button" data-state="playing" aria-label="השהיית הסרטון" data-label-pause="השהיית הסרטון" data-label-play="הפעלת הסרטון">
         <svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>
         <svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.4v11.2a.6.6 0 0 0 .92.5l8.6-5.6a.6.6 0 0 0 0-1L5.42 1.9a.6.6 0 0 0-.92.5z"/></svg>
       </button>
@@ -79,7 +79,7 @@
         <ul class="cards">
           <li class="card" data-reveal="card" style="--i:0" data-product="maui" data-name="MAUI" data-price="299" data-thumb="assets/img/catalog/maui-1-sm.webp">
             <div class="gal" data-gal>
-              <ul class="gal__track">
+              <ul class="gal__track" tabindex="0" aria-label="תמונות, MAUI">
                 <li class="gal__slide"><img src="assets/img/catalog/maui-1-lg.webp" srcset="assets/img/catalog/maui-1-sm.webp 640w, assets/img/catalog/maui-1-lg.webp 810w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="810" height="1012" alt="חצאית גלישה MAUI בצבע חום" loading="lazy" decoding="async"></li>
                 <li class="gal__slide"><img src="assets/img/catalog/maui-2-lg.webp" srcset="assets/img/catalog/maui-2-sm.webp 480w, assets/img/catalog/maui-2-lg.webp 760w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="760" height="950" alt="חצאית MAUI, מבט מלפנים" loading="lazy" decoding="async"></li>
               </ul>
@@ -93,7 +93,7 @@
             <div class="card__body">
               <h3 class="card__name latin" lang="en">MAUI</h3>
               <p class="card__price">299&nbsp;₪</p>
-              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20MAUI" target="_blank" rel="noopener" data-add aria-label="הוספת דגם MAUI לסל">
+              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20MAUI" target="_blank" rel="noopener" data-add aria-label="הוספה לסל, MAUI">
                 <span class="card__cta-add"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>הוספה לסל</span>
                 <span class="card__cta-done" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>נוסף לסל</span>
               </a>
@@ -102,9 +102,9 @@
 
           <li class="card" data-reveal="card" style="--i:1" data-product="pearl" data-name="PEARL" data-price="309" data-thumb="assets/img/catalog/pearl-1-sm.webp">
             <div class="gal" data-gal>
-              <ul class="gal__track">
+              <ul class="gal__track" tabindex="0" aria-label="תמונות, PEARL">
                 <li class="gal__slide"><img src="assets/img/catalog/pearl-1-lg.webp" srcset="assets/img/catalog/pearl-1-sm.webp 640w, assets/img/catalog/pearl-1-lg.webp 791w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="791" height="989" alt="חצאית גלישה PEARL בצבע שמנת עם פס שחור בשוליים" loading="lazy" decoding="async"></li>
-                <li class="gal__slide"><img src="assets/img/catalog/pearl-2-lg.webp" srcset="assets/img/catalog/pearl-2-sm.webp 640w, assets/img/catalog/pearl-2-lg.webp 821w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="821" height="1026" alt="חצאית PEARL, השוליים פרושים הצידה" loading="lazy" decoding="async"></li>
+                <li class="gal__slide"><img src="assets/img/catalog/pearl-2-lg.webp" srcset="assets/img/catalog/pearl-2-sm.webp 640w, assets/img/catalog/pearl-2-lg.webp 821w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="821" height="1026" alt="חצאית PEARL, השוליים פרוסים הצידה" loading="lazy" decoding="async"></li>
               </ul>
               <div class="gal__dots">
                 <button class="gal__dot" type="button" aria-current="true" aria-label="תמונה 1 מתוך 2"></button>
@@ -116,7 +116,7 @@
             <div class="card__body">
               <h3 class="card__name latin" lang="en">PEARL</h3>
               <p class="card__price">309&nbsp;₪</p>
-              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20PEARL" target="_blank" rel="noopener" data-add aria-label="הוספת דגם PEARL לסל">
+              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20PEARL" target="_blank" rel="noopener" data-add aria-label="הוספה לסל, PEARL">
                 <span class="card__cta-add"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>הוספה לסל</span>
                 <span class="card__cta-done" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>נוסף לסל</span>
               </a>
@@ -125,9 +125,9 @@
 
           <li class="card" data-reveal="card" style="--i:2" data-product="shell" data-name="SHELL" data-price="319" data-thumb="assets/img/catalog/shell-1-sm.webp">
             <div class="gal" data-gal>
-              <ul class="gal__track">
+              <ul class="gal__track" tabindex="0" aria-label="תמונות, SHELL">
                 <li class="gal__slide"><img src="assets/img/catalog/shell-1-lg.webp" srcset="assets/img/catalog/shell-1-sm.webp 640w, assets/img/catalog/shell-1-lg.webp 1006w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="1006" height="1258" alt="חצאית גלישה SHELL שחורה עם פס מנומר לאורכה" loading="lazy" decoding="async"></li>
-                <li class="gal__slide"><img src="assets/img/catalog/shell-2-lg.webp" srcset="assets/img/catalog/shell-2-sm.webp 640w, assets/img/catalog/shell-2-lg.webp 954w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="954" height="1192" alt="חצאית SHELL, המעטפת פתוחה והשוליים המנומרים" loading="lazy" decoding="async"></li>
+                <li class="gal__slide"><img src="assets/img/catalog/shell-2-lg.webp" srcset="assets/img/catalog/shell-2-sm.webp 640w, assets/img/catalog/shell-2-lg.webp 954w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="954" height="1192" alt="חצאית SHELL, המעטפת נפתחת לאורך הפס" loading="lazy" decoding="async"></li>
               </ul>
               <div class="gal__dots">
                 <button class="gal__dot" type="button" aria-current="true" aria-label="תמונה 1 מתוך 2"></button>
@@ -139,7 +139,7 @@
             <div class="card__body">
               <h3 class="card__name latin" lang="en">SHELL</h3>
               <p class="card__price">319&nbsp;₪</p>
-              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20SHELL" target="_blank" rel="noopener" data-add aria-label="הוספת דגם SHELL לסל">
+              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20SHELL" target="_blank" rel="noopener" data-add aria-label="הוספה לסל, SHELL">
                 <span class="card__cta-add"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>הוספה לסל</span>
                 <span class="card__cta-done" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>נוסף לסל</span>
               </a>
@@ -148,7 +148,7 @@
 
           <li class="card" data-reveal="card" style="--i:3" data-product="classic" data-name="THE CLASSIC" data-price="299" data-thumb="assets/img/catalog/classic-1-sm.webp">
             <div class="gal" data-gal>
-              <ul class="gal__track">
+              <ul class="gal__track" tabindex="0" aria-label="תמונות, THE CLASSIC">
                 <li class="gal__slide"><img src="assets/img/catalog/classic-1-lg.webp" srcset="assets/img/catalog/classic-1-sm.webp 480w, assets/img/catalog/classic-1-lg.webp 760w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="760" height="950" alt="חצאית גלישה THE CLASSIC שחורה חלקה" loading="lazy" decoding="async"></li>
                 <li class="gal__slide"><img src="assets/img/catalog/classic-2-lg.webp" srcset="assets/img/catalog/classic-2-sm.webp 480w, assets/img/catalog/classic-2-lg.webp 760w" sizes="(min-width: 1100px) 310px, (min-width: 700px) 46vw, 92vw" width="760" height="950" alt="חצאית THE CLASSIC, מבט נוסף" loading="lazy" decoding="async"></li>
               </ul>
@@ -162,7 +162,7 @@
             <div class="card__body">
               <h3 class="card__name latin" lang="en">THE CLASSIC</h3>
               <p class="card__price">299&nbsp;₪</p>
-              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20THE%20CLASSIC" target="_blank" rel="noopener" data-add aria-label="הוספת דגם THE CLASSIC לסל">
+              <a class="btn btn--sea card__cta" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%AA%20%D7%93%D7%92%D7%9D%20THE%20CLASSIC" target="_blank" rel="noopener" data-add aria-label="הוספה לסל, THE CLASSIC">
                 <span class="card__cta-add"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>הוספה לסל</span>
                 <span class="card__cta-done" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>נוסף לסל</span>
               </a>
@@ -211,9 +211,9 @@
   <footer class="foot sheet on-sea">
     <div class="wrap foot__inner">
       <!-- LOGO-FOOT --><svg class="foot__logo" viewBox="0 0 685.4 592.0" role="img" aria-label="Tevel – Where fabric flows"><use href="#logo-mark"/><use href="#logo-word"/><use href="#logo-tag"/></svg><!-- /LOGO-FOOT -->
-      <a class="btn btn--line" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A2%D7%9C%20%D7%97%D7%A6%D7%90%D7%99%D7%95%D7%AA%20%D7%94%D7%92%D7%9C%D7%99%D7%A9%D7%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>לשאלות בוואטסאפ</a>
+      <a class="btn btn--line" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%A9%D7%90%D7%9C%D7%94%20%D7%A2%D7%9C%20%D7%97%D7%A6%D7%90%D7%99%D7%95%D7%AA%20%D7%94%D7%92%D7%9C%D7%99%D7%A9%D7%94" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>לשאלות בוואטסאפ</a>
       <ul class="foot__links">
-        <li><a class="latin" href="tel:+972587656444">058‑765‑6444</a></li>
+        <li><a class="latin" href="tel:+972587656444">058-765-6444</a></li>
         <li><a class="latin" href="https://www.instagram.com/tevelaa/" target="_blank" rel="noopener" lang="en">@tevelaa</a></li>
       </ul>
       <p class="foot__legal latin" lang="en">© 2026 Tevel</p>
@@ -222,18 +222,18 @@
 
   <div class="dock">
     <a class="dock__ig" href="https://www.instagram.com/tevelaa/" target="_blank" rel="noopener" aria-label="Tevel באינסטגרם"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ig"/></svg></a>
-    <a class="dock__wa" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%D7%A2%D7%9C%20%D7%97%D7%A6%D7%90%D7%99%D7%95%D7%AA%20%D7%94%D7%92%D7%9C%D7%99%D7%A9%D7%94" target="_blank" rel="noopener" aria-label="Tevel בוואטסאפ"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg></a>
+    <a class="dock__wa" href="https://wa.me/972587656444?text=%D7%94%D7%99%D7%99%2C%20%D7%99%D7%A9%20%D7%9C%D7%99%20%D7%A9%D7%90%D7%9C%D7%94%20%D7%A2%D7%9C%20%D7%97%D7%A6%D7%90%D7%99%D7%95%D7%AA%20%D7%94%D7%92%D7%9C%D7%99%D7%A9%D7%94" target="_blank" rel="noopener" aria-label="Tevel בוואטסאפ"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg></a>
   </div>
 
   <div class="cart" id="cart" data-wa="972587656444" data-emb-price="40" hidden>
     <div class="cart__scrim" data-cart-close></div>
     <div class="cart__panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
-      <header class="cart__head">
+      <div class="cart__head">
         <h2 class="cart__title display" id="cart-title">הסל</h2>
         <button class="cart__close" type="button" data-cart-close aria-label="סגירת הסל">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
         </button>
-      </header>
+      </div>
 
       <div class="cart__body">
         <p class="cart__undo" data-cart-undo hidden><span data-cart-undo-text></span><button type="button" data-cart-undo-btn>ביטול</button></p>
@@ -245,11 +245,11 @@
         </div>
       </div>
 
-      <footer class="cart__foot" data-cart-foot hidden>
+      <div class="cart__foot" data-cart-foot hidden>
         <p class="cart__total"><span>סה״כ</span><strong class="display" data-cart-total>0&nbsp;₪</strong></p>
         <a class="btn btn--sea cart__send" href="https://wa.me/972587656444" target="_blank" rel="noopener" data-cart-send><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>מעבר לוואטסאפ</a>
         <button class="cart__more" type="button" data-cart-close>המשך קנייה</button>
-      </footer>
+      </div>
     </div>
   </div>
 
@@ -277,7 +277,7 @@
         </label>
         <div class="field" data-emb-field hidden>
           <label class="field__label">הטקסט לרקמה</label>
-          <input class="field__input" type="text" maxlength="24" dir="auto" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-emb-text>
+          <input class="field__input" type="text" maxlength="40" dir="auto" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-emb-text>
         </div>
       </div>
     </li>

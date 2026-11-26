@@ -500,11 +500,11 @@ button {
 }
 
 .hero__toggle .i-play,
-.hero__toggle[aria-pressed="true"] .i-pause {
+.hero__toggle[data-state="paused"] .i-pause {
   display: none;
 }
 
-.hero__toggle[aria-pressed="true"] .i-play {
+.hero__toggle[data-state="paused"] .i-play {
   display: block;
 }
 
@@ -742,9 +742,9 @@ button {
   top: 50%;
   display: none;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  margin-top: -20px;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
   border-radius: 50%;
   background: rgba(250, 246, 239, 0.92);
   color: var(--ink);
@@ -1099,6 +1099,7 @@ button {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  white-space: nowrap;
   transition: color 0.3s var(--ease);
 }
 
@@ -1312,7 +1313,7 @@ button {
   display: grid;
   place-items: center;
   width: 44px;
-  height: 42px;
+  height: 44px;
   border-radius: 999px;
   transition: background-color 0.2s var(--ease), opacity 0.2s var(--ease);
 }
@@ -1341,6 +1342,7 @@ button {
 }
 
 .line__remove {
+  min-width: 44px;
   min-height: 44px;
   padding: 0 4px;
   color: var(--ink-soft);
@@ -1440,6 +1442,41 @@ button {
   border-color: var(--sea);
   box-shadow: 0 0 0 3px rgba(20, 67, 76, 0.16);
   outline: 0;
+}
+
+/* very narrow phones: the same cart, tightened */
+@media (max-width: 359px) {
+  .cart__panel {
+    width: calc(100% - 16px);
+  }
+  .cart__head {
+    padding-inline-start: 16px;
+  }
+  .cart__body {
+    padding-inline: 16px;
+  }
+  .cart__foot {
+    padding-inline: 16px;
+  }
+  .line {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .line__img {
+    width: 56px;
+    height: 70px;
+    border-radius: 12px 12px 6px 6px;
+  }
+  .line__name {
+    font-size: 1.125rem;
+    letter-spacing: 0.08em;
+  }
+  .line__ctrl {
+    gap: 6px;
+  }
+  .qty__n {
+    min-width: 16px;
+  }
 }
 
 .cart__empty {

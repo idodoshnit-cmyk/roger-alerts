@@ -18,7 +18,7 @@
 
   function setToggle(paused) {
     if (!toggle) return;
-    toggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    toggle.dataset.state = paused ? 'paused' : 'playing';
     toggle.setAttribute('aria-label', paused ? toggle.dataset.labelPlay : toggle.dataset.labelPause);
   }
 
@@ -176,7 +176,7 @@
   var MAX_QTY = 10;
   var NBSP = ' ';
 
-  var products = {};
+  var products = Object.create(null);
   $$('[data-product]').forEach(function (el) {
     products[el.dataset.product] = {
       id: el.dataset.product,
@@ -228,14 +228,14 @@
     try { raw = JSON.parse(window.localStorage.getItem(STORE_KEY)); } catch (e) { raw = null; }
     if (!Array.isArray(raw)) return [];
     return raw.filter(function (item) {
-      return item && products[item.id];
+      return item && typeof item.id === 'string' && Object.prototype.hasOwnProperty.call(products, item.id);
     }).map(function (item) {
       return {
         k: 'l' + (++uid),
         id: item.id,
         qty: Math.min(MAX_QTY, Math.max(1, parseInt(item.qty, 10) || 1)),
         emb: !!item.emb,
-        text: String(item.text || '').slice(0, 24)
+        text: String(item.text || '').slice(0, 40)
       };
     });
   }
@@ -261,15 +261,15 @@
     window.setTimeout(function () { el.classList.remove('is-bump'); }, 520);
   }
 
-  /* the order as one WhatsApp message */
+  /* The order as one WhatsApp message. Every line opens with a Hebrew word and keeps Latin names away
+     from the numbers, so it reads in the right order inside a right-to-left chat bubble. */
   function message() {
-    var lines = items.map(function (item) {
-      var line = 'דגם ' + products[item.id].name + ' × ' + item.qty;
-      if (item.emb) {
-        var text = item.text.trim();
-        line += ' + רקמה אישית' + (text ? ': "' + text + '"' : '');
-      }
-      return line + ' – ' + money(unitPrice(item) * item.qty);
+    var lines = [];
+    items.forEach(function (item) {
+      var line = 'דגם ' + products[item.id].name + ', כמות ' + item.qty;
+      if (item.emb) line += ', עם רקמה אישית';
+      lines.push(line + ' – ' + money(unitPrice(item) * item.qty));
+      if (item.emb && item.text.trim()) lines.push('הטקסט לרקמה: ' + item.text.trim());
     });
     return 'היי, אשמח להזמין:\n\n' + lines.join('\n') + '\n\nסה״כ: ' + money(total());
   }
@@ -287,7 +287,7 @@
       el.textContent = n;
     });
     openBtns.forEach(function (btn) {
-      btn.setAttribute('aria-label', has ? 'פתיחת הסל, ' + countLabel(n) : 'פתיחת הסל');
+      btn.setAttribute('aria-label', has ? 'פתיחת הסל, ' + (n === 1 ? 'פריט אחד' : n + ' פריטים') : 'פתיחת הסל');
     });
     save();
   }
@@ -313,7 +313,7 @@
     /* the mark keeps the plus sign on the left of the number in right-to-left text */
     $('[data-emb-price-label]', li).textContent = '\u200e+' + money(EMB_PRICE);
     $('.qty', li).setAttribute('aria-label', 'כמות, ' + product.name);
-    $('[data-remove]', li).setAttribute('aria-label', 'הסרת ' + product.name + ' מהסל');
+    $('[data-remove]', li).setAttribute('aria-label', 'הסרה, ' + product.name);
 
     var check = $('[data-emb]', li);
     var field = $('[data-emb-field]', li);
@@ -392,9 +392,17 @@
     undoTextEl.textContent = products[item.id].name + ' הוסר מהסל';
     undoEl.hidden = false;
     undoBtn.focus();
-    window.clearTimeout(undoTimer);
-    undoTimer = window.setTimeout(hideUndo, 7000);
+    armUndoTimer();
     announce(products[item.id].name + ' הוסר מהסל');
+  }
+
+  /* the undo offer stays while someone is on it (keyboard focus or pointer) */
+  function armUndoTimer() {
+    window.clearTimeout(undoTimer);
+    undoTimer = window.setTimeout(function () {
+      if (undoEl.contains(document.activeElement) || undoEl.matches(':hover')) armUndoTimer();
+      else hideUndo();
+    }, 10000);
   }
 
   function hideUndo() {
@@ -414,7 +422,7 @@
     render(back.item.k);
     sync(true);
     panel.focus();
-    announce(products[back.item.id].name + ' חזר לסל');
+    announce(products[back.item.id].name + ' הוחזר לסל');
   });
 
   /* open / close */
@@ -450,6 +458,7 @@
   }
 
   openBtns.forEach(function (btn) {
+    btn.hidden = false;
     btn.setAttribute('aria-expanded', 'false');
     btn.addEventListener('click', openCart);
   });
