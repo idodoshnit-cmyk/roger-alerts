@@ -86,14 +86,39 @@
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
-        heroVisible = entries[0].isIntersecting;
+        heroVisible = entries[0].intersectionRatio > 0.2;
         if (heroVisible) {
           if (!userPaused) play();
         } else if (!video.paused) {
           video.pause();
         }
-      }, { threshold: 0.05 }).observe(hero);
+      }, { threshold: [0, 0.2] }).observe(hero);
     }
+  }
+
+  /* ---------- Instagram and WhatsApp on the side ---------- */
+
+  var social = $('.social');
+  var footCta = $('.foot__cta');
+  if (social) {
+    if (footCta && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        social.classList.toggle('is-away', entries[0].isIntersecting);
+      }, { rootMargin: '0px 0px -40px 0px' }).observe(footCta);
+    }
+    var lastY = window.scrollY;
+    var idle = 0;
+    var narrow = window.matchMedia('(max-width: 899px)');
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY;
+      if (Math.abs(y - lastY) > 4) {
+        social.classList.toggle('is-tucked', narrow.matches && y > lastY && y > window.innerHeight * 0.6);
+        lastY = y;
+      }
+      window.clearTimeout(idle);
+      idle = window.setTimeout(function () { social.classList.remove('is-tucked'); }, 900);
+    }, { passive: true });
+    social.addEventListener('focusin', function () { social.classList.remove('is-tucked', 'is-away'); });
   }
 
   /* ---------- top bar: turns solid once the hero has scrolled away ---------- */
@@ -155,7 +180,12 @@
       el.addEventListener('click', function () { closeMenu(); });
     });
     $$('[data-menu-link]', menu).forEach(function (link) {
-      link.addEventListener('click', function () { closeMenu(false); });
+      link.addEventListener('click', function () {
+        closeMenu(false);
+        var target = document.querySelector(link.hash);
+        var heading = target && (target.matches('[tabindex]') ? target : target.querySelector('[tabindex="-1"]'));
+        if (heading) window.setTimeout(function () { heading.focus({ preventScroll: true }); }, 60);
+      });
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape' && menu.classList.contains('is-open')) closeMenu();
@@ -303,7 +333,35 @@
     var first = qvTrack.children[startAt || 0];
     if (first) qvTrack.scrollLeft += first.getBoundingClientRect().left - qvTrack.getBoundingClientRect().left;
     qvMark(startAt || 0);
+    zoomFrom(card, startAt || 0);
     qvPanel.focus({ preventScroll: true });
+  }
+
+  function zoomFrom(card, at) {
+    var srcImg = $$('.gal__slide img', card)[at];
+    var li = qvTrack.children[at];
+    var dstImg = li && li.firstChild;
+    if (reduceMotion.matches || !srcImg || !dstImg || !srcImg.animate) return;
+    var a = srcImg.closest('.gal').getBoundingClientRect();
+    if (a.bottom < 0 || a.top > window.innerHeight) return;
+    qv.classList.add('is-zooming');
+    var b = dstImg.getBoundingClientRect();
+    var endR = window.matchMedia('(min-width: 820px)').matches ? '0 28px 28px 0' : '28px 28px 0 0';
+    var c = new Image();
+    c.src = srcImg.currentSrc || srcImg.src;
+    c.alt = '';
+    c.className = 'fly fly--qv';
+    c.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(c);
+    dstImg.style.opacity = '0';
+    c.animate([
+      { left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', borderRadius: '22px 22px 0 0' },
+      { left: b.left + 'px', top: b.top + 'px', width: b.width + 'px', height: b.height + 'px', borderRadius: endR }
+    ], { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }).onfinish = function () {
+      dstImg.style.opacity = '';
+      if (c.parentNode) c.parentNode.removeChild(c);
+      qv.classList.remove('is-zooming');
+    };
   }
 
   function closeViewer(restore) {
@@ -357,7 +415,13 @@
     var EASE = 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
     var pos = 0;
     var step = 0;
-    var holds = { hover: false, view: true, page: false, user: false, drag: false };
+    var holds = { hover: false, view: true, page: false, user: false, drag: false, near: false };
+
+    function snapActive(i) {
+      all.forEach(function (s, k) { s.style.transition = 'none'; s.classList.toggle('is-active', k === i); });
+      void track.offsetWidth;
+      all.forEach(function (s) { s.style.transition = ''; });
+    }
 
     /* copies of the first pictures at the end make the loop seamless */
     var CLONES = 3;
@@ -393,7 +457,7 @@
       segs[k].setAttribute('aria-current', 'true');
       if (curEl) curEl.textContent = (k + 1 < 10 ? '0' : '') + (k + 1);
       /* make sure the next pictures are loading */
-      for (var t = pos; t < Math.min(pos + 4, all.length); t++) {
+      for (var t = pos; holds.near && t < Math.min(pos + 4, all.length); t++) {
         var im = $('img', all[t]);
         if (im && im.loading === 'lazy') im.loading = 'eager';
       }
@@ -402,6 +466,7 @@
     function go(target) {
       if (target < 0) {            /* before the first: jump to its copy at the end, then step back */
         pos = N;
+        snapActive(N);
         place(false);
         void track.offsetWidth;
         target = N - 1;
@@ -416,7 +481,7 @@
       if (pos >= N) {               /* on a copy: jump back to the real picture, unseen */
         pos -= N;
         place(false);
-        all.forEach(function (s, i) { s.classList.toggle('is-active', i === pos); });
+        snapActive(pos);
       }
     });
 
@@ -446,6 +511,13 @@
     document.addEventListener('visibilitychange', function () { holds.page = document.hidden; sync(); });
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) { holds.view = entries[0].isIntersecting; sync(); }, { threshold: 0.3 }).observe(slider);
+      var nearWatch = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting) return;
+        holds.near = true;
+        paint();
+        nearWatch.disconnect();
+      }, { rootMargin: '600px 0px' });
+      nearWatch.observe(slider);
     }
 
     /* drag: the strip follows the finger, then settles on the nearest picture */
@@ -603,7 +675,7 @@
       var line = 'דגם ' + products[item.id].name + ', כמות ' + item.qty;
       if (item.emb) line += ', עם רקמה אישית';
       lines.push(line + ' – ' + money(unitPrice(item) * item.qty));
-      if (item.emb && item.text.trim()) lines.push('הטקסט לרקמה: ' + item.text.trim());
+      if (item.emb) lines.push('הטקסט לרקמה: ' + (item.text.trim() || '___'));
     });
     return 'היי, אשמח להזמין:\n\n' + lines.join('\n') + '\n\nסה״כ: ' + money(total());
   }
@@ -637,6 +709,13 @@
   function updateLine(li, item) {
     $('[data-qty]', li).textContent = item.qty;
     $('[data-line-price]', li).textContent = money(unitPrice(item) * item.qty);
+    var unit = $('[data-line-unit]', li);
+    if (unit) {
+      unit.hidden = item.qty < 2 && !item.emb;
+      unit.textContent = item.qty > 1
+        ? item.qty + ' × ' + money(unitPrice(item))
+        : money(products[item.id].price) + ' + ' + money(EMB_PRICE);
+    }
     $('[data-dec]', li).disabled = item.qty <= 1;
     $('[data-inc]', li).disabled = item.qty >= MAX_QTY;
   }
@@ -651,7 +730,7 @@
     var img = $('.line__img', li);
     img.src = product.thumb;
     img.alt = '';
-    $('.line__name', li).textContent = product.name;
+    $('.line__name .latin', li).textContent = product.name;
     /* the mark keeps the plus sign on the left of the number in right-to-left text */
     $('[data-emb-price-label]', li).textContent = '\u200e+' + money(EMB_PRICE);
     $('.qty', li).setAttribute('aria-label', 'כמות, ' + product.name);
@@ -681,13 +760,25 @@
       sync(true);
       announce(product.name + ', כמות ' + item.qty);
     });
-    $('[data-remove]', li).addEventListener('click', function () { removeItem(item); });
+    $('[data-remove]', li).addEventListener('click', function () {
+      if (li.dataset.leaving) return;
+      if (reduceMotion.matches || !li.animate) { removeItem(item); return; }
+      li.dataset.leaving = '1';
+      li.style.overflow = 'hidden';
+      li.animate([
+        { height: li.offsetHeight + 'px', opacity: 1, paddingTop: '20px', paddingBottom: '20px' },
+        { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px' }
+      ], { duration: 320, easing: 'cubic-bezier(0.5, 0, 0.2, 1)', fill: 'forwards' }).onfinish = function () { removeItem(item); };
+    });
     check.addEventListener('change', function () {
       item.emb = check.checked;
       field.hidden = !item.emb;
       updateLine(li, item);
       sync(true);
       if (item.emb) input.focus();
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
     });
     input.addEventListener('input', function () {
       item.text = input.value;
@@ -721,6 +812,7 @@
     hideUndo();
     sync(true);
     countEls.forEach(bump);
+    if (minibar && !minibar.hidden) { bump(miniCount); bump(miniTotal); }
     announce(products[id].name + ' נוסף לסל. ' + countLabel(count()));
   }
 
@@ -854,32 +946,37 @@
   $$('[data-add]').forEach(function (btn) {
     var card = btn.closest('[data-product]');
     if (!card) return;
-    btn.setAttribute('role', 'button');
     btn.addEventListener('click', function (event) {
       event.preventDefault();
       btn.classList.add('is-added');
       window.setTimeout(function () { btn.classList.remove('is-added'); }, 1600);
       flyToBag(card, function () { addItem(card.dataset.product); });
     });
-    btn.addEventListener('keydown', function (event) {
-      if (event.key === ' ') {
-        event.preventDefault();
-        btn.click();
-      }
-    });
   });
 
   var qvAdd = qv && $('[data-qv-add]', qv);
   if (qvAdd) {
     qvAdd.addEventListener('click', function () {
-      if (!qvProduct) return;
+      if (!qvProduct || qvAdd.disabled) return;
       addItem(qvProduct);
-      closeViewer(false);
-      if (barCart) {
-        barCart.classList.remove('is-catch');
-        void barCart.offsetWidth;
-        barCart.classList.add('is-catch');
-      }
+      var path = qvAdd.querySelector('path');
+      var label = qvAdd.lastChild;
+      path.setAttribute('d', 'M3 8.5l3.2 3.2L13 5');
+      label.nodeValue = 'נוסף לסל';
+      qvAdd.disabled = true;
+      window.setTimeout(function () {
+        closeViewer();
+        if (barCart) {
+          barCart.classList.remove('is-catch');
+          void barCart.offsetWidth;
+          barCart.classList.add('is-catch');
+        }
+        window.setTimeout(function () {
+          path.setAttribute('d', 'M8 3v10M3 8h10');
+          label.nodeValue = 'הוספה לסל';
+          qvAdd.disabled = false;
+        }, 400);
+      }, reduceMotion.matches ? 0 : 550);
     });
   }
 

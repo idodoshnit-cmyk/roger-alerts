@@ -3164,3 +3164,592 @@ html.has-cart .minibar {
     font-size: clamp(0.875rem, 4.1vw, 1.0625rem);
   }
 }
+
+/* ======================= v6: merged changes from the ten reviews ======================= */
+
+:root {
+  --wa-deep: #0f7a40;
+  --wa-hover: #0b6634;
+  --sec: clamp(64px, 10vw, 112px);
+  --shadow-pop: 0 10px 24px -8px rgba(12, 46, 53, 0.38);
+}
+
+html {
+  scroll-padding-bottom: 96px;
+}
+
+html.has-cart {
+  scroll-padding-bottom: 168px;
+}
+
+.display {
+  font-weight: 380;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  --media-h: min(130vw, calc(100svh - 250px));
+  min-height: max(calc(var(--media-h) + 210px), calc(100svh - 16px));
+}
+
+.hero__foot {
+  align-content: center;
+  padding: 4px var(--gutter) calc(var(--r-l) + 12px);
+}
+
+@keyframes settle {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes rise-svg {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero__poster img {
+  animation: settle 1.6s var(--ease-out) both;
+}
+
+.hero__logo use {
+  animation: rise-svg 1s var(--ease-out) both;
+}
+
+.hero__sub,
+.hero__cta {
+  animation: rise 1s var(--ease-out) both;
+}
+
+.hero__logo use:nth-of-type(1) {
+  animation-delay: 0.15s;
+}
+.hero__logo use:nth-of-type(2) {
+  animation-delay: 0.26s;
+}
+.hero__logo use:nth-of-type(3) {
+  animation-delay: 0.38s;
+}
+.hero__sub {
+  animation-delay: 0.5s;
+}
+.hero__cta {
+  animation-delay: 0.62s;
+}
+
+.hero__cta svg {
+  animation: nudge 1.4s var(--ease) 2.4s 2;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: none;
+  }
+  40% {
+    transform: translateY(4px);
+  }
+  70% {
+    transform: translateY(-1px);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .hero__poster {
+    animation: hero-drift linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 100vh;
+  }
+}
+
+@media (min-width: 900px) {
+  .hero {
+    height: 100svh;
+    min-height: 600px;
+  }
+  .hero__shade {
+    background:
+      radial-gradient(34% 46% at 78% 72%, rgba(9, 36, 42, 0.34) 0%, rgba(9, 36, 42, 0) 72%),
+      linear-gradient(180deg, rgba(9, 36, 42, 0.36) 0%, rgba(9, 36, 42, 0.04) 26%, rgba(9, 36, 42, 0) 46%, rgba(9, 36, 42, 0.22) 72%, rgba(9, 36, 42, 0.55) 100%);
+  }
+  .hero__inner {
+    margin-inline: max(calc(var(--gutter) + 150px), calc((100% - var(--wrap)) / 2)) 0;
+  }
+}
+
+/* ---------- section seams: every band slides over the one before ---------- */
+
+.catalog {
+  padding-bottom: calc(var(--sec) + var(--r-l));
+}
+
+.emb {
+  padding-bottom: calc(var(--sec) + var(--r-l));
+}
+
+.emb.sheet,
+.shots.sheet {
+  border-radius: var(--r-l) var(--r-l) 0 0;
+}
+
+/* ---------- product cards ---------- */
+
+.card__box {
+  border-radius: 16px;
+}
+
+.reveal-on [data-reveal="card"] .card__box {
+  clip-path: inset(0 0 100% 0 round 16px);
+}
+
+.reveal-on [data-reveal="card"].is-in .card__box {
+  clip-path: inset(0 0 0 0 round 16px);
+}
+
+.card__price {
+  line-height: 1.25;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+.card__cta {
+  margin-top: 12px;
+}
+
+.gal__dot::before {
+  box-shadow: 0 0 0 1px rgba(19, 34, 38, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25);
+  opacity: 0.85;
+}
+
+.gal__zoom {
+  box-shadow: 0 1px 4px rgba(19, 34, 38, 0.18);
+}
+
+.card[data-product="pearl"] .gal__slide:nth-child(2) img {
+  object-position: 12% 50%;
+}
+
+.card[data-product="classic"] .gal__slide img {
+  object-position: 30% 50%;
+}
+
+/* photos change without a pale moment: the old one stays under the new one until it is covered */
+.gal__slide {
+  transition: opacity 0s linear 0.8s;
+}
+
+.gal__slide.is-on {
+  transition: opacity 0.8s var(--ease);
+}
+
+.reveal-on [data-reveal="card"].is-done .gal__slide img {
+  transform: scale(1.035);
+  transition: transform 1.4s var(--ease-out);
+}
+
+.reveal-on [data-reveal="card"].is-done .gal__slide.is-on img {
+  transform: none;
+}
+
+@media (max-width: 559px) {
+  .card__strip {
+    padding: 12px 12px 14px;
+    gap: 1px;
+  }
+  .card__name {
+    font-size: clamp(0.8125rem, 4.2vw, 1.125rem);
+  }
+  .card__name .latin {
+    letter-spacing: 0.02em;
+  }
+  .card__price {
+    font-size: 0.9375rem;
+    color: var(--ink-soft);
+  }
+}
+
+@media (max-width: 359px) {
+  .card__name {
+    font-size: 0.8125rem;
+  }
+  .card__name .latin {
+    letter-spacing: 0.01em;
+  }
+}
+
+@media (min-width: 560px) {
+  .card__box {
+    border-radius: 22px;
+  }
+  .reveal-on [data-reveal="card"] .card__box {
+    clip-path: inset(0 0 100% 0 round 22px);
+  }
+  .reveal-on [data-reveal="card"].is-in .card__box {
+    clip-path: inset(0 0 0 0 round 22px);
+  }
+}
+
+@media (min-width: 1100px) {
+  .cards {
+    max-width: 880px;
+    margin-inline: auto;
+    gap: 64px 40px;
+  }
+  .catalog .sec-title {
+    max-width: 880px;
+    margin-inline: auto;
+  }
+  .card__cta {
+    font-size: 1.125rem;
+  }
+}
+
+/* ---------- embroidery ---------- */
+
+.emb__img {
+  margin-inline: 0;
+  border-radius: 22px;
+}
+
+.emb__img img {
+  transform-origin: 38% 10%;
+}
+
+@keyframes push {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* ---------- gallery ---------- */
+
+.slide {
+  border-radius: 22px;
+}
+
+/* ---------- photo viewer ---------- */
+
+.qv__name {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-right: 0;
+}
+
+.qv__name .latin {
+  letter-spacing: 0.04em;
+}
+
+.qv__price {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+.qv__info {
+  background: #fff;
+}
+
+.qv__add:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.qv.is-zooming .qv__panel {
+  transform: none;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.fly--qv {
+  z-index: 66;
+  box-shadow: none;
+}
+
+/* ---------- cart ---------- */
+
+.line__name {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-right: 0;
+}
+
+.line__name .latin {
+  font-family: var(--font-name);
+  font-size: 1.1875rem;
+  letter-spacing: 0.1em;
+}
+
+.line__price {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: left;
+}
+
+.line__unit {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.line__img {
+  border-radius: 12px;
+}
+
+.field__input,
+.qty {
+  border-color: rgba(20, 67, 76, 0.6);
+}
+
+.field__input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
+
+.cart__undo button {
+  min-height: 44px;
+}
+
+.minibar__count,
+.minibar__total {
+  display: inline-block;
+}
+
+.minibar__count.is-bump,
+.minibar__total.is-bump {
+  animation: bump 0.5s var(--spring);
+}
+
+.cart__send {
+  box-shadow: var(--shadow-pop);
+}
+
+@media (hover: hover) {
+  .cart__send:hover,
+  .pill--wa:hover {
+    background: var(--wa-hover);
+  }
+}
+
+.bar__count {
+  font-size: 12px;
+}
+
+/* ---------- footer ---------- */
+
+.pill small {
+  opacity: 1;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+}
+
+.foot .pill {
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+}
+
+.foot {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+}
+
+html.has-cart .foot {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- menu ---------- */
+
+.menu__head {
+  flex-direction: row-reverse;
+  margin-inline-end: 0;
+  margin-inline-start: -12px;
+}
+
+.menu__social {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.menu__pill {
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 16px;
+}
+
+/* ---------- Instagram and WhatsApp on the side ---------- */
+
+.social {
+  animation: social-in 1s var(--spring) 1.2s backwards;
+  transition: translate 0.5s var(--ease-out), opacity 0.3s var(--ease), visibility 0s linear 0s;
+}
+
+html.has-cart .social {
+  transform: none;
+  translate: 0 calc(-1 * (56px + 12px));
+}
+
+/* the side buttons step aside while you scroll down the shop, and when the footer's own buttons are on screen */
+.social.is-tucked {
+  translate: calc(100% + 24px) 0;
+}
+
+html.has-cart .social.is-tucked {
+  translate: calc(100% + 24px) calc(-1 * (56px + 12px));
+}
+
+.social.is-away {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: translate 0.4s var(--ease-out), opacity 0.3s var(--ease), visibility 0s linear 0.4s;
+}
+
+/* the glow: a ring that grows and fades (moves on the compositor, no repaint) */
+.social a::before {
+  z-index: -1;
+  background: rgba(var(--glow), 0.5);
+  box-shadow: none;
+  animation: glow 3.6s var(--ease-out) infinite;
+}
+
+.social__ig::before {
+  animation-delay: 1.8s !important;
+}
+
+@keyframes glow {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* the shine sweeps a few times after arrival, then rests */
+.social a::after {
+  animation: shine 4.2s var(--ease) 1.6s 3;
+}
+
+.social__ig::after {
+  animation-delay: 3.7s !important;
+}
+
+/* names beside the buttons only where there is room for them */
+@media (min-width: 900px) {
+  .social__tip {
+    opacity: 0;
+    transform: translate3d(8px, -50%, 0);
+    background: var(--ink);
+  }
+}
+
+@media (min-width: 1440px) {
+  .social a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: auto;
+    height: 52px;
+    padding: 0 14px 0 20px;
+    border-radius: 999px;
+  }
+  .social a > svg {
+    width: 24px;
+    height: 24px;
+  }
+  .social__tip {
+    position: static;
+    padding: 0;
+    background: none;
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    opacity: 1;
+    transform: none;
+  }
+  .social a:hover {
+    transform: translateX(-4px);
+  }
+  .social a:hover .social__tip {
+    transform: none;
+  }
+}
+
+@media (min-width: 700px) {
+  html.has-cart .social {
+    translate: none;
+  }
+  html.has-cart .social.is-tucked {
+    translate: calc(100% + 24px) 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .social {
+    gap: 10px;
+  }
+  .social a {
+    width: 50px;
+    height: 50px;
+  }
+  .social a > svg {
+    width: 24px;
+    height: 24px;
+  }
+  html.has-cart .social {
+    translate: 0 -66px;
+  }
+  html.has-cart .social.is-tucked {
+    translate: calc(100% + 24px) -66px;
+  }
+  /* on arrival the names show once beside the buttons */
+  .social__tip {
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 4px 14px rgba(6, 26, 31, 0.18);
+    animation: tip-hint 3.6s var(--ease) 2.4s both;
+  }
+}
+
+@keyframes tip-hint {
+  0% {
+    opacity: 0;
+    transform: translate3d(8px, -50%, 0);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(8px, -50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minibar__count.is-bump,
+  .minibar__total.is-bump {
+    animation: none;
+  }
+  .social__tip {
+    animation: none !important;
+  }
+}
