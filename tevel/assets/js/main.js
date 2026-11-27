@@ -77,12 +77,16 @@
       });
     }
 
-    if (reduceMotion.matches || saveData) {
-      userPaused = true;
-      setToggle(true);
-    } else {
-      play();
-    }
+    /* the clip always starts by itself; if the phone refused (low power mode), the first touch or scroll starts it */
+    play();
+    var kick = function () {
+      if (!userPaused && heroVisible && video.paused) play();
+    };
+    ['touchstart', 'pointerdown', 'scroll', 'keydown'].forEach(function (type) {
+      window.addEventListener(type, kick, { passive: true });
+    });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); });
+    video.addEventListener('canplay', kick);
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
@@ -416,7 +420,7 @@
     var pos = 0;
     var step = 0;
     var holds = { hover: false, focus: false, view: true, page: false, user: false, drag: false, near: false };
-    var DUR = 2600;                 /* time on each picture */
+    var DUR = 2000;                 /* time on each picture */
     var elapsed = 0;
     slider.style.setProperty('--dur', DUR + 'ms');
 
@@ -466,17 +470,10 @@
       }
     }
 
+    /* one picture at a time: the next one fades in over the last */
     function go(target) {
-      if (target < 0) {            /* before the first: jump to its copy at the end, then step back */
-        pos = N;
-        snapActive(N);
-        place(false);
-        void track.offsetWidth;
-        target = N - 1;
-      }
-      pos = target;
+      pos = ((target % N) + N) % N;
       elapsed = 0;
-      place(!reduceMotion.matches);
       paint();
     }
 
