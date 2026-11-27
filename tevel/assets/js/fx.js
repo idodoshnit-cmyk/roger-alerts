@@ -1,5 +1,5 @@
 /* Tevel – motion layer: hero parallax, ribbons that answer the scroll, titles word by word,
-   card tilt and light, magnetic buttons, the live embroidery preview. Everything here is decoration:
+   card tilt and light, magnetic buttons. Everything here is decoration:
    the page works the same without it. */
 (function () {
   'use strict';
@@ -157,47 +157,4 @@
     });
   }
 
-  /* ---------- embroidery preview: type a name, see it stitched ---------- */
-  var tryBox = $('[data-try]');
-  if (tryBox) {
-    var input = $('[data-try-input]', tryBox);
-    var svg = $('.try__svg', tryBox);
-    var texts = $$('[data-try-text]', tryBox);
-    var fallback = texts[0] ? texts[0].textContent : '';
-    var sewTimer = 0;
-    var fit = function () {
-      /* shrink long names so they stay on the cloth */
-      texts.forEach(function (t) { t.style.fontSize = ''; });
-      var len = 0;
-      try { len = texts[1].getComputedTextLength(); } catch (err) { len = 0; }
-      var max = 470;
-      if (len > max) {
-        var size = Math.max(30, Math.floor(76 * max / len));
-        texts.forEach(function (t) { t.style.fontSize = size + 'px'; });
-      }
-    };
-    var sew = function () {
-      if (reduce.matches) return;
-      svg.classList.remove('is-sewing');
-      void svg.getBoundingClientRect();
-      svg.classList.add('is-sewing');
-    };
-    if (input) {
-      input.addEventListener('input', function () {
-        var v = input.value.replace(/\s+/g, ' ').trim() || fallback;
-        texts.forEach(function (t) { t.textContent = v; });
-        fit();
-        window.clearTimeout(sewTimer);
-        sewTimer = window.setTimeout(sew, 160);
-      });
-      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') input.blur(); });
-    }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-    if ('IntersectionObserver' in window) {
-      var to = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) { sew(); to.disconnect(); }
-      }, { threshold: 0.5 });
-      to.observe(svg);
-    }
-  }
 })();
