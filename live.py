@@ -246,6 +246,56 @@ def daily_meta(ticker, today):
             "avg_vol20": float(d["Volume"].iloc[-20:].mean())}
 
 
+# ---------- split guard (coordinator-approved fix 2026-11-27) ----------
+# On a reverse split day Yahoo's daily bars can still hold the OLD price (SPRC 11-27: 0.179 -> 1.20 = fake +548% gap,
+# also NUWE, VCIG, GOVX, ITP...). For a huge gap, ask TradingView for the split-adjusted previous close and fix
+# prev_close and the 20-day volume. If it can't be checked and the gap is > 100%, skip the stock for the day.
+SPLIT_CHECK_GAP = 0.40     # check every gap this big
+SPLIT_SKIP_GAP = 1.00      # unchecked gap this big = skip
+
+def tv_prev_close(ticker, open_):
+    """Split-adjusted previous daily close from TradingView, or None. TV is 15 min late: if its session open (within 10%)
+    is not today's open yet, its 'close' is still the previous close; otherwise 'close[1]' is."""
+    import requests
+    r = requests.post("https://scanner.tradingview.com/america/scan", timeout=10, json={
+        "filter": [{"left": "name", "operation": "equal", "right": ticker}],
+        "columns": ["name", "open", "close", "close[1]"], "range": [0, 5]}).json()
+    for row in r.get("data", []):
+        name, tv_open, close, close1 = row["d"]
+        if name != ticker or not close:
+            continue
+        if tv_open and abs(tv_open / open_ - 1) < 0.10 and close1:   # gaps checked are 40%+, so yesterday's open is far off
+            return float(close1)
+        return float(close)
+    return None
+
+def split_guard(meta, open_):
+    """Fix meta in place once a day. Returns False when the stock must be skipped today."""
+    if "split_ok" in meta:
+        return meta["split_ok"]
+    meta["split_ok"] = True
+    gap = open_ / meta["prev_close"] - 1
+    if gap < SPLIT_CHECK_GAP:
+        return True
+    try:
+        tvp = tv_prev_close(meta["ticker"], open_)
+    except Exception as e:
+        tvp = None
+        print(f"{meta['ticker']}: split check failed ({e})")
+    if tvp and tvp > 0:
+        ratio = tvp / meta["prev_close"]
+        if ratio > 1.5 or ratio < 1 / 1.5:
+            print(f"{meta['ticker']}: SPLIT fix, prev close {meta['prev_close']:.4g} -> {tvp:.4g} (x{ratio:.2f}), "
+                  f"gap {gap:.0%} -> {open_ / tvp - 1:.0%}")
+            meta["prev_close_raw"], meta["prev_close"], meta["avg_vol20"] = meta["prev_close"], tvp, meta["avg_vol20"] / ratio
+            meta["split_ratio"] = ratio
+        return True
+    if gap > SPLIT_SKIP_GAP:
+        print(f"{meta['ticker']}: gap {gap:.0%} can't be checked for a split, skipped today")
+        meta["split_ok"] = False
+    return meta["split_ok"]
+
+
 def today_bars(ticker):
     return hans._yahoo(ticker, range="1d", interval="5m", includePrePost="true")
 
@@ -260,6 +310,8 @@ def check(bars, meta, now):
     if len(reg) < 1 or meta["avg_vol20"] <= 0:
         return [], reg
     open_ = float(reg["Open"].iloc[0])
+    if not split_guard(meta, open_):
+        return [], reg
     if open_ / meta["prev_close"] - 1 < MIN_GAP or not (MIN_PRICE <= open_ <= MAX_PRICE):
         return [], reg
     typical = (reg["High"] + reg["Low"] + reg["Close"]) / 3
@@ -1017,6 +1069,8 @@ def run_live(late=False, carry=None):
                 b = fetched[t]
                 r0 = b[(b.index.time >= time(9, 30)) & (b.index.time < time(16, 0))] if b is not None else None
                 if r0 is not None and len(r0) and meta["prev_close"] > 0:
+                    if not split_guard(meta, float(r0["Open"].iloc[0])):
+                        continue
                     s.day_gaps[t] = float(r0["Open"].iloc[0]) / meta["prev_close"] - 1
             # same-candle ties for the 3-a-day slots go to the biggest gap first, as the training thread scores it
             for t, meta in sorted(metas.items(), key=lambda kv: -s.day_gaps.get(kv[0], 0.0)):
