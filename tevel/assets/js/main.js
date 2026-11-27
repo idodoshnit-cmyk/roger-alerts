@@ -25,7 +25,7 @@
   function loadVideo() {
     if (!video || video.dataset.loaded) return;
     var key = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
-    [['webm', 'video/webm'], ['mp4', 'video/mp4']].forEach(function (s) {
+    [['mp4', 'video/mp4'], ['webm', 'video/webm']].forEach(function (s) {
       var source = document.createElement('source');
       source.src = video.dataset.base + key + '.' + s[0];
       source.type = s[1];
@@ -35,13 +35,39 @@
     video.load();
   }
 
+  /* When the phone will not autoplay video (iPhone low power mode, some in-app viewers),
+     the same clip runs as an animated picture instead, which is never blocked. */
+  var anim = null;
+  var animTimer = 0;
+  function useAnim() {
+    if (!hero || userPaused) return;
+    if (!anim) {
+      var key = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
+      anim = document.createElement('img');
+      anim.className = 'hero__anim';
+      anim.alt = '';
+      anim.setAttribute('aria-hidden', 'true');
+      anim.decoding = 'async';
+      anim.addEventListener('load', function () { anim.classList.add('is-on'); });
+      anim.src = (video ? video.dataset.base : 'assets/video/hero-') + key + '-anim.webp';
+      var after = video || $('.hero__poster', hero);
+      after.parentNode.insertBefore(anim, after.nextSibling);
+    }
+    anim.hidden = false;
+    setToggle(false);
+  }
+  function dropAnim() {
+    if (anim) { anim.parentNode.removeChild(anim); anim = null; }
+  }
+
   function play() {
     if (!video) return;
     loadVideo();
+    window.clearTimeout(animTimer);
+    animTimer = window.setTimeout(function () { if (video.paused) useAnim(); }, 2200);
     var attempt = video.play();
     if (attempt && attempt.catch) {
-      /* autoplay refused (low power mode and the like): the still picture stays and the button offers play */
-      attempt.catch(function () { setToggle(true); });
+      attempt.catch(function () { useAnim(); });
     }
   }
 
@@ -49,9 +75,12 @@
     video.muted = true;
 
     video.addEventListener('playing', function () {
+      window.clearTimeout(animTimer);
       video.classList.add('is-on');
       setToggle(false);
+      if (anim) window.setTimeout(dropAnim, 800);
     });
+    video.addEventListener('error', useAnim, true);
     video.addEventListener('pause', function () {
       if (userPaused || !heroVisible) setToggle(true);
     });
@@ -67,8 +96,13 @@
 
     if (toggle) {
       toggle.addEventListener('click', function () {
-        if (video.paused) {
+        if (anim && !anim.hidden) {
+          userPaused = true;
+          anim.hidden = true;
+          setToggle(true);
+        } else if (video.paused) {
           userPaused = false;
+          if (anim) anim.hidden = false;
           play();
         } else {
           userPaused = true;
@@ -82,7 +116,7 @@
     var kick = function () {
       if (!userPaused && heroVisible && video.paused) play();
     };
-    ['touchstart', 'pointerdown', 'scroll', 'keydown'].forEach(function (type) {
+    ['touchstart', 'touchend', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (type) {
       window.addEventListener(type, kick, { passive: true });
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); });

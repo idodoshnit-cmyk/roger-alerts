@@ -4673,3 +4673,132 @@ html:not(.fx) .ribbon__band--back .ribbon__track {
 .slider__nav {
   z-index: 3;
 }
+
+/* the animated stand-in for the video, when the phone blocks autoplay */
+.hero__anim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
+}
+
+.hero__anim.is-on {
+  opacity: 1;
+}
+
+.hero__anim[hidden] {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .hero__anim {
+    object-position: 30% 50%;
+  }
+}
+
+/* ======================= v12: smoother, calmer, lighter on the phone ======================= */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* no full-screen grain layer: it cost smoothness while scrolling on phones */
+body::after {
+  content: none;
+  display: none;
+}
+
+/* reveals: a soft rise and fade, no blur (blur stutters on iPhone) */
+.reveal-on [data-reveal]:not([data-reveal="mask"]):not([data-reveal="wipe"]):not([data-reveal="card"]):not([data-reveal="stitch"]),
+.reveal-on [data-reveal=""] {
+  filter: none;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 1.1s var(--ease-out), transform 1.2s var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+
+.reveal-on [data-reveal].is-in:not([data-reveal="mask"]):not([data-reveal="wipe"]):not([data-reveal="card"]):not([data-reveal="stitch"]) {
+  transform: none;
+}
+
+/* gallery: the next photo fades in over the last, with no pale moment, and settles gently */
+.slide,
+.slide:not(.is-active) {
+  transition: opacity 0s linear 1s;
+}
+
+.slide.is-active {
+  transition: opacity 1s var(--ease);
+}
+
+.slide img {
+  transform: scale(1.06);
+  transition: transform 0s linear 1s;
+}
+
+.slide.is-active img {
+  transform: scale(1);
+  transition: transform 3.2s var(--ease-out);
+}
+
+/* soft wave edges between the bands, like water */
+.emb.sheet,
+.shots.sheet {
+  margin-top: 0;
+  border-radius: 0;
+}
+
+.emb::before,
+.shots::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  right: 0;
+  bottom: calc(100% - 1px);
+  height: clamp(28px, 4vw, 56px);
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cpath d='M0 38C240 6 480 6 720 30s480 30 720 0V60H0z' fill='%23f1eadd'/%3E%3C/svg%3E") no-repeat center bottom / 100% 100%;
+}
+
+.shots::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 60' preserveAspectRatio='none'%3E%3Cpath d='M0 26c240 28 480 28 720 6s480-28 720 0V60H0z' fill='%23faf6ef'/%3E%3C/svg%3E");
+}
+
+.catalog {
+  padding-bottom: calc(var(--sec) + 12px);
+}
+
+.emb {
+  padding-top: clamp(36px, 6vw, 80px);
+}
+
+/* buttons: a soft press */
+.btn,
+.card__cta,
+.pill,
+.bar__cart,
+.bar__menu {
+  transition: transform 0.35s var(--ease-out), background-color 0.35s var(--ease), color 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.btn:active,
+.card__cta:active,
+.pill:active,
+.bar__cart:active,
+.bar__menu:active {
+  transform: scale(0.96);
+  transition-duration: 0.12s;
+}
+
+/* catalogue photos: a slower, smoother cross-fade */
+.gal__slide.is-on {
+  transition: opacity 1s var(--ease);
+}
+
+.gal__slide {
+  transition: opacity 0s linear 1s;
+}
