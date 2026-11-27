@@ -25,7 +25,7 @@
   function loadVideo() {
     if (!video || video.dataset.loaded) return;
     var key = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
-    [['mp4', 'video/mp4'], ['webm', 'video/webm']].forEach(function (s) {
+    [['mp4', 'video/mp4']].forEach(function (s) {
       var source = document.createElement('source');
       source.src = video.dataset.base + key + '.' + s[0];
       source.type = s[1];
@@ -43,13 +43,21 @@
     if (!hero || userPaused) return;
     if (!anim) {
       var key = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
-      anim = document.createElement('img');
+      var base = (video ? video.dataset.base : 'assets/video/hero-') + key + '-anim.';
+      /* the full-quality clip as an animated AVIF; older phones take the WebP */
+      anim = document.createElement('picture');
       anim.className = 'hero__anim';
-      anim.alt = '';
       anim.setAttribute('aria-hidden', 'true');
-      anim.decoding = 'async';
-      anim.addEventListener('load', function () { anim.classList.add('is-on'); });
-      anim.src = (video ? video.dataset.base : 'assets/video/hero-') + key + '-anim.webp';
+      var source = document.createElement('source');
+      source.type = 'image/avif';
+      source.srcset = base + 'avif';
+      var pic = document.createElement('img');
+      pic.alt = '';
+      pic.decoding = 'async';
+      pic.addEventListener('load', function () { anim.classList.add('is-on'); });
+      pic.src = base + 'webp';
+      anim.appendChild(source);
+      anim.appendChild(pic);
       var after = video || $('.hero__poster', hero);
       after.parentNode.insertBefore(anim, after.nextSibling);
     }
