@@ -64,9 +64,9 @@ FOLLOW_UNTIL = time(13, 0)    # keep watching open trades until here (the job mu
 CLOSE_WARN = time(15, 45)     # Blink plan: last call to sell what is left before the close
 # Blink allows one open order per position (no trailing stop, no bracket), so James's plan for it:
 # stop at the setup stop; at the first step sell part and move the stop to entry; sell the rest at +15% or before the close.
-BLINK_PLAN = "tp15"   # new trades use this plan; trades already open keep the plan they were sent with
+BLINK_PLAN = "tp20"   # coordinator 2026-11-27 (user-delegated, practice): take-profit +20% (was tp15); stop stays 10%. New trades use this plan; trades already open keep the plan they were sent with
 # Blink plans: (first step, share sold there). Stop on the full size; at the first step sell that share, stop to entry; rest at +15% or close.
-BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3), "tp15": (0.15, 1.0)}   # tp15: one take-profit for everything
+BLINK_PLANS = {"half_p5_be_p15": (0.05, 1 / 2), "third_p5_be_p15": (0.05, 1 / 3), "tp15": (0.15, 1.0), "tp20": (0.20, 1.0)}   # tp15: one take-profit for everything
 PART_HE = {1 / 2: "חצי", 1 / 3: "שליש", 1.0: "הכול"}
 TRADE_SHARE = 0.5             # each trade uses half of the account
 MAX_TRADES = 2       # approved 2026-11-12 (practice): at most 2 trades a day (was 3)
@@ -85,7 +85,7 @@ WATCH_END = time(15, 55)
 
 # US half days (NYSE closes 13:00 New York): last entry 12:30, "sell before the close" email at 12:45, no afternoon
 # handoff, and the morning run sends the day summary itself. George 2026-11-26.
-EARLY_CLOSE_DAYS = {"2026-11-28", "2026-12-24"}
+EARLY_CLOSE_DAYS = {"2026-11-27", "2026-12-24"}   # day after Thanksgiving, Christmas Eve
 EARLY_CLOSE = datetime.now(ET).strftime("%Y-%m-%d") in EARLY_CLOSE_DAYS
 if EARLY_CLOSE:
     WATCH_LAST_ENTRY = time(12, 30)
@@ -1103,7 +1103,7 @@ def trades_from_emails(today):
         reg = regular(bars, end)
         before = [k for k in range(len(reg)) if reg.index[k] + timedelta(minutes=5) <= sent]
         body_ = it.get("body") or ""
-        pl = "tp15" if "טייק פרופיט אחד" in body_ else "third_p5_be_p15" if "שליש" in body_ else "half_p5_be_p15"
+        pl = ("tp20" if "(+20%)" in body_ else "tp15") if "טייק פרופיט אחד" in body_ else "third_p5_be_p15" if "שליש" in body_ else "half_p5_be_p15"
         t = {"ticker": tk, "entry": e, "stop": st, "target": e * (1 + BLINK_PLANS[pl][0]), "i": before[-1] if before else 0, "open": True,
              "r": None, "plan": pl, "setup": "?", "p": None, "shares": int(sh.group(1)) if sh else 0, "half": False, "bank": 0.0, "risk": e - st}
         t["k"] = t["i"]
