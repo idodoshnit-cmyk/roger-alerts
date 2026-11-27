@@ -714,7 +714,7 @@
       el.textContent = n;
     });
     openBtns.forEach(function (btn) {
-      btn.setAttribute('aria-label', has ? 'פתיחת הסל, ' + (n === 1 ? 'פריט אחד' : n + ' פריטים') : 'פתיחת הסל');
+      btn.setAttribute('aria-label', has ? 'פתיחת סל הקניות, ' + (n === 1 ? 'פריט אחד' : n + ' פריטים') : 'פתיחת סל הקניות');
     });
     var headCount = $('[data-cart-n]', cartEl);
     if (headCount) headCount.textContent = has ? n : '';

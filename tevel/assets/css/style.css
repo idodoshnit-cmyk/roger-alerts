@@ -4539,3 +4539,86 @@ html:not(.fx) .ribbon__band--back .ribbon__track {
 .shots.sheet {
   padding-top: clamp(40px, 6vw, 72px);
 }
+
+/* ======================= v10: one calm band, store cart, quieter embroidery ======================= */
+
+/* one straight band, gently moving */
+.ribbon {
+  padding-block: clamp(26px, 4vw, 48px) clamp(10px, 2vw, 24px);
+}
+
+.ribbon__band,
+.ribbon__band--front {
+  margin-inline: 0;
+  padding-block: 14px;
+  background: transparent;
+  color: var(--sea);
+  transform: none;
+  box-shadow: none;
+  border-block: 1px solid var(--line);
+}
+
+@media (max-width: 899px) {
+  .ribbon {
+    padding-block: 26px 10px;
+  }
+  .ribbon__band--front {
+    transform: none;
+  }
+}
+
+.ribbon__item {
+  font-size: clamp(1rem, 0.85rem + 0.8vw, 1.375rem);
+}
+
+.ribbon__item[lang="en"] {
+  font-size: clamp(0.8125rem, 0.72rem + 0.5vw, 1.0625rem);
+}
+
+.ribbon__mark {
+  width: clamp(22px, 2vw, 30px);
+  opacity: 0.7;
+}
+
+/* embroidery: no empty space under the price */
+.emb {
+  padding-bottom: calc(clamp(40px, 7vw, 88px) + var(--r-l));
+}
+
+/* the cart: a store trolley with its count on the corner, and a plain label */
+.bar__cart {
+  gap: 9px;
+  padding: 0 14px 0 16px;
+}
+
+.bar__cart-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.bar__cart-icon svg,
+.bar__cart svg {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.5;
+}
+
+.bar__cart-icon .bar__count {
+  position: absolute;
+  top: -7px;
+  inset-inline-end: -9px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  font-size: 11px;
+  box-shadow: 0 0 0 2px var(--sea-deep);
+}
+
+.bar.is-solid .bar__cart-icon .bar__count {
+  box-shadow: 0 0 0 2px var(--ivory);
+}
+
+.bar__cart-label {
+  white-space: nowrap;
+}

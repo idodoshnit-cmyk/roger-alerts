@@ -1,4 +1,4 @@
-/* Tevel – motion layer: hero parallax, ribbons that answer the scroll, titles word by word,
+/* Tevel – motion layer: hero parallax, a calm moving band, titles word by word,
    card tilt and light, magnetic buttons. Everything here is decoration:
    the page works the same without it. */
 (function () {
@@ -67,7 +67,7 @@
     lastY = y;
     boost += (Math.min(Math.abs(v), 80) * 0.9 - boost) * 0.12;
     if (!ribbonOn) return;
-    var speed = (reduce.matches ? 0 : 0.045) + boost * 0.02;
+    var speed = reduce.matches ? 0 : 0.03;
     ribbons.forEach(function (r) {
       if (!r.w) r.w = r.set.offsetWidth;
       if (!r.w) return;
