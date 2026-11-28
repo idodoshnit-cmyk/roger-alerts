@@ -1045,7 +1045,22 @@
     });
   }
 
+  var pendingEmb = false;           /* 'add embroidery' was pressed with an empty cart */
+
   function addItem(id) {
+    if (pendingEmb) {
+      pendingEmb = false;
+      var withEmb = { k: 'l' + (++uid), id: id, qty: 1, emb: true, text: '' };
+      items.push(withEmb);
+      render(withEmb.k);
+      hideUndo();
+      sync(true);
+      countEls.forEach(bump);
+      setEmbNote('');
+      announce(products[id].name + ' עם רקמה אישית נוסף לסל. ' + countLabel(count()));
+      window.setTimeout(function () { openCart(); focusEmb(withEmb.k); }, 350);
+      return;
+    }
     var existing = null;
     items.forEach(function (item) {
       if (item.id === id && !item.emb) existing = item;
@@ -1063,6 +1078,70 @@
     countEls.forEach(bump);
     if (minibar && !minibar.hidden) { bump(miniCount); bump(miniTotal); }
     announce(products[id].name + ' נוסף לסל. ' + countLabel(count()));
+  }
+
+  /* ---- 'add embroidery to the cart' in the embroidery section ---- */
+  var embAddBtn = $('[data-emb-add]');
+  var embAddLabel = $('[data-emb-add-label]');
+  var embNote = $('[data-emb-note]');
+
+  function setEmbNote(text) {
+    if (embNote) embNote.textContent = text;
+  }
+
+  function focusEmb(k) {
+    window.setTimeout(function () {
+      var input = document.getElementById('emb-text-' + k);
+      if (!input) return;
+      var line = input.closest('.line');
+      if (line) {
+        line.scrollIntoView({ block: 'nearest', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        line.classList.remove('is-flash');
+        void line.offsetWidth;
+        line.classList.add('is-flash');
+      }
+      input.focus({ preventScroll: true });
+    }, 420);
+  }
+
+  if (embAddBtn) {
+    embAddBtn.addEventListener('click', function () {
+      var target = null;
+      for (var i = items.length - 1; i >= 0; i--) {
+        if (!items[i].emb) { target = items[i]; break; }
+      }
+      if (target) {
+        if (target.qty > 1) {                 /* one piece of that line gets the embroidery */
+          target.qty -= 1;
+          var piece = { k: 'l' + (++uid), id: target.id, qty: 1, emb: true, text: '' };
+          items.splice(items.indexOf(target) + 1, 0, piece);
+          target = piece;
+        } else {
+          target.emb = true;
+        }
+        render(target.k);
+        hideUndo();
+        sync(true);
+        countEls.forEach(bump);
+        setEmbNote('');
+        if (embAddLabel) {
+          embAddLabel.textContent = 'נוספה לסל';
+          window.setTimeout(function () { embAddLabel.textContent = 'הוספת רקמה לסל'; }, 1800);
+        }
+        announce('רקמה אישית נוספה ל' + products[target.id].name + '. ' + countLabel(count()));
+        openCart();
+        focusEmb(target.k);
+      } else if (items.length) {
+        openCart();                           /* every skirt already has embroidery */
+      } else {
+        pendingEmb = true;
+        setEmbNote('בוחרים חצאית, והרקמה תתווסף אליה');
+        var cat = document.getElementById('catalog');
+        if (cat) window.setTimeout(function () {
+          cat.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+        }, 700);
+      }
+    });
   }
 
   function removeItem(item) {

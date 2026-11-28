@@ -4880,3 +4880,42 @@ body::after {
 .social__ig::after {
   animation-delay: 1.5s !important;
 }
+
+
+/* ======================= v19: add embroidery to the cart ======================= */
+
+.emb__add {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.emb__btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.emb__note {
+  min-height: 1.4em;
+  color: var(--sea-mid);
+  font-size: 0.9375rem;
+}
+
+/* the cart line that just got its embroidery lights up once */
+.line.is-flash {
+  animation: line-flash 1.4s var(--ease-out);
+}
+
+@keyframes line-flash {
+  0% {
+    background-color: rgba(63, 111, 121, 0.18);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
