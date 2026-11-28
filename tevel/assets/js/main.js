@@ -41,6 +41,9 @@
      opens the clip full screen in the phone's own player. */
   var anim = null;
   var blocked = false;
+  var startTimer = 0;
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   function showAnim() {
     if (!hero) return;
@@ -70,6 +73,7 @@
   function goAnim() {
     if (blocked || !video) return;
     blocked = true;
+    window.clearTimeout(startTimer);
     try { video.pause(); } catch (err) { /* ignore */ }
     video.preload = 'none';
     video.hidden = true;
@@ -79,6 +83,11 @@
   function play() {
     if (!video || blocked) return;
     loadVideo();
+    /* still not moving after a moment (refused without a word, or the file will not load): switch */
+    window.clearTimeout(startTimer);
+    startTimer = window.setTimeout(function () {
+      if (!blocked && !userPaused && heroVisible && (video.paused || video.currentTime < 0.05)) goAnim();
+    }, 2500);
     var attempt = video.play();
     if (attempt && attempt.catch) {
       attempt.catch(function (err) {
@@ -93,6 +102,7 @@
 
     video.addEventListener('playing', function () {
       if (blocked) { video.pause(); return; }
+      window.clearTimeout(startTimer);
       video.classList.add('is-on');
       setToggle(false);
     });
@@ -136,8 +146,9 @@
       });
     }
 
-    /* the clip always starts by itself */
-    play();
+    /* the clip always starts by itself: on iPhone as the animated picture, elsewhere as video */
+    if (isIOS) goAnim();
+    else play();
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && !userPaused && heroVisible) play();
     });
