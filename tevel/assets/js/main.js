@@ -241,7 +241,8 @@
     blocked = true;                       /* the <video> is never used here */
     if (video) { video.preload = 'none'; video.hidden = true; }
     if (!('VideoDecoder' in window) || !('EncodedVideoChunk' in window)) { showAnim(); return; }
-    var url = (video ? video.dataset.base : 'assets/video/hero-') + 'm.h264';
+    /* a raw H.264 stream (Annex B, one access-unit delimiter per frame); named .mp4 only so every host serves it */
+    var url = (video ? video.dataset.base : 'assets/video/hero-') + 'm-stream.mp4';
     frames = framePlayer(url, function () { frames = null; showAnim(); });
     if (!frames) return;
     var after = video || $('.hero__poster', hero);
