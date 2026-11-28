@@ -4919,3 +4919,26 @@ body::after {
     background-color: transparent;
   }
 }
+
+/* ======================= v20: side buttons show the logos only ======================= */
+
+.social__tip,
+.social a:hover .social__tip,
+.social a:focus-visible .social__tip {
+  display: none !important;
+}
+
+@media (min-width: 1440px) {
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .social a > svg {
+    width: 26px;
+    height: 26px;
+  }
+}
