@@ -197,7 +197,7 @@
       return rest.slice();
     }
 
-    fetch(url).then(function (res) {
+    fetch(url, { priority: 'low' }).then(function (res) {
       if (!res.ok) throw new Error('fetch ' + res.status);
       if (!res.body || !res.body.getReader) {
         return res.arrayBuffer().then(function (ab) { split(new Uint8Array(ab), true); loaded = true; });
@@ -243,12 +243,17 @@
     if (!('VideoDecoder' in window) || !('EncodedVideoChunk' in window)) { showAnim(); return; }
     /* a raw H.264 stream (Annex B, one access-unit delimiter per frame); named .mp4 only so every host serves it */
     var url = (video ? video.dataset.base : 'assets/video/hero-') + 'm-stream.mp4';
-    frames = framePlayer(url, function () { frames = null; showAnim(); });
-    if (!frames) return;
-    var after = video || $('.hero__poster', hero);
-    after.parentNode.insertBefore(frames.canvas, after.nextSibling);
-    frames.set(!userPaused);
-    setToggle(userPaused);
+    var begin = function () {
+      frames = framePlayer(url, function () { frames = null; showAnim(); });
+      if (!frames) return;
+      var after = video || $('.hero__poster', hero);
+      after.parentNode.insertBefore(frames.canvas, after.nextSibling);
+      frames.set(!userPaused && heroVisible);
+      setToggle(userPaused);
+    };
+    /* the catalogue photos go first; the clip starts streaming right after them */
+    if (document.readyState === 'complete') begin();
+    else window.addEventListener('load', begin, { once: true });
   }
 
   if (video) {

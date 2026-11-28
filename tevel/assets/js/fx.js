@@ -67,7 +67,7 @@
     lastY = y;
     boost += (Math.min(Math.abs(v), 80) * 0.9 - boost) * 0.12;
     if (!ribbonOn) return;
-    var speed = reduce.matches ? 0 : 0.03;
+    var speed = 0.03;
     ribbons.forEach(function (r) {
       if (!r.w) r.w = r.set.offsetWidth;
       if (!r.w) return;
