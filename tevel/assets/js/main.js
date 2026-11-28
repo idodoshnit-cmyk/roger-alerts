@@ -96,6 +96,160 @@
     }
   }
 
+
+  /* ---- frame player: the clip drawn on a canvas, frame by frame ---- */
+  var frames = null;
+
+  function framePlayer(url, onFail) {
+    var canvas = document.createElement('canvas');
+    canvas.className = 'hero__frames';
+    canvas.setAttribute('aria-hidden', 'true');
+    var ctx = canvas.getContext('2d');
+    var chunks = [];
+    var loaded = false;
+    var queue = [];
+    var next = 0;
+    var running = false;
+    var started = false;
+    var dead = false;
+    var raf = 0;
+    var last = 0;
+    var FRAME = 1000 / 30;
+    var decoder;
+
+    function fail() {
+      if (dead) return;
+      dead = true;
+      running = false;
+      window.cancelAnimationFrame(raf);
+      queue.forEach(function (f) { f.close(); });
+      queue = [];
+      try { decoder.close(); } catch (err) { /* ignore */ }
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      onFail();
+    }
+
+    try {
+      decoder = new VideoDecoder({
+        output: function (frame) { if (dead) frame.close(); else queue.push(frame); },
+        error: fail
+      });
+      decoder.configure({ codec: 'avc1.640029', optimizeForLatency: true });
+    } catch (err) {
+      window.setTimeout(fail, 0);
+      return null;
+    }
+
+    function feed() {
+      while (!dead && decoder.state === 'configured' && queue.length + decoder.decodeQueueSize < 8) {
+        if (next >= chunks.length) {
+          if (!loaded || !chunks.length) return;
+          next = 0;                                   /* back to the start: the clip loops */
+        }
+        try { decoder.decode(chunks[next++]); } catch (err) { fail(); return; }
+      }
+    }
+
+    function tick(t) {
+      if (!running || dead) return;
+      raf = window.requestAnimationFrame(tick);
+      feed();
+      if (!last) last = t;
+      if (t - last < FRAME - 3) return;
+      last = (t - last > FRAME * 4) ? t : last + FRAME;
+      var f = queue.shift();
+      if (!f) return;
+      if (canvas.width !== f.displayWidth) {
+        canvas.width = f.displayWidth;
+        canvas.height = f.displayHeight;
+      }
+      ctx.drawImage(f, 0, 0, canvas.width, canvas.height);
+      f.close();
+      if (!started) {
+        started = true;
+        canvas.classList.add('is-on');
+      }
+    }
+
+    /* split the byte stream into frames (each starts with an access-unit delimiter, NAL type 9) */
+    var count = 0;
+    function isKey(au) {
+      for (var i = 0; i + 3 < au.length; i++) {
+        if (au[i] === 0 && au[i + 1] === 0 && au[i + 2] === 1 && (au[i + 3] & 31) === 5) return true;
+      }
+      return false;
+    }
+    function push(au) {
+      chunks.push(new EncodedVideoChunk({ type: isKey(au) ? 'key' : 'delta', timestamp: count++ * 33333, data: au }));
+    }
+    function split(buf, final) {
+      var starts = [];
+      for (var i = 0; i + 3 < buf.length; i++) {
+        if (buf[i] === 0 && buf[i + 1] === 0 && buf[i + 2] === 1 && (buf[i + 3] & 31) === 9) {
+          starts.push(i > 0 && buf[i - 1] === 0 ? i - 1 : i);
+          i += 3;
+        }
+      }
+      for (var k = 0; k + 1 < starts.length; k++) push(buf.subarray(starts[k], starts[k + 1]).slice());
+      if (!starts.length) return final ? new Uint8Array(0) : buf;
+      var rest = buf.subarray(starts[starts.length - 1]);
+      if (final) { if (rest.length) push(rest.slice()); return new Uint8Array(0); }
+      return rest.slice();
+    }
+
+    fetch(url).then(function (res) {
+      if (!res.ok) throw new Error('fetch ' + res.status);
+      if (!res.body || !res.body.getReader) {
+        return res.arrayBuffer().then(function (ab) { split(new Uint8Array(ab), true); loaded = true; });
+      }
+      var reader = res.body.getReader();
+      var buf = new Uint8Array(0);
+      function pump() {
+        return reader.read().then(function (r) {
+          if (r.done) { split(buf, true); loaded = true; return; }
+          var joined = new Uint8Array(buf.length + r.value.length);
+          joined.set(buf, 0);
+          joined.set(r.value, buf.length);
+          buf = split(joined, false);
+          return pump();
+        });
+      }
+      return pump();
+    }).catch(fail);
+
+    /* nothing on screen after a while: give up and let the fallback take over */
+    window.setTimeout(function () { if (!started) fail(); }, 12000);
+
+    return {
+      canvas: canvas,
+      set: function (on) {
+        if (dead) return;
+        if (on && !running) {
+          running = true;
+          last = 0;
+          raf = window.requestAnimationFrame(tick);
+        } else if (!on && running) {
+          running = false;
+          window.cancelAnimationFrame(raf);
+        }
+      },
+      alive: function () { return !dead; }
+    };
+  }
+
+  function startFrames() {
+    blocked = true;                       /* the <video> is never used here */
+    if (video) { video.preload = 'none'; video.hidden = true; }
+    if (!('VideoDecoder' in window) || !('EncodedVideoChunk' in window)) { showAnim(); return; }
+    var url = (video ? video.dataset.base : 'assets/video/hero-') + 'm.h264';
+    frames = framePlayer(url, function () { frames = null; showAnim(); });
+    if (!frames) return;
+    var after = video || $('.hero__poster', hero);
+    after.parentNode.insertBefore(frames.canvas, after.nextSibling);
+    frames.set(!userPaused);
+    setToggle(userPaused);
+  }
+
   if (video) {
     video.muted = true;
     video.defaultMuted = true;
@@ -128,7 +282,11 @@
 
     if (toggle) {
       toggle.addEventListener('click', function () {
-        if (blocked) {
+        if (frames) {
+          userPaused = !userPaused;
+          frames.set(!userPaused && heroVisible);
+          setToggle(userPaused);
+        } else if (blocked) {
           userPaused = !userPaused;
           if (userPaused) {
             if (anim) anim.hidden = true;
@@ -147,15 +305,17 @@
     }
 
     /* the clip always starts by itself: on iPhone as the animated picture, elsewhere as video */
-    if (isIOS) goAnim();
+    if (isIOS) startFrames();
     else play();
     document.addEventListener('visibilitychange', function () {
-      if (!document.hidden && !userPaused && heroVisible) play();
+      if (frames) frames.set(!document.hidden && !userPaused && heroVisible);
+      else if (!document.hidden && !userPaused && heroVisible) play();
     });
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
         heroVisible = entries[0].intersectionRatio > 0.2;
+        if (frames) frames.set(heroVisible && !userPaused);
         if (heroVisible) {
           if (!userPaused) play();
         } else if (!video.paused) {
