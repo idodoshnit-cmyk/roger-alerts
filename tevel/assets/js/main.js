@@ -35,16 +35,18 @@
     video.load();
   }
 
-  /* When the phone will not autoplay video (iPhone low power mode, some in-app viewers),
-     the same clip runs as an animated picture instead, which is never blocked. */
+  /* When the phone will not autoplay video (iPhone low power mode, in-app viewers such as the
+     Claude app), the same clip runs as an animated picture instead, which is never blocked.
+     From then on the video is never asked to play again: in some viewers a play() after a tap
+     opens the clip full screen in the phone's own player. */
   var anim = null;
-  var animTimer = 0;
-  function useAnim() {
-    if (!hero || userPaused) return;
+  var blocked = false;
+
+  function showAnim() {
+    if (!hero) return;
     if (!anim) {
       var key = window.matchMedia('(max-width: 767px)').matches ? 'm' : 'd';
       var base = (video ? video.dataset.base : 'assets/video/hero-') + key + '-anim.';
-      /* the full-quality clip as an animated AVIF; older phones take the WebP */
       anim = document.createElement('picture');
       anim.className = 'hero__anim';
       anim.setAttribute('aria-hidden', 'true');
@@ -64,33 +66,45 @@
     anim.hidden = false;
     setToggle(false);
   }
-  function dropAnim() {
-    if (anim) { anim.parentNode.removeChild(anim); anim = null; }
+
+  function goAnim() {
+    if (blocked || !video) return;
+    blocked = true;
+    try { video.pause(); } catch (err) { /* ignore */ }
+    video.preload = 'none';
+    video.hidden = true;
+    if (!userPaused) showAnim();
   }
 
   function play() {
-    if (!video) return;
+    if (!video || blocked) return;
     loadVideo();
-    window.clearTimeout(animTimer);
-    animTimer = window.setTimeout(function () { if (video.paused) useAnim(); }, 2200);
     var attempt = video.play();
     if (attempt && attempt.catch) {
-      attempt.catch(function () { useAnim(); });
+      attempt.catch(function (err) {
+        if (err && (err.name === 'NotAllowedError' || err.name === 'NotSupportedError')) goAnim();
+      });
     }
   }
 
   if (video) {
     video.muted = true;
+    video.defaultMuted = true;
 
     video.addEventListener('playing', function () {
-      window.clearTimeout(animTimer);
+      if (blocked) { video.pause(); return; }
       video.classList.add('is-on');
       setToggle(false);
-      if (anim) window.setTimeout(dropAnim, 800);
     });
-    video.addEventListener('error', useAnim, true);
+    video.addEventListener('error', function () { if (!blocked) goAnim(); }, true);
+    /* ready to play but still standing: autoplay was quietly refused */
+    video.addEventListener('canplay', function () {
+      window.setTimeout(function () {
+        if (!blocked && !userPaused && heroVisible && video.paused) goAnim();
+      }, 900);
+    });
     video.addEventListener('pause', function () {
-      if (userPaused || !heroVisible) setToggle(true);
+      if (!blocked && (userPaused || !heroVisible)) setToggle(true);
     });
 
     /* The still picture under the video is the clip's first frame, so fading the video out just
@@ -104,13 +118,16 @@
 
     if (toggle) {
       toggle.addEventListener('click', function () {
-        if (anim && !anim.hidden) {
-          userPaused = true;
-          anim.hidden = true;
-          setToggle(true);
+        if (blocked) {
+          userPaused = !userPaused;
+          if (userPaused) {
+            if (anim) anim.hidden = true;
+            setToggle(true);
+          } else {
+            showAnim();
+          }
         } else if (video.paused) {
           userPaused = false;
-          if (anim) anim.hidden = false;
           play();
         } else {
           userPaused = true;
@@ -119,16 +136,11 @@
       });
     }
 
-    /* the clip always starts by itself; if the phone refused (low power mode), the first touch or scroll starts it */
+    /* the clip always starts by itself */
     play();
-    var kick = function () {
-      if (!userPaused && heroVisible && video.paused) play();
-    };
-    ['touchstart', 'touchend', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (type) {
-      window.addEventListener(type, kick, { passive: true });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && !userPaused && heroVisible) play();
     });
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); });
-    video.addEventListener('canplay', kick);
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
